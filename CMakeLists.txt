@@ -6,9 +6,7 @@ endif()
 
 project( FlexWorld )
 
-find_package( SFML 2.0 REQUIRED GRAPHICS WINDOW SYSTEM )
-find_package( SFGUI REQUIRED )
-find_package( OpenGL REQUIRED )
+set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake" )
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
 	set( WINDOWS 1 )
@@ -22,6 +20,7 @@ endif()
 
 set( FW_BUILD_CLIENT true CACHE BOOL "Build client." )
 set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
+set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
 
 if( WINDOWS )
 	set( BIN_EXTENSION ".exe" )
@@ -77,8 +76,18 @@ endif()
 #target_link_libraries( sfgui ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_SYSTEM_LIBRARY} ${OPENGL_gl_LIBRARY} )
 
 add_subdirectory( "lib" )
-add_subdirectory( "test" )
-add_subdirectory( "server" )
+
+if( FW_BUILD_TEST )
+	add_subdirectory( "test" )
+endif()
+
+if( FW_BUILD_SERVER )
+	add_subdirectory( "server" )
+endif()
+
+if( FW_BUILD_CLIENT )
+	add_subdirectory( "client" )
+endif()
 
 #if( FW_BUILD_CLIENT )
 #add_subdirectory( "fwclient" )

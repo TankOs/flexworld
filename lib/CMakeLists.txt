@@ -2,6 +2,8 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldLibrary )
 
+find_package( SFML 2.0 REQUIRED NETWORK SYSTEM )
+
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
 

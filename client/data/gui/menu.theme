@@ -1,0 +1,34 @@
+* {
+	FontName: data/gui/orbitron_bold.ttf;
+	Color: #ffffffff;
+}
+
+Label#title {
+	FontSize: 36;
+	FontName: data/gui/orbitron_bold.ttf;
+}
+
+Window {
+	BackgroundColor: #2e4872ee;
+	BorderColor: #000000ff;
+	TitleBackgroundColor: #58729cff;
+}
+
+Button {
+	BackgroundColor: #48628cff;
+	BorderColor: #48628cff;
+	Padding: 10;
+}
+
+Button:Prelight {
+	BackgroundColor: #58729cff;
+}
+
+Button:Active {
+	Color: #ffffffff;
+}
+
+Entry {
+	BackgroundColor: #18325cff;
+	BorderColor: #000000ff;
+}
