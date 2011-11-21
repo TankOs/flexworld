@@ -3,6 +3,10 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <iostream> // XXX 
 
 State::State( sf::RenderWindow& target ) :
 	m_render_target( target ),
@@ -34,7 +38,31 @@ State* State::run() {
 	while( m_run ) {
 		// Process events.
 		while( m_render_target.PollEvent( event ) ) {
-			handle_event( event );
+			// Check for F12 (screenshot).
+			if( event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::F12 ) {
+				// Find next free screenshot ID.
+				uint32_t id( 0 );
+				std::ifstream in;
+				std::string filename;
+
+				do {
+					std::stringstream sstr;
+					sstr << "screenshot" << std::setfill( '0' ) << std::setw( 5 ) << id << ".png";
+					filename = sstr.str();
+
+					in.close();
+					in.open( filename.c_str() );
+
+					++id;
+				} while( in.is_open() );
+
+				// Save.
+				sf::Image screenshot( get_render_target().Capture() );
+				screenshot.SaveToFile( filename );
+			}
+			else {
+				handle_event( event );
+			}
 		}
 
 		uint32_t elapsed( clock.GetElapsedTime() );

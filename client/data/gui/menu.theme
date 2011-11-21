@@ -1,5 +1,5 @@
 * {
-	FontName: data/gui/orbitron_bold.ttf;
+	FontSize: 12;
 	Color: #ffffffff;
 }
 
@@ -8,14 +8,19 @@ Label#title {
 	FontName: data/gui/orbitron_bold.ttf;
 }
 
-Label.info {
-	FontSize: 10;
-}
-
 Window {
 	BackgroundColor: #2e4872ee;
 	BorderColor: #000000ff;
 	TitleBackgroundColor: #58729cff;
+}
+
+Window#menu * {
+	FontSize: 14;
+	/*FontName: data/gui/orbitron_bold.ttf;*/
+}
+
+Window#menu Button {
+	BorderWidth: 2;
 }
 
 Button {
@@ -59,4 +64,8 @@ CheckButton:Prelight {
 
 CheckButton:Active {
 	BackgroundColor: #48628cff;
+}
+
+Label.important {
+	Color:#ff0000ff;
 }

@@ -3,12 +3,12 @@
 #include <SFGUI/SFGUI.hpp>
 #include <SFGUI/Signal.hpp>
 
-/** Options window.
+/** Start game window.
  */
-class PlayWindow : public sfg::Window {
+class StartGameWindow : public sfg::Window {
 	public:
-		typedef std::shared_ptr<PlayWindow> Ptr; ///< Shared pointer.
-		typedef std::shared_ptr<const PlayWindow> PtrConst; ///< Shared pointer to const.
+		typedef std::shared_ptr<StartGameWindow> Ptr; ///< Shared pointer.
+		typedef std::shared_ptr<const StartGameWindow> PtrConst; ///< Shared pointer to const.
 
 		/** Create window.
 		 * @return Window.
@@ -19,7 +19,7 @@ class PlayWindow : public sfg::Window {
 		sfg::Signal OnReject; ///< Fired when cancel clicked.
 
 	private:
-		PlayWindow();
+		StartGameWindow();
 
 		sfg::Entry::Ptr m_game_mode_entry;
 		sfg::Entry::Ptr m_savegame_entry;

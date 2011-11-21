@@ -1,16 +1,16 @@
-#include "PlayWindow.hpp"
+#include "StartGameWindow.hpp"
 
-PlayWindow::PlayWindow() :
+StartGameWindow::StartGameWindow() :
 	Window()
 {
 }
 
-PlayWindow::Ptr PlayWindow::Create() {
-	Ptr window( new PlayWindow );
+StartGameWindow::Ptr StartGameWindow::Create() {
+	Ptr window( new StartGameWindow );
 
 	// Widgets.
 	window->SetBorderWidth( 10.f );
-	window->SetTitle( L"Play" );
+	window->SetTitle( L"Start game" );
 
 	sfg::Button::Ptr ok_button( sfg::Button::Create( L"OK" ) );
 	sfg::Button::Ptr cancel_button( sfg::Button::Create( L"Cancel" ) );
@@ -63,23 +63,23 @@ PlayWindow::Ptr PlayWindow::Create() {
 	window->Add( content_box );
 
 	// Signals.
-	ok_button->OnClick.Connect( &PlayWindow::on_ok_click, &*window );
-	cancel_button->OnClick.Connect( &PlayWindow::on_cancel_click, &*window );
+	ok_button->OnClick.Connect( &StartGameWindow::on_ok_click, &*window );
+	cancel_button->OnClick.Connect( &StartGameWindow::on_cancel_click, &*window );
 
-	window->m_max_players_scale->GetAdjustment()->OnChange.Connect( &PlayWindow::on_max_players_change, &*window );
+	window->m_max_players_scale->GetAdjustment()->OnChange.Connect( &StartGameWindow::on_max_players_change, &*window );
 
 	return window;
 }
 
-void PlayWindow::on_ok_click() {
+void StartGameWindow::on_ok_click() {
 	OnAccept();
 }
 
-void PlayWindow::on_cancel_click() {
+void StartGameWindow::on_cancel_click() {
 	OnReject();
 }
 
-void PlayWindow::on_max_players_change() {
+void StartGameWindow::on_max_players_change() {
 	std::stringstream sstr;
 
 	sstr << static_cast<int>( m_max_players_scale->GetValue() );

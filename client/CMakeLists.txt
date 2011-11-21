@@ -22,14 +22,14 @@ set(
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
-	${INC_DIR}/PlayWindow.hpp
+	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp
-	${SRC_DIR}/PlayWindow.cpp
+	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
 )
 
