@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FlexWorld/Texture.hpp>
+#include <FlexWorld/Resource.hpp>
 
 #include <string>
 #include <map>
@@ -15,9 +15,14 @@ namespace flex {
 class Class {
 	public:
 		/** Ctor.
-		 * @param name Name.
+		 * @param id ID.
 		 */
-		Class( const std::string& name = "" );
+		Class( const ResourceId& id );
+
+		/** Get ID.
+		 * @return ID.
+		 */
+		const ResourceId& get_id() const;
 
 		/** Set name.
 		 * @param name Name.
@@ -42,13 +47,13 @@ class Class {
 		/** Add texture.
 		 * @param texture Texture.
 		 */
-		void add_texture( const Texture& texture );
+		void add_texture( const Resource& texture );
 
 		/** Get texture.
 		 * @param index Index.
-		 * @return Texture or null if not found.
+		 * @return Resource or null if not found.
 		 */
-		const Texture* get_texture( std::size_t index ) const;
+		const Resource* get_texture( std::size_t index ) const;
 
 		/** Set hook.
 		 * @param id ID.
@@ -64,14 +69,14 @@ class Class {
 
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
-		typedef std::vector<Texture> TextureVector;
+		typedef std::vector<Resource> ResourceVector;
 
+		ResourceId m_id;
 		std::string m_name;
 		sf::Vector3f m_origin;
 
 		HookMap m_hooks;
-
-		TextureVector m_textures;
+		ResourceVector m_textures;
 };
 
 }

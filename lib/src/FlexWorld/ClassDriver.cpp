@@ -7,8 +7,6 @@
 namespace flex {
 
 bool ClassDriver::load( const std::string& path, Class& cls ) {
-	Class new_class;
-
 	// Open file.
 	std::ifstream in( path.c_str() );
 	if( !in.is_open() ) {
@@ -19,21 +17,26 @@ bool ClassDriver::load( const std::string& path, Class& cls ) {
 	YAML::Parser parser( in );
 	YAML::Node doc;
 
-	while( parser.GetNextDocument( doc ) ) {
-		std::string string;
+	parser.GetNextDocument( doc );
 
-		try {
-			doc["Name"] >> string;
-			new_class.set_name( string );
-		}
-		catch( ... ) {
-			return false;
-		}
+	try {
+		std::string string;
+		doc["Id"] >> string;
+		Class new_class( string );
+
+		doc["Name"] >> string;
+		new_class.set_name( string );
+
+		// Everything okay.
+		cls = new_class;
+		return true;
+	}
+	catch( ... ) {
+		return false;
 	}
 
-	// Everything okay.
-	cls = new_class;
-	return true;
+	// Will never reach this point.
+	return false;
 }
 
 }
