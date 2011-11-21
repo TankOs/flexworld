@@ -1,5 +1,6 @@
 #include "MenuState.hpp"
 #include "OptionsWindow.hpp"
+#include "PlayWindow.hpp"
 
 #include <FlexWorld/Config.hpp>
 #include <SFML/Graphics.hpp>
@@ -40,6 +41,9 @@ void MenuState::init() {
 	vbox->Pack( play_button, false );
 	vbox->Pack( options_button, false );
 	vbox->Pack( quit_button, false );
+	vbox->Pack( sfg::Label::Create( L"This is an \"in-development version\". You're not allowed" ), false );
+	vbox->Pack( sfg::Label::Create( L"to distribute it in any way, talk about it or show any related" ), false );
+	vbox->Pack( sfg::Label::Create( L"material without explicit permission!!!" ), false );
 
 	sfg::Window::Ptr window( sfg::Window::Create() );
 	window->SetTitle( L"FlexWorld" );
@@ -50,6 +54,7 @@ void MenuState::init() {
 	m_desktop.Add( window );
 
 	// Signals.
+	play_button->OnClick.Connect( &MenuState::on_play_click, this );
 	options_button->OnClick.Connect( &MenuState::on_options_click, this );
 	quit_button->OnClick.Connect( &MenuState::on_quit_click, this );
 
@@ -67,6 +72,11 @@ void MenuState::init() {
 	sf::Image image;
 	image.LoadFromFile( "data/gui/bg.png" );
 	m_bg_texture.LoadFromImage( image );
+
+	// Music.
+	m_music.OpenFromFile( "data/rebirth.ogg" );
+	m_music.SetLoop( true );
+	m_music.Play();
 }
 
 void MenuState::cleanup() {
@@ -117,12 +127,31 @@ void MenuState::on_options_click() {
 	m_options_window->SetPosition(
 		sf::Vector2f(
 			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_options_window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f -m_options_window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_options_window->GetAllocation().Height / 2.f
 		)
 	);
 
 	std::dynamic_pointer_cast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
 	std::dynamic_pointer_cast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
+}
+
+void MenuState::on_play_click() {
+	if( m_play_window ) {
+		return;
+	}
+
+	m_play_window = PlayWindow::Create();
+	m_desktop.Add( m_play_window );
+
+	m_play_window->SetPosition(
+		sf::Vector2f(
+			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_play_window->GetAllocation().Width / 2.f,
+			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_play_window->GetAllocation().Height / 2.f
+		)
+	);
+
+	std::dynamic_pointer_cast<PlayWindow>( m_play_window )->OnAccept.Connect( &MenuState::on_play_accept, this );
+	std::dynamic_pointer_cast<PlayWindow>( m_play_window )->OnReject.Connect( &MenuState::on_play_reject, this );
 }
 
 void MenuState::on_options_accept() {
@@ -137,4 +166,14 @@ void MenuState::on_options_reject() {
 
 void MenuState::on_quit_click() {
 	leave();
+}
+
+void MenuState::on_play_accept() {
+	m_desktop.Remove( m_play_window );
+	m_play_window.reset();
+}
+
+void MenuState::on_play_reject() {
+	m_desktop.Remove( m_play_window );
+	m_play_window.reset();
 }

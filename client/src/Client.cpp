@@ -9,7 +9,7 @@ Client::Client() {
 
 void Client::run() {
 	// Setup window.
-	m_window.Create( sf::VideoMode::GetDesktopMode(), "", sf::Style::Fullscreen );
+	m_window.Create( sf::VideoMode( 1280, 720 ), ""/*, sf::Style::Fullscreen*/ );
 
 	{
 		std::stringstream sstr;

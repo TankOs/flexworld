@@ -7,7 +7,7 @@ find_package( GLEW REQUIRED )
 find_package( JPEG REQUIRED )
 find_package( Freetype REQUIRED )
 find_package( SFGUI REQUIRED )
-find_package( SFML 2.0 REQUIRED GRAPHICS WINDOW SYSTEM )
+find_package( SFML 2.0 REQUIRED GRAPHICS WINDOW AUDIO SYSTEM )
 
 if( NOT WINDOWS )
 	find_package( X11 REQUIRED )
@@ -22,12 +22,14 @@ set(
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
+	${INC_DIR}/PlayWindow.hpp
 	${INC_DIR}/State.hpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp
+	${SRC_DIR}/PlayWindow.cpp
 	${SRC_DIR}/State.cpp
 )
 
@@ -48,7 +50,7 @@ add_executable( client ${SOURCES} )
 
 target_link_libraries( client flexworld )
 target_link_libraries( client ${SFGUI_LIBRARY} )
-target_link_libraries( client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( client ${GLEW_LIBRARY} )
 target_link_libraries( client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
 target_link_libraries( client ${JPEG_LIBRARY} )

@@ -8,6 +8,10 @@ Label#title {
 	FontName: data/gui/orbitron_bold.ttf;
 }
 
+Label.info {
+	FontSize: 10;
+}
+
 Window {
 	BackgroundColor: #2e4872ee;
 	BorderColor: #000000ff;
@@ -31,4 +35,28 @@ Button:Active {
 Entry {
 	BackgroundColor: #18325cff;
 	BorderColor: #000000ff;
+}
+
+Scale {
+	TroughColor: #18325cff;
+	SliderColor: #48628cff;
+	SliderBorderColor: #48628cff;
+}
+
+Scale:Prelight {
+	SliderColor: #58729cff;
+	SliderBorderColor: #58729cff;
+}
+
+CheckButton {
+	BackgroundColor: #18325cff;
+	CheckColor: #ffffffff;
+}
+
+CheckButton:Prelight {
+	BackgroundColor: #28426cff;
+}
+
+CheckButton:Active {
+	BackgroundColor: #48628cff;
 }
