@@ -1,5 +1,4 @@
 #include "MenuState.hpp"
-#include "OptionsWindow.hpp"
 #include "StartGameWindow.hpp"
 
 #include <FlexWorld/Config.hpp>
@@ -85,17 +84,13 @@ void MenuState::init() {
 		)
 	);
 
-	// Load background.
-	sf::Image image;
-	image.LoadFromFile( "data/gui/bg.png" );
-	m_bg_texture.LoadFromImage( image );
-
 	// Music.
 	m_music.OpenFromFile( "data/rebirth.ogg" );
 	m_music.SetLoop( true );
-	m_music.Play();
+	//m_music.Play();
 
-	// Init BG clouds.
+	// Init clouds.
+	sf::Image image;
 	image.LoadFromFile( "data/gui/cloud.png" );
 	m_cloud_texture.LoadFromImage( image );
 
@@ -111,8 +106,8 @@ void MenuState::init() {
 			float scale( static_cast<float>( std::rand() % (100 - 49) + 50 ) / 100.f );
 			uint8_t alpha( static_cast<uint8_t>( std::rand() % (255 - 149) + 150 ) );
 			sf::Vector2f offset(
-				static_cast<float>( std::rand() % 100 ),
-				static_cast<float>( std::rand() % 50 )
+				static_cast<float>( std::rand() % 50 ),
+				static_cast<float>( std::rand() % 20 )
 			);
 
 			sf::Sprite cloud_sprite( m_cloud_texture );
@@ -126,12 +121,28 @@ void MenuState::init() {
 			m_cloud_sprites.push_back( cloud_sprite );
 		}
 	}
+
+	// Setup sky.
+	m_morphers[0].start( sf::Color( 0x15, 0x7f, 0xd0 ), sf::Color( 0x00, 0x00, 0x00 ), 60000 );
+	m_morphers[1].start( sf::Color( 0x92, 0xc5, 0xec ), sf::Color( 0x15, 0x43, 0x66 ), 60000 );
+
+	m_sky_shape.AddPoint( static_cast<float>( get_render_target().GetWidth() ), 0.f, m_morphers[0].get_current_color() );
+	m_sky_shape.AddPoint( 0.f, 0.f, m_morphers[0].get_current_color() );
+	m_sky_shape.AddPoint( 0.f, static_cast<float>( get_render_target().GetHeight() ), m_morphers[1].get_current_color() );
+	m_sky_shape.AddPoint( static_cast<float>( get_render_target().GetWidth() ), static_cast<float>( get_render_target().GetHeight() ), m_morphers[1].get_current_color() );
 }
 
 void MenuState::cleanup() {
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
+	m_desktop.HandleEvent( event );
+
+	// Check if options window ate the event.
+	if( m_options_window && m_options_window->is_event_processed() ) {
+		return;
+	}
+
 	if(
 		event.Type == sf::Event::Closed ||
 		(event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape)
@@ -140,7 +151,6 @@ void MenuState::handle_event( const sf::Event& event ) {
 		return;
 	}
 
-	m_desktop.HandleEvent( event );
 }
 
 void MenuState::update( uint32_t delta ) {
@@ -161,6 +171,15 @@ void MenuState::update( uint32_t delta ) {
 			cloud_iter->Move( 0.f, static_cast<float>( get_render_target().GetHeight() ) + cloud_iter->GetSize().x );
 		}
 	}
+
+	// Morph and update sky colors.
+	m_morphers[0].update( delta );
+	m_morphers[1].update( delta );
+
+	m_sky_shape.SetPointColor( 0, m_morphers[0].get_current_color() );
+	m_sky_shape.SetPointColor( 1, m_morphers[0].get_current_color() );
+	m_sky_shape.SetPointColor( 2, m_morphers[1].get_current_color() );
+	m_sky_shape.SetPointColor( 3, m_morphers[1].get_current_color() );
 }
 
 void MenuState::render() const {
@@ -168,14 +187,8 @@ void MenuState::render() const {
 
 	window.Clear( sf::Color( 0x12, 0x34, 0x56 ) );
 
-	// Background.
-	sf::Sprite bg_tile( m_bg_texture );
-	for( float y = 0.f; y < static_cast<float>( window.GetHeight() ); y += static_cast<float>( m_bg_texture.GetHeight() ) ) {
-		for( float x = 0.f; x < static_cast<float>( window.GetWidth() ); x += static_cast<float>( m_bg_texture.GetWidth() ) ) {
-			bg_tile.SetPosition( x, y );
-			window.Draw( bg_tile );
-		}
-	}
+	// Sky.
+	window.Draw( m_sky_shape );
 
 	// Clouds.
 	SpriteList::const_iterator cloud_iter( m_cloud_sprites.begin() );

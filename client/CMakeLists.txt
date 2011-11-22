@@ -19,13 +19,19 @@ set( SRC_DIR "src" )
 set(
 	SOURCES
 	${INC_DIR}/Client.hpp
+	${INC_DIR}/ColorMorpher.cpp
+	${INC_DIR}/Controls.hpp
 	${INC_DIR}/IntroState.hpp
+	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${SRC_DIR}/Client.cpp
+	${SRC_DIR}/ColorMorpher.cpp
+	${SRC_DIR}/Controls.cpp
 	${SRC_DIR}/IntroState.cpp
+	${SRC_DIR}/KeyNames.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp

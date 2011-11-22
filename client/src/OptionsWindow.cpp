@@ -1,7 +1,10 @@
 #include "OptionsWindow.hpp"
+#include "KeyNames.hpp"
 
 OptionsWindow::OptionsWindow() :
-	Window()
+	Window(),
+	m_event_processed( false ),
+	m_next_action( Controls::UNMAPPED )
 {
 }
 
@@ -23,6 +26,34 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	// Account.
 	window->m_username_entry = sfg::Entry::Create();
 	window->m_serial_entry = sfg::Entry::Create();
+
+	// Controls.
+	// Setup action buttons.
+	window->m_action_buttons[Controls::WALK_FORWARD] = sfg::Button::Create();
+	window->m_action_buttons[Controls::WALK_BACKWARD] = sfg::Button::Create();
+	window->m_action_buttons[Controls::STRAFE_LEFT] = sfg::Button::Create();
+	window->m_action_buttons[Controls::STRAFE_RIGHT] = sfg::Button::Create();
+	window->m_action_buttons[Controls::JUMP] = sfg::Button::Create();
+	window->m_action_buttons[Controls::CROUCH] = sfg::Button::Create();
+	window->m_action_buttons[Controls::USE] = sfg::Button::Create();
+	window->m_action_buttons[Controls::DROP] = sfg::Button::Create();
+	window->m_action_buttons[Controls::PRIMARY_ATTACK] = sfg::Button::Create();
+	window->m_action_buttons[Controls::SECONDARY_ATTACK] = sfg::Button::Create();
+	window->m_action_buttons[Controls::INVENTORY] = sfg::Button::Create();
+	window->m_action_buttons[Controls::CHAT] = sfg::Button::Create();
+
+	ActionButtonMap::iterator ab_iter( window->m_action_buttons.begin() );
+	ActionButtonMap::iterator ab_iter_end( window->m_action_buttons.end() );
+
+	// Connect signals, set active mapping labels and store Button -> Action
+	// relations.
+	for( ; ab_iter != ab_iter_end; ++ab_iter ) {
+		ab_iter->second->OnClick.Connect( &OptionsWindow::on_action_button_click, &*window );
+		window->m_button_actions[ab_iter->second] = ab_iter->first;
+	}
+
+	window->m_waiting_for_input_label = sfg::Label::Create( L"Press a key or mouse button (hit ESC to cancel)." );
+	window->m_waiting_for_input_label->Show( false );
 
 	// Layout.
 	sfg::Box::Ptr top_button_box( sfg::Box::Create( sfg::Box::Horizontal, 5.f ) );
@@ -65,23 +96,24 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	controls_table->Attach( sfg::Label::Create( L"Chat:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
 	row_index = 0;
-	controls_table->Attach( sfg::Button::Create( L"W" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"S" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"A" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"D" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"Space" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"Left ctrl" ), sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::WALK_FORWARD], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::WALK_BACKWARD], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::STRAFE_LEFT], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::STRAFE_RIGHT], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::JUMP], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::CROUCH], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
 	row_index = 0;
-	controls_table->Attach( sfg::Button::Create( L"E" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"X" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"Left mouse" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"Right mouse" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"F" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	controls_table->Attach( sfg::Button::Create( L"T" ), sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::USE], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::DROP], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::PRIMARY_ATTACK], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::SECONDARY_ATTACK], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::INVENTORY], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	controls_table->Attach( window->m_action_buttons[Controls::CHAT], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
 	window->m_controls_page_box = sfg::Box::Create( sfg::Box::Vertical, 5.f );
 	window->m_controls_page_box->Pack( controls_table, false );
+	window->m_controls_page_box->Pack( window->m_waiting_for_input_label, false );
 
 	// ---
 	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::Horizontal, 5.f ) );
@@ -127,4 +159,79 @@ void OptionsWindow::on_ok_click() {
 
 void OptionsWindow::on_cancel_click() {
 	OnReject();
+}
+
+bool OptionsWindow::is_event_processed() const {
+	return m_event_processed;
+}
+
+void OptionsWindow::HandleEvent( const sf::Event& event ) {
+	m_event_processed = false;
+
+	if( m_next_action != Controls::UNMAPPED && (event.Type == sf::Event::MouseButtonPressed || event.Type == sf::Event::KeyPressed) ) {
+		// Mark every key press and mouse button event as processed if waiting for an
+		// action mapping.
+		m_event_processed = true;
+
+		// Map key/button.
+		if( event.Type == sf::Event::KeyPressed ) {
+			m_controls.map_key( event.Key.Code, m_next_action );
+		}
+		else {
+			m_controls.map_button( event.MouseButton.Button, m_next_action );
+		}
+
+		// Update labels (need to update all because another mapping might got
+		// removed).
+		refresh_action_button_labels();
+
+		m_waiting_for_input_label->Show( false );
+		m_next_action = Controls::UNMAPPED;
+	}
+	else {
+		Window::HandleEvent( event );
+	}
+}
+
+void OptionsWindow::on_action_button_click() {
+	m_active_action_button = std::dynamic_pointer_cast<sfg::Button>( sfg::Context::Get().GetActiveWidget() );
+	m_next_action = m_button_actions[m_active_action_button];
+
+	m_waiting_for_input_label->Show( true );
+}
+
+void OptionsWindow::refresh_action_button_labels() {
+	// Reset all buttons first (so old bindings won't survive).
+	ButtonActionMap::iterator ba_iter( m_button_actions.begin() );
+	ButtonActionMap::iterator ba_iter_end( m_button_actions.end() );
+	
+	for( ; ba_iter != ba_iter_end; ++ba_iter ) {
+		ba_iter->first->SetLabel( "" );
+	}
+
+	// Process key bindings.
+	Controls::ControlMap::const_iterator key_iter( m_controls.keys_begin() );
+	Controls::ControlMap::const_iterator key_iter_end( m_controls.keys_end() );
+
+	for( ; key_iter != key_iter_end; ++key_iter ) {
+		std::string name( get_key_name( key_iter->first ) );
+		if( name == "" ) {
+			name = "???";
+		}
+
+		m_action_buttons[key_iter->second]->SetLabel( name );
+	}
+
+	// Process button bindings.
+	Controls::ControlMap::const_iterator button_iter( m_controls.buttons_begin() );
+	Controls::ControlMap::const_iterator button_iter_end( m_controls.buttons_end() );
+
+	for( ; button_iter != button_iter_end; ++button_iter ) {
+		std::string name( get_button_name( button_iter->first ) );
+		if( name == "" ) {
+			name = "???";
+		}
+
+		m_action_buttons[button_iter->second]->SetLabel( name );
+	}
 }

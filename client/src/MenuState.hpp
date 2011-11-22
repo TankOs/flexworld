@@ -1,6 +1,8 @@
 #pragma once
 
 #include "State.hpp"
+#include "ColorMorpher.hpp"
+#include "OptionsWindow.hpp"
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -22,6 +24,8 @@ class MenuState : public State {
 		void update( uint32_t delta );
 		void render() const;
 
+		void morph_sky( const sf::Color& color0, const sf::Color color1, uint32_t time );
+
 		void on_start_game_click();
 		void on_start_game_accept();
 		void on_start_game_reject();
@@ -31,12 +35,14 @@ class MenuState : public State {
 		void on_quit_click();
 
 		sfg::Desktop m_desktop;
-		sfg::Widget::Ptr m_options_window;
+		OptionsWindow::Ptr m_options_window;
 		sfg::Widget::Ptr m_start_game_window;
 
-		sf::Texture m_bg_texture;
 		sf::Texture m_cloud_texture;
 		SpriteList m_cloud_sprites;
+
+		sf::Shape m_sky_shape;
+		ColorMorpher m_morphers[2];
 
 		sf::Music m_music;
 };
