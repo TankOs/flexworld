@@ -29,7 +29,7 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	inet_label->SetClass( "info" );
 
 	// Layout.
-	sfg::Box::Ptr max_players_box( sfg::Box::Create( sfg::Box::Horizontal, 10.f ) );
+	sfg::Box::Ptr max_players_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 10.f ) );
 	max_players_box->Pack( window->m_max_players_scale, true );
 	max_players_box->Pack( window->m_max_players_label, false );
 
@@ -52,11 +52,11 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	table->Attach( max_players_box, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	table->Attach( inet_label, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
-	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::Horizontal, 5.f ) );
+	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
 	bottom_button_box->Pack( cancel_button, false );
 	bottom_button_box->Pack( ok_button, false );
 
-	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::Vertical, 10.f ) );
+	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
 	content_box->Pack( table, true );
 	content_box->Pack( bottom_button_box, false );
 

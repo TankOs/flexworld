@@ -33,7 +33,7 @@ class OptionsWindow : public sfg::Window {
 
 		OptionsWindow();
 
-		void show_page( sfg::Widget::PtrConst page );
+		void show_page( sfg::Widget::Ptr page );
 		void refresh_action_button_labels();
 
 		void on_account_click();

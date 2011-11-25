@@ -56,7 +56,7 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	window->m_waiting_for_input_label->Show( false );
 
 	// Layout.
-	sfg::Box::Ptr top_button_box( sfg::Box::Create( sfg::Box::Horizontal, 5.f ) );
+	sfg::Box::Ptr top_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
 	top_button_box->Pack( account_button, true );
 	top_button_box->Pack( controls_button, true );
 	top_button_box->Pack( graphics_button, true );
@@ -71,7 +71,7 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	acc_table->Attach( sfg::Label::Create( L"Serial:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	acc_table->Attach( window->m_serial_entry, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
-	window->m_account_page_box = sfg::Box::Create( sfg::Box::Vertical, 5.f );
+	window->m_account_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
 	window->m_account_page_box->Pack( acc_table, false );
 
 	// Controls.
@@ -111,16 +111,16 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	controls_table->Attach( window->m_action_buttons[Controls::INVENTORY], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	controls_table->Attach( window->m_action_buttons[Controls::CHAT], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
-	window->m_controls_page_box = sfg::Box::Create( sfg::Box::Vertical, 5.f );
+	window->m_controls_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
 	window->m_controls_page_box->Pack( controls_table, false );
 	window->m_controls_page_box->Pack( window->m_waiting_for_input_label, false );
 
 	// ---
-	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::Horizontal, 5.f ) );
+	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
 	bottom_button_box->Pack( cancel_button, false );
 	bottom_button_box->Pack( ok_button, false );
 
-	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::Vertical, 10.f ) );
+	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
 	content_box->Pack( top_button_box, false );
 	content_box->Pack( window->m_account_page_box, true );
 	content_box->Pack( window->m_controls_page_box, true );
@@ -137,12 +137,17 @@ OptionsWindow::Ptr OptionsWindow::Create() {
 	ok_button->OnClick.Connect( &OptionsWindow::on_ok_click, &*window );
 	cancel_button->OnClick.Connect( &OptionsWindow::on_cancel_click, &*window );
 
+	// Init.
+	window->refresh_action_button_labels();
+
 	return window;
 }
 
-void OptionsWindow::show_page( sfg::Widget::PtrConst page ) {
-	m_account_page_box->Show( page == m_account_page_box );
-	m_controls_page_box->Show( page == m_controls_page_box );
+void OptionsWindow::show_page( sfg::Widget::Ptr page ) {
+	m_account_page_box->Show( false );
+	m_controls_page_box->Show( false );
+
+	page->Show( true );
 }
 
 void OptionsWindow::on_account_click() {
@@ -206,7 +211,7 @@ void OptionsWindow::refresh_action_button_labels() {
 	ButtonActionMap::iterator ba_iter_end( m_button_actions.end() );
 	
 	for( ; ba_iter != ba_iter_end; ++ba_iter ) {
-		ba_iter->first->SetLabel( "" );
+		ba_iter->first->SetLabel( "Not bound" );
 	}
 
 	// Process key bindings.

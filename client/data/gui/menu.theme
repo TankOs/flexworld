@@ -29,11 +29,11 @@ Button {
 	Padding: 10;
 }
 
-Button:Prelight {
+Button:PRELIGHT {
 	BackgroundColor: #58729cff;
 }
 
-Button:Active {
+Button:ACTIVE {
 	Color: #ffffffff;
 }
 
@@ -48,7 +48,7 @@ Scale {
 	SliderBorderColor: #48628cff;
 }
 
-Scale:Prelight {
+Scale:PRELIGHT {
 	SliderColor: #58729cff;
 	SliderBorderColor: #58729cff;
 }
@@ -58,11 +58,11 @@ CheckButton {
 	CheckColor: #ffffffff;
 }
 
-CheckButton:Prelight {
+CheckButton:PRELIGHT {
 	BackgroundColor: #28426cff;
 }
 
-CheckButton:Active {
+CheckButton:ACTIVE {
 	BackgroundColor: #48628cff;
 }
 
