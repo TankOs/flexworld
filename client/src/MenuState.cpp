@@ -64,14 +64,14 @@ void MenuState::init() {
 	vbox->Pack( notice1, false );
 	vbox->Pack( notice2, false );
 
-	sfg::Window::Ptr window( sfg::Window::Create() );
-	window->SetId( "menu" );
-	window->SetTitle( L"FlexWorld" );
-	window->SetBorderWidth( 15.f );
-	window->SetStyle( sfg::Window::Background );
-	window->Add( vbox );
+	m_window = sfg::Window::Create();
+	m_window->SetId( "menu" );
+	m_window->SetTitle( L"FlexWorld" );
+	m_window->SetBorderWidth( 15.f );
+	m_window->SetStyle( sfg::Window::Background );
+	m_window->Add( vbox );
 
-	m_desktop.Add( window );
+	m_desktop.Add( m_window );
 
 	// Signals.
 	m_start_game_button->OnClick.Connect( &MenuState::on_start_game_click, this );
@@ -82,10 +82,10 @@ void MenuState::init() {
 	m_desktop.LoadThemeFromFile( "data/gui/menu.theme" );
 	check_required_settings();
 
-	window->SetPosition(
+	m_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().GetWidth() ) / 2.f - window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f - window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_window->GetAllocation().Width / 2.f,
+			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_window->GetAllocation().Height / 2.f
 		)
 	);
 
@@ -148,12 +148,20 @@ void MenuState::handle_event( const sf::Event& event ) {
 		return;
 	}
 
-	if(
-		event.Type == sf::Event::Closed ||
-		(event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape)
-	) {
+	if( event.Type == sf::Event::Closed ) {
 		leave();
-		return;
+	}
+
+	if( (event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape) ) {
+		if( m_options_window ) {
+			on_options_reject();
+		}
+		else if( m_start_game_window ) {
+			on_start_game_reject();
+		}
+		else {
+			leave();
+		}
 	}
 
 }
@@ -226,6 +234,8 @@ void MenuState::on_options_click() {
 
 	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
 	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
+
+	m_window->Show( false );
 }
 
 void MenuState::on_start_game_click() {
@@ -245,6 +255,8 @@ void MenuState::on_start_game_click() {
 
 	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnAccept.Connect( &MenuState::on_start_game_accept, this );
 	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
+
+	m_window->Show( false );
 }
 
 void MenuState::on_options_accept() {
@@ -256,11 +268,15 @@ void MenuState::on_options_accept() {
 
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
+
+	m_window->Show( true );
 }
 
 void MenuState::on_options_reject() {
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
+
+	m_window->Show( true );
 }
 
 void MenuState::on_quit_click() {
@@ -270,11 +286,15 @@ void MenuState::on_quit_click() {
 void MenuState::on_start_game_accept() {
 	m_desktop.Remove( m_start_game_window );
 	m_start_game_window.reset();
+
+	m_window->Show( true );
 }
 
 void MenuState::on_start_game_reject() {
 	m_desktop.Remove( m_start_game_window );
 	m_start_game_window.reset();
+
+	m_window->Show( true );
 }
 
 void MenuState::check_required_settings() {

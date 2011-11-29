@@ -51,7 +51,22 @@ void Client::run() {
 		}
 	}
 	else {
-			std::cerr << "No user settings saved, starting with defaults." << std::endl;
+		// Settings do not exact, set some default values.
+		std::cerr << "No user settings saved, starting with defaults." << std::endl;
+
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::W, Controls::WALK_FORWARD );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::S, Controls::WALK_BACKWARD );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::A, Controls::STRAFE_LEFT );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::D, Controls::STRAFE_RIGHT );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::Space, Controls::JUMP );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::LControl, Controls::CROUCH );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::E, Controls::USE );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::X, Controls::DROP );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::F, Controls::INVENTORY );
+		Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::T, Controls::CHAT );
+
+		Shared::get().get_user_settings().get_controls().map_button( sf::Mouse::Left, Controls::PRIMARY_ATTACK );
+		Shared::get().get_user_settings().get_controls().map_button( sf::Mouse::Right, Controls::SECONDARY_ATTACK );
 	}
 
 	// Launch first state.

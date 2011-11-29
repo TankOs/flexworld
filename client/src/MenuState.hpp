@@ -37,6 +37,7 @@ class MenuState : public State {
 		void check_required_settings();
 
 		sfg::Desktop m_desktop;
+		sfg::Window::Ptr m_window;
 		sfg::Button::Ptr m_start_game_button;
 		sfg::Button::Ptr m_join_game_button;
 		sfg::Label::Ptr m_settings_hint_label;
