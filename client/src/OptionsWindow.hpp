@@ -9,8 +9,8 @@
  */
 class OptionsWindow : public sfg::Window {
 	public:
-		typedef std::shared_ptr<OptionsWindow> Ptr; ///< Shared pointer.
-		typedef std::shared_ptr<const OptionsWindow> PtrConst; ///< Shared pointer to const.
+		typedef sfg::SharedPtr<OptionsWindow> Ptr; ///< Shared pointer.
+		typedef sfg::SharedPtr<const OptionsWindow> PtrConst; ///< Shared pointer to const.
 
 		/** Create window.
 		 * @return Window.

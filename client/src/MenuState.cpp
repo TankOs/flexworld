@@ -218,8 +218,8 @@ void MenuState::on_options_click() {
 		)
 	);
 
-	std::dynamic_pointer_cast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
-	std::dynamic_pointer_cast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
+	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
+	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
 }
 
 void MenuState::on_start_game_click() {
@@ -237,8 +237,8 @@ void MenuState::on_start_game_click() {
 		)
 	);
 
-	std::dynamic_pointer_cast<StartGameWindow>( m_start_game_window )->OnAccept.Connect( &MenuState::on_start_game_accept, this );
-	std::dynamic_pointer_cast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
+	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnAccept.Connect( &MenuState::on_start_game_accept, this );
+	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
 }
 
 void MenuState::on_options_accept() {

@@ -7,8 +7,8 @@
  */
 class StartGameWindow : public sfg::Window {
 	public:
-		typedef std::shared_ptr<StartGameWindow> Ptr; ///< Shared pointer.
-		typedef std::shared_ptr<const StartGameWindow> PtrConst; ///< Shared pointer to const.
+		typedef sfg::SharedPtr<StartGameWindow> Ptr; ///< Shared pointer.
+		typedef sfg::SharedPtr<const StartGameWindow> PtrConst; ///< Shared pointer to const.
 
 		/** Create window.
 		 * @return Window.

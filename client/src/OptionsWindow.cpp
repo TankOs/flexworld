@@ -199,7 +199,7 @@ void OptionsWindow::HandleEvent( const sf::Event& event ) {
 }
 
 void OptionsWindow::on_action_button_click() {
-	m_active_action_button = std::dynamic_pointer_cast<sfg::Button>( sfg::Context::Get().GetActiveWidget() );
+	m_active_action_button = sfg::DynamicPointerCast<sfg::Button>( sfg::Context::Get().GetActiveWidget() );
 	m_next_action = m_button_actions[m_active_action_button];
 
 	m_waiting_for_input_label->Show( true );
