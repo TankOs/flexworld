@@ -2,6 +2,7 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldClient )
 
+find_package( Boost 1.46 REQUIRED filesystem system )
 find_package( OpenGL REQUIRED )
 find_package( GLEW REQUIRED )
 find_package( JPEG REQUIRED )
@@ -25,8 +26,10 @@ set(
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
+	${INC_DIR}/Shared.cpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
+	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
 	${SRC_DIR}/Controls.cpp
@@ -35,8 +38,10 @@ set(
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp
+	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
+	${SRC_DIR}/UserSettings.hpp
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
@@ -61,6 +66,8 @@ target_link_libraries( client ${GLEW_LIBRARY} )
 target_link_libraries( client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
 target_link_libraries( client ${JPEG_LIBRARY} )
 target_link_libraries( client ${FREETYPE_LIBRARY} )
+target_link_libraries( client ${Boost_FILESYSTEM_LIBRARY} )
+target_link_libraries( client ${Boost_SYSTEM_LIBRARY} )
 
 if( NOT WINDOWS )
 	target_link_libraries( client ${X11_Xrandr_LIB} )

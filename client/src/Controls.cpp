@@ -1,11 +1,17 @@
 #include "Controls.hpp"
 
-Controls::Controls() {
+Controls::Controls() :
+	m_mouse_inverted( false ),
+	m_mouse_sensitivity( 1.f )
+{
 }
 
 void Controls::clear() {
 	m_keys.clear();
 	m_buttons.clear();
+
+	m_mouse_sensitivity = 1.f;
+	m_mouse_inverted = true;
 }
 
 void Controls::map_key( int key, Action action ) {
@@ -74,4 +80,20 @@ void Controls::unmap_key( int key ) {
 
 void Controls::unmap_button( int button ) {
 	m_buttons.erase( button );
+}
+
+void Controls::set_mouse_inverted( bool inverted ) {
+	m_mouse_inverted = inverted;
+}
+
+bool Controls::is_mouse_inverted() const {
+	return m_mouse_inverted;
+}
+
+void Controls::set_mouse_sensitivity( float sens ) {
+	m_mouse_sensitivity = sens;
+}
+
+float Controls::get_mouse_sensitivity() const {
+	return m_mouse_sensitivity;
 }

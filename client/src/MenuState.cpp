@@ -1,5 +1,6 @@
 #include "MenuState.hpp"
 #include "StartGameWindow.hpp"
+#include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
 #include <SFML/Graphics.hpp>
@@ -34,14 +35,16 @@ void MenuState::init() {
 		version_label->SetText( sstr.str() );
 	}
 
-	sfg::Button::Ptr start_game_button( sfg::Button::Create( L"Start game" ) );
-	sfg::Button::Ptr join_game_button( sfg::Button::Create( L"Join game" ) );
+	m_start_game_button = sfg::Button::Create( L"Start game" );
+	m_join_game_button = sfg::Button::Create( L"Join game" );
 	sfg::Button::Ptr options_button( sfg::Button::Create( L"Options" ) );
 	sfg::Button::Ptr quit_button( sfg::Button::Create( L"Quit" ) );
 
 	sfg::Label::Ptr notice0( sfg::Label::Create( L"This is an \"in-development version\". You're not allowed" ) );
 	sfg::Label::Ptr notice1( sfg::Label::Create( L"to distribute it in any way, talk about it or show any related" ) );
 	sfg::Label::Ptr notice2( sfg::Label::Create( L"material without explicit permission!!!" ) );
+
+	m_settings_hint_label = sfg::Label::Create( L"Please set your username and serial in the options dialog." );
 
 	notice0->SetClass( "important" );
 	notice1->SetClass( "important" );
@@ -52,10 +55,11 @@ void MenuState::init() {
 	vbox->Pack( title_label, false );
 	vbox->Pack( version_label, false );
 	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
-	vbox->Pack( start_game_button, false );
-	vbox->Pack( join_game_button, false );
+	vbox->Pack( m_start_game_button, false );
+	vbox->Pack( m_join_game_button, false );
 	vbox->Pack( options_button, false );
 	vbox->Pack( quit_button, false );
+	vbox->Pack( m_settings_hint_label, false );
 	vbox->Pack( notice0, false );
 	vbox->Pack( notice1, false );
 	vbox->Pack( notice2, false );
@@ -70,12 +74,13 @@ void MenuState::init() {
 	m_desktop.Add( window );
 
 	// Signals.
-	start_game_button->OnClick.Connect( &MenuState::on_start_game_click, this );
+	m_start_game_button->OnClick.Connect( &MenuState::on_start_game_click, this );
 	options_button->OnClick.Connect( &MenuState::on_options_click, this );
 	quit_button->OnClick.Connect( &MenuState::on_quit_click, this );
 
 	// Init.
 	m_desktop.LoadThemeFromFile( "data/gui/menu.theme" );
+	check_required_settings();
 
 	window->SetPosition(
 		sf::Vector2f(
@@ -208,7 +213,8 @@ void MenuState::on_options_click() {
 		return;
 	}
 
-	m_options_window = OptionsWindow::Create();
+	m_options_window = OptionsWindow::Create( Shared::get().get_user_settings() );
+	m_options_window->SetRequisition( sf::Vector2f( 500.f, 0.f ) );
 	m_desktop.Add( m_options_window );
 
 	m_options_window->SetPosition(
@@ -242,6 +248,12 @@ void MenuState::on_start_game_click() {
 }
 
 void MenuState::on_options_accept() {
+	// Apply user settings.
+	Shared::get().get_user_settings() = m_options_window->get_user_settings();
+	check_required_settings();
+
+	Shared::get().get_user_settings().save( UserSettings::get_profile_path() + "/settings.yml" );
+
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
 }
@@ -263,4 +275,19 @@ void MenuState::on_start_game_accept() {
 void MenuState::on_start_game_reject() {
 	m_desktop.Remove( m_start_game_window );
 	m_start_game_window.reset();
+}
+
+void MenuState::check_required_settings() {
+	bool valid( true );
+
+	if(
+		Shared::get().get_user_settings().get_username().empty() ||
+		Shared::get().get_user_settings().get_serial().empty()
+	) {
+		valid = false;
+	}
+
+	m_start_game_button->Show( valid );
+	m_join_game_button->Show( valid );
+	m_settings_hint_label->Show( !valid );
 }

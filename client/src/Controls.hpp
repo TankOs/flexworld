@@ -2,7 +2,7 @@
 
 #include <map>
 
-/** Mapper for keyboard and mouse controls.
+/** Key & mouse bindings and other control settings.
  */
 class Controls {
 	public:
@@ -21,16 +21,17 @@ class Controls {
 			PRIMARY_ATTACK,
 			SECONDARY_ATTACK,
 			INVENTORY,
-			CHAT
+			CHAT,
+			ACTION_COUNT
 		};
 
-		typedef std::map<const int, Action> ControlMap; ///< Key/Button -> Action mappings.
+		typedef std::map<const int, Action> ControlMap; ///< Key/Button -> Action bindings.
 
 		/** Ctor.
 		 */
 		Controls();
 
-		/** Clear mappings.
+		/** Clear bindings and reset settings.
 		 */
 		void clear();
 
@@ -73,27 +74,50 @@ class Controls {
 		 */
 		Action get_button_action( int button ) const;
 
-		/* Begin iterator for key mappings.
+		/* Begin iterator for key bindings.
 		 * @return Begin iterator.
 		 */
 		ControlMap::const_iterator keys_begin() const;
 
-		/* End iterator for key mappings.
+		/* End iterator for key bindings.
 		 * @return End iterator.
 		 */
 		ControlMap::const_iterator keys_end() const;
 
-		/* Begin iterator for button mappings.
+		/* Begin iterator for button bindings.
 		 * @return Begin iterator.
 		 */
 		ControlMap::const_iterator buttons_begin() const;
 
-		/* End iterator for button mappings.
+		/* End iterator for button bindings.
 		 * @return End iterator.
 		 */
 		ControlMap::const_iterator buttons_end() const;
 
+		/** Set if mouse is inverted.
+		 * @param inverted True to invert.
+		 */
+		void set_mouse_inverted( bool inverted );
+
+		/** Check if mouse is inverted.
+		 * @return true if inverted.
+		 */
+		bool is_mouse_inverted() const;
+
+		/** Set mouse sensitivity.
+		 * @param sens Sensitivity.
+		 */
+		void set_mouse_sensitivity( float sens );
+
+		/** Get mouse sensitivity.
+		 * @return Sensitivity.
+		 */
+		float get_mouse_sensitivity() const;
+
 	private:
+		bool m_mouse_inverted;
+		float m_mouse_sensitivity;
+
 		ControlMap m_keys;
 		ControlMap m_buttons;
 };

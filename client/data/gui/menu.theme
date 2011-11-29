@@ -69,3 +69,7 @@ CheckButton:ACTIVE {
 Label.important {
 	Color:#ff0000ff;
 }
+
+Frame {
+	BorderColor: #48628cff;
+}

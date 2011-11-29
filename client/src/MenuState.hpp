@@ -34,7 +34,13 @@ class MenuState : public State {
 		void on_options_reject();
 		void on_quit_click();
 
+		void check_required_settings();
+
 		sfg::Desktop m_desktop;
+		sfg::Button::Ptr m_start_game_button;
+		sfg::Button::Ptr m_join_game_button;
+		sfg::Label::Ptr m_settings_hint_label;
+
 		OptionsWindow::Ptr m_options_window;
 		sfg::Widget::Ptr m_start_game_window;
 
