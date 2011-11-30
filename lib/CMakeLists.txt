@@ -9,13 +9,17 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
+	${INC_DIR}/FlexWorld/Chunk.hpp
 	${INC_DIR}/FlexWorld/Class.hpp
+	${INC_DIR}/FlexWorld/ClassCache.hpp
 	${INC_DIR}/FlexWorld/ClassDriver.hpp
 	${INC_DIR}/FlexWorld/Config.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/ResourceId.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
+	${SRC_DIR}/FlexWorld/Chunk.cpp
 	${SRC_DIR}/FlexWorld/Class.cpp
+	${SRC_DIR}/FlexWorld/ClassCache.cpp
 	${SRC_DIR}/FlexWorld/ClassDriver.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp

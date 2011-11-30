@@ -1,4 +1,5 @@
 #include <FlexWorld/Class.hpp>
+#include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/ResourceId.hpp>
 
 #include <iostream>
@@ -61,3 +62,77 @@ BOOST_AUTO_TEST_CASE( Class ) {
 	BOOST_CHECK( *cls.get_hook( "hand" ) == sf::Vector3f( 555.f, 555.f, 555.f ) );
 }
 
+BOOST_AUTO_TEST_CASE( ClassCache ) {
+	flex::ClassCache cache;
+	flex::Class cls( flex::ResourceId( "fw.base/grass" ) );
+
+	BOOST_CHECK( cache.get_size() == 0 );
+	BOOST_CHECK( cache.get_class( 0 ) == nullptr );
+	BOOST_CHECK( cache.get_class( 1 ) == nullptr );
+	BOOST_CHECK( cache.get_class( 2 ) == nullptr );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	BOOST_CHECK( cache.cache( cls ) == 1 );
+	BOOST_CHECK( cache.get_size() == 1 );
+	BOOST_CHECK( cache.get_class( 1 ) == &cls );
+	BOOST_CHECK( cache.get_class( 2 ) == nullptr );
+	BOOST_CHECK( cache.get_use_count( cls ) == 1 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	BOOST_CHECK( cache.cache( cls ) == 1 );
+	BOOST_CHECK( cache.get_size() == 1 );
+	BOOST_CHECK( cache.get_class( 1 ) == &cls );
+	BOOST_CHECK( cache.get_class( 2 ) == nullptr );
+	BOOST_CHECK( cache.get_use_count( cls ) == 2 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	cache.forget( cls );
+	BOOST_CHECK( cache.get_size() == 1 );
+	BOOST_CHECK( cache.get_class( 1 ) == &cls );
+	BOOST_CHECK( cache.get_class( 2 ) == nullptr );
+	BOOST_CHECK( cache.get_use_count( cls ) == 1 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	cache.forget( cls );
+	BOOST_CHECK( cache.get_size() == 0 );
+	BOOST_CHECK( cache.get_class( 1 ) == nullptr );
+	BOOST_CHECK( cache.get_class( 2 ) == nullptr );
+	BOOST_CHECK( cache.get_use_count( cls ) == 0 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	flex::Class cls0( flex::ResourceId( "fw/class0" ) );
+	flex::Class cls1( flex::ResourceId( "fw/class1" ) );
+
+	BOOST_CHECK( cache.cache( cls0 ) == 1 );
+	BOOST_CHECK( cache.cache( cls0 ) == 1 );
+	BOOST_CHECK( cache.cache( cls1 ) == 2 );
+	BOOST_CHECK( cache.cache( cls1 ) == 2 );
+	BOOST_CHECK( cache.get_size() == 2 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+	BOOST_CHECK( cache.get_class( 1 ) == &cls0 );
+	BOOST_CHECK( cache.get_class( 2 ) == &cls1 );
+	BOOST_CHECK( cache.get_use_count( cls0 ) == 2 );
+	BOOST_CHECK( cache.get_use_count( cls1 ) == 2 );
+
+	cache.forget( cls0 );
+	BOOST_CHECK( cache.get_use_count( cls0 ) == 1 );
+	BOOST_CHECK( cache.get_size() == 2 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+
+	cache.forget( cls0 );
+	BOOST_CHECK( cache.get_use_count( cls0 ) == 0 );
+	BOOST_CHECK( cache.get_num_holes() == 1 );
+	BOOST_CHECK( cache.get_size() == 1 );
+
+	cache.cache( cls0 );
+	BOOST_CHECK( cache.get_size() == 2 );
+	BOOST_CHECK( cache.get_num_holes() == 0 );
+	BOOST_CHECK( cache.get_use_count( cls0 ) == 1 );
+	BOOST_CHECK( cache.get_use_count( cls1 ) == 2 );
+
+	//cache.cache_class( cls );
+	//BOOST_CHECK( cache.get_class_count() == 1 );
+}
+
+BOOST_AUTO_TEST_CASE( Chunk ) {
+}
