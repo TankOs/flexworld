@@ -1,6 +1,7 @@
 #include <FlexWorld/Class.hpp>
 #include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/ResourceId.hpp>
+#include <FlexWorld/Chunk.hpp>
 
 #include <iostream>
 
@@ -134,5 +135,22 @@ BOOST_AUTO_TEST_CASE( ClassCache ) {
 	//BOOST_CHECK( cache.get_class_count() == 1 );
 }
 
-BOOST_AUTO_TEST_CASE( Chunk ) {
+BOOST_AUTO_TEST_CASE( FlexChunk ) {
+	using namespace flex;
+
+	Chunk chunk( Chunk::Vector( 16, 16, 16 ) );
+
+	BOOST_CHECK( chunk.get_size() == flex::Chunk::Vector( 16, 16, 16 ) );
+
+	chunk.clear();
+	BOOST_CHECK( chunk.get_size() == flex::Chunk::Vector( 16, 16, 16 ) );
+	BOOST_CHECK( chunk.get_block( Chunk::Vector( 0, 0, 0 ) ) == 0 );
+
+	chunk.set_block( Chunk::Vector( 5, 4, 3 ), 1 );
+	chunk.set_block( Chunk::Vector( 5, 2, 3 ), 2 );
+	chunk.set_block( Chunk::Vector( 5, 4, 1 ), 3 );
+
+	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 4, 3 ) ) == 1 );
+	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 2, 3 ) ) == 2 );
+	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 4, 1 ) ) == 3 );
 }

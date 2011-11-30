@@ -1,11 +1,11 @@
 #pragma once
 
+#include <FlexWorld/ClassCache.hpp>
+
 #include <SFML/System/Vector3.hpp>
 #include <vector>
 #include <map>
 #include <cstdint>
-
-#if 0
 
 namespace flex {
 
@@ -37,37 +37,21 @@ class Chunk {
 		 */
 		const Vector& get_size() const;
 
+		/** Get block.
+		 * @param pos Position.
+		 * @return Internal class ID (0 = error).
+		 */
+		ClassCache::IdType get_block( const Vector& pos ) const;
+
 		/** Set block.
 		 * @param pos Position.
-		 * @param cls Class.
+		 * @param class_id Internal class ID.
 		 */
-		void set_block( const Vector& pos, const Class& cls );
-
-		/** Clear block.
-		 * @param pos Position.
-		 */
-		void clear_block( const Vector& pos );
-
-		/** Get a block's class.
-		 * @param pos Position.
-		 * @return Class or null.
-		 */
-		const Class* get_block_class( const Vector& pos ) const;
+		void set_block( const Vector& pos, ClassCache::IdType class_id );
 
 	private:
-		typedef uint16_t ClassIdType;
-		typedef std::vector<const Class*> ClassVector;
-
-		typedef std::pair<ClassIdType, uint32_t> ClassIdCountPair;
-		typedef std::map<const Class*, ClassIdCountPair> ClassIdCountMap; // TODO: unsorted_map/other?
-
 		Vector m_size;
-		ClassIdType* m_blocks;
-
-		ClassVector m_classes;
-		ClassIdCountMap m_ids;
+		ClassCache::IdType* m_blocks;
 };
 
 }
-
-#endif
