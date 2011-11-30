@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FlexWorld/ClassCache.hpp>
+#include <FlexWorld/NonCopyable.hpp>
 
 #include <SFML/System/Vector3.hpp>
 #include <vector>
@@ -14,10 +15,10 @@ class Class;
 /** Chunk.
  * Contains blocks.
  */
-class Chunk {
+class Chunk : public NonCopyable {
 	public:
-		typedef uint8_t SizeType; ///< Size type for chunk coordinates.
-		typedef sf::Vector3<SizeType> Vector; ///< Vector.
+		typedef uint8_t ScalarType; ///< Size type for block coordinates.
+		typedef sf::Vector3<ScalarType> Vector; ///< Vector.
 
 		/** Ctor.
 		 * @param size Size.
@@ -48,6 +49,8 @@ class Chunk {
 		 * @param class_id Internal class ID.
 		 */
 		void set_block( const Vector& pos, ClassCache::IdType class_id );
+
+		void f() = delete;
 
 	private:
 		Vector m_size;

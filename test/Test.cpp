@@ -2,6 +2,7 @@
 #include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/ResourceId.hpp>
 #include <FlexWorld/Chunk.hpp>
+#include <FlexWorld/Planet.hpp>
 
 #include <iostream>
 
@@ -153,4 +154,99 @@ BOOST_AUTO_TEST_CASE( FlexChunk ) {
 	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 4, 3 ) ) == 1 );
 	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 2, 3 ) ) == 2 );
 	BOOST_CHECK( chunk.get_block( Chunk::Vector( 5, 4, 1 ) ) == 3 );
+}
+
+BOOST_AUTO_TEST_CASE( FlexPlanet ) {
+	using namespace flex;
+
+	Planet::Vector size( 5000, 15, 5000 );
+	Chunk::Vector chunk_size( 16, 16, 16 );
+	flex::Class cls0( flex::ResourceId( "fw/class0" ) );
+	flex::Class cls1( flex::ResourceId( "fw/class1" ) );
+
+	Planet planet( "test", size, chunk_size );
+
+	// Test basic properties.
+	BOOST_CHECK( planet.get_id() == "test" );
+	BOOST_CHECK( planet.get_size() == size );
+	BOOST_CHECK( planet.get_chunk_size() == chunk_size );
+
+	// Test getting non-existing chunk.
+	const Chunk* chunk( planet.get_chunk( Planet::Vector( 0, 0, 0 ) ) );
+	BOOST_CHECK( chunk == nullptr );
+	BOOST_CHECK( planet.get_num_chunks() == 0 );
+
+	// Test coordinate conversion and transformation result.
+	Planet::Vector chunk_position( 0, 0, 0 );
+	Chunk::Vector block_position( 0, 0, 0 );
+	sf::Vector3f coordinate( 132.f, 433.f, 533.f );
+
+	BOOST_CHECK( planet.transform_coordinate( coordinate, chunk_position, block_position ) == false ); // Coord out of scope.
+	BOOST_CHECK( chunk_position == Planet::Vector( 8, 27, 33 ) );
+	BOOST_CHECK( block_position == Chunk::Vector( 4, 1, 5 ) );
+
+	// Wrong coord.
+	BOOST_CHECK( planet.set_block( coordinate, cls0 ) == false );
+	BOOST_CHECK( planet.create_chunk( chunk_position ) == false );
+
+	coordinate = sf::Vector3f( 132.f, 33.f, 533.f );
+	BOOST_CHECK( planet.transform_coordinate( coordinate, chunk_position, block_position ) );
+	BOOST_CHECK( chunk_position == Planet::Vector( 8, 2, 33 ) );
+	BOOST_CHECK( block_position == Chunk::Vector( 4, 1, 5 ) );
+
+	// Check planet and class cache are really empty.
+	BOOST_CHECK( planet.get_block( coordinate ) == nullptr );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 0 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 0 );
+
+	BOOST_CHECK( planet.set_block( coordinate, cls0 ) == false ); // No chunk.
+
+	// Create chunk.
+	BOOST_CHECK( planet.create_chunk( chunk_position ) );
+	BOOST_CHECK( planet.create_chunk( chunk_position ) == false ); // Double.
+	BOOST_CHECK( planet.get_chunk( chunk_position ) ); // Verify.
+
+	// Create block and verify internal states.
+	BOOST_CHECK( planet.set_block( coordinate, cls0 ) );
+	BOOST_CHECK( planet.get_block( coordinate ) == &cls0 );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 1 );
+
+	// Same class, different place. No chunk at first.
+	sf::Vector3f coordinate2( 152.f, 17.f, 299.f );
+	BOOST_CHECK( planet.transform_coordinate( coordinate2, chunk_position, block_position ) );
+
+	BOOST_CHECK( planet.set_block( coordinate2, cls0 ) == false );
+	BOOST_CHECK( planet.get_block( coordinate2 ) == nullptr );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 1 );
+
+	// Create chunk and set block again.
+	BOOST_CHECK( planet.create_chunk( chunk_position ) );
+	BOOST_CHECK( planet.create_chunk( chunk_position ) == false );
+
+	BOOST_CHECK( planet.set_block( coordinate2, cls0 ) );
+	BOOST_CHECK( planet.get_block( coordinate2 ) == &cls0 );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 2 );
+
+	// Overwrite block.
+	BOOST_CHECK( planet.set_block( coordinate2, cls1 ) );
+	BOOST_CHECK( planet.get_block( coordinate2 ) == &cls1 );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 2 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls1 ) == 1 );
+
+	// Delete blocks.
+	BOOST_CHECK( planet.reset_block( coordinate2 ) );
+	BOOST_CHECK( planet.get_block( coordinate2 ) == nullptr );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 1 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls1 ) == 0 );
+
+	BOOST_CHECK( planet.reset_block( coordinate ) );
+	BOOST_CHECK( planet.get_block( coordinate ) == nullptr );
+	BOOST_CHECK( planet.get_class_cache().get_size() == 0 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 0 );
+	BOOST_CHECK( planet.get_class_cache().get_use_count( cls1 ) == 0 );
 }
