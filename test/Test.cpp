@@ -6,6 +6,7 @@
 #include <FlexWorld/SHA1.hpp>
 #include <FlexWorld/Account.hpp>
 #include <FlexWorld/AccountDriver.hpp>
+#include <FlexWorld/MessageMeta.hpp>
 
 #include <iostream>
 
@@ -284,4 +285,26 @@ BOOST_AUTO_TEST_CASE( FlexAccount ) {
 
 	BOOST_CHECK( loaded.get_username() == account.get_username() );
 	BOOST_CHECK( loaded.get_password() == account.get_password() );
+}
+
+BOOST_AUTO_TEST_CASE( FlexMessageMeta ) {
+	using namespace flex;
+
+	// Init state.
+	MessageMeta meta;
+
+	BOOST_CHECK( meta.get_field_count() == 0 );
+	BOOST_CHECK( meta.get_field_type( 0 ) == MessageMeta::INVALID );
+	BOOST_CHECK( meta.get_field_type( 4545 ) == MessageMeta::INVALID );
+
+	// Add fields.
+	BOOST_CHECK( meta.add_field( MessageMeta::STRING ) ); // Username.
+	BOOST_CHECK( meta.add_field( MessageMeta::STRING ) ); // Password.
+	BOOST_CHECK( meta.add_field( MessageMeta::BYTE ) ); // Version.
+
+	BOOST_CHECK( meta.get_field_count() == 3 );
+	BOOST_CHECK( meta.get_field_type( 0 ) == MessageMeta::STRING );
+	BOOST_CHECK( meta.get_field_type( 1 ) == MessageMeta::STRING );
+	BOOST_CHECK( meta.get_field_type( 2 ) == MessageMeta::BYTE );
+	BOOST_CHECK( meta.get_field_type( 3 ) == MessageMeta::INVALID );
 }
