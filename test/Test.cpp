@@ -3,6 +3,9 @@
 #include <FlexWorld/ResourceId.hpp>
 #include <FlexWorld/Chunk.hpp>
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/SHA1.hpp>
+#include <FlexWorld/Account.hpp>
+#include <FlexWorld/AccountDriver.hpp>
 
 #include <iostream>
 
@@ -249,4 +252,36 @@ BOOST_AUTO_TEST_CASE( FlexPlanet ) {
 	BOOST_CHECK( planet.get_class_cache().get_size() == 0 );
 	BOOST_CHECK( planet.get_class_cache().get_use_count( cls0 ) == 0 );
 	BOOST_CHECK( planet.get_class_cache().get_use_count( cls1 ) == 0 );
+}
+
+BOOST_AUTO_TEST_CASE( FlexSHA1 ) {
+	// Check correct SHA1 calculation.
+	BOOST_CHECK( flex::SHA1::MakeHexDigest( "12345" ) == "8cb2237d0679ca88db6464eac60da96345513964" );
+	BOOST_CHECK( flex::SHA1::MakeHexDigest( "sdfljsldfjSDFJKSDJ__%$U§NF(%FN(UUJFK" ) == "653e58a35abe7c746a19f906ba91f350f2e57924" );
+	BOOST_CHECK( flex::SHA1::MakeHexDigest( "" ) == "da39a3ee5e6b4b0d3255bfef95601890afd80709" );
+	BOOST_CHECK( flex::SHA1::MakeHexDigest( "" ) != "random" );
+}
+
+BOOST_AUTO_TEST_CASE( FlexAccount ) {
+	using namespace flex;
+
+	// Create account, set properties and check.
+	Account account;
+	account.set_username( "Tank" );
+	account.set_password( SHA1::MakeHexDigest( "password" ) );
+
+	BOOST_CHECK( account.get_username() == "Tank" );
+	BOOST_CHECK( account.get_password() == SHA1::MakeHexDigest( "password" ) );
+
+	// Test driver.
+	// Serialize.
+	std::string expected_output = "Username: " + account.get_username() + "\nPassword: " + account.get_password();
+	BOOST_CHECK( AccountDriver::serialize( account ) == expected_output );
+
+	// Deserialize.
+	Account loaded;
+	BOOST_CHECK( AccountDriver::deserialize( expected_output, loaded ) );
+
+	BOOST_CHECK( loaded.get_username() == account.get_username() );
+	BOOST_CHECK( loaded.get_password() == account.get_password() );
 }
