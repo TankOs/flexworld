@@ -7,6 +7,7 @@
 #include <FlexWorld/Account.hpp>
 #include <FlexWorld/AccountDriver.hpp>
 #include <FlexWorld/MessageMeta.hpp>
+#include <FlexWorld/Message.hpp>
 
 #include <iostream>
 
@@ -290,21 +291,138 @@ BOOST_AUTO_TEST_CASE( FlexAccount ) {
 BOOST_AUTO_TEST_CASE( FlexMessageMeta ) {
 	using namespace flex;
 
+	// Check constants.
+	BOOST_CHECK( MessageMeta::get_type_size( MessageMeta::BYTE ) == sizeof( uint8_t ) );
+	BOOST_CHECK( MessageMeta::get_type_size( MessageMeta::WORD ) == sizeof( uint16_t ) );
+	BOOST_CHECK( MessageMeta::get_type_size( MessageMeta::DWORD ) == sizeof( uint32_t ) );
+	BOOST_CHECK( MessageMeta::get_type_size( MessageMeta::STRING ) == sizeof( uint32_t ) );
+
 	// Init state.
 	MessageMeta meta;
 
-	BOOST_CHECK( meta.get_field_count() == 0 );
-	BOOST_CHECK( meta.get_field_type( 0 ) == MessageMeta::INVALID );
-	BOOST_CHECK( meta.get_field_type( 4545 ) == MessageMeta::INVALID );
+	BOOST_CHECK( meta.get_num_fields() == 0 );
+	BOOST_CHECK_THROW( meta.get_field_type( 0 ), std::out_of_range );
+	BOOST_CHECK( meta.get_minimum_size() == 0 );
 
 	// Add fields.
-	BOOST_CHECK( meta.add_field( MessageMeta::STRING ) ); // Username.
-	BOOST_CHECK( meta.add_field( MessageMeta::STRING ) ); // Password.
-	BOOST_CHECK( meta.add_field( MessageMeta::BYTE ) ); // Version.
+	meta.add_field( MessageMeta::BYTE );
+	BOOST_CHECK( meta.get_minimum_size() == sizeof( uint8_t ) );
+	meta.add_field( MessageMeta::WORD );
+	BOOST_CHECK( meta.get_minimum_size() == sizeof( uint8_t ) + sizeof( uint16_t ) );
+	meta.add_field( MessageMeta::DWORD );
+	BOOST_CHECK( meta.get_minimum_size() == sizeof( uint8_t ) + sizeof( uint16_t ) + sizeof( uint32_t ) );
+	meta.add_field( MessageMeta::STRING );
+	BOOST_CHECK( meta.get_minimum_size() == sizeof( uint8_t ) + sizeof( uint16_t ) + sizeof( uint32_t ) + sizeof( uint32_t ) );
 
-	BOOST_CHECK( meta.get_field_count() == 3 );
-	BOOST_CHECK( meta.get_field_type( 0 ) == MessageMeta::STRING );
-	BOOST_CHECK( meta.get_field_type( 1 ) == MessageMeta::STRING );
-	BOOST_CHECK( meta.get_field_type( 2 ) == MessageMeta::BYTE );
-	BOOST_CHECK( meta.get_field_type( 3 ) == MessageMeta::INVALID );
+	BOOST_CHECK( meta.get_num_fields() == 4 );
+	BOOST_CHECK( meta.get_field_type( 0 ) == MessageMeta::BYTE );
+	BOOST_CHECK( meta.get_field_type( 1 ) == MessageMeta::WORD );
+	BOOST_CHECK( meta.get_field_type( 2 ) == MessageMeta::DWORD );
+	BOOST_CHECK( meta.get_field_type( 3 ) == MessageMeta::STRING );
+	BOOST_CHECK_THROW( meta.get_field_type( 4 ), std::out_of_range );
+}
+
+BOOST_AUTO_TEST_CASE( FlexMessage ) {
+	using namespace flex;
+
+	// Build sample message meta info.
+	MessageMeta meta;
+	meta.add_field( MessageMeta::BYTE );
+	meta.add_field( MessageMeta::WORD );
+	meta.add_field( MessageMeta::DWORD );
+	meta.add_field( MessageMeta::STRING );
+
+	// Create message and check initial state.
+	Message msg( meta );
+	std::size_t offset( 0 );
+	std::size_t size( sizeof( uint8_t ) + sizeof( uint16_t ) + sizeof( uint32_t ) + sizeof( uint32_t ) );
+
+	BOOST_CHECK( msg.get_current_field() == 0 );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_field_offset( 0 ) == offset ); offset += sizeof( uint8_t );
+	BOOST_CHECK( msg.get_field_offset( 1 ) == offset ); offset += sizeof( uint16_t );
+	BOOST_CHECK( msg.get_field_offset( 2 ) == offset ); offset += sizeof( uint32_t );
+	BOOST_CHECK( msg.get_field_offset( 3 ) == offset ); offset += sizeof( uint32_t );
+	BOOST_CHECK_THROW( msg.get_field_offset( 4 ), std::out_of_range );
+
+	// Pack some stuff.
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int8_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 1 );
+
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int16_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 2 );
+
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int32_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 3 );
+
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << "FOOBAR" );
+	size += 6;
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 3 );
+
+	// Move the current field pointer.
+	BOOST_CHECK_NO_THROW( msg.set_next_field( msg.get_current_field() ) );
+
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 0 ) );
+	BOOST_CHECK( msg.get_current_field() == 0 );
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 1 ) );
+	BOOST_CHECK( msg.get_current_field() == 1 );
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 2 ) );
+	BOOST_CHECK( msg.get_current_field() == 2 );
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 3 ) );
+	BOOST_CHECK( msg.get_current_field() == 3 );
+
+	BOOST_CHECK_THROW( msg.set_next_field( 4 ), std::out_of_range );
+
+	// Check re-packing values.
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 0 ) );
+	BOOST_CHECK( msg.get_current_field() == 0 );
+
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int8_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 1 );
+
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 1 ) );
+	BOOST_CHECK( msg.get_current_field() == 1 );
+
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int16_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 2 );
+
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 2 ) );
+	BOOST_CHECK( msg.get_current_field() == 2 );
+
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << int32_t( 22 ) );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 3 );
+
+	// Check re-packing strings.
+	BOOST_CHECK_NO_THROW( msg.set_next_field( 3 ) );
+	BOOST_CHECK( msg.get_current_field() == 3 );
+
+	// Pack same string again.
+	BOOST_CHECK_THROW( msg << int8_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int16_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_THROW( msg << int32_t( 22 ), Message::ValueTypeMismatch );
+	BOOST_CHECK_NO_THROW( msg << "FOOBAR" );
+	BOOST_CHECK( msg.get_size() == size );
+	BOOST_CHECK( msg.get_current_field() == 3 );
 }
