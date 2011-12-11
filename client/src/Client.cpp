@@ -84,10 +84,6 @@ void Client::run() {
 		State* next_state( state->run() );
 
 		delete state;
-		state = nullptr;
-
-		if( next_state ) {
-			state = next_state;
-		}
+		state = next_state;
 	}
 }
