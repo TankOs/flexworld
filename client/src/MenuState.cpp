@@ -52,6 +52,7 @@ void MenuState::init() {
 
 	// Layout.
 	sfg::Box::Ptr vbox( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
+	vbox->SetMargin( 10.f );
 	vbox->Pack( title_label, false );
 	vbox->Pack( version_label, false );
 	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
@@ -67,7 +68,6 @@ void MenuState::init() {
 	m_window = sfg::Window::Create();
 	m_window->SetId( "menu" );
 	m_window->SetTitle( L"FlexWorld" );
-	m_window->SetBorderWidth( 15.f );
 	m_window->SetStyle( sfg::Window::Background );
 	m_window->Add( vbox );
 
