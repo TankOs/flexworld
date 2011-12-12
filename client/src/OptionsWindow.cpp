@@ -34,6 +34,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_mouse_sensitivity_scale->SetValue( window->m_user_settings.get_controls().get_mouse_sensitivity() );
 	window->m_mouse_sensitivity_label = sfg::Label::Create( L"--" );
 
+	window->m_mouse_sensitivity_label->SetRequisition( sf::Vector2f( 25.f, 0 ) );
+
 	// Setup action buttons.
 	window->m_action_buttons[Controls::WALK_FORWARD] = sfg::Button::Create();
 	window->m_action_buttons[Controls::WALK_BACKWARD] = sfg::Button::Create();
