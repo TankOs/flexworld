@@ -146,7 +146,6 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	bottom_button_box->Pack( ok_button, false );
 
 	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
-	content_box->SetMargin( 10.f );
 	content_box->Pack( top_button_box, false );
 	content_box->Pack( window->m_account_page_box, true );
 	content_box->Pack( window->m_controls_page_box, true );

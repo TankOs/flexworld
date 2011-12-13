@@ -87,6 +87,10 @@ State* State::run() {
 
 				update( delta );
 				logic_elapsed -= delta;
+
+				if( !m_run ) {
+					break;
+				}
 			}
 		}
 

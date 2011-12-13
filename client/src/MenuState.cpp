@@ -52,7 +52,6 @@ void MenuState::init() {
 
 	// Layout.
 	sfg::Box::Ptr vbox( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
-	vbox->SetMargin( 10.f );
 	vbox->Pack( title_label, false );
 	vbox->Pack( version_label, false );
 	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
