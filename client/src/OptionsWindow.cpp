@@ -1,3 +1,5 @@
+#include <cstdint>
+
 #include "OptionsWindow.hpp"
 #include "KeyNames.hpp"
 

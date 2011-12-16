@@ -2,6 +2,7 @@
 
 #include <SFML/Network/TcpListener.hpp>
 #include <string>
+#include <cstdint>
 
 namespace flex {
 
