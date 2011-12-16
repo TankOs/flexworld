@@ -10,7 +10,7 @@
 std::string UserSettings::get_profile_path() {
 #if defined( LINUX )
 	return std::string( std::getenv( "HOME" ) ) + "/.flexworld";
-#elif defined( WINDOW )
+#elif defined( WINDOWS )
 	return std::string( std::getenv( "APPDATA" ) ) + "/flexworld";
 #else
 	#error "MISSING CODE :-("
