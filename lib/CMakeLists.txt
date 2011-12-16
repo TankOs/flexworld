@@ -3,6 +3,7 @@ cmake_minimum_required( VERSION 2.8 )
 project( FlexWorldLibrary )
 
 find_package( SFML 2.0 REQUIRED NETWORK SYSTEM )
+find_package( yaml-cpp )
 
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
@@ -42,11 +43,12 @@ set(
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )
-include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/yaml-cpp-0.2.7/include )
+include_directories( ${YAML_CPP_INCLUDE_DIR} )
+include_directories( ${SFML_INCLUDE_DIR} )
 
 add_library( flexworld ${SOURCES} )
 
-target_link_libraries( flexworld yaml-cpp )
+target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
 
 set_target_properties( flexworld PROPERTIES DEBUG_POSTFIX -s-d )
 set_target_properties( flexworld PROPERTIES RELEASE_POSTFIX -s )

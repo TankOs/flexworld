@@ -2,6 +2,8 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldClient )
 
+set(Boost_USE_STATIC_LIBS ON)
+
 find_package( Boost 1.46 REQUIRED filesystem system )
 find_package( OpenGL REQUIRED )
 find_package( GLEW REQUIRED )
@@ -51,6 +53,8 @@ include_directories( ${GLEW_INCLUDE_PATH} )
 include_directories( ${JPEG_INCLUDE_DIR} )
 include_directories( ${FREETYPE_INCLUDE_DIR_freetype2} )
 include_directories( ${FREETYPE_INCLUDE_DIR_ft2build} )
+include_directories( ${SFML_INCLUDE_DIR} )
+include_directories( ${Boost_INCLUDE_DIR} )
 
 if( NOT WINDOWS )
 	include_directories( ${X11_Xrandr_INCLUDE_PATH} )
@@ -68,6 +72,7 @@ target_link_libraries( client ${JPEG_LIBRARY} )
 target_link_libraries( client ${FREETYPE_LIBRARY} )
 target_link_libraries( client ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( client ${Boost_SYSTEM_LIBRARY} )
+target_link_libraries( client ${YAML_CPP_LIBRARY} )
 
 if( NOT WINDOWS )
 	target_link_libraries( client ${X11_Xrandr_LIB} )
