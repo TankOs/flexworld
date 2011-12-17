@@ -13,6 +13,7 @@ set(
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
+include_directories( ${SFML_INCLUDE_DIR} )
 
 add_executable( server ${SOURCES} )
 

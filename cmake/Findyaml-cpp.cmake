@@ -11,9 +11,13 @@ find_path(
 		$ENV{YAML_CPP_DIR}
 )
 
+if( NOT YAML_CPP_INCLUDE_DIR )
+	message( FATAL_ERROR "yaml-cpp headers not found. Try setting YAML_CPP_DIR.")
+endif()
+
 find_library(
 	YAML_CPP_LIBRARY
-	NAMES libyaml-cppmd
+	NAMES libyaml-cppmd libyaml-cpp libyaml-cpp.a
 	PATH_SUFFIXES lib lib64
 	PATHS
 		/usr/
@@ -22,13 +26,10 @@ find_library(
 		$ENV{YAML_CPP_DIR}
 )
 
-if( YAML_CPP_INCLUDE_DIR AND YAML_CPP_LIBRARY )
-	set( YAML_CPP_FOUND true )
+if( NOT YAML_CPP_LIBRARY )
+	message( FATAL_ERROR "yaml-cpp library not found. Try setting YAML_CPP_DIR.")
 endif()
 
-if( NOT YAML_CPP_FOUND )
-	message( FATAL_ERROR "yaml-cpp not found. Try setting YAML_CPP_DIR" )
-else()
-	message( "yaml-cpp headers found: ${YAML_CPP_INCLUDE_DIR}" )
-	message( "yaml-cpp lib found: ${YAML_CPP_LIBRARY}" )
-endif()
+
+message( "yaml-cpp headers found: ${YAML_CPP_INCLUDE_DIR}" )
+message( "yaml-cpp library found: ${YAML_CPP_LIBRARY}" )

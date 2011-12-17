@@ -38,7 +38,7 @@ if( SFGUI_STATIC )
 endif()
 
 if( SFML_STATIC )
-	add_definitions( -DSFML_STATIC )
+	add_definitions( -DSFML_STATIC_LIBRARIES )
 endif()
 
 if( COMPILER_GCC )
@@ -53,30 +53,6 @@ if( COMPILER_GCC )
 	endif()
 endif()
 
-#include_directories( ${INC_DIR} )
-#include_directories( ${SFML_INCLUDE_DIR} )
-#include_directories( ${OPENGL_INCLUDE_DIR} )
-
-#if( NOT SFGUI_STATIC )
-#add_library( sfgui SHARED ${SOURCES} )
-
-#set_target_properties( sfgui PROPERTIES DEBUG_POSTFIX -d )
-
-#if ( WINDOWS AND COMPILER_GCC )
-#set_target_properties( sfgui PROPERTIES PREFIX "" )
-#set_target_properties( sfgui PROPERTIES IMPORT_SUFFIX ".a" )
-#endif()
-#else()
-#add_library( sfgui ${SOURCES} )
-
-#set_target_properties( sfgui PROPERTIES DEBUG_POSTFIX -s-d )
-#set_target_properties( sfgui PROPERTIES RELEASE_POSTFIX -s )
-#endif()
-
-#set_target_properties( sfgui PROPERTIES COMPILE_DEFINITIONS SFGUI_EXPORTS )
-
-#target_link_libraries( sfgui ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_SYSTEM_LIBRARY} ${OPENGL_gl_LIBRARY} )
-
 add_subdirectory( "lib" )
 
 if( FW_BUILD_TEST )
@@ -90,30 +66,3 @@ endif()
 if( FW_BUILD_CLIENT )
 	add_subdirectory( "client" )
 endif()
-
-#if( FW_BUILD_CLIENT )
-#add_subdirectory( "fwclient" )
-#endif()
-
-#if( SFGUI_BUILD_EXAMPLES )
-#add_subdirectory( "examples" )
-#endif()
-
-### INSTALL TARGETS ###
-
-#install(
-#	TARGETS sfgui
-#	RUNTIME DESTINATION bin COMPONENT bin
-#	LIBRARY DESTINATION lib COMPONENT bin
-#	ARCHIVE DESTINATION lib COMPONENT dev
-#)
-#
-#install(
-#	DIRECTORY include
-#	DESTINATION .
-#)
-#
-#install(
-#	FILES README AUTHORS LICENSE
-#	DESTINATION ${SHARE_TARGET_DIR}
-#)
