@@ -55,10 +55,6 @@ endif()
 
 add_subdirectory( "lib" )
 
-if( FW_BUILD_TEST )
-	add_subdirectory( "test" )
-endif()
-
 if( FW_BUILD_SERVER )
 	add_subdirectory( "server" )
 endif()
@@ -66,3 +62,8 @@ endif()
 if( FW_BUILD_CLIENT )
 	add_subdirectory( "client" )
 endif()
+
+if( FW_BUILD_TEST )
+	add_subdirectory( "test" )
+endif()
+
