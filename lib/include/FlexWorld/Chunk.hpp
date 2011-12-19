@@ -51,8 +51,6 @@ class Chunk : public NonCopyable {
 		void set_block( const Vector& pos, ClassCache::IdType class_id );
 
 	private:
-		void f();
-
 		Vector m_size;
 		ClassCache::IdType* m_blocks;
 };

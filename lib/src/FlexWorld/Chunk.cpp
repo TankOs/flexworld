@@ -40,7 +40,4 @@ void Chunk::set_block( const Vector& pos, ClassCache::IdType class_id ) {
 	m_blocks[pos.z * (m_size.y * m_size.x) + pos.y * m_size.x + pos.x] = class_id;
 }
 
-void Chunk::f() {
-}
-
 }
