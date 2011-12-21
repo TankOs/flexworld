@@ -17,12 +17,12 @@ class Class {
 		/** Ctor.
 		 * @param id ID.
 		 */
-		Class( const FlexId& id );
+		Class( const FlexID& id );
 
 		/** Get ID.
 		 * @return ID.
 		 */
-		const FlexId& get_id() const;
+		const FlexID& get_id() const;
 
 		/** Set name.
 		 * @param name Name.
@@ -49,34 +49,51 @@ class Class {
 		 */
 		void add_texture( const Resource& texture );
 
-		/** Get texture.
+		/** Check if texture exists.
 		 * @param index Index.
-		 * @return Resource or null if not found.
+		 * @return true if it exists.
 		 */
-		const Resource* get_texture( std::size_t index ) const;
+		bool has_texture( std::size_t index ) const;
+
+		/** Get texture.
+		 * @param index Index (must be valid).
+		 * @return Resource.
+		 * @see has_texture for checking if an index is valid.
+		 */
+		const Resource& get_texture( std::size_t index ) const;
+
+		/** Get number of textures.
+		 * @return Number of textures.
+		 */
+		std::size_t get_num_textures() const;
+
+		/** Get number of hooks.
+		 * @return Number of hooks.
+		 */
+		std::size_t get_num_hooks() const;
 
 		/** Set hook.
+		 * A hook with the same name gets replaced.
 		 * @param id ID.
 		 * @param position Position.
 		 */
 		void set_hook( const std::string& id, const sf::Vector3f& position );
 
-		/** Get hook.
+		/** Find hook.
 		 * @param id ID.
 		 * @return Hook position or null if hook not found.
 		 */
-		const sf::Vector3f* get_hook( const std::string& id ) const;
+		const sf::Vector3f* find_hook( const std::string& id ) const;
 
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
 
-		FlexId m_id;
-		std::string m_name;
-		sf::Vector3f m_origin;
-
 		HookMap m_hooks;
 		ResourceVector m_textures;
+		FlexID m_id;
+		std::string m_name;
+		sf::Vector3f m_origin;
 };
 
 }
