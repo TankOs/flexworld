@@ -1,11 +1,11 @@
 #pragma once
 
-#include <FlexWorld/FlexId.hpp>
+#include <FlexWorld/FlexID.hpp>
 
 namespace flex {
 
 /** Resource.
- * A resource is basically a node on the filesystem identified by a FlexId.
+ * A resource is basically a node on the filesystem identified by a FlexID.
  * This class doesn't contain resource data, but instead only identifies it.
  */
 class Resource {
@@ -13,7 +13,7 @@ class Resource {
 		/** Ctor.
 		 * @param id ID.
 		 */
-		Resource( const FlexId& id );
+		Resource( const FlexID& id );
 
 		/** Dtor.
 		 */
@@ -22,10 +22,10 @@ class Resource {
 		/** Get ID.
 		 * @return ID.
 		 */
-		const FlexId& get_id() const;
+		const FlexID& get_id() const;
 
 	private:
-		FlexId m_id;
+		FlexID m_id;
 };
 
 }
