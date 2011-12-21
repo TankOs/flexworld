@@ -21,6 +21,7 @@ endif()
 set( FW_BUILD_CLIENT true CACHE BOOL "Build client." )
 set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
 set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
+set( FW_BUILD_DOC false CACHE BOOL "Build API docs (requires Doxygen)." )
 
 if( WINDOWS )
 	set( BIN_EXTENSION ".exe" )
@@ -54,6 +55,10 @@ if( COMPILER_GCC )
 endif()
 
 add_subdirectory( "lib" )
+
+if( FW_BUILD_DOC )
+	add_subdirectory( "doc" )
+endif()
 
 if( FW_BUILD_SERVER )
 	add_subdirectory( "server" )
