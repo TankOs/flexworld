@@ -45,21 +45,15 @@ class Class {
 		const sf::Vector3f& get_origin() const;
 
 		/** Add texture.
-		 * @param texture Texture (copied).
+		 * @param texture Texture.
 		 */
 		void add_texture( const Resource& texture );
 
 		/** Get texture.
 		 * @param index Index.
-		 * @return Texture resource.
-		 * @throws std::invalid_argument if index is invalid.
+		 * @return Resource or null if not found.
 		 */
-		const Resource& get_texture( std::size_t index ) const;
-
-		/** Get number of textures.
-		 * @return Number of textures.
-		 */
-		std::size_t get_num_textures() const;
+		const Resource* get_texture( std::size_t index ) const;
 
 		/** Set hook.
 		 * @param id ID.
@@ -69,25 +63,20 @@ class Class {
 
 		/** Get hook.
 		 * @param id ID.
-		 * @return Hook.
-		 * @throws std::invalid_argument if ID is invalid.
+		 * @return Hook position or null if hook not found.
 		 */
-		const sf::Vector3f& get_hook( const std::string& id ) const;
-
-		/** Get number of hooks.
-		 * @return Number of hooks.
-		 */
-		std::size_t get_num_hooks() const;
+		const sf::Vector3f* get_hook( const std::string& id ) const;
 
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
 
 		ResourceId m_id;
+		std::string m_name;
+		sf::Vector3f m_origin;
+
 		HookMap m_hooks;
 		ResourceVector m_textures;
-		sf::Vector3f m_origin;
-		std::string m_name;
 };
 
 }

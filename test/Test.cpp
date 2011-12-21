@@ -35,54 +35,38 @@ BOOST_AUTO_TEST_CASE( ResourceId ) {
 }
 
 BOOST_AUTO_TEST_CASE( Class ) {
-	// Create class and check initial state.
 	flex::Class cls( flex::ResourceId( "fw.base/grass" ) );
-
-	BOOST_CHECK( cls.get_id().get() == "fw.base/grass" );
-	BOOST_CHECK( cls.get_name() == "" );
-	BOOST_CHECK( cls.get_origin() == sf::Vector3f( 0.f, 0.f, 0.f ) );
-	BOOST_CHECK( cls.get_num_textures() == 0 );
-	BOOST_CHECK( cls.get_num_hooks() == 0 );
-	BOOST_CHECK_THROW( cls.get_texture( 0 ), std::invalid_argument );
-	BOOST_CHECK_THROW( cls.get_hook( "non-existant" ), std::invalid_argument );
-
-	// Set and check basic properties.
 	cls.set_name( "Grass" );
 	cls.set_origin( sf::Vector3f( 1.f, 2.f, 3.f ) );
-
-	BOOST_CHECK( cls.get_name() == "Grass" );
-	BOOST_CHECK( cls.get_origin() == sf::Vector3f( 1.f, 2.f, 3.f ) );
 
 	flex::Resource tex0( flex::ResourceId( "fw.base/0.png" ) );
 	flex::Resource tex1( flex::ResourceId( "fw.base/1.png" ) );
 	flex::Resource tex2( flex::ResourceId( "fw.base/2.png" ) );
 	cls.add_texture( tex0 );
-	BOOST_CHECK( cls.get_num_textures() == 1 );
 	cls.add_texture( tex1 );
-	BOOST_CHECK( cls.get_num_textures() == 2 );
 	cls.add_texture( tex2 );
-	BOOST_CHECK( cls.get_num_textures() == 3 );
 
 	cls.set_hook( "default", sf::Vector3f( 123.f, 123.f, 123.f ) );
-	BOOST_CHECK( cls.get_num_hooks() == 1 );
 	cls.set_hook( "hand", sf::Vector3f( 555.f, 555.f, 555.f ) );
-	BOOST_CHECK( cls.get_num_hooks() == 2 );
 
-	BOOST_CHECK_NO_THROW( cls.get_texture( 0 ) );
-	BOOST_CHECK_NO_THROW( cls.get_texture( 1 ) );
-	BOOST_CHECK_NO_THROW( cls.get_texture( 2 ) );
-	BOOST_CHECK_THROW( cls.get_texture( 3 ), std::invalid_argument );
+	BOOST_CHECK( cls.get_id().get() == "fw.base/grass" );
+	BOOST_CHECK( cls.get_name() == "Grass" );
 
-	BOOST_CHECK( cls.get_texture( 0 ).get_id().get() == "fw.base/0.png" );
-	BOOST_CHECK( cls.get_texture( 1 ).get_id().get() == "fw.base/1.png" );
-	BOOST_CHECK( cls.get_texture( 2 ).get_id().get() == "fw.base/2.png" );
+	BOOST_CHECK( cls.get_texture( 0 ) );
+	BOOST_CHECK( cls.get_texture( 1 ) );
+	BOOST_CHECK( cls.get_texture( 2 ) );
+	BOOST_CHECK( !cls.get_texture( 3 ) );
 
-	BOOST_CHECK_NO_THROW( cls.get_hook( "default" ) );
-	BOOST_CHECK_NO_THROW( cls.get_hook( "hand" ) );
-	BOOST_CHECK_THROW( cls.get_hook( "invalid" ), std::invalid_argument );
+	BOOST_CHECK( cls.get_texture( 0 )->get_id().get() == "fw.base/0.png" );
+	BOOST_CHECK( cls.get_texture( 1 )->get_id().get() == "fw.base/1.png" );
+	BOOST_CHECK( cls.get_texture( 2 )->get_id().get() == "fw.base/2.png" );
 
-	BOOST_CHECK( cls.get_hook( "default" ) == sf::Vector3f( 123.f, 123.f, 123.f ) );
-	BOOST_CHECK( cls.get_hook( "hand" ) == sf::Vector3f( 555.f, 555.f, 555.f ) );
+	BOOST_CHECK( cls.get_hook( "default" ) );
+	BOOST_CHECK( cls.get_hook( "hand" ) );
+	BOOST_CHECK( !cls.get_hook( "invalid" ) );
+
+	BOOST_CHECK( *cls.get_hook( "default" ) == sf::Vector3f( 123.f, 123.f, 123.f ) );
+	BOOST_CHECK( *cls.get_hook( "hand" ) == sf::Vector3f( 555.f, 555.f, 555.f ) );
 }
 
 BOOST_AUTO_TEST_CASE( ClassCache ) {
