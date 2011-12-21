@@ -21,28 +21,29 @@ class ClassCache {
 		 */
 		ClassCache();
 
-		/** Get amount of cached classes.
-		 * @return Size.
+		/** Get number of cached classes.
+		 * @return Number of cached classes.
 		 */
-		std::size_t get_size() const;
+		std::size_t get_num_cached_classes() const;
+
+		/** Check if ID is valid.
+		 * An ID is valid if it points to a class and not to a hole.
+		 * @param id ID.
+		 * @return true if valid.
+		 */
+		bool is_id_valid( IdType id ) const;
 
 		/** Get class.
-		 * @param id ID.
-		 * @return Class or nullptr.
+		 * @param id ID (must be valid).
+		 * @return Class.
 		 */
-		const Class* get_class( IdType id ) const;
+		const Class& get_class( IdType id ) const;
 
 		/** Cache class.
 		 * @param cls Class.
 		 * @return ID.
 		 */
 		IdType cache( const Class& cls );
-
-		/** Get use count of a class.
-		 * @param cls Class.
-		 * @return Use count.
-		 */
-		std::size_t get_use_count( const Class& cls ) const;
 
 		/** Forget class.
 		 * @param cls Class.

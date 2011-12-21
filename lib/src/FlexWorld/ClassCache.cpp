@@ -1,5 +1,8 @@
 #include <FlexWorld/ClassCache.hpp>
 
+#include <cassert>
+#include <limits>
+
 namespace flex {
 
 ClassCache::ClassCache() :
@@ -7,16 +10,13 @@ ClassCache::ClassCache() :
 {
 }
 
-std::size_t ClassCache::get_size() const {
+std::size_t ClassCache::get_num_cached_classes() const {
 	return m_ids.size();
 }
 
-const Class* ClassCache::get_class( IdType id ) const {
-	if( id == 0 || id > m_classes.size() ) {
-		return nullptr;
-	}
-
-	return m_classes[id - 1];
+const Class& ClassCache::get_class( IdType id ) const {
+	assert( is_id_valid( id ) );
+	return *m_classes[id];
 }
 
 ClassCache::IdType ClassCache::cache( const Class& cls ) {
@@ -24,6 +24,7 @@ ClassCache::IdType ClassCache::cache( const Class& cls ) {
 	IdUsePairMap::iterator iu_iter( m_ids.find( &cls ) );
 
 	if( iu_iter != m_ids.end() ) {
+		// Increase usage counter.
 		++iu_iter->second.second;
 		return iu_iter->second.first;
 	}
@@ -31,8 +32,8 @@ ClassCache::IdType ClassCache::cache( const Class& cls ) {
 	// If no holes, just cache.
 	if( !m_num_holes ) {
 		m_classes.push_back( &cls );
-		m_ids[&cls] = IdUsePair( m_classes.size(), 1 );
-		return static_cast<IdType>( m_classes.size() );
+		m_ids[&cls] = IdUsePair( m_classes.size() - 1, 1 );
+		return static_cast<IdType>( m_classes.size() - 1 );
 	}
 
 	// Hole exists, find it.
@@ -49,22 +50,10 @@ ClassCache::IdType ClassCache::cache( const Class& cls ) {
 	return 0;
 }
 
-std::size_t ClassCache::get_use_count( const Class& cls ) const {
-	IdUsePairMap::const_iterator iu_iter( m_ids.find( &cls ) );
-
-	if( iu_iter == m_ids.end() ) {
-		return 0;
-	}
-
-	return iu_iter->second.second;
-}
-
 void ClassCache::forget( const Class& cls ) {
 	IdUsePairMap::iterator iu_iter( m_ids.find( &cls ) );
 
-	if( iu_iter == m_ids.end() ) {
-		return;
-	}
+	assert( iu_iter != m_ids.end() );
 
 	--iu_iter->second.second;
 	if( iu_iter->second.second > 0 ) {
@@ -73,7 +62,7 @@ void ClassCache::forget( const Class& cls ) {
 	}
 
 	// If last cached class, no hole.
-	if( iu_iter->second.first == m_classes.size() ) {
+	if( iu_iter->second.first == m_classes.size() - 1 ) {
 		m_classes.pop_back();
 		m_ids.erase( iu_iter );
 		return;
@@ -87,6 +76,14 @@ void ClassCache::forget( const Class& cls ) {
 
 uint32_t ClassCache::get_num_holes() const {
 	return m_num_holes;
+}
+
+bool ClassCache::is_id_valid( IdType id ) const {
+	if( id >= m_classes.size() ) {
+		return false;
+	}
+
+	return m_classes[id] != nullptr;
 }
 
 }
