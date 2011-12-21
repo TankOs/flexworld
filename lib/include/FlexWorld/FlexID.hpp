@@ -55,11 +55,22 @@ class FlexID {
 		 */
 		bool set_resource( const std::string& resource );
 
-		/** Check if ID is valid.
-		 * A FlexID is valid if at least the package is set.
+		/** Parse a full ID.
+		 * If parsing fails, the previous state is recovered.
+		 * @param id ID.
+		 * @return true on success.
+		 */
+		bool parse( const std::string& id );
+
+		/** Check if package is valid.
 		 * @return true if valid.
 		 */
-		bool is_valid() const;
+		bool is_valid_package() const;
+
+		/** Check if resource is valid.
+		 * @return true if valid.
+		 */
+		bool is_valid_resource() const;
 
 		/** Get full ID.
 		 * @return ID or empty if not set.
@@ -89,8 +100,6 @@ class FlexID {
 		bool operator!=( const FlexID& other ) const;
 
 	private:
-		bool parse( const std::string& id );
-
 		std::string m_package;
 		std::string m_resource;
 };

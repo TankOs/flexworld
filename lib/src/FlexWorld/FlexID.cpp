@@ -10,48 +10,39 @@ bool FlexID::parse( const std::string& id ) {
 		return false;
 	}
 
-	// Check for valid beginning.
-	if( id[0] == '.'  || id[0] == '/' ) {
+	// Working ID.
+	FlexID new_id;
+	std::string package;
+	std::string resource;
+
+	// Find package-resource-delimiter.
+	std::size_t delim_pos( id.find( "/" ) );
+
+	// Delimiter shall not be at last position.
+	if( delim_pos + 1 == id.size() ) {
 		return false;
 	}
 
-	// Parse package ID.
-	std::string::size_type package_end( 0 );
-
-	while( package_end < id.size() ) {
-		const char& ch( id[package_end] );
-
-		// Check for path delimiter.
-		if( ch == '/' ) {
-			break;
-		}
-
-		// Check for valid character.
-		if(
-			(ch < 'a' || ch > 'z') &&
-			(ch < 'A' || ch > 'Z') &&
-			(ch < '0' || ch > '9') &&
-			ch != '_' &&
-			ch != '.'
-		) {
-			return false;
-		}
-
-		++package_end;
+	// If not found, use package only.
+	if( delim_pos == std::string::npos ) {
+		package = id;
+	}
+	else {
+		package = id.substr( 0, delim_pos );
+		resource = id.substr( delim_pos + 1 );
 	}
 
-	// Check for valid range.
-	if( package_end == 0 || package_end >= id.size() || id[package_end] != '/' ) {
+	// Set package/resource and check results.
+	if( !new_id.set_package( package ) ) {
 		return false;
 	}
 
-	// No path?
-	if( package_end + 1 >= id.size() ) {
+	if( resource.size() && !new_id.set_resource( resource ) ) {
 		return false;
 	}
 
-	m_package = id.substr( 0, package_end );
-	m_resource = id.substr( package_end + 1 );
+	// Success! Apply new ID.
+	std::swap( *this, new_id );
 
 	return true;
 }
@@ -65,10 +56,10 @@ const std::string& FlexID::get_resource() const {
 }
 
 std::string FlexID::get() const {
-	if( !is_valid() ) {
+	if( !is_valid_package() ) {
 		return "";
 	}
-	else if( m_resource.empty() ) {
+	else if( !is_valid_resource() ) {
 		return m_package;
 	}
 
@@ -83,8 +74,12 @@ bool FlexID::operator!=( const FlexID& other ) const {
 	return m_package != other.m_package || m_resource != other.m_resource;
 }
 
-bool FlexID::is_valid() const {
-	return m_package.size() > 0;
+bool FlexID::is_valid_package() const {
+	return !m_package.empty();
+}
+
+bool FlexID::is_valid_resource() const {
+	return is_valid_package() && !m_resource.empty();
 }
 
 bool FlexID::set_package( const std::string& package ) {

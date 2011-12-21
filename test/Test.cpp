@@ -24,27 +24,27 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id.get() == "" );
 		BOOST_CHECK( id.get_package() == "" );
 		BOOST_CHECK( id.get_resource() == "" );
-		BOOST_CHECK( id.is_valid() == false );
+		BOOST_CHECK( id.is_valid_package() == false );
+		BOOST_CHECK( id.is_valid_resource() == false );
 	}
 
 	// Check package character range.
 	{
 		const std::string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		FlexID id;
 
 		for( short code = 0; code < 256; ++code ) {
-			char ch( static_cast<char>( code ) );
+			char ch = static_cast<char>( code );
+			bool should_be_valid = valid.find( ch ) != std::string::npos;
 			std::string package;
 
 			package += ch;
 
-			BOOST_CHECK(
-				id.set_package( package ) ==
-				(valid.find( ch ) != std::string::npos ? true : false)
-			);
+			FlexID id;
+			BOOST_CHECK( id.set_package( package ) == should_be_valid );
 		}
 
 		// Some special cases.
+		FlexID id;
 		BOOST_CHECK( id.set_package( ".foo" ) == false );
 		BOOST_CHECK( id.set_package( "foo." ) == false );
 		BOOST_CHECK( id.set_package( "" ) == false );
@@ -79,18 +79,17 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		const std::string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
 		FlexID id;
 
+		// Set package, won't work without.
 		id.set_package( "fw.weapons" );
 
 		for( short code = 0; code < 256; ++code ) {
 			char ch( static_cast<char>( code ) );
 			std::string resource;
+			bool should_be_valid = valid.find( ch ) != std::string::npos;
 
 			resource += ch;
 
-			BOOST_CHECK(
-				id.set_resource( resource ) ==
-				(valid.find( ch ) != std::string::npos ? true : false)
-			);
+			BOOST_CHECK( id.set_resource( resource ) == should_be_valid );
 		}
 
 		// Special case.
@@ -102,7 +101,7 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		FlexID id;
 		id.set_package( "fw.weapons" );
 
-		BOOST_CHECK( id.set_resource( "sword.png" ) );
+		BOOST_CHECK( id.set_resource( "sword.png" ) == true );
 		BOOST_CHECK( id.get_resource() == "sword.png" );
 	}
 
@@ -116,7 +115,7 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id.get_resource() == "sword.png" );
 	}
 
-	// Check changing package won't alter package.
+	// Check changing package won't alter resource.
 	{
 		FlexID id;
 
@@ -131,13 +130,16 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 	{
 		FlexID id;
 
-		BOOST_CHECK( !id.is_valid() );
+		BOOST_CHECK( !id.is_valid_package() );
+		BOOST_CHECK( !id.is_valid_resource() );
 
 		id.set_package( "fw" );
-		BOOST_CHECK( id.is_valid() );
+		BOOST_CHECK( id.is_valid_package() );
+		BOOST_CHECK( !id.is_valid_resource() );
 
 		id.set_resource( "res" );
-		BOOST_CHECK( id.is_valid() );
+		BOOST_CHECK( id.is_valid_package() );
+		BOOST_CHECK( id.is_valid_resource() );
 	}
 
 	// Check for full IDs.
@@ -162,6 +164,34 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 			FlexID id;
 			BOOST_CHECK( id.get() == "" );
 		}
+	}
+
+	// Check parsing full IDs.
+	{
+		FlexID id;
+
+		BOOST_CHECK( id.parse( "fw.weapons/sword.png" ) == true );
+		BOOST_CHECK( id.parse( "fw/sword.png" ) == true );
+		BOOST_CHECK( id.parse( "fw.monsters.evil/sword.png" ) == true );
+
+		BOOST_CHECK( id.parse( "" ) == false );
+		BOOST_CHECK( id.parse( "/" ) == false );
+		BOOST_CHECK( id.parse( "foo.bar/" ) == false );
+		BOOST_CHECK( id.parse( "/foo.bar" ) == false );
+		BOOST_CHECK( id.parse( ".foo.bar" ) == false );
+		BOOST_CHECK( id.parse( "foo.bar." ) == false );
+		BOOST_CHECK( id.parse( "foo.bar./meh.foo" ) == false );
+		BOOST_CHECK( id.parse( ".foo.bar/meh.foo" ) == false );
+	}
+
+	// Check parsing faulty full ID recovers previous state.
+	{
+		FlexID id;
+
+		id.parse( "fw.weapons/sword.png" );
+		id.parse( "" );
+
+		BOOST_CHECK( id.get() == "fw.weapons/sword.png" );
 	}
 }
 

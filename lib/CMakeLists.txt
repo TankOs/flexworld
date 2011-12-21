@@ -10,36 +10,36 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
-	${INC_DIR}/FlexWorld/Account.hpp
-	${INC_DIR}/FlexWorld/AccountDriver.hpp
-	${INC_DIR}/FlexWorld/Chunk.hpp
-	${INC_DIR}/FlexWorld/Class.hpp
-	${INC_DIR}/FlexWorld/ClassCache.hpp
-	${INC_DIR}/FlexWorld/ClassDriver.hpp
-	${INC_DIR}/FlexWorld/Config.hpp
+	#${INC_DIR}/FlexWorld/Account.hpp
+	#${INC_DIR}/FlexWorld/AccountDriver.hpp
+	#${INC_DIR}/FlexWorld/Chunk.hpp
+	#${INC_DIR}/FlexWorld/Class.hpp
+	#${INC_DIR}/FlexWorld/ClassCache.hpp
+	#${INC_DIR}/FlexWorld/ClassDriver.hpp
+	#${INC_DIR}/FlexWorld/Config.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
-	${INC_DIR}/FlexWorld/Message.hpp
-	${INC_DIR}/FlexWorld/MessageMeta.hpp
-	${INC_DIR}/FlexWorld/NonCopyable.hpp
-	${INC_DIR}/FlexWorld/Planet.hpp
-	${INC_DIR}/FlexWorld/Resource.hpp
-	${INC_DIR}/FlexWorld/SHA1.hpp
-	${INC_DIR}/FlexWorld/Server.hpp
-	${SRC_DIR}/FlexWorld/Account.cpp
-	${SRC_DIR}/FlexWorld/AccountDriver.cpp
-	${SRC_DIR}/FlexWorld/Chunk.cpp
-	${SRC_DIR}/FlexWorld/Class.cpp
-	${SRC_DIR}/FlexWorld/ClassCache.cpp
-	${SRC_DIR}/FlexWorld/ClassDriver.cpp
-	${SRC_DIR}/FlexWorld/Config.cpp
+	#${INC_DIR}/FlexWorld/Message.hpp
+	#${INC_DIR}/FlexWorld/MessageMeta.hpp
+	#${INC_DIR}/FlexWorld/NonCopyable.hpp
+	#${INC_DIR}/FlexWorld/Planet.hpp
+	#${INC_DIR}/FlexWorld/Resource.hpp
+	#${INC_DIR}/FlexWorld/SHA1.hpp
+	#${INC_DIR}/FlexWorld/Server.hpp
+	#${SRC_DIR}/FlexWorld/Account.cpp
+	#${SRC_DIR}/FlexWorld/AccountDriver.cpp
+	#${SRC_DIR}/FlexWorld/Chunk.cpp
+	#${SRC_DIR}/FlexWorld/Class.cpp
+	#${SRC_DIR}/FlexWorld/ClassCache.cpp
+	#${SRC_DIR}/FlexWorld/ClassDriver.cpp
+	#${SRC_DIR}/FlexWorld/Config.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
-	${SRC_DIR}/FlexWorld/Message.cpp
-	${SRC_DIR}/FlexWorld/MessageMeta.cpp
-	${SRC_DIR}/FlexWorld/NonCopyable.cpp
-	${SRC_DIR}/FlexWorld/Planet.cpp
-	${SRC_DIR}/FlexWorld/Resource.cpp
-	${SRC_DIR}/FlexWorld/SHA1.cpp
-	${SRC_DIR}/FlexWorld/Server.cpp
+	#${SRC_DIR}/FlexWorld/Message.cpp
+	#${SRC_DIR}/FlexWorld/MessageMeta.cpp
+	#${SRC_DIR}/FlexWorld/NonCopyable.cpp
+	#${SRC_DIR}/FlexWorld/Planet.cpp
+	#${SRC_DIR}/FlexWorld/Resource.cpp
+	#${SRC_DIR}/FlexWorld/SHA1.cpp
+	#${SRC_DIR}/FlexWorld/Server.cpp
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )
