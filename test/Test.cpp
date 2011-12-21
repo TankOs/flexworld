@@ -1,47 +1,178 @@
-#include <FlexWorld/Class.hpp>
-#include <FlexWorld/ClassCache.hpp>
-#include <FlexWorld/FlexId.hpp>
-#include <FlexWorld/Chunk.hpp>
-#include <FlexWorld/Planet.hpp>
-#include <FlexWorld/SHA1.hpp>
-#include <FlexWorld/Account.hpp>
-#include <FlexWorld/AccountDriver.hpp>
-#include <FlexWorld/MessageMeta.hpp>
-#include <FlexWorld/Message.hpp>
+//#include <FlexWorld/Class.hpp>
+//#include <FlexWorld/ClassCache.hpp>
+#include <FlexWorld/FlexID.hpp>
+//#include <FlexWorld/Chunk.hpp>
+//#include <FlexWorld/Planet.hpp>
+//#include <FlexWorld/SHA1.hpp>
+//#include <FlexWorld/Account.hpp>
+//#include <FlexWorld/AccountDriver.hpp>
+//#include <FlexWorld/MessageMeta.hpp>
+//#include <FlexWorld/Message.hpp>
 
 #include <iostream>
 
 #define BOOST_TEST_MODULE FlexWorld
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( FlexId ) {
-	BOOST_CHECK_THROW( flex::FlexId( ".invalid/thing" ), flex::FlexId::ParserException );
-	BOOST_CHECK_THROW( flex::FlexId( "invalid" ), flex::FlexId::ParserException );
-	BOOST_CHECK_THROW( flex::FlexId( "invalid/" ), flex::FlexId::ParserException );
-	BOOST_CHECK_THROW( flex::FlexId( "  " ), flex::FlexId::ParserException );
-	BOOST_CHECK_THROW( flex::FlexId( "/bleh" ), flex::FlexId::ParserException );
+BOOST_AUTO_TEST_CASE( TestFlexID ) {
+	using namespace flex;
 
-	flex::FlexId resource( "fw.weapons/sword" );
+	// Create FlexID and check initial state.
+	{
+		FlexID id;
 
-	BOOST_CHECK( resource.get_package_id() == "fw.weapons" );
-	BOOST_CHECK( resource.get_path() == "sword" );
-	BOOST_CHECK( resource.get() == "fw.weapons/sword" );
+		BOOST_CHECK( id.get() == "" );
+		BOOST_CHECK( id.get_package() == "" );
+		BOOST_CHECK( id.get_resource() == "" );
+		BOOST_CHECK( id.is_valid() == false );
+	}
 
-	flex::FlexId same( "fw.weapons/sword" );
-	BOOST_CHECK( resource == same );
+	// Check package character range.
+	{
+		const std::string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+		FlexID id;
 
-	flex::FlexId other( "fw.weapons/ball" );
-	BOOST_CHECK( resource != other );
+		for( short code = 0; code < 256; ++code ) {
+			char ch( static_cast<char>( code ) );
+			std::string package;
+
+			package += ch;
+
+			BOOST_CHECK(
+				id.set_package( package ) ==
+				(valid.find( ch ) != std::string::npos ? true : false)
+			);
+		}
+
+		// Some special cases.
+		BOOST_CHECK( id.set_package( ".foo" ) == false );
+		BOOST_CHECK( id.set_package( "foo." ) == false );
+		BOOST_CHECK( id.set_package( "" ) == false );
+	}
+
+	// Check setting package.
+	{
+		FlexID id;
+
+		BOOST_CHECK( id.set_package( "fw.weapons" ) );
+		BOOST_CHECK( id.get_package() == "fw.weapons" );
+	}
+
+	// Check setting invalid package recovers previous package.
+	{
+		FlexID id;
+
+		id.set_package( "fw.weapons" );
+		id.set_package( "" );
+
+		BOOST_CHECK( id.get_package() == "fw.weapons" );
+	}
+
+	// Check setting resource without package.
+	{
+		FlexID id;
+		BOOST_CHECK( id.set_resource( "sword.png" ) == false );
+	}
+
+	// Check resource character range.
+	{
+		const std::string valid = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
+		FlexID id;
+
+		id.set_package( "fw.weapons" );
+
+		for( short code = 0; code < 256; ++code ) {
+			char ch( static_cast<char>( code ) );
+			std::string resource;
+
+			resource += ch;
+
+			BOOST_CHECK(
+				id.set_resource( resource ) ==
+				(valid.find( ch ) != std::string::npos ? true : false)
+			);
+		}
+
+		// Special case.
+		BOOST_CHECK( id.set_resource( "" ) == false );
+	}
+
+	// Check setting resource.
+	{
+		FlexID id;
+		id.set_package( "fw.weapons" );
+
+		BOOST_CHECK( id.set_resource( "sword.png" ) );
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+	}
+
+	// Check setting invalid resource will recover previous one.
+	{
+		FlexID id;
+		id.set_package( "fw.weapons" );
+		id.set_resource( "sword.png" );
+		id.set_resource( "" );
+
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+	}
+
+	// Check changing package won't alter package.
+	{
+		FlexID id;
+
+		id.set_package( "fw.weapons" );
+		id.set_resource( "sword.png" );
+		id.set_package( "fw.another" );
+
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+	}
+
+	// Check for validity.
+	{
+		FlexID id;
+
+		BOOST_CHECK( !id.is_valid() );
+
+		id.set_package( "fw" );
+		BOOST_CHECK( id.is_valid() );
+
+		id.set_resource( "res" );
+		BOOST_CHECK( id.is_valid() );
+	}
+
+	// Check for full IDs.
+	{
+		// Both with package and resource.
+		{
+			FlexID id;
+			id.set_package( "fw.package" );
+			id.set_resource( "res.yml" );
+			BOOST_CHECK( id.get() == "fw.package/res.yml" );
+		}
+
+		// With package only.
+		{
+			FlexID id;
+			id.set_package( "fw.package" );
+			BOOST_CHECK( id.get() == "fw.package" );
+		}
+
+		// Without anything.
+		{
+			FlexID id;
+			BOOST_CHECK( id.get() == "" );
+		}
+	}
 }
 
-BOOST_AUTO_TEST_CASE( Class ) {
-	flex::Class cls( flex::FlexId( "fw.base/grass" ) );
+/*BOOST_AUTO_TEST_CASE( Class ) {
+	flex::Class cls( flex::FlexID( "fw.base/grass" ) );
 	cls.set_name( "Grass" );
 	cls.set_origin( sf::Vector3f( 1.f, 2.f, 3.f ) );
 
-	flex::Resource tex0( flex::FlexId( "fw.base/0.png" ) );
-	flex::Resource tex1( flex::FlexId( "fw.base/1.png" ) );
-	flex::Resource tex2( flex::FlexId( "fw.base/2.png" ) );
+	flex::Resource tex0( flex::FlexID( "fw.base/0.png" ) );
+	flex::Resource tex1( flex::FlexID( "fw.base/1.png" ) );
+	flex::Resource tex2( flex::FlexID( "fw.base/2.png" ) );
 	cls.add_texture( tex0 );
 	cls.add_texture( tex1 );
 	cls.add_texture( tex2 );
@@ -71,7 +202,7 @@ BOOST_AUTO_TEST_CASE( Class ) {
 
 BOOST_AUTO_TEST_CASE( ClassCache ) {
 	flex::ClassCache cache;
-	flex::Class cls( flex::FlexId( "fw.base/grass" ) );
+	flex::Class cls( flex::FlexID( "fw.base/grass" ) );
 
 	BOOST_CHECK( cache.get_size() == 0 );
 	BOOST_CHECK( cache.get_class( 0 ) == nullptr );
@@ -107,8 +238,8 @@ BOOST_AUTO_TEST_CASE( ClassCache ) {
 	BOOST_CHECK( cache.get_use_count( cls ) == 0 );
 	BOOST_CHECK( cache.get_num_holes() == 0 );
 
-	flex::Class cls0( flex::FlexId( "fw/class0" ) );
-	flex::Class cls1( flex::FlexId( "fw/class1" ) );
+	flex::Class cls0( flex::FlexID( "fw/class0" ) );
+	flex::Class cls1( flex::FlexID( "fw/class1" ) );
 
 	BOOST_CHECK( cache.cache( cls0 ) == 1 );
 	BOOST_CHECK( cache.cache( cls0 ) == 1 );
@@ -166,8 +297,8 @@ BOOST_AUTO_TEST_CASE( FlexPlanet ) {
 
 	Planet::Vector size( 5000, 15, 5000 );
 	Chunk::Vector chunk_size( 16, 16, 16 );
-	flex::Class cls0( flex::FlexId( "fw/class0" ) );
-	flex::Class cls1( flex::FlexId( "fw/class1" ) );
+	flex::Class cls0( flex::FlexID( "fw/class0" ) );
+	flex::Class cls1( flex::FlexID( "fw/class1" ) );
 
 	Planet planet( "test", size, chunk_size );
 
@@ -425,4 +556,4 @@ BOOST_AUTO_TEST_CASE( FlexMessage ) {
 	BOOST_CHECK_NO_THROW( msg << "FOOBAR" );
 	BOOST_CHECK( msg.get_size() == size );
 	BOOST_CHECK( msg.get_current_field() == 3 );
-}
+}*/
