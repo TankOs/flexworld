@@ -4,8 +4,6 @@
 #include <FlexWorld/NonCopyable.hpp>
 
 #include <SFML/System/Vector3.hpp>
-#include <vector>
-#include <map>
 #include <cstdint>
 
 namespace flex {
@@ -33,6 +31,12 @@ class Chunk : public NonCopyable {
 		 */
 		void clear();
 
+		/** Check if a block is set.
+		 * @param pos Position.
+		 * @return true if set.
+		 */
+		bool is_block_set( const Vector& pos ) const;
+
 		/** Get size.
 		 * @return Size.
 		 */
@@ -50,7 +54,14 @@ class Chunk : public NonCopyable {
 		 */
 		void set_block( const Vector& pos, ClassCache::IdType class_id );
 
+		/** Reset block.
+		 * @param pos Position.
+		 */
+		void reset_block( const Vector& pos );
+
 	private:
+		static const ClassCache::IdType INVALID_ID;
+
 		Vector m_size;
 		ClassCache::IdType* m_blocks;
 };
