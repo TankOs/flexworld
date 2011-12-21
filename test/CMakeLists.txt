@@ -7,6 +7,12 @@ find_package( SFML 2.0 )
 set(
 	SOURCES
 	Test.cpp
+	TestChunk.cpp
+	TestClassCache.cpp
+	TestClass.cpp
+	Test.cpp
+	TestFlexID.cpp
+	TestResource.cpp
 )
 
 if( NOT Boost_USE_STATIC_LIBS )
