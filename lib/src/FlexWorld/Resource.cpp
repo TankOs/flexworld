@@ -2,7 +2,7 @@
 
 namespace flex {
 
-Resource::Resource( const ResourceId& id ) :
+Resource::Resource( const FlexId& id ) :
 	m_id( id )
 {
 }
@@ -10,7 +10,7 @@ Resource::Resource( const ResourceId& id ) :
 Resource::~Resource() {
 }
 
-const ResourceId& Resource::get_id() const {
+const FlexId& Resource::get_id() const {
 	return m_id;
 }
 

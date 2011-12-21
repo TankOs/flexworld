@@ -2,12 +2,12 @@
 
 namespace flex {
 
-Class::Class( const ResourceId& id ) :
+Class::Class( const FlexId& id ) :
 	m_id( id )
 {
 }
 
-const ResourceId& Class::get_id() const {
+const FlexId& Class::get_id() const {
 	return m_id;
 }
 

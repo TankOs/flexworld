@@ -1,14 +1,14 @@
-#include <FlexWorld/ResourceId.hpp>
+#include <FlexWorld/FlexId.hpp>
 
 namespace flex {
 
-ResourceId::ResourceId( const std::string& id ) {
+FlexId::FlexId( const std::string& id ) {
 	if( !parse( id ) ) {
 		throw ParserException( "Resource ID parser error: " + id );
 	}
 }
 
-bool ResourceId::parse( const std::string& id ) {
+bool FlexId::parse( const std::string& id ) {
 	if( id.empty() ) {
 		return false;
 	}
@@ -59,29 +59,29 @@ bool ResourceId::parse( const std::string& id ) {
 	return true;
 }
 
-const std::string& ResourceId::get_package_id() const {
+const std::string& FlexId::get_package_id() const {
 	return m_package;
 }
 
-const std::string& ResourceId::get_path() const {
+const std::string& FlexId::get_path() const {
 	return m_path;
 }
 
-std::string ResourceId::get() const {
+std::string FlexId::get() const {
 	return m_package + "/" + m_path;
 }
 
-bool ResourceId::operator==( const ResourceId& other ) const {
+bool FlexId::operator==( const FlexId& other ) const {
 	return m_package == other.m_package && m_path == other.m_path;
 }
 
-bool ResourceId::operator!=( const ResourceId& other ) const {
+bool FlexId::operator!=( const FlexId& other ) const {
 	return m_package != other.m_package || m_path != other.m_path;
 }
 
 // ---
 
-ResourceId::ParserException::ParserException( const std::string& msg ) :
+FlexId::ParserException::ParserException( const std::string& msg ) :
 	std::runtime_error( msg )
 {
 }

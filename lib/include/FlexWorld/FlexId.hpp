@@ -7,7 +7,7 @@ namespace flex {
 
 /** Resource identifier.
  */
-class ResourceId {
+class FlexId {
 	public:
 		/** Parser exception.
 		 */
@@ -22,7 +22,7 @@ class ResourceId {
 		/** Ctor.
 		 * @param id ID to parse.
 		 */
-		ResourceId( const std::string& id );
+		FlexId( const std::string& id );
 
 		/** Get full ID.
 		 * @return ID.
@@ -43,13 +43,13 @@ class ResourceId {
 		 * @param other Other ID.
 		 * @return true if equal.
 		 */
-		bool operator==( const ResourceId& other ) const;
+		bool operator==( const FlexId& other ) const;
 
 		/** Not equal?
 		 * @param other Other ID.
 		 * @return true if equal.
 		 */
-		bool operator!=( const ResourceId& other ) const;
+		bool operator!=( const FlexId& other ) const;
 
 	private:
 		bool parse( const std::string& id );

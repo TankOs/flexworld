@@ -17,12 +17,12 @@ set(
 	${INC_DIR}/FlexWorld/ClassCache.hpp
 	${INC_DIR}/FlexWorld/ClassDriver.hpp
 	${INC_DIR}/FlexWorld/Config.hpp
+	${INC_DIR}/FlexWorld/FlexId.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/MessageMeta.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
-	${INC_DIR}/FlexWorld/ResourceId.hpp
 	${INC_DIR}/FlexWorld/SHA1.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
@@ -32,12 +32,12 @@ set(
 	${SRC_DIR}/FlexWorld/ClassCache.cpp
 	${SRC_DIR}/FlexWorld/ClassDriver.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
+	${SRC_DIR}/FlexWorld/FlexId.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/MessageMeta.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
-	${SRC_DIR}/FlexWorld/ResourceId.cpp
 	${SRC_DIR}/FlexWorld/SHA1.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 )

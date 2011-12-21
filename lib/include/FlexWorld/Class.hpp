@@ -17,12 +17,12 @@ class Class {
 		/** Ctor.
 		 * @param id ID.
 		 */
-		Class( const ResourceId& id );
+		Class( const FlexId& id );
 
 		/** Get ID.
 		 * @return ID.
 		 */
-		const ResourceId& get_id() const;
+		const FlexId& get_id() const;
 
 		/** Set name.
 		 * @param name Name.
@@ -71,7 +71,7 @@ class Class {
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
 
-		ResourceId m_id;
+		FlexId m_id;
 		std::string m_name;
 		sf::Vector3f m_origin;
 

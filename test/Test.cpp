@@ -1,6 +1,6 @@
 #include <FlexWorld/Class.hpp>
 #include <FlexWorld/ClassCache.hpp>
-#include <FlexWorld/ResourceId.hpp>
+#include <FlexWorld/FlexId.hpp>
 #include <FlexWorld/Chunk.hpp>
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/SHA1.hpp>
@@ -14,34 +14,34 @@
 #define BOOST_TEST_MODULE FlexWorld
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( ResourceId ) {
-	BOOST_CHECK_THROW( flex::ResourceId( ".invalid/thing" ), flex::ResourceId::ParserException );
-	BOOST_CHECK_THROW( flex::ResourceId( "invalid" ), flex::ResourceId::ParserException );
-	BOOST_CHECK_THROW( flex::ResourceId( "invalid/" ), flex::ResourceId::ParserException );
-	BOOST_CHECK_THROW( flex::ResourceId( "  " ), flex::ResourceId::ParserException );
-	BOOST_CHECK_THROW( flex::ResourceId( "/bleh" ), flex::ResourceId::ParserException );
+BOOST_AUTO_TEST_CASE( FlexId ) {
+	BOOST_CHECK_THROW( flex::FlexId( ".invalid/thing" ), flex::FlexId::ParserException );
+	BOOST_CHECK_THROW( flex::FlexId( "invalid" ), flex::FlexId::ParserException );
+	BOOST_CHECK_THROW( flex::FlexId( "invalid/" ), flex::FlexId::ParserException );
+	BOOST_CHECK_THROW( flex::FlexId( "  " ), flex::FlexId::ParserException );
+	BOOST_CHECK_THROW( flex::FlexId( "/bleh" ), flex::FlexId::ParserException );
 
-	flex::ResourceId resource( "fw.weapons/sword" );
+	flex::FlexId resource( "fw.weapons/sword" );
 
 	BOOST_CHECK( resource.get_package_id() == "fw.weapons" );
 	BOOST_CHECK( resource.get_path() == "sword" );
 	BOOST_CHECK( resource.get() == "fw.weapons/sword" );
 
-	flex::ResourceId same( "fw.weapons/sword" );
+	flex::FlexId same( "fw.weapons/sword" );
 	BOOST_CHECK( resource == same );
 
-	flex::ResourceId other( "fw.weapons/ball" );
+	flex::FlexId other( "fw.weapons/ball" );
 	BOOST_CHECK( resource != other );
 }
 
 BOOST_AUTO_TEST_CASE( Class ) {
-	flex::Class cls( flex::ResourceId( "fw.base/grass" ) );
+	flex::Class cls( flex::FlexId( "fw.base/grass" ) );
 	cls.set_name( "Grass" );
 	cls.set_origin( sf::Vector3f( 1.f, 2.f, 3.f ) );
 
-	flex::Resource tex0( flex::ResourceId( "fw.base/0.png" ) );
-	flex::Resource tex1( flex::ResourceId( "fw.base/1.png" ) );
-	flex::Resource tex2( flex::ResourceId( "fw.base/2.png" ) );
+	flex::Resource tex0( flex::FlexId( "fw.base/0.png" ) );
+	flex::Resource tex1( flex::FlexId( "fw.base/1.png" ) );
+	flex::Resource tex2( flex::FlexId( "fw.base/2.png" ) );
 	cls.add_texture( tex0 );
 	cls.add_texture( tex1 );
 	cls.add_texture( tex2 );
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( Class ) {
 
 BOOST_AUTO_TEST_CASE( ClassCache ) {
 	flex::ClassCache cache;
-	flex::Class cls( flex::ResourceId( "fw.base/grass" ) );
+	flex::Class cls( flex::FlexId( "fw.base/grass" ) );
 
 	BOOST_CHECK( cache.get_size() == 0 );
 	BOOST_CHECK( cache.get_class( 0 ) == nullptr );
@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE( ClassCache ) {
 	BOOST_CHECK( cache.get_use_count( cls ) == 0 );
 	BOOST_CHECK( cache.get_num_holes() == 0 );
 
-	flex::Class cls0( flex::ResourceId( "fw/class0" ) );
-	flex::Class cls1( flex::ResourceId( "fw/class1" ) );
+	flex::Class cls0( flex::FlexId( "fw/class0" ) );
+	flex::Class cls1( flex::FlexId( "fw/class1" ) );
 
 	BOOST_CHECK( cache.cache( cls0 ) == 1 );
 	BOOST_CHECK( cache.cache( cls0 ) == 1 );
@@ -166,8 +166,8 @@ BOOST_AUTO_TEST_CASE( FlexPlanet ) {
 
 	Planet::Vector size( 5000, 15, 5000 );
 	Chunk::Vector chunk_size( 16, 16, 16 );
-	flex::Class cls0( flex::ResourceId( "fw/class0" ) );
-	flex::Class cls1( flex::ResourceId( "fw/class1" ) );
+	flex::Class cls0( flex::FlexId( "fw/class0" ) );
+	flex::Class cls1( flex::FlexId( "fw/class1" ) );
 
 	Planet planet( "test", size, chunk_size );
 
