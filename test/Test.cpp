@@ -127,22 +127,6 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id.get_resource() == "sword.png" );
 	}
 
-	// Check for validity.
-	{
-		FlexID id;
-
-		BOOST_CHECK( !id.is_valid_package() );
-		BOOST_CHECK( !id.is_valid_resource() );
-
-		id.set_package( "fw" );
-		BOOST_CHECK( id.is_valid_package() );
-		BOOST_CHECK( !id.is_valid_resource() );
-
-		id.set_resource( "res" );
-		BOOST_CHECK( id.is_valid_package() );
-		BOOST_CHECK( id.is_valid_resource() );
-	}
-
 	// Check for full IDs.
 	{
 		// Both with package and resource.
@@ -172,8 +156,20 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		FlexID id;
 
 		BOOST_CHECK( id.parse( "fw.weapons/sword.png" ) == true );
+		BOOST_CHECK( id.get_package() == "fw.weapons" );
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+
 		BOOST_CHECK( id.parse( "fw/sword.png" ) == true );
+		BOOST_CHECK( id.get_package() == "fw" );
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+
 		BOOST_CHECK( id.parse( "fw.monsters.evil/sword.png" ) == true );
+		BOOST_CHECK( id.get_package() == "fw.monsters.evil" );
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+
+		BOOST_CHECK( id.parse( "fw.monsters.evil" ) == true );
+		BOOST_CHECK( id.get_package() == "fw.monsters.evil" );
+		BOOST_CHECK( id.get_resource() == "" );
 
 		BOOST_CHECK( id.parse( "" ) == false );
 		BOOST_CHECK( id.parse( "/" ) == false );
@@ -208,6 +204,22 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id1.parse( "fw/1" ) );
 
 		BOOST_CHECK( id1 == id1 );
+	}
+
+	// Check for validity.
+	{
+		FlexID id;
+
+		BOOST_CHECK( !id.is_valid_package() );
+		BOOST_CHECK( !id.is_valid_resource() );
+
+		id.set_package( "fw" );
+		BOOST_CHECK( id.is_valid_package() );
+		BOOST_CHECK( !id.is_valid_resource() );
+
+		id.set_resource( "res" );
+		BOOST_CHECK( id.is_valid_package() );
+		BOOST_CHECK( id.is_valid_resource() );
 	}
 }
 

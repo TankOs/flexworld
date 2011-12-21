@@ -14,20 +14,20 @@ namespace flex {
  * [a-zA-Z0-9], separated by dots. A package must not start with a dot.
  * Examples:
  *
- * * fw
- * * fw.weapons
+ * - fw
+ * - fw.weapons
  *
  * The resource is composed of the characters [a-zA-Z0-9_-.] and is optional.
  * It's delimited from the package with a slash. Examples:
  *
- * * sword.png
- * * dwarf.yml
+ * - sword.png
+ * - dwarf.yml
  *
  * Complete FlexID examples:
  *
- * * fw.base/grass.yml
- * * fw.weapons/sword.png
- * * fw.monsters (this points to a package only)
+ * - fw.base/grass.yml
+ * - fw.weapons/sword.png
+ * - fw.monsters (this points to a package only)
  *
  * When a FlexID instance is created, its internal state is invalid. You either
  * have to set the package and optionally the resource or parse a full ID. The
