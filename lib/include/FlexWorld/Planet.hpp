@@ -49,54 +49,55 @@ class Planet : public NonCopyable {
 		 */
 		const Chunk::Vector& get_chunk_size() const;
 
-		/** Get chunk.
-		 * @param pos Position.
-		 * @return Chunk or nullptr.
+		/** Transform planet coordinate into chunk and block positions.
+		 * The transformation will always succeed in terms of setting the chunk and
+		 * block position. However make sure to check for the return value to see
+		 * if the resulting coordinates are within the planet's space (i.e. valid).
+		 * @param coord Planet coordinate.
+		 * @param chunk_pos Resulting chunk position.
+		 * @param block_pos Resulting block position.
+		 * @return false if planet coordinate is invalid.
 		 */
-		const Chunk* get_chunk( const Vector& pos ) const;
+		bool transform( const Coordinate& coord, Vector& chunk_pos, Chunk::Vector& block_pos ) const;
+
+		/** Check if chunk exists.
+		 * @param position Chunk position.
+		 * @return true if it exists, false otherwise.
+		 */
+		bool has_chunk( const Vector& position ) const;
+
+		/** Create chunk.
+		 * This method fails if a chunk at the given position exists.
+		 * @param position Chunk position (must be valid).
+		 */
+		void create_chunk( const Vector& position );
 
 		/** Get number of chunks currently in memory.
 		 * @return Number of chunks.
 		 */
 		std::size_t get_num_chunks() const;
 
-		/** Transform planet coordinate into chunk and block positions.
-		 * @param coord Planet coordinate.
-		 * @param chunk_pos Chunk position.
-		 * @param block_pos Block position.
-		 * @return false if planet coordinate is invalid.
-		 */
-		bool transform_coordinate( const Coordinate& coord, Vector& chunk_pos, Chunk::Vector& block_pos ) const;
-
-		/** Get block.
-		 * @param coord Planet coordinate.
-		 * @return Class or nullptr.
-		 */
-		const Class* get_block( const Coordinate& coord ) const;
-
-		/** Get class cache.
-		 * @return Class cache.
-		 */
-		const ClassCache& get_class_cache() const;
-
 		/** Set block.
-		 * @param coord Planet coordinate.
+		 * @param chunk_pos Chunk position (must be valid).
+		 * @param block_pos Block position (must be valid).
 		 * @param cls Class.
-		 * @return true on success.
 		 */
-		bool set_block( const Coordinate& coord, const Class& cls );
+		void set_block( const Vector& chunk_pos, const Chunk::Vector& block_pos, const Class& cls );
 
-		/** Create chunk.
-		 * @param pos Chunk position.
-		 * @return false when chunk already existant.
+		/** Find block.
+		 * @param chunk_pos Chunk position (must be valid).
+		 * @param block_pos Block position (must be valid).
+		 * @return Class if block is set, nullptr otherwise.
 		 */
-		bool create_chunk( const Vector& pos );
+		const Class* find_block( const Vector& chunk_pos, const Chunk::Vector& block_pos ) const;
 
-		/** Reset (delete) block.
-		 * @param coord Planet coordinates.
-		 * @return false when block not set/invalid chunk.
+		/** Reset (unset) block.
+		 * The method succeeds whether a block is set or not. To differentiate, see
+		 * find_block().
+		 * @param chunk_pos Chunk position (must be valid).
+		 * @param block_pos Block position (must be valid).
 		 */
-		bool reset_block( const Coordinate& coord );
+		void reset_block( const Vector& chunk_pos, const Chunk::Vector& block_pos );
 
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
@@ -106,7 +107,6 @@ class Planet : public NonCopyable {
 		std::string m_id;
 
 		ChunkMap m_chunks;
-
 		ClassCache m_class_cache;
 };
 

@@ -12,7 +12,7 @@ class RenderWindow;
 class State {
 	public:
 		/** Ctor.
-		 * @param render_target Render target.
+		 * @param target Render target.
 		 */
 		State( sf::RenderWindow& target );
 

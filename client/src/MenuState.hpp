@@ -8,6 +8,8 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Audio/Music.hpp>
 
+/** Menu state.
+ */
 class MenuState : public State {
 	public:
 		/** Ctor.

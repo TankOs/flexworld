@@ -19,6 +19,7 @@ class MessageMeta {
 		};
 
 		/** Get size of type.
+		 * @param type Type.
 		 * @return Size in bytes.
 		 */
 		static std::size_t get_type_size( FieldType type );
@@ -34,6 +35,7 @@ class MessageMeta {
 
 		/** Get field type.
 		 * @param field Field.
+		 * @return Field type.
 		 * @throws out_of_range if field index is out of range.
 		 */
 		FieldType get_field_type( std::size_t field ) const;

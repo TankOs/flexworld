@@ -2,6 +2,8 @@
 
 #include "State.hpp"
 
+/** Intro state.
+ */
 class IntroState : public State {
 	public:
 		/** Ctor.

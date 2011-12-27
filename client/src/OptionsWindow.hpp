@@ -23,6 +23,9 @@ class OptionsWindow : public sfg::Window {
 		 */
 		bool is_event_processed() const;
 
+		/** Handle event.
+		 * @param event Event.
+		 */
 		void HandleEvent( const sf::Event& event );
 
 		/** Get user settings.

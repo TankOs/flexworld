@@ -74,22 +74,22 @@ class Controls {
 		 */
 		Action get_button_action( int button ) const;
 
-		/* Begin iterator for key bindings.
+		/** Begin iterator for key bindings.
 		 * @return Begin iterator.
 		 */
 		ControlMap::const_iterator keys_begin() const;
 
-		/* End iterator for key bindings.
+		/** End iterator for key bindings.
 		 * @return End iterator.
 		 */
 		ControlMap::const_iterator keys_end() const;
 
-		/* Begin iterator for button bindings.
+		/** Begin iterator for button bindings.
 		 * @return Begin iterator.
 		 */
 		ControlMap::const_iterator buttons_begin() const;
 
-		/* End iterator for button bindings.
+		/** End iterator for button bindings.
 		 * @return End iterator.
 		 */
 		ControlMap::const_iterator buttons_end() const;

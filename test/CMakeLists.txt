@@ -7,11 +7,12 @@ find_package( SFML 2.0 )
 set(
 	SOURCES
 	Test.cpp
-	TestChunk.cpp
-	TestClassCache.cpp
-	TestClass.cpp
 	Test.cpp
+	TestChunk.cpp
+	TestClass.cpp
+	TestClassCache.cpp
 	TestFlexID.cpp
+	TestPlanet.cpp
 	TestResource.cpp
 )
 

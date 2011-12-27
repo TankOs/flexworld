@@ -63,22 +63,7 @@ const Chunk::Vector& Planet::get_chunk_size() const {
 	return m_chunk_size;
 }
 
-const Chunk* Planet::get_chunk( const Vector& pos ) const {
-	// Check valid position.
-	if( pos.x >= m_size.x || pos.y >= m_size.y || pos.z >= m_size.z ) {
-		return nullptr;
-	}
-
-	// Find chunk.
-	ChunkMap::const_iterator c_iter( m_chunks.find( pos ) );
-	return c_iter != m_chunks.end() ? c_iter->second : nullptr;
-}
-
-std::size_t Planet::get_num_chunks() const {
-	return m_chunks.size();
-}
-
-bool Planet::transform_coordinate( const sf::Vector3f& coord, Vector& chunk_pos, Chunk::Vector& block_pos ) const {
+bool Planet::transform( const sf::Vector3f& coord, Vector& chunk_pos, Chunk::Vector& block_pos ) const {
 	sf::Vector3<uint32_t> i_coord(
 		static_cast<uint32_t>( coord.x ),
 		static_cast<uint32_t>( coord.y ),
@@ -100,115 +85,81 @@ bool Planet::transform_coordinate( const sf::Vector3f& coord, Vector& chunk_pos,
 	return true;
 }
 
-const Class* Planet::get_block( const Coordinate& coord ) const {
-	Vector chunk_pos;
-	Chunk::Vector block_pos;
+bool Planet::has_chunk( const Vector& position ) const {
+	assert( position.x < m_size.x );
+	assert( position.y < m_size.y );
+	assert( position.z < m_size.z );
 
-	if( !transform_coordinate( coord, chunk_pos, block_pos ) ) {
-		return nullptr;
+	ChunkMap::const_iterator iter( m_chunks.find( position ) );
+	return iter != m_chunks.end();
+}
+
+void Planet::create_chunk( const Vector& pos ) {
+	assert( pos.x < m_size.x );
+	assert( pos.y < m_size.y );
+	assert( pos.z < m_size.z );
+	assert( m_chunks.find( pos ) == m_chunks.end() ); // TODO: Turn this into an exception?
+
+	m_chunks[pos] = new Chunk( m_chunk_size );
+}
+
+std::size_t Planet::get_num_chunks() const {
+	return m_chunks.size();
+}
+
+void Planet::set_block( const Vector& chunk_pos, const Chunk::Vector& block_pos, const Class& cls ) {
+	assert( chunk_pos.x < m_size.x && chunk_pos.y < m_size.y && chunk_pos.z < m_size.z );
+	assert( block_pos.x < m_chunk_size.x && block_pos.y < m_chunk_size.y && block_pos.z < m_chunk_size.z );
+
+	// Get chunk.
+	assert( has_chunk( chunk_pos ) );
+	Chunk* chunk( m_chunks[chunk_pos] );
+
+	// Cache class.
+	ClassCache::IdType internal_id( m_class_cache.cache( cls ) );
+
+	// If block was set before, forget old class.
+	if( chunk->is_block_set( block_pos ) ) {
+		m_class_cache.forget( m_class_cache.get_class( chunk->get_block( block_pos ) ) );
 	}
 
-	const Chunk* chunk( get_chunk( chunk_pos ) );
-	if( chunk == nullptr ) {
-		return nullptr;
-	}
+	// Set block.
+	chunk->set_block( block_pos, internal_id );
+}
 
-	// Nothing set?
-	ClassCache::IdType class_id( chunk->get_block( block_pos ) );
-	if( !class_id ) {
+const Class* Planet::find_block( const Vector& chunk_pos, const Chunk::Vector& block_pos ) const {
+	assert( chunk_pos.x < m_size.x && chunk_pos.y < m_size.y && chunk_pos.z < m_size.z );
+	assert( block_pos.x < m_chunk_size.x && block_pos.y < m_chunk_size.y && block_pos.z < m_chunk_size.z );
+
+	// Get chunk.
+	ChunkMap::const_iterator chunk_iter( m_chunks.find( chunk_pos ) );
+	assert( chunk_iter != m_chunks.end() );
+
+	if( !chunk_iter->second->is_block_set( block_pos ) ) {
 		return nullptr;
 	}
 
 	// Get class.
-	const Class* cls( m_class_cache.get_class( class_id ) );
-	assert( cls );
-	if( !cls ) {
-		return nullptr;
-	}
-
-	return cls;
+	return &m_class_cache.get_class( chunk_iter->second->get_block( block_pos ) );
 }
 
-const ClassCache& Planet::get_class_cache() const {
-	return m_class_cache;
-}
+void Planet::reset_block( const Vector& chunk_pos, const Chunk::Vector& block_pos ) {
+	assert( chunk_pos.x < m_size.x && chunk_pos.y < m_size.y && chunk_pos.z < m_size.z );
+	assert( block_pos.x < m_chunk_size.x && block_pos.y < m_chunk_size.y && block_pos.z < m_chunk_size.z );
 
-bool Planet::set_block( const Coordinate& coord, const Class& cls ) {
-	Vector chunk_pos;
-	Chunk::Vector block_pos;
+	// Get chunk.
+	assert( has_chunk( chunk_pos ) );
+	Chunk* chunk( m_chunks[chunk_pos] );
 
-	if( !transform_coordinate( coord, chunk_pos, block_pos ) ) {
-		return false;
+	if( !chunk->is_block_set( block_pos ) ) {
+		return;
 	}
 
-	// Chunk must exist!
-	ChunkMap::iterator c_iter( m_chunks.find( chunk_pos ) );
-	if( c_iter == m_chunks.end() ) {
-		return false;
-	}
+	// Forget class.
+	m_class_cache.forget( m_class_cache.get_class( chunk->get_block( block_pos ) ) );
 
-	// Forget old block's class if any.
-	ClassCache::IdType old_class_id( c_iter->second->get_block( block_pos ) );
-
-	if( old_class_id ) {
-		const Class* old_class( m_class_cache.get_class( old_class_id ) );
-		assert( old_class != nullptr );
-
-		m_class_cache.forget( *old_class );
-	}
-
-	// Cache class.
-	ClassCache::IdType class_id( m_class_cache.cache( cls ) );
-
-	c_iter->second->set_block( block_pos, class_id );
-	return true;
-}
-
-bool Planet::create_chunk( const Vector& pos ) {
-	if( pos.x >= m_size.x || pos.y >= m_size.y || pos.z >= m_size.z ) {
-		return false;
-	}
-
-	if( get_chunk( pos ) != nullptr ) {
-		return false;
-	}
-
-	m_chunks[pos] = new Chunk( m_chunk_size );
-	return true;
-}
-
-bool Planet::reset_block( const Coordinate& coord ) {
-	Vector chunk_pos;
-	Chunk::Vector block_pos;
-
-	if( !transform_coordinate( coord, chunk_pos, block_pos ) ) {
-		return false;
-	}
-
-	// Chunk must exist!
-	ChunkMap::iterator c_iter( m_chunks.find( chunk_pos ) );
-	if( c_iter == m_chunks.end() ) {
-		return false;
-	}
-
-	// Forget old block's class if any.
-	ClassCache::IdType class_id( c_iter->second->get_block( block_pos ) );
-
-	if( !class_id ) {
-		return false;
-	}
-
-	// Get class and decrease use counter.
-	const Class* cls( m_class_cache.get_class( class_id ) );
-	assert( cls );
-	if( !cls ) {
-		return false;
-	}
-
-	c_iter->second->set_block( block_pos, 0 );
-	m_class_cache.forget( *cls );
-
-	return true;
+	// Reset block.
+	chunk->reset_block( block_pos );
 }
 
 }

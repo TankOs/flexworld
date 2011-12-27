@@ -21,7 +21,7 @@ set(
 	#${INC_DIR}/FlexWorld/Message.hpp
 	#${INC_DIR}/FlexWorld/MessageMeta.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
-	#${INC_DIR}/FlexWorld/Planet.hpp
+	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
 	#${INC_DIR}/FlexWorld/Server.hpp
@@ -36,7 +36,7 @@ set(
 	#${SRC_DIR}/FlexWorld/Message.cpp
 	#${SRC_DIR}/FlexWorld/MessageMeta.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
-	#${SRC_DIR}/FlexWorld/Planet.cpp
+	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
 	#${SRC_DIR}/FlexWorld/Server.cpp
