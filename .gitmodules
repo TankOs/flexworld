@@ -1,0 +1,6 @@
+[submodule "extlibs/SFGUI"]
+	path = extlibs/SFGUI
+	url = git://github.com/TankOs/SFGUI.git
+[submodule "extlibs/SFML"]
+	path = extlibs/SFML
+	url = git://github.com/LaurentGomila/SFML.git

@@ -4,13 +4,18 @@ project( FlexWorldTest )
 find_package( Boost 1.46 REQUIRED unit_test_framework )
 find_package( SFML 2.0 )
 
+set( DATA_DIRECTORY ${PROJECT_SOURCE_DIR}/data )
+configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config.hpp @ONLY )
+
 set(
 	SOURCES
+	${PROJECT_BINARY_DIR}/Config.hpp
 	Test.cpp
 	Test.cpp
 	TestChunk.cpp
 	TestClass.cpp
 	TestClassCache.cpp
+	TestClassDriver.cpp
 	TestFlexID.cpp
 	TestPlanet.cpp
 	TestResource.cpp
@@ -23,6 +28,7 @@ endif()
 include_directories( "../lib/include/" )
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
+include_directories( ${PROJECT_BINARY_DIR} )
 
 add_executable( test ${SOURCES} )
 

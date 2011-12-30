@@ -108,7 +108,6 @@ void MenuState::init() {
 		for( uint8_t part_index = 0; part_index < num_parts; ++part_index ) {
 			float angle( static_cast<float>( std::rand() % 3600) / 10.f );
 			float scale( static_cast<float>( std::rand() % (100 - 49) + 50 ) / 100.f );
-			uint8_t alpha( static_cast<uint8_t>( std::rand() % (255 - 149) + 150 ) );
 			sf::Vector2f offset(
 				static_cast<float>( std::rand() % 50 ),
 				static_cast<float>( std::rand() % 20 )
@@ -119,21 +118,11 @@ void MenuState::init() {
 			cloud_sprite.SetPosition( cloud_position.x + offset.x, cloud_position.y + offset.y );
 			cloud_sprite.SetScale( scale, scale );
 			cloud_sprite.SetRotation( angle );
-			cloud_sprite.SetBlendMode( sf::Blend::Add );
-			cloud_sprite.SetColor( sf::Color( 255, 255, 255, alpha ) );
+			cloud_sprite.SetColor( sf::Color( 255, 255, 255, 40 ) );
 
 			m_cloud_sprites.push_back( cloud_sprite );
 		}
 	}
-
-	// Setup sky.
-	m_morphers[0].start( sf::Color( 0x15, 0x7f, 0xd0 ), sf::Color( 0x00, 0x00, 0x00 ), 60000 );
-	m_morphers[1].start( sf::Color( 0x92, 0xc5, 0xec ), sf::Color( 0x15, 0x43, 0x66 ), 60000 );
-
-	m_sky_shape.AddPoint( static_cast<float>( get_render_target().GetWidth() ), 0.f, m_morphers[0].get_current_color() );
-	m_sky_shape.AddPoint( 0.f, 0.f, m_morphers[0].get_current_color() );
-	m_sky_shape.AddPoint( 0.f, static_cast<float>( get_render_target().GetHeight() ), m_morphers[1].get_current_color() );
-	m_sky_shape.AddPoint( static_cast<float>( get_render_target().GetWidth() ), static_cast<float>( get_render_target().GetHeight() ), m_morphers[1].get_current_color() );
 }
 
 void MenuState::cleanup() {
@@ -175,23 +164,14 @@ void MenuState::update( uint32_t delta ) {
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
 		cloud_iter->Move( f_time * 10.f, f_time * -5.f );
 
-		if( cloud_iter->GetPosition().x - cloud_iter->GetSize().x / 2.f >= static_cast<float>( get_render_target().GetWidth() ) ) {
-			cloud_iter->Move( -static_cast<float>( get_render_target().GetWidth() ) - cloud_iter->GetSize().x, 0.f );
+		if( cloud_iter->GetGlobalBounds().Left >= static_cast<float>( get_render_target().GetWidth() ) ) {
+			cloud_iter->Move( -static_cast<float>( get_render_target().GetWidth() ) - cloud_iter->GetGlobalBounds().Width, 0.f );
 		}
 
-		if( cloud_iter->GetPosition().y + cloud_iter->GetSize().x / 2.f <= 0.f ) {
-			cloud_iter->Move( 0.f, static_cast<float>( get_render_target().GetHeight() ) + cloud_iter->GetSize().x );
+		if( cloud_iter->GetGlobalBounds().Top + cloud_iter->GetGlobalBounds().Height <= 0.f ) {
+			cloud_iter->Move( 0.f, static_cast<float>( get_render_target().GetHeight() ) + cloud_iter->GetGlobalBounds().Height );
 		}
 	}
-
-	// Morph and update sky colors.
-	m_morphers[0].update( delta );
-	m_morphers[1].update( delta );
-
-	m_sky_shape.SetPointColor( 0, m_morphers[0].get_current_color() );
-	m_sky_shape.SetPointColor( 1, m_morphers[0].get_current_color() );
-	m_sky_shape.SetPointColor( 2, m_morphers[1].get_current_color() );
-	m_sky_shape.SetPointColor( 3, m_morphers[1].get_current_color() );
 }
 
 void MenuState::render() const {
@@ -199,15 +179,12 @@ void MenuState::render() const {
 
 	window.Clear( sf::Color( 0x12, 0x34, 0x56 ) );
 
-	// Sky.
-	window.Draw( m_sky_shape );
-
 	// Clouds.
 	SpriteList::const_iterator cloud_iter( m_cloud_sprites.begin() );
 	SpriteList::const_iterator cloud_iter_end( m_cloud_sprites.end() );
 
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		window.Draw( *cloud_iter );
+		window.Draw( *cloud_iter, sf::BlendAdd );
 	}
 
 	m_desktop.Expose( window );
@@ -261,14 +238,13 @@ void MenuState::on_start_game_click() {
 void MenuState::on_options_accept() {
 	// Apply user settings.
 	Shared::get().get_user_settings() = m_options_window->get_user_settings();
-	check_required_settings();
-
 	Shared::get().get_user_settings().save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
 
 	m_window->Show( true );
+	check_required_settings();
 }
 
 void MenuState::on_options_reject() {
@@ -276,6 +252,7 @@ void MenuState::on_options_reject() {
 	m_options_window.reset();
 
 	m_window->Show( true );
+	check_required_settings();
 }
 
 void MenuState::on_quit_click() {
@@ -287,6 +264,7 @@ void MenuState::on_start_game_accept() {
 	m_start_game_window.reset();
 
 	m_window->Show( true );
+	check_required_settings();
 }
 
 void MenuState::on_start_game_reject() {
@@ -294,6 +272,7 @@ void MenuState::on_start_game_reject() {
 	m_start_game_window.reset();
 
 	m_window->Show( true );
+	check_required_settings();
 }
 
 void MenuState::check_required_settings() {
