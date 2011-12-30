@@ -23,27 +23,56 @@ Class ClassDriver::load( const std::string& path ) {
 	std::string string;
 
 	// Read ID.
-	try {
-		doc["ID"] >> string;
+	{
+		const YAML::Node* id_node( doc.FindValue( "ID" ) );
+		if( !id_node ) {
+			throw LoadException( "No ID set." );
+		}
+
+		*id_node >> string;
 
 		FlexID id;
 		if( !id.parse( string ) ) {
 			throw LoadException( "Invalid ID." );
 		}
+		else if( !id.is_valid_resource() ) {
+			throw LoadException( "ID is not a resource." );
+		}
 
 		cls.reset( new Class( id ) );
 	}
-	catch( const YAML::Exception& e ) {
-		throw LoadException( "Failed to parse ID." );
-	}
 
 	// Read name.
-	try {
-		doc["Name"] >> string;
+	{
+		const YAML::Node* name_node( doc.FindValue( "Name" ) );
+		if( !name_node ) {
+			string = "Unnamed";
+		}
+		else {
+			*name_node >> string;
+		}
+
 		cls->set_name( string );
 	}
-	catch( const YAML::Exception& e ) {
-		throw LoadException( "Failed to parse name." );
+
+	// Read model.
+	{
+		const YAML::Node* model_node( doc.FindValue( "Model" ) );
+		if( !model_node ) {
+			throw LoadException( "No model set." );
+		}
+
+		*model_node >> string;
+
+		FlexID id;
+		if( !id.parse( string ) ) {
+			throw LoadException( "Invalid ID." );
+		}
+		else if( !id.is_valid_resource() ) {
+			throw LoadException( "Model is not a resource." );
+		}
+
+		cls->set_model( Resource( id ) );
 	}
 
 	// Read origin.
@@ -68,49 +97,56 @@ Class ClassDriver::load( const std::string& path ) {
 	}
 
 	// Read hooks.
-	const YAML::Node* hooks_node = doc.FindValue( "Hooks" );
-	if( hooks_node ) {
-		YAML::Iterator hook_iter = hooks_node->begin();
-		YAML::Iterator hook_iter_end = hooks_node->end();
-		std::string hook_name;
-		sf::Vector3f hook_origin;
+	{
+		const YAML::Node* hooks_node = doc.FindValue( "Hooks" );
+		if( hooks_node ) {
+			YAML::Iterator hook_iter = hooks_node->begin();
+			YAML::Iterator hook_iter_end = hooks_node->end();
+			std::string hook_name;
+			sf::Vector3f hook_origin;
 
-		for( ; hook_iter != hook_iter_end; ++hook_iter ) {
-			hook_iter.first() >> hook_name;
+			for( ; hook_iter != hook_iter_end; ++hook_iter ) {
+				hook_iter.first() >> hook_name;
 
-			if( hook_iter.second().size() != 3 ) {
-				throw LoadException( "Invalid hook origin (" + hook_name + ")." );
+				if( hook_iter.second().size() != 3 ) {
+					throw LoadException( "Invalid hook origin (" + hook_name + ")." );
+				}
+
+				try {
+					hook_iter.second()[0] >> hook_origin.x;
+					hook_iter.second()[1] >> hook_origin.y;
+					hook_iter.second()[2] >> hook_origin.z;
+				}
+				catch( const YAML::Exception& e ) {
+					throw LoadException( "Invalid hook origin value (" + hook_name + ")." );
+				}
+
+				cls->set_hook( hook_name, hook_origin );
 			}
-
-			try {
-				hook_iter.second()[0] >> hook_origin.x;
-				hook_iter.second()[1] >> hook_origin.y;
-				hook_iter.second()[2] >> hook_origin.z;
-			}
-			catch( const YAML::Exception& e ) {
-				throw LoadException( "Invalid hook origin value (" + hook_name + ")." );
-			}
-
-			cls->set_hook( hook_name, hook_origin );
 		}
 	}
 
 	// Read textures.
-	const YAML::Node* textures_node = doc.FindValue( "Textures" );
-	if( textures_node ) {
-		YAML::Iterator texture_iter = textures_node->begin();
-		YAML::Iterator texture_iter_end = textures_node->end();
-		std::string texture_id;
+	{
+		const YAML::Node* textures_node = doc.FindValue( "Textures" );
+		if( textures_node ) {
+			YAML::Iterator texture_iter = textures_node->begin();
+			YAML::Iterator texture_iter_end = textures_node->end();
+			std::string texture_id;
 
-		for( ; texture_iter != texture_iter_end; ++texture_iter ) {
-			*texture_iter >> texture_id;
+			for( ; texture_iter != texture_iter_end; ++texture_iter ) {
+				*texture_iter >> texture_id;
 
-			FlexID flex_id;
-			if( !flex_id.parse( texture_id ) ) {
-				throw LoadException( "Invalid texture ID (" + texture_id + ")." );
+				FlexID flex_id;
+				if( !flex_id.parse( texture_id ) ) {
+					throw LoadException( "Invalid texture ID (" + texture_id + ")." );
+				}
+				else if( !flex_id.is_valid_resource() ) {
+					throw LoadException( "Texture ID is not a resource (" + texture_id + ")." );
+				}
+
+				cls->add_texture( Resource( flex_id ) );
 			}
-
-			cls->add_texture( Resource( flex_id ) );
 		}
 	}
 

@@ -10,6 +10,27 @@ Class::Class( const FlexID& id ) :
 	assert( m_id.is_valid_resource() );
 }
 
+Class::Class( const Class& other ) {
+	*this = other;
+}
+
+const Class& Class::operator=( const Class& other ) {
+	m_hooks = other.m_hooks;
+	m_textures = other.m_textures;
+	m_id = other.m_id;
+	m_name = other.m_name;
+	m_origin = other.m_origin;
+
+	if( other.m_model ) {
+		m_model.reset( new Resource( *other.m_model ) );
+	}
+	else {
+		m_model.reset();
+	}
+
+	return *this;
+}
+
 const FlexID& Class::get_id() const {
 	return m_id;
 }
@@ -59,6 +80,18 @@ std::size_t Class::get_num_hooks() const {
 
 bool Class::has_texture( std::size_t index ) const {
 	return index < m_textures.size();
+}
+
+bool Class::has_model() const {
+	return m_model.get() != nullptr;
+}
+
+const Resource& Class::get_model() const {
+	return *m_model;
+}
+
+void Class::set_model( const Resource& model ) {
+	m_model.reset( new Resource( model ) );
 }
 
 }

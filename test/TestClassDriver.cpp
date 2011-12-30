@@ -33,5 +33,7 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 		if( cls.has_texture( 1 ) ) {
 			BOOST_CHECK( cls.get_texture( 1 ).get_id().get() == "test/dummy.png" );
 		}
+
+		BOOST_CHECK( cls.has_model() && cls.get_model().get_id().get() == "test/block.fwm" );
 	}
 }

@@ -19,6 +19,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 0, 0, 0 ) );
 		BOOST_CHECK( cls.get_num_textures() == 0 );
 		BOOST_CHECK( cls.get_num_hooks() == 0 );
+		BOOST_CHECK( cls.has_model() == false );
 	}
 
 	// Check basic properties.
@@ -32,6 +33,9 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 
 		cls.set_origin( sf::Vector3f( 1, 2, 3 ) );
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 1, 2, 3 ) );
+
+		cls.set_model( Resource( id ) );
+		BOOST_CHECK( cls.get_model().get_id() == id );
 	}
 
 	// Check adding textures.

@@ -2,10 +2,11 @@
 
 #include <FlexWorld/Resource.hpp>
 
+#include <SFML/System/Vector3.hpp>
 #include <string>
 #include <map>
 #include <vector>
-#include <SFML/System/Vector3.hpp>
+#include <memory>
 
 namespace flex {
 
@@ -18,6 +19,17 @@ class Class {
 		 * @param id ID.
 		 */
 		Class( const FlexID& id );
+
+		/** Copy ctor.
+		 * @param other Other class.
+		 */
+		Class( const Class& other );
+
+		/** Assignment.
+		 * @param other Other class.
+		 * @return *this.
+		 */
+		const Class& operator=( const Class& other );
 
 		/** Get ID.
 		 * @return ID.
@@ -85,6 +97,22 @@ class Class {
 		 */
 		const sf::Vector3f* find_hook( const std::string& id ) const;
 
+		/** Check if class has a model assigned.
+		 * @return true if model assigned.
+		 */
+		bool has_model() const;
+
+		/** Get model.
+		 * Undefined behaviour in case no model is set.
+		 * @return Model.
+		 */
+		const Resource& get_model() const;
+
+		/** Set model.
+		 * @param model Model.
+		 */
+		void set_model( const Resource& model );
+
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
@@ -94,6 +122,7 @@ class Class {
 		FlexID m_id;
 		std::string m_name;
 		sf::Vector3f m_origin;
+		std::unique_ptr<Resource> m_model;
 };
 
 }
