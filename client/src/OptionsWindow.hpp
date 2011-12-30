@@ -46,9 +46,6 @@ class OptionsWindow : public sfg::Window {
 		void show_page( sfg::Widget::Ptr page );
 		void refresh_action_button_labels();
 
-		void on_account_click();
-		void on_controls_click();
-
 		void on_ok_click();
 		void on_cancel_click();
 

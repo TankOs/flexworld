@@ -17,12 +17,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Widgets.
 	window->SetTitle( L"Options" );
 
-	sfg::Button::Ptr account_button( sfg::Button::Create( L"Account" ) );
-	sfg::Button::Ptr controls_button( sfg::Button::Create( L"Controls" ) );
-	sfg::Button::Ptr graphics_button( sfg::Button::Create( L"Video" ) );
-	sfg::Button::Ptr audio_button( sfg::Button::Create( L"Audio" ) );
-
-	sfg::Button::Ptr ok_button( sfg::Button::Create( L"OK" ) );
+	sfg::Button::Ptr ok_button( sfg::Button::Create( L"Apply changes" ) );
 	sfg::Button::Ptr cancel_button( sfg::Button::Create( L"Cancel" ) );
 
 	// Account.
@@ -66,11 +61,6 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_waiting_for_input_label->Show( false );
 
 	// Layout.
-	sfg::Box::Ptr top_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
-	top_button_box->Pack( account_button, true );
-	top_button_box->Pack( controls_button, true );
-	top_button_box->Pack( graphics_button, true );
-	top_button_box->Pack( audio_button, true );
 
 	// Account.
 	sfg::Table::Ptr acc_table( sfg::Table::Create() );
@@ -81,8 +71,11 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	acc_table->Attach( sfg::Label::Create( L"Serial:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	acc_table->Attach( window->m_serial_entry, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
-	window->m_account_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
-	window->m_account_page_box->Pack( acc_table, false );
+	sfg::Frame::Ptr account_frame( sfg::Frame::Create( L"Account data" ) );
+	account_frame->Add( acc_table );
+
+	sfg::Box::Ptr account_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
+	account_page_box->Pack( account_frame, false );
 
 	// Controls.
 	sfg::Table::Ptr mouse_table( sfg::Table::Create() );
@@ -137,30 +130,33 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	sfg::Frame::Ptr bindings_frame( sfg::Frame::Create( L"Bindings" ) );
 	bindings_frame->Add( bindings_table );
 
-	window->m_controls_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
-	window->m_controls_page_box->Pack( mouse_frame, false );
-	window->m_controls_page_box->Pack( bindings_frame, false );
-	window->m_controls_page_box->Pack( window->m_waiting_for_input_label, false );
+	sfg::Box::Ptr controls_page_box = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
+	controls_page_box->Pack( mouse_frame, false );
+	controls_page_box->Pack( bindings_frame, false );
+	controls_page_box->Pack( window->m_waiting_for_input_label, false );
+
+	// Notebook.
+	sfg::Notebook::Ptr notebook( sfg::Notebook::Create() );
+	notebook->AppendPage( account_page_box, sfg::Label::Create( L"Account" ) );
+	notebook->AppendPage( controls_page_box, sfg::Label::Create( L"Controls" ) );
 
 	// ---
 	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
 	bottom_button_box->Pack( cancel_button, false );
 	bottom_button_box->Pack( ok_button, false );
 
+	sfg::Alignment::Ptr alignment( sfg::Alignment::Create() );
+	alignment->Add( bottom_button_box );
+	alignment->SetAlignment( sf::Vector2f( 1.0f, 0.0f ) );
+	alignment->SetScale( sf::Vector2f( 0.0f, 0.0f ) );
+
 	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
-	content_box->Pack( top_button_box, false );
-	content_box->Pack( window->m_account_page_box, true );
-	content_box->Pack( window->m_controls_page_box, true );
-	content_box->Pack( bottom_button_box, false );
+	content_box->Pack( notebook, true );
+	content_box->Pack( alignment, false );
 
 	window->Add( content_box );
 
-	window->show_page( window->m_account_page_box );
-
 	// Signals.
-	account_button->OnClick.Connect( &OptionsWindow::on_account_click, &*window );
-
-	controls_button->OnClick.Connect( &OptionsWindow::on_controls_click, &*window );
 	window->m_mouse_sensitivity_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_sensitivity_change, &*window );
 
 	ok_button->OnClick.Connect( &OptionsWindow::on_ok_click, &*window );
@@ -170,22 +166,14 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->refresh_action_button_labels();
 	window->on_sensitivity_change();
 
+	// Cycle through all notebook pages so that the size is maximized.
+	while( notebook->GetCurrentPage() + 1 < notebook->GetPageCount() ) {
+		notebook->NextPage();
+	}
+
+	notebook->SetCurrentPage( 0 );
+
 	return window;
-}
-
-void OptionsWindow::show_page( sfg::Widget::Ptr page ) {
-	m_account_page_box->Show( false );
-	m_controls_page_box->Show( false );
-
-	page->Show( true );
-}
-
-void OptionsWindow::on_account_click() {
-	show_page( m_account_page_box );
-}
-
-void OptionsWindow::on_controls_click() {
-	show_page( m_controls_page_box );
 }
 
 void OptionsWindow::on_ok_click() {
@@ -216,7 +204,10 @@ void OptionsWindow::HandleEvent( const sf::Event& event ) {
 
 		// Map key/button.
 		if( event.Type == sf::Event::KeyPressed ) {
-			m_user_settings.get_controls().map_key( event.Key.Code, m_next_action );
+			// Do not process ESC, as it cancels the binding.
+			if( event.Key.Code != sf::Keyboard::Escape ) {
+				m_user_settings.get_controls().map_key( event.Key.Code, m_next_action );
+			}
 		}
 		else {
 			m_user_settings.get_controls().map_button( event.MouseButton.Button, m_next_action );
@@ -238,6 +229,7 @@ void OptionsWindow::on_action_button_click() {
 	m_active_action_button = sfg::DynamicPointerCast<sfg::Button>( sfg::Context::Get().GetActiveWidget() );
 	m_next_action = m_button_actions[m_active_action_button];
 
+	m_active_action_button->SetLabel( "..." );
 	m_waiting_for_input_label->Show( true );
 }
 

@@ -73,3 +73,11 @@ Label.important {
 Frame {
 	BorderColor: #48628cff;
 }
+
+Notebook {
+	BackgroundColor: #2e4872ff;
+	BackgroundColorPrelight: #2e4872ff;
+	BackgroundColorDark: #1e3862ff;
+	BorderColor: #2e4872ff;
+	Padding: 10;
+}
