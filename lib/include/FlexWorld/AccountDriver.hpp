@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlexWorld/Exception.hpp>
+
 #include <string>
 
 namespace flex {
@@ -10,18 +12,23 @@ class Account;
  */
 class AccountDriver {
 	public:
+		/** Deserialize exception.
+		 * Thrown when deserialize() fails. Check what() for the reason.
+		 */
+		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( DeserializeException );
+
 		/** Serialize account.
 		 * @param account Account.
-		 * @return YAML or empty in case of error.
+		 * @return YAML (output).
 		 */
 		static std::string serialize( const Account& account );
 
 		/** Deserialize account.
 		 * @param data Serialized data.
-		 * @param account Deserialized account (untouched if deserializing fails).
-		 * @return true on success.
+		 * @return Deserialized account.
+		 * @throws DeserializeException when parsing the data failed.
 		 */
-		static bool deserialize( const std::string& data, Account& account );
+		static Account deserialize( const std::string& data );
 
 	private:
 };

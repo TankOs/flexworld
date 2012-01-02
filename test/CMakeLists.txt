@@ -13,6 +13,7 @@ set(
 	Test.cpp
 	Test.cpp
 	TestAccount.cpp
+	TestAccountDriver.cpp
 	TestChunk.cpp
 	TestClass.cpp
 	TestClassCache.cpp
