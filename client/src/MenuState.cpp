@@ -8,6 +8,8 @@
 #include <ctime>
 #include <cstdlib>
 
+const bool SHOW_NOTICES = false;
+
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target )
@@ -45,6 +47,7 @@ void MenuState::init() {
 	sfg::Label::Ptr notice2( sfg::Label::Create( L"material without explicit permission!!!" ) );
 
 	m_settings_hint_label = sfg::Label::Create( L"Please set your username and serial in the options dialog." );
+	m_settings_hint_label->Show( false );
 
 	notice0->SetClass( "important" );
 	notice1->SetClass( "important" );
@@ -60,9 +63,12 @@ void MenuState::init() {
 	vbox->Pack( options_button, false );
 	vbox->Pack( quit_button, false );
 	vbox->Pack( m_settings_hint_label, false );
-	vbox->Pack( notice0, false );
-	vbox->Pack( notice1, false );
-	vbox->Pack( notice2, false );
+
+	if( SHOW_NOTICES ) {
+		vbox->Pack( notice0, false );
+		vbox->Pack( notice1, false );
+		vbox->Pack( notice2, false );
+	}
 
 	m_window = sfg::Window::Create();
 	m_window->SetId( "menu" );
@@ -81,6 +87,7 @@ void MenuState::init() {
 	m_desktop.LoadThemeFromFile( "data/gui/menu.theme" );
 	check_required_settings();
 
+	m_window->SetRequisition( sf::Vector2f( 400.f, 0.f ) );
 	m_window->SetPosition(
 		sf::Vector2f(
 			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_window->GetAllocation().Width / 2.f,
@@ -252,7 +259,6 @@ void MenuState::on_options_reject() {
 	m_options_window.reset();
 
 	m_window->Show( true );
-	check_required_settings();
 }
 
 void MenuState::on_quit_click() {
@@ -264,7 +270,6 @@ void MenuState::on_start_game_accept() {
 	m_start_game_window.reset();
 
 	m_window->Show( true );
-	check_required_settings();
 }
 
 void MenuState::on_start_game_reject() {
@@ -272,7 +277,6 @@ void MenuState::on_start_game_reject() {
 	m_start_game_window.reset();
 
 	m_window->Show( true );
-	check_required_settings();
 }
 
 void MenuState::check_required_settings() {

@@ -19,13 +19,14 @@ Window#menu * {
 	/*FontName: data/gui/orbitron_bold.ttf;*/
 }
 
-Window#menu Button {
-	BorderWidth: 2;
-}
-
 Button {
 	BackgroundColor: #48628cff;
 	BorderColor: #48628cff;
+	Padding: 7;
+}
+
+Window#menu Button {
+	BorderWidth: 2;
 	Padding: 10;
 }
 
@@ -74,10 +75,29 @@ Frame {
 	BorderColor: #48628cff;
 }
 
+Separator {
+	Color: #48628cff;
+}
+
 Notebook {
 	BackgroundColor: #2e4872ff;
 	BackgroundColorPrelight: #2e4872ff;
 	BackgroundColorDark: #1e3862ff;
 	BorderColor: #2e4872ff;
 	Padding: 10;
+}
+
+ComboBox {
+	BackgroundColor: #48628cff;
+	BorderColor: #48628cff;
+	Padding: 10;
+	HighlightedColor: #58729cff;
+}
+
+ComboBox:PRELIGHT {
+	BackgroundColor: #58729cff;
+}
+
+ComboBox:ACTIVE {
+	Color: #ffffffff;
 }

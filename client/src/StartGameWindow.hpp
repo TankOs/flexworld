@@ -21,8 +21,8 @@ class StartGameWindow : public sfg::Window {
 	private:
 		StartGameWindow();
 
-		sfg::Entry::Ptr m_game_mode_entry;
-		sfg::Entry::Ptr m_savegame_entry;
+		sfg::ComboBox::Ptr m_game_mode_combo;
+		sfg::ComboBox::Ptr m_savegame_combo;
 		sfg::Entry::Ptr m_password_entry;
 		sfg::CheckButton::Ptr m_public_check;
 		sfg::Scale::Ptr m_max_players_scale;
