@@ -10,16 +10,15 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
-	#${INC_DIR}/FlexWorld/Account.hpp
 	#${INC_DIR}/FlexWorld/AccountDriver.hpp
 	#${INC_DIR}/FlexWorld/Config.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
 	#${INC_DIR}/FlexWorld/Server.hpp
-	#${SRC_DIR}/FlexWorld/Account.cpp
 	#${SRC_DIR}/FlexWorld/AccountDriver.cpp
 	#${SRC_DIR}/FlexWorld/Config.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
 	#${SRC_DIR}/FlexWorld/Server.cpp
+	${INC_DIR}/FlexWorld/Account.hpp
 	${INC_DIR}/FlexWorld/Chunk.hpp
 	${INC_DIR}/FlexWorld/Class.hpp
 	${INC_DIR}/FlexWorld/ClassCache.hpp
@@ -30,6 +29,7 @@ set(
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
+	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/Chunk.cpp
 	${SRC_DIR}/FlexWorld/Class.cpp
 	${SRC_DIR}/FlexWorld/ClassCache.cpp

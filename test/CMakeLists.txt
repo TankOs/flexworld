@@ -12,6 +12,7 @@ set(
 	${PROJECT_BINARY_DIR}/Config.hpp
 	Test.cpp
 	Test.cpp
+	TestAccount.cpp
 	TestChunk.cpp
 	TestClass.cpp
 	TestClassCache.cpp
