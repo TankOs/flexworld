@@ -12,10 +12,8 @@ set(
 	SOURCES
 	#${INC_DIR}/FlexWorld/Config.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
-	#${INC_DIR}/FlexWorld/Server.hpp
 	#${SRC_DIR}/FlexWorld/Config.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
-	#${SRC_DIR}/FlexWorld/Server.cpp
 	${INC_DIR}/FlexWorld/Account.hpp
 	${INC_DIR}/FlexWorld/AccountDriver.hpp
 	${INC_DIR}/FlexWorld/Chunk.hpp
@@ -28,6 +26,8 @@ set(
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
+	${INC_DIR}/FlexWorld/SaveInfo.hpp
+	${INC_DIR}/FlexWorld/Server.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/AccountDriver.cpp
 	${SRC_DIR}/FlexWorld/Chunk.cpp
@@ -40,6 +40,8 @@ set(
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
+	${SRC_DIR}/FlexWorld/SaveInfo.cpp
+	${SRC_DIR}/FlexWorld/Server.cpp
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )

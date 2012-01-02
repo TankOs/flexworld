@@ -9,6 +9,7 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 
 set(
 	SOURCES
+	#TestServer.cpp
 	${PROJECT_BINARY_DIR}/Config.hpp
 	Test.cpp
 	Test.cpp
@@ -23,6 +24,7 @@ set(
 	TestMessageMeta.cpp
 	TestPlanet.cpp
 	TestResource.cpp
+	TestSaveInfo.cpp
 )
 
 if( NOT Boost_USE_STATIC_LIBS )
