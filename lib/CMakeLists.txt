@@ -27,6 +27,7 @@ set(
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
+	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/AccountDriver.cpp
@@ -41,6 +42,7 @@ set(
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
+	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 )
 

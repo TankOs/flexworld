@@ -1,0 +1,8 @@
+Save:
+  Meta:
+    Name: Unit test save
+    Timestamp: 12345
+  Paths:
+    Entities: entities.fwe
+    Planets: planets
+    Accounts: accounts

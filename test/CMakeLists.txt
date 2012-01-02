@@ -25,6 +25,7 @@ set(
 	TestPlanet.cpp
 	TestResource.cpp
 	TestSaveInfo.cpp
+	TestSaveInfoDriver.cpp
 )
 
 if( NOT Boost_USE_STATIC_LIBS )
