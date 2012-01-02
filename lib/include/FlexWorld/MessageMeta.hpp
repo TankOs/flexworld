@@ -6,6 +6,9 @@
 namespace flex {
 
 /** Meta information for a message.
+ *
+ * For better performance, try to put string fields at the very end so moving
+ * around memory in Message is avoided.
  */
 class MessageMeta {
 	public:

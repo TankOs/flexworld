@@ -1,9 +1,7 @@
 #include <FlexWorld/Message.hpp>
 
-#include <stdexcept>
-#include <limits>
+#include <cassert>
 #include <cstring>
-#include <iostream> // XXX 
 
 // TODO: Endianness.
 
@@ -12,149 +10,134 @@ namespace flex {
 Message::Message( const MessageMeta& meta ) :
 	m_buffer( meta.get_minimum_size(), 0 ),
 	m_indices( meta.get_num_fields(), 0 ),
-	m_meta( meta ),
-	m_current_field( 0 )
+	m_meta( meta )
 {
 	// Initialize indices.
 	std::size_t offset( 0 );
 
 	for( std::size_t field = 0; field < meta.get_num_fields(); ++field ) {
 		m_indices[field] = offset;
-		offset += meta.get_type_size( meta.get_field_type( field ) );
+		offset += MessageMeta::get_field_size( meta.get_field( field ) );
 	}
 }
 
-std::size_t Message::get_size() const {
-	return m_buffer.size();
+MessageMeta::LengthType Message::get_size() const {
+	return static_cast<MessageMeta::LengthType>( m_buffer.size() );
 }
 
-std::size_t Message::get_field_offset( std::size_t field ) const {
-	return m_indices.at( field );
+const MessageMeta& Message::get_meta() const {
+	return m_meta;
 }
 
-Message& Message::operator<<( uint8_t value ) {
-	if( !check_field( MessageMeta::BYTE ) ) {
-		throw ValueTypeMismatch( "BYTE not expected." );
-	}
-
-	*reinterpret_cast<uint8_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
-
-	return *this;
+MessageMeta::StringLengthType Message::get_string_length( std::size_t field ) const {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::STRING );
+	
+	return *reinterpret_cast<const MessageMeta::StringLengthType*>( &m_buffer[m_indices[field]] );
 }
 
-Message& Message::operator<<( int8_t value ) {
-	if( !check_field( MessageMeta::BYTE ) ) {
-		throw ValueTypeMismatch( "BYTE not expected." );
-	}
+std::string Message::get_string( std::size_t field ) const {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::STRING );
 
-	*reinterpret_cast<int8_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
-
-	return *this;
+	return std::string( reinterpret_cast<const char*>( &m_buffer.front() ) + m_indices[field] + sizeof( MessageMeta::StringLengthType ), get_string_length( field ) );
 }
 
-Message& Message::operator<<( uint16_t value ) {
-	if( !check_field( MessageMeta::WORD ) ) {
-		throw ValueTypeMismatch( "WORD not expected." );
-	}
+MessageMeta::DWordType Message::get_dword( std::size_t field ) const {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::DWORD );
 
-	*reinterpret_cast<uint16_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
-
-	return *this;
+	return *reinterpret_cast<const MessageMeta::DWordType*>( &m_buffer[m_indices[field]] );
 }
 
-Message& Message::operator<<( int16_t value ) {
-	if( !check_field( MessageMeta::WORD ) ) {
-		throw ValueTypeMismatch( "WORD not expected." );
-	}
+MessageMeta::WordType Message::get_word( std::size_t field ) const {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::WORD );
 
-	*reinterpret_cast<int16_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
-
-	return *this;
+	return *reinterpret_cast<const MessageMeta::WordType*>( &m_buffer[m_indices[field]] );
 }
 
-Message& Message::operator<<( uint32_t value ) {
-	if( !check_field( MessageMeta::DWORD ) ) {
-		throw ValueTypeMismatch( "DWORD not expected." );
-	}
+MessageMeta::ByteType Message::get_byte( std::size_t field ) const {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::BYTE );
 
-	*reinterpret_cast<uint32_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
-
-	return *this;
+	return *reinterpret_cast<const MessageMeta::ByteType*>( &m_buffer[m_indices[field]] );
 }
 
-Message& Message::operator<<( int32_t value ) {
-	if( !check_field( MessageMeta::DWORD ) ) {
-		throw ValueTypeMismatch( "DWORD not expected." );
-	}
+void Message::set_string( std::size_t field, const std::string& string ) {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::STRING );
 
-	*reinterpret_cast<int32_t*>( &m_buffer[m_indices[m_current_field]] ) = value;
-	increase_field_pointer();
+	std::size_t buffer_offset = m_indices[field];
 
-	return *this;
-}
+	// Fetch old length.
+	MessageMeta::StringLengthType old_length = static_cast<MessageMeta::StringLengthType>( *reinterpret_cast<MessageMeta::StringLengthType*>( &m_buffer[buffer_offset ] ) );
+	MessageMeta::StringLengthType length = static_cast<MessageMeta::StringLengthType>( string.size() );
 
-Message& Message::operator<<( const std::string& value ) {
-	if( !check_field( MessageMeta::STRING ) ) {
-		throw ValueTypeMismatch( "STRING not expected." );
-	}
+	// Check if we need to resize.
+	if( length > old_length ) {
+		// Need more bytes, enlarge buffer.
+		std::size_t old_buffer_length( m_buffer.size() );
+		m_buffer.resize( m_buffer.size() + (length - old_length) );
 
-	// Get old length first.
-	uint32_t* length = reinterpret_cast<uint32_t*>( &m_buffer[m_indices[m_current_field]] );
+		// Move following data and updates indices.
+		if( field + 1 < m_meta.get_num_fields() ) {
+			std::memmove(
+				&m_buffer[buffer_offset + sizeof( MessageMeta::StringLengthType ) + length],
+				&m_buffer[buffer_offset + sizeof( MessageMeta::StringLengthType ) + old_length],
+				old_buffer_length - buffer_offset - sizeof( MessageMeta::StringLengthType ) - old_length
+			);
 
-	// Update indices and resize buffer.
-	if( value.size() > *length ) {
-		std::size_t diff( value.size() - *length );
-
-		for( std::size_t field = m_current_field + 1; field < m_indices.size(); ++field ) {
-			m_indices[field] += diff;
+			for( std::size_t index_index = field + 1; index_index < m_indices.size(); ++index_index ) {
+				m_indices[index_index] += (length - old_length);
+			}
 		}
-
-		m_buffer.resize( m_buffer.size() + diff );
 	}
-	else if( value.size() < *length ) {
-		std::size_t diff( *length - value.size() );
+	else if( length < old_length ) {
+		// Too many bytes, shrink buffer.
+		std::size_t old_buffer_length( m_buffer.size() );
+		m_buffer.resize( m_buffer.size() - (old_length - length) );
 
-		for( std::size_t field = m_current_field + 1; field < m_indices.size(); ++field ) {
-			m_indices[field] -= diff;
+		// Move following data and updates indices.
+		if( field + 1 < m_meta.get_num_fields() ) {
+			std::memmove(
+				&m_buffer[buffer_offset + sizeof( MessageMeta::StringLengthType ) + length],
+				&m_buffer[buffer_offset + sizeof( MessageMeta::StringLengthType ) + old_length],
+				old_buffer_length - buffer_offset - sizeof( MessageMeta::StringLengthType ) - old_length
+			);
+
+			for( std::size_t index_index = field + 1; index_index < m_indices.size(); ++index_index ) {
+				m_indices[index_index] -= (old_length - length);
+			}
 		}
-
-		m_buffer.resize( m_buffer.size() - diff );
 	}
 
-	// Store string and update length.
-	length = reinterpret_cast<uint32_t*>( &m_buffer[m_indices[m_current_field]] );
-	*length = static_cast<uint32_t>( value.size() );
-	std::memcpy( (&m_buffer[m_indices[m_current_field]]) + sizeof( uint32_t ), value.c_str(), *length );
+	// Save new length.
+	*reinterpret_cast<MessageMeta::StringLengthType*>( &m_buffer[buffer_offset] ) = length;
 
-	increase_field_pointer();
-	return *this;
+	// Save string.
+	std::memcpy( &m_buffer[buffer_offset + sizeof( MessageMeta::StringLengthType )], string.c_str(), length );
 }
 
-inline bool Message::check_field( MessageMeta::FieldType type ) {
-	return m_current_field < m_meta.get_num_fields() && type == m_meta.get_field_type( m_current_field );
+void Message::set_dword( std::size_t field, MessageMeta::DWordType dword ) {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::DWORD );
+
+	*reinterpret_cast<MessageMeta::DWordType*>( &m_buffer[m_indices[field]] ) = dword;
 }
 
-std::size_t Message::get_current_field() const {
-	return m_current_field;
+void Message::set_word( std::size_t field, MessageMeta::WordType word ) {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::WORD );
+
+	*reinterpret_cast<MessageMeta::WordType*>( &m_buffer[m_indices[field]] ) = word;
 }
 
-void Message::set_next_field( std::size_t field ) {
-	if( field >= m_meta.get_num_fields() ) {
-		throw std::out_of_range( "Field index is out of range." );
-	}
+void Message::set_byte( std::size_t field, MessageMeta::ByteType byte ) {
+	assert( field < m_meta.get_num_fields() );
+	assert( m_meta.get_field( field ) == MessageMeta::BYTE );
 
-	m_current_field = field;
-}
-
-inline void Message::increase_field_pointer() {
-	if( m_current_field + 1 < m_meta.get_num_fields() ) {
-		++m_current_field;
-	}
+	*reinterpret_cast<MessageMeta::ByteType*>( &m_buffer[m_indices[field]] ) = byte;
 }
 
 }
