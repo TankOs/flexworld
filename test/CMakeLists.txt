@@ -17,6 +17,8 @@ set(
 	TestClassCache.cpp
 	TestClassDriver.cpp
 	TestFlexID.cpp
+	TestMessage.cpp
+	TestMessageMeta.cpp
 	TestPlanet.cpp
 	TestResource.cpp
 )

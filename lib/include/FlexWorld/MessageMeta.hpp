@@ -9,52 +9,60 @@ namespace flex {
  */
 class MessageMeta {
 	public:
+		typedef std::uint8_t ByteType; ///< Byte.
+		typedef std::uint16_t WordType; ///< Word.
+		typedef std::uint32_t DWordType; ///< DWord.
+		typedef std::uint32_t StringLengthType; ///< String length.
+		typedef std::uint32_t LengthType; ///< Message length.
+
 		/** Field types.
 		 */
-		enum FieldType {
+		enum Field {
 			BYTE = 0,
 			WORD,
 			DWORD,
 			STRING
 		};
 
-		/** Get size of type.
-		 * @param type Type.
-		 * @return Size in bytes.
-		 */
-		static std::size_t get_type_size( FieldType type );
-
 		/** Ctor.
 		 */
 		MessageMeta();
+
+		/** Get field size.
+		 * @param field Field.
+		 * @return Size.
+		 */
+		static LengthType get_field_size( Field field );
 
 		/** Get field count.
 		 * @return Field count.
 		 */
 		std::size_t get_num_fields() const;
 
-		/** Get field type.
-		 * @param field Field.
-		 * @return Field type.
-		 * @throws out_of_range if field index is out of range.
+		/** Get field.
+		 * Undefined behaviour if index is invalid.
+		 * @param index Field index.
+		 * @return Field.
 		 */
-		FieldType get_field_type( std::size_t field ) const;
+		Field get_field( std::size_t index ) const;
 
 		/** Add field.
 		 * @param type Type.
 		 */
-		void add_field( FieldType type );
+		void add_field( Field type );
 
-		/** Get minimum size a message would need.
+		/** Get minimum size a message needs.
+		 * This will count sizeof( Field ). STRING is handled differently, here
+		 * sizeof( StringLengthType ) is used as the minimum size.
 		 * @return Minimum size.
 		 */
-		uint32_t get_minimum_size() const;
+		LengthType get_minimum_size() const;
 
 	private:
-		typedef std::vector<FieldType> TypeVector;
+		typedef std::vector<Field> FieldVector;
 
-		TypeVector m_types;
-		uint32_t m_minimum_size;
+		FieldVector m_fields;
+		LengthType m_minimum_size;
 };
 
 }
