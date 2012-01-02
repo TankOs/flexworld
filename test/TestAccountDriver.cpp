@@ -35,7 +35,5 @@ BOOST_AUTO_TEST_CASE( TestAccountDriver ) {
 
 		std::string output = AccountDriver::serialize( acc );
 		BOOST_CHECK( output == buffer.str() );
-
-		std::cout << output.size() << " / " << buffer.str().size() << std::endl;
 	}
 }
