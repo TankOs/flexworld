@@ -15,6 +15,7 @@ set(
 	Test.cpp
 	TestAccount.cpp
 	TestAccountDriver.cpp
+	TestAccountManager.cpp
 	TestChunk.cpp
 	TestClass.cpp
 	TestClassCache.cpp
