@@ -11,9 +11,7 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
-	#${INC_DIR}/FlexWorld/Config.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
-	#${SRC_DIR}/FlexWorld/Config.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
 	${INC_DIR}/FlexWorld/Account.hpp
 	${INC_DIR}/FlexWorld/AccountDriver.hpp
@@ -22,6 +20,8 @@ set(
 	${INC_DIR}/FlexWorld/Class.hpp
 	${INC_DIR}/FlexWorld/ClassCache.hpp
 	${INC_DIR}/FlexWorld/ClassDriver.hpp
+	${INC_DIR}/FlexWorld/Config.hpp
+	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/MessageMeta.hpp
@@ -38,6 +38,8 @@ set(
 	${SRC_DIR}/FlexWorld/Class.cpp
 	${SRC_DIR}/FlexWorld/ClassCache.cpp
 	${SRC_DIR}/FlexWorld/ClassDriver.cpp
+	${SRC_DIR}/FlexWorld/Config.cpp
+	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/MessageMeta.cpp

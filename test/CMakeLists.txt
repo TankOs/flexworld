@@ -9,7 +9,6 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 
 set(
 	SOURCES
-	#TestServer.cpp
 	${PROJECT_BINARY_DIR}/Config.hpp
 	Test.cpp
 	Test.cpp
@@ -20,6 +19,7 @@ set(
 	TestClass.cpp
 	TestClassCache.cpp
 	TestClassDriver.cpp
+	TestEntity.cpp
 	TestFlexID.cpp
 	TestMessage.cpp
 	TestMessageMeta.cpp
