@@ -84,4 +84,17 @@ BOOST_AUTO_TEST_CASE( TestClassCache ) {
 		BOOST_CHECK( cache.get_num_cached_classes() == 2 );
 		BOOST_CHECK( cache.get_num_holes() == 0 );
 	}
+
+	// Clear.
+	{
+		ClassCache cache;
+		cache.cache( cls );
+		cache.cache( cls2 );
+		cache.forget( cls );
+
+		cache.clear();
+
+		BOOST_CHECK( cache.get_num_cached_classes() == 0 );
+		BOOST_CHECK( cache.get_num_holes() == 0 );
+	}
 }

@@ -1,5 +1,6 @@
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Class.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <sstream>
@@ -17,6 +18,7 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		BOOST_CHECK( planet.get_id() == "construct" );
 		BOOST_CHECK( planet.get_size() == PLANET_SIZE );
 		BOOST_CHECK( planet.get_chunk_size() == CHUNK_SIZE );
+		BOOST_CHECK( planet.get_num_entities() == 0 );
 	}
 
 	// Transform coordinate.
@@ -176,12 +178,56 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		BOOST_CHECK( planet.find_block( CHUNK_POSITION, BLOCK_POSITION ) == nullptr );
 	}
 
+	// Entities.
+	{
+		FlexID id;
+		id.parse( "fw.weapons/sword" );
+
+		Class cls( id );
+		Entity ent( cls );
+
+		Planet planet( "construct", PLANET_SIZE, CHUNK_SIZE );
+
+		BOOST_CHECK( planet.has_entity( ent ) == false );
+
+		planet.add_entity( ent );
+
+		BOOST_CHECK( planet.get_num_entities() == 1 );
+		BOOST_CHECK( planet.has_entity( ent ) == true );
+
+		// Add another entity.
+		Entity ent2( cls );
+		ent2.set_id( 2 );
+		planet.add_entity( ent2 );
+
+		BOOST_CHECK( planet.get_num_entities() == 2 );
+		BOOST_CHECK( planet.has_entity( ent ) == true );
+		BOOST_CHECK( planet.has_entity( ent2 ) == true );
+
+		// Remove entity.
+		planet.remove_entity( ent );
+		BOOST_CHECK( planet.get_num_entities() == 1 );
+		BOOST_CHECK( planet.has_entity( ent ) == false );
+		BOOST_CHECK( planet.has_entity( ent2 ) == true );
+
+		planet.remove_entity( ent2 );
+		BOOST_CHECK( planet.get_num_entities() == 0 );
+		BOOST_CHECK( planet.has_entity( ent2 ) == false );
+	}
+
 	// Clear planet.
 	{
 		Planet planet( "construct", PLANET_SIZE, CHUNK_SIZE );
 		const Planet::Vector POSITION( 0, 0, 0 );
 
+		FlexID id;
+		id.parse( "fw.weapons/sword" );
+		Class cls( id );
+		Entity ent( cls );
+		
 		planet.create_chunk( POSITION );
+		planet.add_entity( ent );
+
 		planet.clear();
 
 		// Make sure properties are still valid.
@@ -192,5 +238,8 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		// Check previously created chunk is destroyed.
 		BOOST_CHECK( planet.get_num_chunks() == 0 );
 		BOOST_CHECK( planet.has_chunk( POSITION ) == false );
+
+		// Check all entities are gone.
+		BOOST_CHECK( planet.get_num_entities() == 0 );
 	}
 }

@@ -49,6 +49,8 @@ void Planet::clear() {
 	}
 
 	m_chunks.clear();
+	m_entities.clear();
+	m_class_cache.clear();
 }
 
 const std::string& Planet::get_id() const {
@@ -160,6 +162,24 @@ void Planet::reset_block( const Vector& chunk_pos, const Chunk::Vector& block_po
 
 	// Reset block.
 	chunk->reset_block( block_pos );
+}
+
+std::size_t Planet::get_num_entities() const {
+	return m_entities.size();
+}
+
+void Planet::add_entity( const Entity& entity ) {
+	assert( has_entity( entity ) == false );
+	m_entities.insert( entity.get_id() );
+}
+
+bool Planet::has_entity( const Entity& entity ) const {
+	return m_entities.find( entity.get_id() ) != m_entities.end();
+}
+
+void Planet::remove_entity( const Entity& entity ) {
+	assert( has_entity( entity ) );
+	m_entities.erase( entity.get_id() );
 }
 
 }

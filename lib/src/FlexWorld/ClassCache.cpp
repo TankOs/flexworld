@@ -10,6 +10,12 @@ ClassCache::ClassCache() :
 {
 }
 
+void ClassCache::clear() {
+	m_classes.clear();
+	m_ids.clear();
+	m_num_holes = 0;
+}
+
 std::size_t ClassCache::get_num_cached_classes() const {
 	return m_ids.size();
 }

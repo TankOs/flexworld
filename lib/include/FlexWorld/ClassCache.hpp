@@ -21,6 +21,10 @@ class ClassCache {
 		 */
 		ClassCache();
 
+		/** Clear cache.
+		 */
+		void clear();
+
 		/** Get number of cached classes.
 		 * @return Number of cached classes.
 		 */

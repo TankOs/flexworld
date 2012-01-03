@@ -3,12 +3,16 @@
 #include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/Chunk.hpp>
 #include <FlexWorld/ClassCache.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <SFML/System/Vector3.hpp>
 #include <map>
 #include <string>
+#include <set>
 
 namespace flex {
+
+class Entity;
 
 /** Planet.
  * Contains chunks and class cache.
@@ -31,6 +35,7 @@ class Planet : public NonCopyable {
 		~Planet();
 
 		/** Clear.
+		 * Removes all chunks and entities. The planet's properties are kept.
 		 */
 		void clear();
 
@@ -99,14 +104,41 @@ class Planet : public NonCopyable {
 		 */
 		void reset_block( const Vector& chunk_pos, const Chunk::Vector& block_pos );
 
+		/** Add entity.
+		 * Only the entity's ID is stored. Undefined behaviour if ID has already
+		 * been added. Use has_entity() to check.
+		 * @param entity Entity.
+		 */
+		void add_entity( const Entity& entity );
+
+		/** Check if entity was added.
+		 * @param entity Entity.
+		 * @return true if added, false otherwise.
+		 */
+		bool has_entity( const Entity& entity ) const;
+
+		/** Remove entity.
+		 * Undefined behaviour if entity hasn't been added before. Check with
+		 * has_entity().
+		 * @param entity Entity.
+		 */
+		void remove_entity( const Entity& entity );
+
+		/** Get number of entities.
+		 * @return Number of entities.
+		 */
+		std::size_t get_num_entities() const;
+
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
+		typedef std::set<Entity::ID> EntityIDSet;
 
 		Vector m_size;
 		Chunk::Vector m_chunk_size;
 		std::string m_id;
 
 		ChunkMap m_chunks;
+		EntityIDSet m_entities;
 		ClassCache m_class_cache;
 };
 
