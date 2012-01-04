@@ -22,6 +22,7 @@ set(
 	TestEntity.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp
+	TestGameModeDriver.cpp
 	TestMessage.cpp
 	TestMessageMeta.cpp
 	TestPlanet.cpp

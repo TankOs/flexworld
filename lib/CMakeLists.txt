@@ -24,6 +24,7 @@ set(
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/GameMode.hpp
+	${INC_DIR}/FlexWorld/GameModeDriver.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/MessageMeta.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
@@ -45,6 +46,7 @@ set(
 	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/GameMode.cpp
+	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/MessageMeta.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
