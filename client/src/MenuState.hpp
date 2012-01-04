@@ -5,7 +5,6 @@
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <SFML/Audio/Music.hpp>
 
 /** Menu state.
  */
@@ -46,6 +45,4 @@ class MenuState : public State {
 
 		sf::Texture m_cloud_texture;
 		SpriteList m_cloud_sprites;
-
-		sf::Music m_music;
 };

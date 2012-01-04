@@ -99,11 +99,6 @@ void MenuState::init() {
 		)
 	);
 
-	// Music.
-	m_music.OpenFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/rebirth.ogg" ) );
-	m_music.SetLoop( true );
-	//m_music.Play();
-
 	// Init clouds.
 	sf::Image image;
 	image.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
