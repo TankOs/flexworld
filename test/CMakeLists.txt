@@ -21,6 +21,7 @@ set(
 	TestClassDriver.cpp
 	TestEntity.cpp
 	TestFlexID.cpp
+	TestGameMode.cpp
 	TestMessage.cpp
 	TestMessageMeta.cpp
 	TestPlanet.cpp
