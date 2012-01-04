@@ -3,8 +3,12 @@
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
+#include <FlexWorld/GameModeDriver.hpp>
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <boost/filesystem.hpp>
+#include <fstream>
 #include <ctime>
 #include <cstdlib>
 
@@ -240,6 +244,43 @@ void MenuState::on_start_game_click() {
 	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
 
 	m_window->Show( false );
+
+	// Load and add game modes to dialog.
+	using namespace boost::filesystem;
+
+	directory_iterator dir_iter_end;
+	directory_iterator dir_iter( flex::ROOT_DATA_DIRECTORY + std::string( "/modes/" ) );
+
+	for( ; dir_iter != dir_iter_end; ++dir_iter ) {
+		path bpath( *dir_iter );
+
+		// Skip directories and files not ending with .yml.
+		if( !is_regular( bpath ) || bpath.extension() != ".yml" ) {
+			continue;
+		}
+
+		// Open file and read everything.
+		std::ifstream in( bpath.c_str() );
+		if( !in.is_open() ) {
+			// Failed to open, skip.
+			continue;
+		}
+
+		std::stringstream sstr;
+		sstr << in.rdbuf();
+
+		// Try to deserialize game mode.
+		try {
+			flex::GameMode mode = flex::GameModeDriver::deserialize( sstr.str() );
+
+			// Worked, add to dialog.
+			sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->add_game_mode( mode );
+		}
+		catch( const flex::GameModeDriver::DeserializeException& e ) {
+			// Skip.
+			continue;
+		}
+	}
 }
 
 void MenuState::on_options_accept() {

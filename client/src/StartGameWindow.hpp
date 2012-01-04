@@ -35,7 +35,6 @@ class StartGameWindow : public sfg::Window {
 		GameModeVector m_game_modes;
 
 		sfg::ComboBox::Ptr m_game_mode_combo;
-		sfg::ComboBox::Ptr m_savegame_combo;
 		sfg::Entry::Ptr m_password_entry;
 		sfg::CheckButton::Ptr m_public_check;
 		sfg::Scale::Ptr m_max_players_scale;

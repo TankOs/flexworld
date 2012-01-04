@@ -1,0 +1,10 @@
+Meta:
+  Name: Sandbox
+  Author: FlexWorld Team
+  Website: http://flexworld-game.com/
+  Version: [0, 0, 0]
+  MinFlexWorldVersion: [0, 0, 0]
+  MaxFlexWorldVersion: [0, 0, 0]
+  Thumbnail: fw.gm.sandbox/thumbnail.png
+Packages:
+  - fw.gm.sandbox

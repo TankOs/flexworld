@@ -17,7 +17,6 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	sfg::Button::Ptr cancel_button( sfg::Button::Create( L"Cancel" ) );
 
 	window->m_game_mode_combo = sfg::ComboBox::Create();
-	window->m_savegame_combo = sfg::ComboBox::Create();
 	window->m_password_entry = sfg::Entry::Create();
 	window->m_password_entry->HideText( '*' );
 	window->m_public_check = sfg::CheckButton::Create( L"Others can join this game*" );
@@ -35,11 +34,9 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	table->SetColumnSpacings( 10.f );
 
 	table->Attach( sfg::Label::Create( L"Game mode:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
-	table->Attach( sfg::Label::Create( L"Savegame:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
 	row_index = 0;
 	table->Attach( window->m_game_mode_combo, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	table->Attach( window->m_savegame_combo, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 
 	sfg::Frame::Ptr general_frame = sfg::Frame::Create( L"General" );
 	general_frame->Add( table );
@@ -90,10 +87,6 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 
 	window->m_max_players_scale->GetAdjustment()->OnChange.Connect( &StartGameWindow::on_max_players_change, &*window );
 
-	// Init.
-	window->m_savegame_combo->AppendItem( L"Start new game" );
-	window->m_savegame_combo->SelectItem( 0 );
-
 	return window;
 }
 
@@ -113,5 +106,24 @@ void StartGameWindow::on_max_players_change() {
 }
 
 void StartGameWindow::add_game_mode( const flex::GameMode& game_mode ) {
-	m_game_mode_combo->AppendItem( game_mode.get_name() );
+	std::stringstream sstr;
+
+	sstr
+		<< game_mode.get_name()
+		<< " ("
+		<< game_mode.get_version().get_major() << "."
+		<< game_mode.get_version().get_minor() << "."
+		<< game_mode.get_version().get_revision()
+		<< ")"
+	;
+
+	m_game_mode_combo->AppendItem( sstr.str() );
+
+	// Select the first added game mode.
+	if( m_game_mode_combo->GetItemCount() == 1 ) {
+		m_game_mode_combo->SelectItem( 0 );
+	}
+
+	// Store for returning it later.
+	m_game_modes.push_back( game_mode );
 }

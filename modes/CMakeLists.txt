@@ -14,10 +14,15 @@ function( install_game_mode GM_NAME )
 endfunction()
 
 set( FW_INSTALL_GM_TUTORIAL TRUE CACHE BOOL "Install tutorial game mode." )
+set( FW_INSTALL_GM_SANDBOX TRUE CACHE BOOL "Install sandbox game mode." )
 
 # Install base stuff.
 install_game_mode( "base" )
 
 if( FW_INSTALL_GM_TUTORIAL )
 	install_game_mode( "tutorial" )
+endif()
+
+if( FW_INSTALL_GM_SANDBOX )
+	install_game_mode( "sandbox" )
 endif()
