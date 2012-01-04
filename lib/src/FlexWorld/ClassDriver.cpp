@@ -28,6 +28,9 @@ Class ClassDriver::load( const std::string& path ) {
 		if( !id_node ) {
 			throw LoadException( "No ID set." );
 		}
+		else if( id_node->Type() != YAML::NodeType::Scalar ) {
+			throw LoadException( "ID not a scalar." );
+		}
 
 		*id_node >> string;
 
@@ -48,8 +51,13 @@ Class ClassDriver::load( const std::string& path ) {
 		if( !name_node ) {
 			string = "Unnamed";
 		}
-		else {
-			*name_node >> string;
+		else if( name_node->Type() != YAML::NodeType::Scalar ) {
+			throw LoadException( "Name not a scalar." );
+		}
+
+		*name_node >> string;
+		if( string.empty() ) {
+			throw LoadException( "Name empty." );
 		}
 
 		cls->set_name( string );
@@ -60,6 +68,9 @@ Class ClassDriver::load( const std::string& path ) {
 		const YAML::Node* model_node( doc.FindValue( "Model" ) );
 		if( !model_node ) {
 			throw LoadException( "No model set." );
+		}
+		else if( model_node->Type() != YAML::NodeType::Scalar ) {
+			throw LoadException( "Model not a scalar." );
 		}
 
 		*model_node >> string;
@@ -78,7 +89,10 @@ Class ClassDriver::load( const std::string& path ) {
 	// Read origin.
 	const YAML::Node* origin_node = doc.FindValue( "Origin" );
 	if( origin_node ) {
-		if( origin_node->size() != 3 ) {
+		if( origin_node->Type() != YAML::NodeType::Sequence ) {
+			throw LoadException( "Origin not a sequence." );
+		}
+		else if( origin_node->size() != 3 ) {
 			throw LoadException( "Invalid origin." );
 		}
 
@@ -100,6 +114,10 @@ Class ClassDriver::load( const std::string& path ) {
 	{
 		const YAML::Node* hooks_node = doc.FindValue( "Hooks" );
 		if( hooks_node ) {
+			if( hooks_node->Type() != YAML::NodeType::Map ) {
+				throw LoadException( "Hooks not a map." );
+			}
+
 			YAML::Iterator hook_iter = hooks_node->begin();
 			YAML::Iterator hook_iter_end = hooks_node->end();
 			std::string hook_name;
@@ -108,7 +126,10 @@ Class ClassDriver::load( const std::string& path ) {
 			for( ; hook_iter != hook_iter_end; ++hook_iter ) {
 				hook_iter.first() >> hook_name;
 
-				if( hook_iter.second().size() != 3 ) {
+				if( hook_iter.second().Type() != YAML::NodeType::Sequence ) {
+					throw LoadException( "Hook not a sequence (" + hook_name + ")." );
+				}
+				else if( hook_iter.second().size() != 3 ) {
 					throw LoadException( "Invalid hook origin (" + hook_name + ")." );
 				}
 
@@ -130,11 +151,19 @@ Class ClassDriver::load( const std::string& path ) {
 	{
 		const YAML::Node* textures_node = doc.FindValue( "Textures" );
 		if( textures_node ) {
+			if( textures_node->Type() != YAML::NodeType::Sequence ) {
+				throw LoadException( "Textures not a sequence." );
+			}
+
 			YAML::Iterator texture_iter = textures_node->begin();
 			YAML::Iterator texture_iter_end = textures_node->end();
 			std::string texture_id;
 
 			for( ; texture_iter != texture_iter_end; ++texture_iter ) {
+				if( texture_iter->Type() != YAML::NodeType::Scalar ) {
+					throw LoadException( "A texture is not a scalar." );
+				}
+
 				*texture_iter >> texture_id;
 
 				FlexID flex_id;

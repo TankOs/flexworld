@@ -18,6 +18,9 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 	if( !root_node ) {
 		throw DeserializeException( "No root node." );
 	}
+	else if( root_node->Type() != YAML::NodeType::Map ) {
+		throw DeserializeException( "Root not a map." );
+	}
 
 	SaveInfo info;
 
@@ -27,12 +30,18 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 		if( !meta_node ) {
 			throw DeserializeException( "No meta node." );
 		}
+		else if( meta_node->Type() != YAML::NodeType::Map ) {
+			throw DeserializeException( "Meta not a map." );
+		}
 
 		// Read name.
 		{
 			const YAML::Node* name_node( meta_node->FindValue( "Name" ) );
 			if( !name_node ) {
 				throw DeserializeException( "No name." );
+			}
+			else if( name_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "Name not a scalar." );
 			}
 
 			std::string name;
@@ -49,6 +58,9 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 			const YAML::Node* timestamp_node( meta_node->FindValue( "Timestamp" ) );
 			if( !timestamp_node ) {
 				throw DeserializeException( "No timestamp." );
+			}
+			else if( timestamp_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "Timestamp not a scalar." );
 			}
 
 			uint32_t timestamp;
@@ -69,12 +81,18 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 		if( !paths_node ) {
 			throw DeserializeException( "No paths node." );
 		}
+		else if( paths_node->Type() != YAML::NodeType::Map ) {
+			throw DeserializeException( "Paths not a map." );
+		}
 
 		// Read entities path.
 		{
 			const YAML::Node* entities_node( paths_node->FindValue( "Entities" ) );
 			if( !entities_node ) {
 				throw DeserializeException( "No entities path." );
+			}
+			else if( entities_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "Entities not a scalar." );
 			}
 
 			std::string path;
@@ -92,6 +110,9 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 			if( !planets_node ) {
 				throw DeserializeException( "No planets path." );
 			}
+			else if( planets_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "Planets not a scalar." );
+			}
 
 			std::string path;
 			*planets_node >> path;
@@ -107,6 +128,9 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 			const YAML::Node* accounts_node( paths_node->FindValue( "Accounts" ) );
 			if( !accounts_node ) {
 				throw DeserializeException( "No accounts path." );
+			}
+			else if( accounts_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "Accounts not a scalar." );
 			}
 
 			std::string path;

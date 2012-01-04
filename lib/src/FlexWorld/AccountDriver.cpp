@@ -44,12 +44,18 @@ Account AccountDriver::deserialize( const std::string& data ) {
 	if( !root ) {
 		throw DeserializeException( "No account root element." );
 	}
+	else if( root->Type() != YAML::NodeType::Map ) {
+		throw DeserializeException( "Root not a map." );
+	}
 
 	// Read username.
 	{
 		const YAML::Node* username_node = root->FindValue( "Username" );
 		if( !username_node ) {
 			throw DeserializeException( "No username specified." );
+		}
+		else if( username_node->Type() != YAML::NodeType::Scalar ) {
+			throw DeserializeException( "Username not a scalar." );
 		}
 
 		std::string username;
@@ -67,6 +73,9 @@ Account AccountDriver::deserialize( const std::string& data ) {
 		const YAML::Node* password_node = root->FindValue( "Password" );
 		if( !password_node ) {
 			throw DeserializeException( "No password specified." );
+		}
+		else if( password_node->Type() != YAML::NodeType::Scalar ) {
+			throw DeserializeException( "Password not a scalar." );
 		}
 
 		std::string password;
