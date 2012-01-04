@@ -275,6 +275,6 @@ const UserSettings& OptionsWindow::get_user_settings() const {
 
 void OptionsWindow::on_sensitivity_change() {
 	std::stringstream sstr;
-	sstr << std::setprecision( 3 ) << m_mouse_sensitivity_scale->GetValue();
+	sstr << std::fixed << std::setprecision( 2 ) << m_mouse_sensitivity_scale->GetValue();
 	m_mouse_sensitivity_label->SetText( sstr.str() );
 }
