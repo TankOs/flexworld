@@ -15,11 +15,20 @@ set(
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
 include_directories( ${SFML_INCLUDE_DIR} )
 
-add_executable( server ${SOURCES} )
+add_executable( flexworld-server ${SOURCES} )
 
-target_link_libraries( server flexworld ${SFML_NETWORK_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-server flexworld ${SFML_NETWORK_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 
-install(
-	TARGETS server
-	DESTINATION flexworld
-)
+if( FW_PORTABLE_INSTALL OR WINDOWS )
+	install(
+		TARGETS flexworld-server
+		DESTINATION .
+	)
+elseif( LINUX )
+	install(
+		TARGETS flexworld-server
+		DESTINATION bin
+	)
+else()
+	message( FATAL_ERROR "Install?!?!?!" )
+endif()

@@ -8,8 +8,15 @@ project( FlexWorld )
 
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake" )
 
+#
+# Detections.
+#
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
 	set( WINDOWS 1 )
+elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
+	set( LINUX 1 )
+else()
+	message( FATAL_ERROR "Unsupported system." )
 endif()
 
 if( CMAKE_COMPILER_IS_GNUCXX )
@@ -18,11 +25,23 @@ elseif( MSVC_VERSION )
 	set( COMPILER_MSVC 1 )
 endif()
 
+#
+# Global project settings.
+#
+set( FW_VERSION_SUFFIX "DEV" CACHE STRING "Version suffix." )
+set( FW_PORTABLE_INSTALL TRUE CACHE BOOL "Install portable (especially useful for distributing Linux test releases(!), so that both client and server don't use absolute system paths)." )
+
+#
+# Targets.
+#
 set( FW_BUILD_CLIENT true CACHE BOOL "Build client." )
 set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
 set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
 set( FW_BUILD_DOC false CACHE BOOL "Build API docs (requires Doxygen)." )
 
+#
+# Platform-specific.
+#
 if( WINDOWS )
 	set( BIN_EXTENSION ".exe" )
 	set( SFML_STATIC false CACHE BOOL "Was SFML built as a static library?" )
@@ -34,6 +53,9 @@ else()
 	add_definitions( -DLINUX )
 endif()
 
+#
+# Linkage.
+#
 if( SFGUI_STATIC )
 	add_definitions( -DSFGUI_STATIC )
 endif()
@@ -42,6 +64,9 @@ if( SFML_STATIC )
 	add_definitions( -DSFML_STATIC_LIBRARIES )
 endif()
 
+#
+# Compiler-specific.
+#
 if( COMPILER_GCC )
 	if( NOT CMAKE_CXX_FLAGS )
 		set( CMAKE_CXX_FLAGS "--std=c++0x -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C++ compiler flags" FORCE )

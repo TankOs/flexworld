@@ -91,10 +91,7 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	window->m_max_players_scale->GetAdjustment()->OnChange.Connect( &StartGameWindow::on_max_players_change, &*window );
 
 	// Init.
-	window->m_game_mode_combo->AppendItem( L"Factions (Git)" );
-	window->m_game_mode_combo->SelectItem( 0 );
-
-	window->m_savegame_combo->AppendItem( L"None, start new game" );
+	window->m_savegame_combo->AppendItem( L"Start new game" );
 	window->m_savegame_combo->SelectItem( 0 );
 
 	return window;
@@ -113,4 +110,8 @@ void StartGameWindow::on_max_players_change() {
 
 	sstr << static_cast<int>( m_max_players_scale->GetValue() );
 	m_max_players_label->SetText( sstr.str() );
+}
+
+void StartGameWindow::add_game_mode( const flex::GameMode& game_mode ) {
+	m_game_mode_combo->AppendItem( game_mode.get_name() );
 }

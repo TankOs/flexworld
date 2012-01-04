@@ -61,29 +61,43 @@ if( NOT WINDOWS )
 	include_directories( ${X11_X11_INCLUDE_PATH} )
 endif()
 
-add_executable( client ${SOURCES} )
+add_executable( flexworld-client ${SOURCES} )
 
-target_link_libraries( client flexworld )
-target_link_libraries( client ${SFGUI_LIBRARY} )
-target_link_libraries( client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
-target_link_libraries( client ${GLEW_LIBRARY} )
-target_link_libraries( client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
-target_link_libraries( client ${JPEG_LIBRARY} )
-target_link_libraries( client ${FREETYPE_LIBRARY} )
-target_link_libraries( client ${Boost_FILESYSTEM_LIBRARY} )
-target_link_libraries( client ${Boost_SYSTEM_LIBRARY} )
-target_link_libraries( client ${YAML_CPP_LIBRARY} )
+target_link_libraries( flexworld-client flexworld )
+target_link_libraries( flexworld-client ${SFGUI_LIBRARY} )
+target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-client ${GLEW_LIBRARY} )
+target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
+target_link_libraries( flexworld-client ${JPEG_LIBRARY} )
+target_link_libraries( flexworld-client ${FREETYPE_LIBRARY} )
+target_link_libraries( flexworld-client ${Boost_FILESYSTEM_LIBRARY} )
+target_link_libraries( flexworld-client ${Boost_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
 
 if( NOT WINDOWS )
-	target_link_libraries( client ${X11_Xrandr_LIB} )
+	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
 endif()
 
-install(
-	TARGETS client
-	DESTINATION flexworld
-)
+if( FW_PORTABLE_INSTALL OR WINDOWS )
+	install(
+		TARGETS flexworld-client
+		DESTINATION .
+	)
 
-install(
-	DIRECTORY data
-	DESTINATION flexworld
-)
+	install(
+		DIRECTORY local
+		DESTINATION .
+	)
+elseif( LINUX )
+	install(
+		TARGETS flexworld-client
+		DESTINATION bin
+	)
+
+	install(
+		DIRECTORY local
+		DESTINATION games/flexworld
+	)
+else()
+	message( FATAL_ERROR "Install?!?!?!" )
+endif()

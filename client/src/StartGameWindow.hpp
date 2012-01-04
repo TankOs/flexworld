@@ -1,7 +1,11 @@
 #pragma once
 
+#include <FlexWorld/GameMode.hpp>
+
 #include <SFGUI/SFGUI.hpp>
 #include <SFGUI/Signal.hpp>
+
+#include <vector>
 
 /** Start game window.
  */
@@ -15,11 +19,20 @@ class StartGameWindow : public sfg::Window {
 		 */
 		static Ptr Create();
 
+		/** Add game mode to combo box.
+		 * @param game_mode Game mode.
+		 */
+		void add_game_mode( const flex::GameMode& game_mode );
+
 		sfg::Signal OnAccept; ///< Fired when OK clicked.
 		sfg::Signal OnReject; ///< Fired when cancel clicked.
 
 	private:
+		typedef std::vector<flex::GameMode> GameModeVector;
+
 		StartGameWindow();
+
+		GameModeVector m_game_modes;
 
 		sfg::ComboBox::Ptr m_game_mode_combo;
 		sfg::ComboBox::Ptr m_savegame_combo;

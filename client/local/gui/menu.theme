@@ -5,7 +5,7 @@
 
 Label#title {
 	FontSize: 36;
-	FontName: data/gui/orbitron_bold.ttf;
+	FontName: local/gui/orbitron_bold.ttf;
 }
 
 Window {
@@ -16,7 +16,7 @@ Window {
 
 Window#menu * {
 	FontSize: 14;
-	/*FontName: data/gui/orbitron_bold.ttf;*/
+	/*FontName: local/gui/orbitron_bold.ttf;*/
 }
 
 Button {

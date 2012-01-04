@@ -84,7 +84,7 @@ void MenuState::init() {
 	quit_button->OnClick.Connect( &MenuState::on_quit_click, this );
 
 	// Init.
-	m_desktop.LoadThemeFromFile( "data/gui/menu.theme" );
+	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
 	check_required_settings();
 
 	m_window->SetRequisition( sf::Vector2f( 400.f, 0.f ) );
@@ -96,13 +96,13 @@ void MenuState::init() {
 	);
 
 	// Music.
-	m_music.OpenFromFile( "data/rebirth.ogg" );
+	m_music.OpenFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/rebirth.ogg" ) );
 	m_music.SetLoop( true );
 	//m_music.Play();
 
 	// Init clouds.
 	sf::Image image;
-	image.LoadFromFile( "data/gui/cloud.png" );
+	image.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
 	m_cloud_texture.LoadFromImage( image );
 
 	for( uint8_t cloud_index = 0; cloud_index < 25; ++cloud_index ) {
