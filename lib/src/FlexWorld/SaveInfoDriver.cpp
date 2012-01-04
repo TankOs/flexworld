@@ -13,12 +13,7 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 	if( !parser.GetNextDocument( doc ) ) {
 		throw DeserializeException( "No document." );
 	}
-
-	const YAML::Node* root_node( doc.FindValue( "Save" ) );
-	if( !root_node ) {
-		throw DeserializeException( "No root node." );
-	}
-	else if( root_node->Type() != YAML::NodeType::Map ) {
+	else if( doc.Type() != YAML::NodeType::Map ) {
 		throw DeserializeException( "Root not a map." );
 	}
 
@@ -26,7 +21,7 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 
 	// Read meta info.
 	{
-		const YAML::Node* meta_node( root_node->FindValue( "Meta" ) );
+		const YAML::Node* meta_node( doc.FindValue( "Meta" ) );
 		if( !meta_node ) {
 			throw DeserializeException( "No meta node." );
 		}
@@ -77,7 +72,7 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 
 	// Read paths.
 	{
-		const YAML::Node* paths_node( root_node->FindValue( "Paths" ) );
+		const YAML::Node* paths_node( doc.FindValue( "Paths" ) );
 		if( !paths_node ) {
 			throw DeserializeException( "No paths node." );
 		}
@@ -157,16 +152,14 @@ std::string SaveInfoDriver::serialize( const SaveInfo& info ) {
 
 	emitter
 		<< BeginMap
-			<< Key << "Save" << Value << BeginMap
-				<< Key << "Meta" << Value << BeginMap
-					<< Key << "Name" << Value << info.get_name()
-					<< Key << "Timestamp" << Value << info.get_timestamp()
-				<< EndMap
-				<< Key << "Paths" << Value << BeginMap
-					<< Key << "Entities" << Value << info.get_entities_path()
-					<< Key << "Planets" << Value << info.get_planets_path()
-					<< Key << "Accounts" << Value << info.get_accounts_path()
-				<< EndMap
+			<< Key << "Meta" << Value << BeginMap
+				<< Key << "Name" << Value << info.get_name()
+				<< Key << "Timestamp" << Value << info.get_timestamp()
+			<< EndMap
+			<< Key << "Paths" << Value << BeginMap
+				<< Key << "Entities" << Value << info.get_entities_path()
+				<< Key << "Planets" << Value << info.get_planets_path()
+				<< Key << "Accounts" << Value << info.get_accounts_path()
 			<< EndMap
 		<< EndMap
 	;

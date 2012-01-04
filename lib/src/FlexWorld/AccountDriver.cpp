@@ -16,10 +16,8 @@ std::string AccountDriver::serialize( const Account& account ) {
 
 	emitter
 		<< BeginMap
-			<< Key << "Account" << Value << BeginMap
-				<< Key << "Username" << Value << account.get_username()
-				<< Key << "Password" << Value << account.get_password()
-			<< EndMap
+			<< Key << "Username" << Value << account.get_username()
+			<< Key << "Password" << Value << account.get_password()
 		<< EndMap
 	;
 
@@ -37,20 +35,13 @@ Account AccountDriver::deserialize( const std::string& data ) {
 	if( !parser.GetNextDocument( doc ) ) {
 		throw DeserializeException( "No document." );
 	}
-
-	// Root.
-	const YAML::Node* root = doc.FindValue( "Account" );
-
-	if( !root ) {
-		throw DeserializeException( "No account root element." );
-	}
-	else if( root->Type() != YAML::NodeType::Map ) {
+	else if( doc.Type() != YAML::NodeType::Map ) {
 		throw DeserializeException( "Root not a map." );
 	}
 
 	// Read username.
 	{
-		const YAML::Node* username_node = root->FindValue( "Username" );
+		const YAML::Node* username_node = doc.FindValue( "Username" );
 		if( !username_node ) {
 			throw DeserializeException( "No username specified." );
 		}
@@ -70,7 +61,7 @@ Account AccountDriver::deserialize( const std::string& data ) {
 
 	// Read password.
 	{
-		const YAML::Node* password_node = root->FindValue( "Password" );
+		const YAML::Node* password_node = doc.FindValue( "Password" );
 		if( !password_node ) {
 			throw DeserializeException( "No password specified." );
 		}

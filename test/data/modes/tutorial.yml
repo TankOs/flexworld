@@ -1,13 +1,12 @@
-GameMode:
-  Meta:
-    Name: Tutorial
-    Author: FlexWorld Team
-    Website: http://flexworld-game.com/
-    Version: [1, 2, 3]
-    MinFlexWorldVersion: [1, 0, 0]
-    MaxFlexWorldVersion: [1, 2, 1]
-    Thumbnail: fw.gm.tutorial/thumb.png
-  Packages:
-    - fw.lib.admin
-    - fw.base
-    - fw.gm.tutorial
+Meta:
+  Name: Tutorial
+  Author: FlexWorld Team
+  Website: http://flexworld-game.com/
+  Version: [1, 2, 3]
+  MinFlexWorldVersion: [1, 0, 0]
+  MaxFlexWorldVersion: [1, 2, 1]
+  Thumbnail: fw.gm.tutorial/thumb.png
+Packages:
+  - fw.lib.admin
+  - fw.base
+  - fw.gm.tutorial

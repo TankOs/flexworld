@@ -15,25 +15,19 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 		if( !parser.GetNextDocument( doc ) ) {
 			throw DeserializeException( "Document missing." );
 		}
+		else if( doc.Type() != YAML::NodeType::Map ) {
+			throw DeserializeException( "Root not a map." );
+		}
 	}
 	catch( ... ) {
 		throw DeserializeException( "Malformed file." );
-	}
-
-	// Root.
-	const YAML::Node* root_node( doc.FindValue( "GameMode" ) );
-	if( !root_node ) {
-		throw DeserializeException( "GameMode root node missing." );
-	}
-	else if( root_node->Type() != YAML::NodeType::Map ) {
-		throw DeserializeException( "Root not a map." );
 	}
 
 	GameMode mode;
 
 	// Meta.
 	{
-		const YAML::Node* meta_node( root_node->FindValue( "Meta" ) );
+		const YAML::Node* meta_node( doc.FindValue( "Meta" ) );
 		if( !meta_node ) {
 			throw DeserializeException( "Meta info missing." );
 		}
@@ -220,7 +214,7 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 
 	// Packages.
 	{
-		const YAML::Node* packages_node( root_node->FindValue( "Packages" ) );
+		const YAML::Node* packages_node( doc.FindValue( "Packages" ) );
 		if( !packages_node ) {
 			throw DeserializeException( "Packages missing." );
 		}
