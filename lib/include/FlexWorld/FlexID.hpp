@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlexWorld/Exception.hpp>
+
 #include <string>
 
 namespace flex {
@@ -33,9 +35,23 @@ namespace flex {
  * have to set the package and optionally the resource or parse a full ID. The
  * constructor doesn't allow to set the values directly to avoid errors while
  * parsing.
+ *
+ * Alternatively one can use make() to directly parse a string at the cost of a
+ * possible exception.
  */
 class FlexID {
 	public:
+		/** Thrown when make() fails to parse.
+		 */
+		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( ParserException );
+
+		/** Create FlexID by directly parsing an ID string.
+		 * @param string String.
+		 * @return FlexID.
+		 * @throws ParserException if parsing fails.
+		 */
+		static FlexID make( const std::string& string );
+
 		/** Ctor.
 		 */
 		FlexID();

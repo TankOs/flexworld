@@ -208,5 +208,16 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id.is_valid_package() );
 		BOOST_CHECK( id.is_valid_resource() );
 	}
+
+	// Make ID.
+	{
+		BOOST_CHECK_THROW( FlexID::make( "invalid." ), FlexID::ParserException );
+
+		FlexID id;
+		BOOST_CHECK_NO_THROW( id = FlexID::make( "fw.weapons/sword.png" ) );
+
+		BOOST_CHECK( id.get_package() == "fw.weapons" );
+		BOOST_CHECK( id.get_resource() == "sword.png" );
+	}
 }
 

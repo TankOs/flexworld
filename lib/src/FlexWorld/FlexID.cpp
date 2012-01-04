@@ -2,6 +2,15 @@
 
 namespace flex {
 
+FlexID FlexID::make( const std::string& string ) {
+	FlexID id;
+	if( !id.parse( string ) ) {
+		throw ParserException( "Failed to parse ID." );
+	}
+
+	return id;
+}
+
 FlexID::FlexID() {
 }
 
