@@ -18,9 +18,9 @@ void Client::run() {
 	{
 		std::stringstream sstr;
 		sstr << "FlexWorld "
-			<< static_cast<int>( flex::VERSION_MAJOR ) << "."
-			<< static_cast<int>( flex::VERSION_MINOR ) << "."
-			<< static_cast<int>( flex::VERSION_REVISION ) << " "
+			<< static_cast<int>( flex::VERSION.get_major() ) << "."
+			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
+			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
 			<< flex::VERSION_SUFFIX
 		;
 
