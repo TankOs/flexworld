@@ -31,6 +31,7 @@ set(
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
+	${INC_DIR}/FlexWorld/Version.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/AccountDriver.cpp
@@ -50,6 +51,7 @@ set(
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
+	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
 

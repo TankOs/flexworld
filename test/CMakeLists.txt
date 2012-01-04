@@ -27,6 +27,7 @@ set(
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp
+	TestVersion.cpp
 	TestWorld.cpp
 )
 
