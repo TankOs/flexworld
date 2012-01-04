@@ -31,6 +31,17 @@ endif()
 set( FW_VERSION_SUFFIX "DEV" CACHE STRING "Version suffix." )
 set( FW_PORTABLE_INSTALL TRUE CACHE BOOL "Install portable (especially useful for distributing Linux test releases(!), so that both client and server don't use absolute system paths)." )
 
+# Configure data root directory.
+if( WINDOWS )
+	set( FW_ROOT_DATA_DIRECTORY "./" )
+else()
+	if( FW_PORTABLE_INSTALL )
+		set( FW_ROOT_DATA_DIRECTORY "./" )
+	else()
+		set( FW_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/games/flexworld/" )
+	endif()
+endif()
+
 #
 # Targets.
 #
@@ -97,3 +108,4 @@ if( FW_BUILD_TEST )
 	add_subdirectory( "test" )
 endif()
 
+add_subdirectory( "modes" )

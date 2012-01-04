@@ -6,17 +6,6 @@ find_package( SFML 2.0 REQUIRED NETWORK SYSTEM )
 find_package( yaml-cpp )
 find_package( Boost 1.46 REQUIRED filesystem system )
 
-# Configure data root directory.
-if( WINDOWS )
-	set( FW_ROOT_DATA_DIRECTORY "./" )
-else()
-	if( FW_PORTABLE_INSTALL )
-		set( FW_ROOT_DATA_DIRECTORY "./" )
-	else()
-		set( FW_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/games/flexworld/" )
-	endif()
-endif()
-
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
 
