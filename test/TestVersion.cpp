@@ -34,4 +34,22 @@ BOOST_AUTO_TEST_CASE( TestVersion ) {
 		BOOST_CHECK( version.get_minor() == 2 );
 		BOOST_CHECK( version.get_revision() == 3 );
 	}
+
+	// Compare, greater, less.
+	{
+		Version version0( 0, 0, 0 );
+		Version version1( 0, 0, 1 );
+		Version version2( 0, 1, 0 );
+		Version version3( 1, 0, 0 );
+		Version version4( 0, 0, 0 );
+
+		BOOST_CHECK( version0 == version4 );
+		BOOST_CHECK( version0 != version1 );
+		BOOST_CHECK( version1 > version0 );
+		BOOST_CHECK( version0 < version1 );
+		BOOST_CHECK( version2 > version1 );
+		BOOST_CHECK( version1 < version2 );
+		BOOST_CHECK( version3 > version2 );
+		BOOST_CHECK( version2 < version3 );
+	}
 }

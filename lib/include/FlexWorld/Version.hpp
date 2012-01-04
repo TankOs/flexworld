@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <cstdint>
 
 namespace flex {
@@ -47,5 +48,34 @@ class Version {
 		uint32_t m_minor;
 		uint32_t m_revision;
 };
+
+/** Compare.
+ * @param left Left.
+ * @param right Right.
+ * @return true if equal.
+ */
+bool operator==( const Version& left, const Version& right );
+
+/** Compare.
+ * @param left Left.
+ * @param right Right.
+ * @return false if equal.
+ */
+
+bool operator!=( const Version& left, const Version& right );
+
+/** Check greater than.
+ * @param left Left.
+ * @param right Right.
+ * @return true if left is greater.
+ */
+bool operator>( const Version& left, const Version& right );
+
+/** Check less than.
+ * @param left Left.
+ * @param right Right.
+ * @return true if left is less.
+ */
+bool operator<( const Version& left, const Version& right );
 
 }
