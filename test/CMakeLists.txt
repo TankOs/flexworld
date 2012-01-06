@@ -30,6 +30,7 @@ set(
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp
+	TestServerProtocol.cpp
 	TestSocket.cpp
 	TestVersion.cpp
 	TestWorld.cpp
