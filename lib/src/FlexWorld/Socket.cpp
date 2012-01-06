@@ -48,7 +48,7 @@ bool Socket::bind( const std::string& ip, uint16_t port ) {
 		return false;
 	}
 
-	addr.sin_port = ::htons( port );
+	addr.sin_port = htons( port );
 
 	return ::bind( m_socket, reinterpret_cast<sockaddr*>( &addr ), sizeof( sockaddr_in ) ) == 0;
 }
@@ -86,7 +86,7 @@ bool Socket::connect( const std::string& ip, uint16_t port ) {
 	if( addr.sin_addr.s_addr == INADDR_NONE ) {
 		return false;
 	}
-	addr.sin_port = ::htons( port );
+	addr.sin_port = htons( port );
 
 	int result = ::connect( m_socket, reinterpret_cast<sockaddr*>( &addr ), sizeof( sockaddr_in ) );
 
