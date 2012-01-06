@@ -48,6 +48,10 @@ add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 
+if( WINDOWS )
+	target_link_libraries( test wsock32.lib )
+endif()
+
 add_custom_command(
 	TARGET test
 	POST_BUILD

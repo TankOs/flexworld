@@ -6,7 +6,7 @@
 	#include <arpa/inet.h>
 	#include <unistd.h>
 #else
-	#error NOT IMPLEMENTED
+	#include <winsock2.h>
 #endif
 
 namespace flex {

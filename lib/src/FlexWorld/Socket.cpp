@@ -113,7 +113,7 @@ void Socket::close() {
 	#if defined( LINUX )
 		::close( m_socket );
 	#else
-		#error NOT IMPLEMENTED
+		closesocket( m_socket );
 	#endif
 
 	m_socket = INVALID_SOCKET;

@@ -4,16 +4,21 @@ namespace flex {
 
 bool Networking::init() {
 	#if defined( LINUX )
-		return true;
 	#else
-		#error NOT IMPLEMENTED
+		WSADATA wsadata;
+
+		if( WSAStartup( 0x0202, &wsadata ) != 0 ) {
+			return false;
+		}
 	#endif
+
+	return true;
 }
 
 void Networking::cleanup() {
 	#if defined( LINUX )
 	#else
-		#error NOT IMPLEMENTED
+		WSACleanup();
 	#endif
 }
 

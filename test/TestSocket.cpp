@@ -1,9 +1,12 @@
 #include <FlexWorld/Socket.hpp>
+#include <FlexWorld/Networking.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestSocket ) {
 	using namespace flex;
+
+	Networking::init();
 
 	// Initial state.
 	{
@@ -93,4 +96,5 @@ BOOST_AUTO_TEST_CASE( TestSocket ) {
 		client.close();
 	}
 
+	Networking::cleanup();
 }

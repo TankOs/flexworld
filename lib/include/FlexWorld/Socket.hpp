@@ -1,8 +1,14 @@
 #pragma once
 
+#if defined( WINDOWS )
+	// Only need the headers on windows.
+	#include <FlexWorld/Networking.hpp>
+#endif
+
 #include <FlexWorld/NonCopyable.hpp>
 
 #include <string>
+#include <cstdint>
 
 namespace flex {
 
@@ -81,8 +87,10 @@ class Socket : public NonCopyable {
 		#if defined( LINUX )
 			typedef int Handle; ///< Socket handle.
 			static const Handle INVALID_SOCKET = -1; ///< Invalid socket handle.
-		#else
-			#error NOT IMPLEMENTED
+		#elif defined( WINDOWS )
+			typedef SOCKET Handle; ///< Socket handle.
+			typedef int ssize_t; ///< Type for recv and send.
+			static const int SHUT_WR = SD_SEND;
 		#endif
 
 		void ensure_valid_socket();
