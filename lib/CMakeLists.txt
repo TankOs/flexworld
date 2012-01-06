@@ -34,6 +34,7 @@ set(
 	${INC_DIR}/FlexWorld/MessageMeta.hpp
 	${INC_DIR}/FlexWorld/Networking.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
+	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Protocol.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
@@ -60,6 +61,7 @@ set(
 	${SRC_DIR}/FlexWorld/MessageMeta.cpp
 	${SRC_DIR}/FlexWorld/Networking.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
+	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Protocol.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp

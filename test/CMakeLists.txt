@@ -26,6 +26,7 @@ set(
 	TestMessage.cpp
 	TestMessageMeta.cpp
 	TestNetworking.cpp
+	TestPeer.cpp
 	TestPlanet.cpp
 	TestResource.cpp
 	TestSaveInfo.cpp
