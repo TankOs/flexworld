@@ -1,6 +1,7 @@
 #include <FlexWorld/ServerProtocol.hpp>
 
 #include <iostream>
+#include <cstdint>
 #include <cassert>
 
 namespace flex {
