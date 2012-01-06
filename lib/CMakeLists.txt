@@ -32,12 +32,14 @@ set(
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/MessageMeta.hpp
+	${INC_DIR}/FlexWorld/Networking.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
+	${INC_DIR}/FlexWorld/Socket.hpp
 	${INC_DIR}/FlexWorld/Version.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
@@ -54,12 +56,14 @@ set(
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/MessageMeta.cpp
+	${SRC_DIR}/FlexWorld/Networking.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
+	${SRC_DIR}/FlexWorld/Socket.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
