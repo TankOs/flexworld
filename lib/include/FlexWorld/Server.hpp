@@ -1,47 +1,71 @@
 #pragma once
 
-#include <SFML/Network/TcpListener.hpp>
+#include <FlexWorld/Socket.hpp>
+
 #include <string>
+#include <memory>
 #include <cstdint>
 
 namespace flex {
 
-/** FlexWorld server instance.
+class Protocol;
+
+/** Server for handling peers and traffic.
  */
 class Server {
 	public:
-		/** Authentication modes.
-		 */
-		enum AuthMode {
-			OPEN_MODE = 0, ///< Requires username & password.
-			ANNOUNCE_MODE ///< Does handshake with FlexWorld account authority.
-		};
-
 		/** Ctor.
+		 * @param protocol Protocol.
 		 */
-		Server();
+		Server( Protocol& protocol );
 
-		/** Set authentication mode.
-		 * @param mode Mode.
+		/** Dtor.
+		 * Make sure to shut the server down gracefully with shutdown() before.
+		 * Read the notes there!
 		 */
-		void set_auth_mode( AuthMode mode );
+		~Server();
 
 		/** Start listening.
-		 * @param ip IP (empty to listen on all interfaces).
-		 * @param port Port.
-		 * @return false when failed to listen.
+		 * Start the TCP listener. This will return immediately without processing
+		 * further. Use process() to accept connections and process incoming and
+		 * outgoing data.
+		 * @param ip IP to listen on.
+		 * @param port Port to listen on.
+		 * @return false if failed to listen.
 		 */
-		bool listen( const std::string& ip, uint16_t port = 2593 );
+		bool listen( const std::string& ip, uint16_t port );
 
-		/** Shutdown server gracefully.
+		/** Process incoming connections, receive and send data in buffers.
+		 * This function will not block!
+		 * @return Number of operations processed (1 action = receive or accept).
+		 * @see listen() Must be called before.
+		 */
+		std::size_t process();
+
+		/** Check if server is listening.
+		 * @return true if listening.
+		 */
+		bool is_listening() const;
+
+		/** Get number of connected clients.
+		 * @return Number of connected clients.
+		 */
+		std::size_t get_num_clients() const;
+
+		/** Shutdown server.
+		 * Gracefully shutdown all connections. You should wait until
+		 * is_listening() and get_num_clients() are both zero, otherwise
+		 * connections may go into TIME_WAIT.
 		 */
 		void shutdown();
 
 	private:
-		bool m_run;
-		AuthMode m_auth_mode;
+		static const std::size_t SET_SIZE = FD_SETSIZE;
 
-		sf::TcpListener m_tcp_listener;
+		std::unique_ptr<Socket> m_listener;
+		Protocol& m_protocol;
+		fd_set m_fd_set;
+		bool m_listening;
 };
 
 }

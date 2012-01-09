@@ -18,27 +18,32 @@ BOOST_AUTO_TEST_CASE( TestSocket ) {
 		socket.close();
 	}
 
-	// Bind and listen (twice, to also check re-use of sockets).
+	// Bind and listen.
 	{
-		Socket socket;
+		{
+			Socket socket;
 
-		BOOST_REQUIRE( socket.bind( "127.0.0.1", 2593 ) == true );
-		BOOST_REQUIRE( socket.listen( 10 ) == true );
-		BOOST_CHECK( socket.is_listening() == true );
-		BOOST_CHECK( socket.is_connected() == false );
+			BOOST_REQUIRE( socket.bind( "127.0.0.1", 2593 ) == true );
+			BOOST_REQUIRE( socket.listen( 10 ) == true );
+			BOOST_CHECK( socket.is_listening() == true );
+			BOOST_CHECK( socket.is_connected() == false );
+		}
 
-		socket.close();
-		BOOST_CHECK( socket.is_listening() == false );
-		BOOST_CHECK( socket.is_connected() == false );
+		{
+			Socket socket;
+			BOOST_CHECK( socket.is_listening() == false );
+			BOOST_CHECK( socket.is_connected() == false );
 
-		BOOST_CHECK( socket.bind( "127.0.0.1", 2593 ) == true );
-		BOOST_CHECK( socket.listen( 10 ) == true );
-		BOOST_CHECK( socket.is_listening() == true );
-		BOOST_CHECK( socket.is_connected() == false );
+			BOOST_CHECK( socket.bind( "127.0.0.1", 2593 ) == true );
+			BOOST_CHECK( socket.listen( 10 ) == true );
+			BOOST_CHECK( socket.is_listening() == true );
+			BOOST_CHECK( socket.is_connected() == false );
 
-		socket.close();
-		BOOST_CHECK( socket.is_listening() == false );
-		BOOST_CHECK( socket.is_connected() == false );
+			socket.close();
+
+			BOOST_CHECK( socket.is_listening() == false );
+			BOOST_CHECK( socket.is_connected() == false );
+		}
 	}
 
 	// Make a connection.
@@ -57,12 +62,12 @@ BOOST_AUTO_TEST_CASE( TestSocket ) {
 		BOOST_CHECK( listener.accept( peer ) == true );
 		BOOST_CHECK( peer.is_connected() == true );
 		BOOST_CHECK( peer.is_listening() == false );
-		peer.close();
 
+		peer.close();
 		client.close();
+
 		BOOST_CHECK( client.is_connected() == false );
 		BOOST_CHECK( client.is_listening() == false );
-
 	}
 
 	// Send and receive data.
@@ -94,6 +99,7 @@ BOOST_AUTO_TEST_CASE( TestSocket ) {
 
 		peer.close();
 		client.close();
+		listener.close();
 	}
 
 	Networking::cleanup();

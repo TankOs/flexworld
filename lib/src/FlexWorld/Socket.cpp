@@ -11,6 +11,13 @@ Socket::Socket() :
 	m_connected( false ),
 	m_listening( false )
 {
+	m_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
+	assert( m_socket != INVALID_SOCKET );
+
+	// TODO: REMOVE THIS AS WE'RE GRACEFULLY SHUTTING DOWN!
+	int yep( 1 );
+	int opt_result = setsockopt( m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>( &yep ), sizeof( yep ) );
+	assert( opt_result == 0 );
 }
 
 Socket::~Socket() {
@@ -26,17 +33,10 @@ bool Socket::is_listening() const {
 }
 
 bool Socket::bind( const std::string& ip, uint16_t port ) {
-	ensure_valid_socket();
-
 	assert( !ip.empty() );
 	assert( port > 0 );
 	assert( !m_connected );
 	assert( !m_listening );
-
-	// TODO: REMOVE THIS AS WE'RE GRACEFULLY SHUTTING DOWN!
-	int yep( 1 );
-	int opt_result = setsockopt( m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>( &yep ), sizeof( yep ) );
-	assert( opt_result == 0 );
 
 	// Build socket address.
 	::sockaddr_in addr;
@@ -54,8 +54,6 @@ bool Socket::bind( const std::string& ip, uint16_t port ) {
 }
 
 bool Socket::listen( int backlog ) {
-	ensure_valid_socket();
-
 	assert( !m_connected );
 	assert( !m_listening );
 
@@ -70,8 +68,6 @@ bool Socket::listen( int backlog ) {
 }
 
 bool Socket::connect( const std::string& ip, uint16_t port ) {
-	ensure_valid_socket();
-
 	assert( !m_connected );
 	assert( !m_listening );
 	assert( !ip.empty() );
@@ -106,35 +102,22 @@ void Socket::close() {
 	m_connected = false;
 	m_listening = false;
 
-	if( m_socket == INVALID_SOCKET ) {
-		return;
-	}
-
 	#if defined( LINUX )
 		::close( m_socket );
 	#else
 		closesocket( m_socket );
 	#endif
-
-	m_socket = INVALID_SOCKET;
-}
-
-void Socket::ensure_valid_socket() {
-	if( m_socket == INVALID_SOCKET ) {
-		m_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
-		assert( m_socket != INVALID_SOCKET );
-	}
 }
 
 bool Socket::accept( Socket& peer ) {
 	assert( m_listening );
 
-	// Make sure other peer is closed.
-	peer.close();
-
 	int result = ::accept( m_socket, nullptr, nullptr );
 
 	if( result != -1 ) {
+		// Make sure other peer is closed.
+		peer.close();
+
 		peer.m_socket = result;
 		peer.m_connected = true;
 		peer.m_listening = false;

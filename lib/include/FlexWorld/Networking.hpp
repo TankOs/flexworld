@@ -1,12 +1,19 @@
 #pragma once
 
+namespace flex {
+
+static const int MAX_CONNECTIONS = 512; ///< Maximum allowed connections for the server (limited by FD_SETSIZE, which is set to this value).
+
+}
+
 #if defined( LINUX )
 	#include <sys/socket.h>
 	#include <netinet/in.h>
 	#include <arpa/inet.h>
 	#include <unistd.h>
 #else
-	#include <winsock2.h>
+	#define FD_SETSIZE MAX_CONNECTIONS
+	#include <WinSock2.h>
 #endif
 
 namespace flex {

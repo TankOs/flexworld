@@ -12,10 +12,14 @@
 
 namespace flex {
 
+class Selector;
+
 /** Wrapper for cross-platform TCP socket usage.
  */
 class Socket : public NonCopyable {
 	public:
+		friend class Selector;
+
 		/** Ctor.
 		 */
 		Socket();
@@ -23,6 +27,10 @@ class Socket : public NonCopyable {
 		/** Dtor.
 		 */
 		~Socket();
+
+		/** Create socket.
+		 */
+		void create();
 
 		/** Check if socket is connected.
 		 * @return true if connected.
@@ -92,8 +100,6 @@ class Socket : public NonCopyable {
 			typedef int ssize_t; ///< Type for recv and send.
 			static const int SHUT_WR = SD_SEND;
 		#endif
-
-		void ensure_valid_socket();
 
 		Handle m_socket;
 		bool m_connected;

@@ -31,6 +31,8 @@ set(
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp
+	TestSelector.cpp
+	TestServer.cpp
 	TestServerProtocol.cpp
 	TestSocket.cpp
 	TestVersion.cpp
@@ -48,7 +50,8 @@ include_directories( ${PROJECT_BINARY_DIR} )
 
 add_executable( test ${SOURCES} )
 
-target_link_libraries( test flexworld ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+target_link_libraries( test flexworld )
+target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 
 if( WINDOWS )
 	target_link_libraries( test wsock32.lib )

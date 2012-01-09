@@ -40,6 +40,7 @@ set(
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
+	${INC_DIR}/FlexWorld/Selector.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
 	${INC_DIR}/FlexWorld/ServerProtocol.hpp
 	${INC_DIR}/FlexWorld/Socket.hpp
@@ -67,6 +68,7 @@ set(
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
+	${SRC_DIR}/FlexWorld/Selector.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 	${SRC_DIR}/FlexWorld/ServerProtocol.cpp
 	${SRC_DIR}/FlexWorld/Socket.cpp

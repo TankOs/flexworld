@@ -1,32 +1,15 @@
+#include "TestServerProtocolReactor.hpp"
+
 #include <FlexWorld/ServerProtocol.hpp>
 #include <FlexWorld/Socket.hpp>
 
 #include <boost/test/unit_test.hpp>
 
-class TestReactor : public flex::ServerProtocol {
-	public:
-		TestReactor() :
-			flex::ServerProtocol(),
-			m_sender( nullptr )
-		{
-		}
-
-		void handle_login_message( flex::Socket& sender, const std::string& username, const std::string& password ) {
-			m_sender = &sender;
-			m_login_username = username;
-			m_login_password = password;
-		}
-
-		flex::Socket* m_sender;
-		std::string m_login_username;
-		std::string m_login_password;
-};
-
 BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	using namespace flex;
 
 	Socket dummy_socket;
-	TestReactor reactor;
+	TestServerProtocolReactor reactor;
 	Protocol::Buffer buffer;
 
 	// Login message.
