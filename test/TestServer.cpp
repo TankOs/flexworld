@@ -3,35 +3,54 @@
 #include <FlexWorld/Server.hpp>
 
 #include <boost/test/unit_test.hpp>
+#include <boost/thread.hpp>
+#include <functional>
+
+void run_server( flex::Server* server ) {
+	BOOST_CHECK( server->run() );
+}
 
 BOOST_AUTO_TEST_CASE( TestServer ) {
 	using namespace flex;
 
-	TestServerProtocolReactor reactor;
-
 	// Initial state.
 	{
+		TestServerProtocolReactor reactor;
 		Server server( reactor );
 
-		BOOST_CHECK( server.get_num_clients() == 0 );
-		BOOST_CHECK( server.is_listening() == false );
+		BOOST_CHECK( server.get_num_peers() == 0 );
+		BOOST_CHECK( server.is_running() == false );
 	}
 
-	// Run server and send messages.
+	// Basic properties.
 	{
+		TestServerProtocolReactor reactor;
 		Server server( reactor );
-		BOOST_REQUIRE( server.listen( "127.0.0.1", 2593 ) );
 
-		// Connect a socket.
-		Socket client;
-		BOOST_REQUIRE( client.connect( "127.0.0.1", 2593 ) );
+		server.set_ip( "127.0.0.1" );
+		server.set_port( 2593 );
+		server.set_num_dispatch_threads( 4 );
 
-		// Process until connection is accepted.
-		while( server.process() == 0 ) {
-		}
+		BOOST_CHECK( server.get_ip() == "127.0.0.1" );
+		BOOST_CHECK( server.get_port() == 2593 );
+		BOOST_CHECK( server.get_num_dispatch_threads() == 4 );
+	}
 
-		//Protocol::Buffer buffer;
-		//ServerProtocol::build_login_message( "Tank", "foo", buffer );
+	// Run server and send messages from one peer.
+	{
+		TestServerProtocolReactor reactor;
+		Server server( reactor );
+
+		server.set_ip( "127.0.0.1" );
+		server.set_port( 2593 );
+		server.set_num_dispatch_threads( 4 );
+
+		boost::thread thread( std::bind( &run_server, &server ) );
+
+		boost::this_thread::sleep( boost::posix_time::seconds( 1 ) );
+		server.shutdown();
+
+		thread.join();
 	}
 
 }

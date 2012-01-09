@@ -4,7 +4,7 @@ project( FlexWorldLibrary )
 
 find_package( SFML 2.0 REQUIRED NETWORK SYSTEM )
 find_package( yaml-cpp )
-find_package( Boost 1.46 REQUIRED filesystem system )
+find_package( Boost 1.46 REQUIRED thread filesystem system )
 
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
@@ -84,6 +84,7 @@ include_directories( ${Boost_INCLUDE_DIR} )
 add_library( flexworld ${SOURCES} )
 
 target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
+target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )
 target_link_libraries( flexworld ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${Boost_SYSTEM_LIBRARY} )
 

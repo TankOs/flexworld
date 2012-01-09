@@ -1,7 +1,7 @@
 project( FlexWorldTest )
 
 #set(Boost_USE_STATIC_LIBS ON)
-find_package( Boost 1.46 REQUIRED unit_test_framework )
+find_package( Boost 1.46 REQUIRED thread unit_test_framework )
 find_package( SFML 2.0 )
 
 set( DATA_DIRECTORY ${PROJECT_SOURCE_DIR}/data )
@@ -26,7 +26,6 @@ set(
 	TestMessage.cpp
 	TestMessageMeta.cpp
 	TestNetworking.cpp
-	TestPeer.cpp
 	TestPlanet.cpp
 	TestResource.cpp
 	TestSaveInfo.cpp
@@ -51,6 +50,7 @@ include_directories( ${PROJECT_BINARY_DIR} )
 add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld )
+target_link_libraries( test ${Boost_THREAD_LIBRARY} )
 target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 
 if( WINDOWS )

@@ -156,9 +156,14 @@ std::size_t Socket::receive( char* buffer, std::size_t size ) {
 }
 
 void Socket::shutdown() {
-	assert( m_connected );
+	assert( m_connected || m_listening );
 
-	::shutdown( m_socket, SHUT_WR );
+	if( m_connected ) {
+		::shutdown( m_socket, SHUT_WR );
+	}
+	else {
+		::shutdown( m_socket, SHUT_RD );
+	}
 }
 
 }

@@ -1,33 +1,16 @@
 #pragma once
 
 #include <FlexWorld/Protocol.hpp>
-
-#include <cstdint>
+#include <FlexWorld/Socket.hpp>
+#include <FlexWorld/NonCopyable.hpp>
 
 namespace flex {
 
-class Socket;
-
-/** The Peer class holds some extra information for server->client connections.
- * Every peer is associated with a connection ID (reused!). Besides of that it
- * holds a reference to the socket and a buffer.
+/** The Peer class holds some basic information for server<->client connections.
  */
-class Peer {
+class Peer : public NonCopyable {
 	public:
-		typedef uint32_t ID; ///< Connection ID type.
-
-		/** Ctor.
-		 */
-		Peer();
-
-		/** Ctor.
-		 * @param id_ ID.
-		 * @param socket_ Socket (pointer is stored).
-		 */
-		Peer( ID id_, Socket& socket_ );
-
-		ID id; ///< Connection ID.
-		Socket* socket; ///< Socket.
+		Socket socket; ///< Socket.
 		Protocol::Buffer buffer; ///< Buffer.
 };
 
