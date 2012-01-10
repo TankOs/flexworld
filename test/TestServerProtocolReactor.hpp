@@ -6,17 +6,21 @@ class TestServerProtocolReactor : public flex::ServerProtocol {
 	public:
 		TestServerProtocolReactor() :
 			flex::ServerProtocol(),
-			m_sender( nullptr )
+			m_num_logins_received( 0 ),
+			m_sender( 0 )
 		{
 		}
 
-		void handle_login_message( flex::Socket& sender, const std::string& username, const std::string& password ) {
-			m_sender = &sender;
+		void handle_login_message( ConnectionID sender, const std::string& username, const std::string& password ) {
+			m_sender = sender;
 			m_login_username = username;
 			m_login_password = password;
+
+			++m_num_logins_received;
 		}
 
-		flex::Socket* m_sender;
 		std::string m_login_username;
 		std::string m_login_password;
+		std::size_t m_num_logins_received;
+		ConnectionID m_sender;
 };

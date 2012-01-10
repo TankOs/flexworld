@@ -18,7 +18,7 @@ class ServerProtocol : public Protocol {
 		 */
 		virtual ~ServerProtocol();
 
-		std::size_t handle_incoming_data( Socket& socket, const Buffer& buffer );
+		std::size_t handle_incoming_data( ConnectionID id, const Buffer& buffer );
 
 		/** Build login message.
 		 * @param username Username.
@@ -32,7 +32,7 @@ class ServerProtocol : public Protocol {
 		 * @param username Username.
 		 * @param password Password.
 		 */
-		virtual void handle_login_message( Socket& sender, const std::string& username, const std::string& password );
+		virtual void handle_login_message( ConnectionID sender, const std::string& username, const std::string& password );
 
 	private:
 		/** Message ID.

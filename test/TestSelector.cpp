@@ -9,9 +9,7 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 	// Initial state.
 	{
 		Selector selector;
-
 		BOOST_CHECK( selector.get_num_sockets() == 0 );
-		BOOST_CHECK( selector.get_num_ready_sockets() == 0 );
 	}
 
 	// Add and remove sockets.
@@ -19,29 +17,39 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 		Socket socket[2];
 
 		Selector selector;
-		selector.add_socket( socket[0] );
-		selector.add_socket( socket[1] );
+		selector.add( socket[0] );
+		selector.add( socket[1] );
 
-		BOOST_CHECK( selector.has_socket( socket[0] ) == true );
-		BOOST_CHECK( selector.has_socket( socket[1] ) == true );
+		BOOST_CHECK( selector.has( socket[0] ) == true );
+		BOOST_CHECK( selector.has( socket[1] ) == true );
 
 		BOOST_CHECK( selector.get_num_sockets() == 2 );
-		BOOST_CHECK( selector.get_num_ready_sockets() == 0 );
 
 		// Remove.
-		selector.remove_socket( socket[1] );
-		BOOST_CHECK( selector.has_socket( socket[0] ) == true );
-		BOOST_CHECK( selector.has_socket( socket[1] ) == false );
+		selector.remove( socket[1] );
+		BOOST_CHECK( selector.has( socket[0] ) == true );
+		BOOST_CHECK( selector.has( socket[1] ) == false );
 
 		BOOST_CHECK( selector.get_num_sockets() == 1 );
-		BOOST_CHECK( selector.get_num_ready_sockets() == 0 );
 
-		selector.remove_socket( socket[0] );
-		BOOST_CHECK( selector.has_socket( socket[0] ) == false );
-		BOOST_CHECK( selector.has_socket( socket[1] ) == false );
+		selector.remove( socket[0] );
+		BOOST_CHECK( selector.has( socket[0] ) == false );
+		BOOST_CHECK( selector.has( socket[1] ) == false );
 
 		BOOST_CHECK( selector.get_num_sockets() == 0 );
-		BOOST_CHECK( selector.get_num_ready_sockets() == 0 );
+	}
+
+	// Clear.
+	{
+		Socket socket[2];
+
+		Selector selector;
+		selector.add( socket[0] );
+		selector.add( socket[1] );
+
+		BOOST_CHECK( selector.get_num_sockets() == 2 );
+		selector.clear();
+		BOOST_CHECK( selector.get_num_sockets() == 0 );
 	}
 
 	// Select writable.
@@ -51,29 +59,28 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 			Socket socket;
 
 			Selector selector;
-			selector.add_socket( socket );
+			selector.add( socket );
 
-			selector.select( Selector::WRITE, 0 );
+			BOOST_REQUIRE( selector.select( Selector::WRITE, 0 ) == 1 );
 
 			// Even if the socket isn't connected a call to send() would not block
 			// (it would return immediately with an error value).
-			BOOST_CHECK( selector.get_num_ready_sockets() == 1 );
+			BOOST_CHECK( selector.is_ready( socket ) == true );
 		}
 
 		// Now with connected socket.
 		{
 			Socket listener;
-			listener.bind( "127.0.0.1", 2593 );
+			BOOST_REQUIRE( listener.bind( "127.0.0.1", 2593 ) );
 			BOOST_REQUIRE( listener.listen( 10 ) == true );
 
 			Socket client;
 			BOOST_REQUIRE( client.connect( "127.0.0.1", 2593 ) == true );
 
 			Selector selector;
-			selector.add_socket( client );
-			selector.select( Selector::WRITE, 0 );
-
-			BOOST_CHECK( selector.get_num_ready_sockets() == 1 );
+			selector.add( client );
+			BOOST_REQUIRE( selector.select( Selector::WRITE, 0 ) == 1 );
+			BOOST_CHECK( selector.is_ready( client ) == true );
 		}
 	}
 
@@ -84,13 +91,13 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 			Socket socket;
 
 			Selector selector;
-			selector.add_socket( socket );
+			selector.add( socket );
 
-			selector.select( Selector::READ, 0 );
+			BOOST_REQUIRE( selector.select( Selector::READ, 0 ) == 1 );
 
 			// Even if the socket isn't connected a call to recv() would not block
 			// (it would return immediately with an error value).
-			BOOST_CHECK( selector.get_num_ready_sockets() == 1 );
+			BOOST_CHECK( selector.is_ready( socket ) == true );
 		}
 
 		// Now with connected socket but without pending data.
@@ -106,10 +113,9 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 			BOOST_REQUIRE( listener.accept( peer ) );
 
 			Selector selector;
-			selector.add_socket( client );
-			selector.select( Selector::READ, 0 );
-
-			BOOST_CHECK( selector.get_num_ready_sockets() == 0 );
+			selector.add( client );
+			BOOST_REQUIRE( selector.select( Selector::READ, 0 ) == 0 );
+			BOOST_CHECK( selector.is_ready( client ) == false );
 		}
 
 		// Now with connected socket and pending data.
@@ -127,10 +133,9 @@ BOOST_AUTO_TEST_CASE( TestSelector ) {
 			peer.send( "foo", 3 );
 
 			Selector selector;
-			selector.add_socket( client );
-			selector.select( Selector::READ, 0 );
-
-			BOOST_CHECK( selector.get_num_ready_sockets() == 1 );
+			selector.add( client );
+			BOOST_REQUIRE( selector.select( Selector::READ, 0 ) == 1 );
+			BOOST_CHECK( selector.is_ready( client ) == true );
 		}
 	}
 }

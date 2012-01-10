@@ -12,6 +12,7 @@ class Socket;
  */
 class Protocol {
 	public:
+		typedef std::size_t ConnectionID; ///< Connection ID.
 		typedef std::vector<char> Buffer; ///< Buffer.
 
 		/** Thrown when handle_incoming_data() detected a bogus message.
@@ -23,25 +24,25 @@ class Protocol {
 		virtual ~Protocol();
 
 		/** Handle connect.
-		 * @param socket Socket that connected.
+		 * @param id Connection ID.
 		 */
-		virtual void handle_connect( Socket& socket );
+		virtual void handle_connect( ConnectionID id );
 
 		/** Handle disconnect.
-		 * @param socket Socket that disconnected.
+		 * @param id Connection ID.
 		 */
-		virtual void handle_disconnect( Socket& socket );
+		virtual void handle_disconnect( ConnectionID id );
 
 		/** Handle incoming data.
 		 * This function doesn't change the buffer but instead reports how many
 		 * data has been processed successfully and can (should!) be removed from
 		 * the buffer (from the beginning).
-		 * @param socket Socket that sent data.
+		 * @param id Connection ID.
 		 * @param buffer Data.
 		 * @return Number of bytes processed.
 		 * @throws BogusMessageException in case this function detects a bad message.
 		 */
-		virtual std::size_t handle_incoming_data( Socket& socket, const Buffer& buffer );
+		virtual std::size_t handle_incoming_data( ConnectionID id, const Buffer& buffer );
 
 	private:
 };

@@ -1,8 +1,10 @@
 #pragma once
 
-#include <FlexWorld/Protocol.hpp>
 #include <FlexWorld/Socket.hpp>
 #include <FlexWorld/NonCopyable.hpp>
+#include <FlexWorld/Protocol.hpp>
+
+#include <vector>
 
 namespace flex {
 

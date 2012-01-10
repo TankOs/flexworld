@@ -8,7 +8,6 @@
 BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	using namespace flex;
 
-	Socket dummy_socket;
 	TestServerProtocolReactor reactor;
 	Protocol::Buffer buffer;
 
@@ -33,8 +32,8 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		BOOST_CHECK( buffer[index++] == 'o' );
 		BOOST_CHECK( buffer[index++] == 'o' );
 
-		BOOST_CHECK( reactor.handle_incoming_data( dummy_socket, buffer ) == SIZE );
-		BOOST_CHECK( reactor.m_sender == &dummy_socket );
+		BOOST_CHECK( reactor.handle_incoming_data( 1337, buffer ) == SIZE );
+		BOOST_CHECK( reactor.m_sender == 1337 );
 		BOOST_CHECK( reactor.m_login_username == "Tank" );
 		BOOST_CHECK( reactor.m_login_password == "foo" );
 	}

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <FlexWorld/Socket.hpp>
+#include <FlexWorld/Selector.hpp>
 #include <FlexWorld/NonCopyable.hpp>
 
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/condition.hpp>
 #include <vector>
 #include <string>
 #include <memory>
@@ -97,25 +99,33 @@ class Server : public NonCopyable {
 		bool run();
 
 	private:
-		typedef std::vector<Peer*> PeerPtrVector;
+		typedef std::vector<std::shared_ptr<Peer>> PeerPtrVector;
+		typedef std::map<Socket*, std::size_t> SocketIDMap;
 		typedef std::vector<boost::thread*> ThreadPtrVector;
 
-		void clean_threads();
-		void clean_sockets();
-		void wait_for_threads();
+		void cleanup(); // Wait for threads, clean threads, clean sockets, clean socket->ID mappings.
+		void notify_workers();
 		void run_dispatcher();
+
+		void process_listener();
+		void process_peers();
 
 		std::unique_ptr<Socket> m_listener;
 		PeerPtrVector m_peers;
 		ThreadPtrVector m_dispatch_threads;
+
 		std::string m_ip;
 		Protocol& m_protocol;
+		Selector m_selector;
+
 		std::size_t m_num_dispatch_threads;
 		uint32_t m_num_peers;
 		uint16_t m_port;
 		bool m_running;
 
-		boost::mutex m_work_avail_mutex;
+		boost::condition m_work_condition;
+		boost::mutex m_worker_mutex;
+		boost::mutex m_work_data_mutex;
 };
 
 }

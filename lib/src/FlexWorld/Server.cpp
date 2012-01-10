@@ -1,5 +1,4 @@
 #include <FlexWorld/Server.hpp>
-#include <FlexWorld/Selector.hpp>
 #include <FlexWorld/Peer.hpp>
 
 #include <boost/thread.hpp>
@@ -19,10 +18,7 @@ Server::Server( Protocol& protocol ) :
 
 Server::~Server() {
 	shutdown();
-
-	wait_for_threads();
-	clean_threads();
-	clean_sockets();
+	cleanup();
 }
 
 void Server::set_ip( const std::string& ip ) {
@@ -41,11 +37,11 @@ void Server::set_port( uint16_t port ) {
 	m_port = port;
 }
 
-uint16_t Server::get_port() const{
+uint16_t Server::get_port() const {
 	return m_port;
 }
 
-std::size_t Server::get_num_peers() const{
+std::size_t Server::get_num_peers() const {
 	return m_num_peers;
 }
 
@@ -64,7 +60,7 @@ void Server::shutdown() {
 	// Shutdown all peers (gracefully).
 	for( std::size_t peer_id = 0; peer_id < m_peers.size(); ++peer_id ) {
 		// Skip free slots.
-		if( m_peers[peer_id] == nullptr ) {
+		if( !m_peers[peer_id] ) {
 			continue;
 		}
 
@@ -88,14 +84,13 @@ bool Server::run() {
 		return false;
 	}
 
-	m_running = true;
-
 	// Setup the listener.
 	m_listener.reset( new Socket );
 	if( !m_listener->bind( m_ip, m_port ) || !m_listener->listen( 10 ) ) {
-		m_running = false;
 		return false;
 	}
+
+	m_running = true;
 
 	// Listener is sane, launch dispatch threads.
 	m_dispatch_threads.resize( m_num_dispatch_threads, nullptr );
@@ -104,107 +99,191 @@ bool Server::run() {
 		m_dispatch_threads[thread_id] = new boost::thread( std::bind( &Server::run_dispatcher, this ) );
 	}
 
-	// Accept connections.
-	Selector selector;
-	selector.add_socket( *m_listener );
+	// Prepare m_selector with listener.
+	m_selector.add( *m_listener );
 
 	while( m_running ) {
 		// Wait for incoming connections and/or incoming data.
-		selector.select( Selector::READ, Selector::BLOCK );
+		std::size_t num_ready = m_selector.select( Selector::READ, Selector::BLOCK );
 
 		// If select() returns without sockets ready, something bad happened.
 		// Shutdown immediately.
-		if( selector.get_num_ready_sockets() == 0 ) {
+		if( num_ready == 0 ) {
+			std::cout << "No more sockets ready, cancelling." << std::endl;
 			break;
 		}
 
-		// Check for new incoming connection.
-		if( selector.has_socket( *m_listener ) ) {
-			// Create peer and accept connection.
-			Peer* peer = new Peer;
+		// Check if listener has something for me.
+		if( m_selector.is_ready( *m_listener ) ) {
+			process_listener();
+			--num_ready;
+		}
 
-			// If accepting fails then the listener has been shutdown.
-			if( !m_listener->accept( peer->socket ) ) {
-				// Remove from selector.
-				selector.remove_socket( *m_listener );
-				shutdown();
-
-				delete peer;
-			}
-			else {
-				// Accept it. Check if there's a free slot.
-				std::size_t peer_id( 0 );
-
-				for( peer_id = 0; peer_id < m_peers.size(); ++peer_id ) {
-					// If found, peer_id points to the correct index, so leave the loop.
-					if( m_peers[peer_id] == nullptr ) {
-						break;
-					}
-				}
-
-				// If there's no free slot create a new one.
-				if( peer_id >= m_peers.size() ) {
-					m_peers.resize( peer_id + 1 );
-				}
-
-				// Store.
-				m_peers[peer_id] = peer;
-			}
+		// If still ready sockets left, a peer wants something.
+		if( num_ready > 0 ) {
+			process_peers();
 		}
 	}
 
-	m_listener.reset();
-	std::cout << "Cleanup complete, waiting for dispatcher threads..." << std::endl;
-	wait_for_threads();
-	clean_threads();
+	cleanup();
 
 	m_running = false;
-
 	return true;
 }
 
-void Server::clean_threads() {
-	// WARNING: This doesn't check for ANY thread-safety!!! Be warned or lose me
-	// forever.
+void Server::notify_workers() {
+	boost::lock_guard<boost::mutex> lock( m_worker_mutex );
+	m_work_condition.notify_all();
+}
+
+void Server::cleanup() {
+	// Wait for threads and delete them.
+	m_running = false;
+	notify_workers();
 
 	for( std::size_t thread_id = 0; thread_id < m_dispatch_threads.size(); ++thread_id ) {
+		m_dispatch_threads[thread_id]->join();
 		delete m_dispatch_threads[thread_id];
 	}
 
 	m_dispatch_threads.clear();
-}
 
-boost::mutex g_debug_mutex;
+	// Clean peers.
+	m_peers.clear();
+
+	// Delete listener.
+	m_listener.reset();
+
+	m_selector.clear();
+	m_num_peers = 0;
+}
 
 void Server::run_dispatcher() {
-	g_debug_mutex.lock();
-	static int id = 0;
-	int local_id( id );
-	++id;
-	g_debug_mutex.unlock();
+	std::cout << "Dispatcher runs." << std::endl;
 
-	boost::this_thread::sleep( boost::posix_time::seconds( 5 ) );
-}
+	boost::unique_lock<boost::mutex> lock( m_worker_mutex );
 
-void Server::wait_for_threads() {
-	for( std::size_t thread_id = 0; thread_id < m_dispatch_threads.size(); ++thread_id ) {
-		m_dispatch_threads[thread_id]->join();
+	while( m_running ) {
+		std::cout << "Dispatcher waiting for data..." << std::endl;
+		m_work_condition.wait( lock );
+
+		{
+			boost::lock_guard<boost::mutex> data_lock( m_work_data_mutex );
+			std::cout << "No work for dispatcher." << std::endl;
+			continue;
+
+			std::cout << "Dispatcher is working!" << std::endl;
+		}
+
 	}
+
+	std::cout << "Dispatcher terminated." << std::endl;
 }
 
-void Server::clean_sockets() {
-	for( std::size_t socket_index = 0; socket_index < m_peers.size(); ++socket_index ) {
-		// Skip holes.
-		if( m_peers[socket_index] == nullptr ) {
+void Server::process_listener() {
+	std::cout << "Listener has something." << std::endl;
+
+	// Create peer and accept connection.
+	std::shared_ptr<Peer> peer( new Peer );
+
+	// If accepting fails then the listener has been shutdown.
+	if( !m_listener->accept( peer->socket ) ) {
+		std::cout << "Listener died." << std::endl;
+
+		// Remove from m_selector and shutdown server.
+		m_selector.remove( *m_listener );
+		shutdown();
+
+		return;
+	}
+
+	// Connection accepted.
+	++m_num_peers;
+	std::cout << "Connection established, now " << m_num_peers << " clients." << std::endl;
+
+	// Check if there's a free slot.
+	std::size_t peer_id( 0 );
+
+	for( peer_id = 0; peer_id < m_peers.size(); ++peer_id ) {
+		// If found, peer_id points to the correct index, so leave the loop.
+		if( m_peers[peer_id] == nullptr ) {
+			break;
+		}
+	}
+
+	// If there's no free slot create a new one.
+	if( peer_id >= m_peers.size() ) {
+		m_peers.resize( peer_id + 1 );
+	}
+
+	// Store.
+	m_peers[peer_id] = peer;
+
+	// Add to m_selector and remember socket->ID mapping.
+	m_selector.add( peer->socket );
+}
+
+void Server::process_peers() {
+	// Check all peers.
+	std::size_t num_peers( m_peers.size() );
+
+	for( std::size_t peer_id = 0; peer_id < num_peers; ++peer_id ) {
+		std::shared_ptr<Peer> peer = m_peers[peer_id];
+
+		// Skip free slots.
+		if( !peer ) {
 			continue;
 		}
 
-		// Make sure socket is closed and delete.
-		m_peers[socket_index]->socket.close();
-		delete m_peers[socket_index];
-	}
+		// Check if in selector.
+		if( !m_selector.is_ready( peer->socket ) ) {
+			continue;
+		}
 
-	m_peers.clear();
+		// Receive data.
+		static char buffer[1024];
+		std::size_t num_bytes_received = peer->socket.receive( buffer, 1024 );
+
+		// Check for disconnection.
+		if( num_bytes_received == 0 ) {
+			peer->socket.shutdown();
+			peer->socket.close();
+
+			// If it's the last peer in the buffer, just shrink it.
+			if( peer_id + 1 == m_peers.size() ) {
+				m_peers.resize( m_peers.size() - 1 );
+			}
+			else { // Otherwise set the slot to NULL to indicate a free one.
+				m_peers[peer_id] = std::shared_ptr<Peer>();
+			}
+
+			--m_num_peers;
+			std::cout << "Peer disconnected, " << m_num_peers << " connections left." << std::endl;
+
+			// Remove from m_selector.
+			m_selector.remove( peer->socket );
+		}
+		else {
+			// Data received, append to buffer.
+			peer->buffer.resize( peer->buffer.size() + num_bytes_received );
+			std::memcpy( (&peer->buffer[0]) + (peer->buffer.size() - num_bytes_received), buffer, num_bytes_received );
+
+			// Call the protocol.
+			std::size_t bytes_processed = m_protocol.handle_incoming_data( peer_id, peer->buffer );
+
+			// Shrink buffer.
+			if( bytes_processed > 0 ) {
+				if( bytes_processed >= peer->buffer.size() ) { // Kill whole buffer?
+					peer->buffer.clear();
+				}
+				else { // Move remaining data to front.
+					std::memmove( (&peer->buffer[0]) + bytes_processed, &peer->buffer[0], peer->buffer.size() - bytes_processed );
+					peer->buffer.resize( peer->buffer.size() - bytes_processed );
+				}
+			}
+		}
+
+	}
 }
 
 }

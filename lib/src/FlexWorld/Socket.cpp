@@ -13,11 +13,6 @@ Socket::Socket() :
 {
 	m_socket = ::socket( AF_INET, SOCK_STREAM, 0 );
 	assert( m_socket != INVALID_SOCKET );
-
-	// TODO: REMOVE THIS AS WE'RE GRACEFULLY SHUTTING DOWN!
-	int yep( 1 );
-	int opt_result = setsockopt( m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>( &yep ), sizeof( yep ) );
-	assert( opt_result == 0 );
 }
 
 Socket::~Socket() {
@@ -37,6 +32,11 @@ bool Socket::bind( const std::string& ip, uint16_t port ) {
 	assert( port > 0 );
 	assert( !m_connected );
 	assert( !m_listening );
+
+	// TODO: REMOVE THIS AS WE'RE GRACEFULLY SHUTTING DOWN!
+	int yep( 1 );
+	int opt_result = setsockopt( m_socket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>( &yep ), sizeof( yep ) );
+	assert( opt_result == 0 );
 
 	// Build socket address.
 	::sockaddr_in addr;
@@ -79,19 +79,20 @@ bool Socket::connect( const std::string& ip, uint16_t port ) {
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = ::inet_addr( ip.c_str() );
+	addr.sin_port = htons( port );
+
 	if( addr.sin_addr.s_addr == INADDR_NONE ) {
 		return false;
 	}
-	addr.sin_port = htons( port );
 
 	int result = ::connect( m_socket, reinterpret_cast<sockaddr*>( &addr ), sizeof( sockaddr_in ) );
 
-	if( result == 0 ) {
-		m_connected = true;
-		return true;
+	if( result != 0 ) {
+		return false;
 	}
 
-	return false;
+	m_connected = true;
+	return true;
 }
 
 void Socket::close() {
@@ -147,12 +148,7 @@ std::size_t Socket::receive( char* buffer, std::size_t size ) {
 	assert( size > 0 );
 
 	ssize_t received_bytes = ::recv( m_socket, buffer, size, 0 );
-
-	if( received_bytes < 1 ) {
-		return 0;
-	}
-
-	return received_bytes;
+	return (received_bytes < 0 ? 0 : static_cast<std::size_t>( received_bytes ) );
 }
 
 void Socket::shutdown() {

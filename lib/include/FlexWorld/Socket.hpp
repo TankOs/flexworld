@@ -78,7 +78,7 @@ class Socket : public NonCopyable {
 		/** Receive data.
 		 * @param buffer Buffer (gets filled with received data).
 		 * @param size Buffer size (maximum bytes to receive).
-		 * @return Amount of bytes received, 0 indicates error.
+		 * @return Amount of bytes received, 0 indicates shutdown/error.
 		 */
 		std::size_t receive( char* buffer, std::size_t size );
 

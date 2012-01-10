@@ -20,11 +20,7 @@ std::size_t Selector::get_num_sockets() const {
 	return m_sockets.size();
 }
 
-std::size_t Selector::get_num_ready_sockets() const {
-	return m_ready_sockets.size();
-}
-
-void Selector::add_socket( Socket& socket ) {
+void Selector::add( Socket& socket ) {
 	assert( std::find( m_sockets.begin(), m_sockets.end(), &socket ) == m_sockets.end() );
 	m_sockets.push_back( &socket );
 
@@ -33,11 +29,11 @@ void Selector::add_socket( Socket& socket ) {
 	m_max_socket = std::max( m_max_socket, socket.m_socket );
 }
 
-bool Selector::has_socket( Socket& socket ) const {
+bool Selector::has( Socket& socket ) const {
 	return std::find( m_sockets.begin(), m_sockets.end(), &socket ) != m_sockets.end();
 }
 
-void Selector::remove_socket( Socket& socket ) {
+void Selector::remove( Socket& socket ) {
 	SocketVector::iterator iter = std::find( m_sockets.begin(), m_sockets.end(), &socket );
 	assert( iter != m_sockets.end() );
 
@@ -45,29 +41,20 @@ void Selector::remove_socket( Socket& socket ) {
 
 	// Update fd_set and max socket value.
 	FD_CLR( socket.m_socket, &m_fd_set );
+	FD_CLR( socket.m_socket, &m_ready_set );
 
 	m_max_socket = 0;
 	for( std::size_t socket_index = 0; socket_index < m_sockets.size(); ++socket_index ) {
 		m_max_socket = std::max( m_max_socket, m_sockets[socket_index]->m_socket );
 	}
-
-	// Check if this socket has been marked as ready.
-	SocketVector::iterator ready_iter = std::find( m_ready_sockets.begin(), m_ready_sockets.end(), &socket );
-
-	if( ready_iter != m_ready_sockets.end() ) {
-		m_ready_sockets.erase( ready_iter );
-	}
 }
 
-void Selector::select( Mode mode, uint32_t timeout ) {
+std::size_t Selector::select( Mode mode, uint32_t timeout ) {
 	assert( mode >= READ && mode <= WRITE );
-
-	// Clear sets.
-	m_ready_sockets.clear();
 
 	// Cancel if no sockets were added.
 	if( !get_num_sockets() ) {
-		return;
+		return 0;
 	}
 
 	timeval tv;
@@ -82,25 +69,32 @@ void Selector::select( Mode mode, uint32_t timeout ) {
 
 	int num_ready( 0 );
 
+	// Need to copy the fd_set because select() will modify it.
+	std::memcpy( &m_ready_set, &m_fd_set, sizeof( fd_set ) );
+
 	if( mode == WRITE ) {
-		num_ready = ::select( m_max_socket + 1, nullptr, &m_fd_set, nullptr, (timeout != BLOCK ? &tv : nullptr) );
+		num_ready = ::select( m_max_socket + 1, nullptr, &m_ready_set, nullptr, (timeout != BLOCK ? &tv : nullptr) );
 	}
 	else if( mode == READ ) {
-		num_ready = ::select( m_max_socket + 1, &m_fd_set, nullptr, nullptr, (timeout != BLOCK ? &tv : nullptr) );
+		num_ready = ::select( m_max_socket + 1, &m_ready_set, nullptr, nullptr, (timeout != BLOCK ? &tv : nullptr) );
 	}
 	else {
 		assert( 0 && "Invalid mode." );
 	}
 
-	if( num_ready <= 0 ) {
-		return;
-	}
+	return num_ready < 0 ? 0 : static_cast<std::size_t>( num_ready );
+}
 
-	for( std::size_t socket_index = 0; socket_index < m_sockets.size(); ++socket_index ) {
-		if( FD_ISSET( m_sockets[socket_index]->m_socket, &m_fd_set ) ) {
-			m_ready_sockets.push_back( m_sockets[socket_index] );
-		}
-	}
+bool Selector::is_ready( const Socket& socket ) const {
+	assert( std::find( m_sockets.begin(), m_sockets.end(), &socket ) != m_sockets.end() );
+	return FD_ISSET( socket.m_socket, &m_ready_set );
+}
+
+void Selector::clear() {
+	m_sockets.clear();
+	m_max_socket = 0;
+
+	FD_ZERO( &m_fd_set );
 }
 
 }

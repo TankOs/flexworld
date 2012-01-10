@@ -19,7 +19,7 @@ void ServerProtocol::pack_string( const std::string& value, Buffer& buffer ) {
 	std::memcpy( &buffer[buffer.size() - value.size()], value.c_str(), value.size() );
 }
 
-std::size_t ServerProtocol::handle_incoming_data( Socket& socket, const Buffer& buffer ) {
+std::size_t ServerProtocol::handle_incoming_data( ConnectionID id, const Buffer& buffer ) {
 	std::size_t handled( 0 );
 	std::size_t min_required( 1 ); // Opcode.
 
@@ -81,7 +81,7 @@ std::size_t ServerProtocol::handle_incoming_data( Socket& socket, const Buffer& 
 		std::string username( username_ptr, username_size );
 		std::string password( password_ptr, password_size );
 
-		handle_login_message( socket, username, password );
+		handle_login_message( id, username, password );
 	}
 
 	return handled;
@@ -104,7 +104,7 @@ void ServerProtocol::build_login_message( const std::string& username, const std
 	pack_string( password, buffer );
 }
 
-void ServerProtocol::handle_login_message( Socket& /*sender*/, const std::string& /*username*/, const std::string& /*password*/ ) {
+void ServerProtocol::handle_login_message( ConnectionID /*sender*/, const std::string& /*username*/, const std::string& /*password*/ ) {
 	#if !defined( NDEBUG )
 		std::cerr << "WARNING: Login message not handled." << std::endl;
 	#endif
