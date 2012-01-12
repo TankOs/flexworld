@@ -52,6 +52,25 @@ BOOST_AUTO_TEST_CASE( TestLoginMessage ) {
 		BOOST_CHECK( buffer == source );
 	}
 
+	// Serialize wrong data.
+	{
+		msg::Login msg;
+		Protocol::Buffer buffer;
+
+		// No props.
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Login::InvalidDataException );
+
+		// Too long username.
+		msg.set_username( "123456789012345678901234X" );
+		msg.set_password( "okay" );
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Login::InvalidDataException );
+
+		// Password only.
+		msg.set_username( "" );
+		msg.set_password( "okay" );
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Login::InvalidDataException );
+	}
+
 	// Deserialize.
 	{
 		msg::Login msg;
@@ -60,5 +79,39 @@ BOOST_AUTO_TEST_CASE( TestLoginMessage ) {
 		BOOST_CHECK( result == SIZE );
 		BOOST_CHECK( msg.get_username() == USERNAME );
 		BOOST_CHECK( msg.get_password() == PASSWORD );
+	}
+
+	// Deserialize wrong data.
+	{
+		// Empty buffer.
+		{
+			Protocol::Buffer buffer;
+			msg::Login msg;
+			BOOST_CHECK( msg.deserialize( buffer ) == 0 );
+		}
+
+		// Zero-length username.
+		{
+			Protocol::Buffer buffer( 1, 0 );
+			msg::Login msg;
+			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+		}
+
+		// Too long username.
+		{
+			Protocol::Buffer buffer( 1, msg::Login::MAX_USERNAME_LENGTH + 1 );
+			msg::Login msg;
+			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+		}
+
+		// Zero-length password.
+		{
+			Protocol::Buffer buffer( 3, 0 );
+			buffer[0] = 0x01;
+			buffer[1] = 'a';
+
+			msg::Login msg;
+			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+		}
 	}
 }
