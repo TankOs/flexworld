@@ -1,3 +1,4 @@
+#if 0
 #pragma once
 
 #include <FlexWorld/ServerProtocol.hpp>
@@ -24,3 +25,5 @@ class TestServerProtocolReactor : public flex::ServerProtocol {
 		std::size_t m_num_logins_received;
 		ConnectionID m_sender;
 };
+
+#endif

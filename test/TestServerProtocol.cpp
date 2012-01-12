@@ -1,40 +1,31 @@
-#include "TestServerProtocolReactor.hpp"
-
 #include <FlexWorld/ServerProtocol.hpp>
-#include <FlexWorld/Socket.hpp>
+#include <FlexWorld/Messages/Login.hpp>
 
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
+/*BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	using namespace flex;
 
-	TestServerProtocolReactor reactor;
-	Protocol::Buffer buffer;
+	ServerProtocol protocol;
 
 	// Login message.
 	{
-		ServerProtocol::build_login_message( "Tank", "foo", buffer );
-		const std::size_t SIZE = 12;
+		Protocol::Buffer source;
+		const std::string username( "Tank" );
+		const std::string password( "h4x0r" );
+		
+		source.push_back( ServerProtocol::LOGIN ); // Opcode.
+		source.push_back( static_cast<char>( username.size() ) );
+		source.insert( source.end(), username.begin(), username.end() );
+		source.push_back( static_cast<char>( password.size() ) );
+		source.insert( source.end(), password.begin(), password.end() );
 
-		BOOST_REQUIRE( buffer.size() == SIZE );
+		// Serialize.
+		{
+			Protocol::Buffer buffer;
+			msg:::Login
 
-		std::size_t index( 0 );
-		BOOST_CHECK( buffer[index++] == 0x01 );
-		BOOST_CHECK( buffer[index++] == 0x04 );
-		BOOST_CHECK( buffer[index++] == 0x00 );
-		BOOST_CHECK( buffer[index++] == 'T' );
-		BOOST_CHECK( buffer[index++] == 'a' );
-		BOOST_CHECK( buffer[index++] == 'n' );
-		BOOST_CHECK( buffer[index++] == 'k' );
-		BOOST_CHECK( buffer[index++] == 0x03 );
-		BOOST_CHECK( buffer[index++] == 0x00 );
-		BOOST_CHECK( buffer[index++] == 'f' );
-		BOOST_CHECK( buffer[index++] == 'o' );
-		BOOST_CHECK( buffer[index++] == 'o' );
-
-		BOOST_CHECK( reactor.handle_incoming_data( 1337, buffer ) == SIZE );
-		BOOST_CHECK( reactor.m_sender == 1337 );
-		BOOST_CHECK( reactor.m_login_username == "Tank" );
-		BOOST_CHECK( reactor.m_login_password == "foo" );
+			BOOST_REQUIRE( protocol.serialize( source )
+		}
 	}
-}
+}*/

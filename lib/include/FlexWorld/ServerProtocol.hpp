@@ -1,15 +1,23 @@
 #pragma once
 
 #include <FlexWorld/Protocol.hpp>
+#include <FlexWorld/Messages/Login.hpp>
+#include <FlexWorld/Messages/Chat.hpp>
+#include <FlexWorld/TemplateUtils.hpp>
 
 #include <string>
 
 namespace flex {
 
-/** ServerProtocol provides handlers for messages and is a factory for creating those.
+typedef tpl::Typelist<msg::Login, tpl::Typelist<msg::Chat> > ServerMessageList;
+//typedef Protocol<ServerMessageList, uint8_t> ServerProtocol;
+
+#if 0
+/** Server-specific protocol.
  */
 class ServerProtocol : public Protocol {
 	public:
+
 		/** Ctor.
 		 */
 		ServerProtocol();
@@ -35,13 +43,6 @@ class ServerProtocol : public Protocol {
 		virtual void handle_login_message( ConnectionID sender, const std::string& username, const std::string& password );
 
 	private:
-		/** Message ID.
-		 */
-		enum MessageID {
-			INVALID = 0,
-			LOGIN
-		};
-
 		template <class T>
 		static void pack_byte( const T& value, Buffer& buffer );
 
@@ -53,7 +54,8 @@ class ServerProtocol : public Protocol {
 
 		static void pack_string( const std::string& value, Buffer& buffer );
 };
+#endif
 
 }
 
-#include "ServerProtocol.inl"
+//#include "ServerProtocol.inl"

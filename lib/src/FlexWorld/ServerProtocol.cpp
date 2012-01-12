@@ -1,3 +1,4 @@
+#if 0
 #include <FlexWorld/ServerProtocol.hpp>
 
 #include <iostream>
@@ -111,3 +112,4 @@ void ServerProtocol::handle_login_message( ConnectionID /*sender*/, const std::s
 }
 
 }
+#endif

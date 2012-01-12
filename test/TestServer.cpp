@@ -7,7 +7,7 @@
 #include <boost/thread.hpp>
 #include <functional>
 
-void run_server( flex::Server* server ) {
+/*void run_server( flex::Server* server ) {
 	BOOST_REQUIRE( server->run() );
 }
 
@@ -88,4 +88,4 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		thread.join();
 	}
 
-}
+}*/

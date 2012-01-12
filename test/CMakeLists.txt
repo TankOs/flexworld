@@ -24,7 +24,6 @@ set(
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestMessage.cpp
-	TestMessageMeta.cpp
 	TestNetworking.cpp
 	TestPlanet.cpp
 	TestResource.cpp

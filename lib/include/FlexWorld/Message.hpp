@@ -1,116 +1,50 @@
 #pragma once
 
-#include <FlexWorld/MessageMeta.hpp>
+#include <FlexWorld/Protocol.hpp>
+#include <FlexWorld/Exception.hpp>
 
-#include <vector>
-#include <stdexcept>
+#include <cstdint>
 
 namespace flex {
 
-/** Network message.
- * The message holds an internal sequential buffer with the data. It ensures
- * correct packing and unpacking.
+/** Baseclass for network messages.
  *
- * It uses a MessageMeta object to verify operations.
+ * Properties should be checked when serializing/deserializing regarding the
+ * message protocol definition.
  */
 class Message {
 	public:
+		/** Thrown when serializing fails due to invalid properties.
+		 */
+		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( InvalidDataException );
+
+		/** Thrown when deserializing fails due to bogus data.
+		 */
+		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( BogusDataException );
+
 		/** Ctor.
-		 * @param meta Meta info.
 		 */
-		Message( const MessageMeta& meta );
+		Message();
 
-		/** Get total size of buffer.
-		 * @return Size.
+		/** Dtor.
 		 */
-		MessageMeta::LengthType get_size() const;
+		virtual ~Message();
 
-		/** Get meta.
-		 * @return Meta.
+		/** Serialize to buffer.
+		 * Data is appended to the buffer.
+		 * @param buffer Buffer.
+		 * @throws InvalidDataException when any of the message's properties is invalid.
 		 */
-		const MessageMeta& get_meta() const;
+		virtual void serialize( Protocol::Buffer& buffer ) const = 0;
 
-		/** Get string length.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match the method's expected type.
-		 * @param field Field index.
-		 * @return String length.
+		/** Deserialize from buffer.
+		 * Properties keep unchanged if deserialization fails.
+		 * @param buffer Buffer.
+		 * @return Number of bytes used for deserialization (0 means error).
 		 */
-		MessageMeta::StringLengthType get_string_length( std::size_t field ) const;
-
-		/** Get string.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type. Keep in mind that this operation
-		 * COPIES the string data from the buffer to the caller. Therefore do this
-		 * only for lightweight fields/messages.
-		 * @param field Field index.
-		 * @return String.
-		 */
-		std::string get_string( std::size_t field ) const;
-
-		/** Get dword.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @return Dword.
-		 */
-		MessageMeta::DWordType get_dword( std::size_t field ) const;
-
-		/** Get word.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @return Word.
-		 */
-		MessageMeta::WordType get_word( std::size_t field ) const;
-
-		/** Get byte.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @return Byte.
-		 */
-		MessageMeta::ByteType get_byte( std::size_t field ) const;
-
-		/** Set string.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @param string String.
-		 */
-		void set_string( std::size_t field, const std::string& string );
-
-		/** Set dword.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @param dword Dword.
-		 */
-		void set_dword( std::size_t field, MessageMeta::DWordType dword );
-
-		/** Set word.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @param word Word.
-		 */
-		void set_word( std::size_t field, MessageMeta::WordType word );
-
-		/** Set byte.
-		 * Undefined behaviour if field index is invalid and/or field type doesn't
-		 * match this method's expected type.
-		 * @param field Field index.
-		 * @param byte Byte.
-		 */
-		void set_byte( std::size_t field, MessageMeta::ByteType byte );
+		virtual std::size_t deserialize( const Protocol::Buffer& buffer ) = 0;
 
 	private:
-		typedef std::vector<uint8_t> Buffer;
-		typedef std::vector<std::size_t> IndexVector;
-
-		Buffer m_buffer;
-		IndexVector m_indices;
-		const MessageMeta& m_meta;
 };
 
 }

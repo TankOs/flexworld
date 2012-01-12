@@ -1,6 +1,8 @@
 #include <cstring>
 #include <cassert>
 
+#if 0
+
 namespace flex {
 
 template <class T>
@@ -28,3 +30,5 @@ void ServerProtocol::pack_dword( const T& value, Buffer& buffer ) {
 }
 
 }
+
+#endif
