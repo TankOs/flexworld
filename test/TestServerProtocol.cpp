@@ -3,29 +3,52 @@
 
 #include <boost/test/unit_test.hpp>
 
-/*BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
+class Handler {
+	public:
+		Handler() :
+			m_login_handled( false )
+		{
+		}
+
+		void handle_message( const flex::msg::Login& login ) {
+			BOOST_CHECK( login.get_username() == "Tank" );
+			BOOST_CHECK( login.get_password() == "h4x0r" );
+			m_login_handled = true;
+		}
+
+		bool m_login_handled;
+};
+
+BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	using namespace flex;
 
 	ServerProtocol protocol;
+	Handler handler;
 
-	// Login message.
+	// Dispatch unknown message.
 	{
-		Protocol::Buffer source;
+		ServerProtocol::Buffer buffer;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_THROW( eaten = protocol.dispatch( 254, buffer, handler ), ServerProtocol::UnknownMessageIDException );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Dispatch login message.
+	{
+		ServerProtocol::Buffer buffer;
 		const std::string username( "Tank" );
 		const std::string password( "h4x0r" );
 		
-		source.push_back( ServerProtocol::LOGIN ); // Opcode.
-		source.push_back( static_cast<char>( username.size() ) );
-		source.insert( source.end(), username.begin(), username.end() );
-		source.push_back( static_cast<char>( password.size() ) );
-		source.insert( source.end(), password.begin(), password.end() );
+		buffer.push_back( static_cast<char>( username.size() ) );
+		buffer.insert( buffer.end(), username.begin(), username.end() );
+		buffer.push_back( static_cast<char>( password.size() ) );
+		buffer.insert( buffer.end(), password.begin(), password.end() );
 
-		// Serialize.
-		{
-			Protocol::Buffer buffer;
-			msg:::Login
+		std::size_t eaten = 0;
 
-			BOOST_REQUIRE( protocol.serialize( source )
-		}
+		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT, buffer, handler ) );
+		BOOST_CHECK( eaten == 11 );
+		BOOST_CHECK( handler.m_login_handled == true );
 	}
-}*/
+}

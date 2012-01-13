@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FlexWorld/Protocol.hpp>
 #include <FlexWorld/Exception.hpp>
 
 #include <vector>
