@@ -2,9 +2,6 @@
 
 namespace flex {
 
-Message::Message() {
-}
-
 Message::~Message() {
 }
 

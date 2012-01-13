@@ -17,7 +17,6 @@ class thread;
 
 namespace flex {
 
-class Protocol;
 class Peer;
 
 /** Server for handling peers and traffic.
@@ -37,9 +36,8 @@ class Peer;
 class Server : public NonCopyable {
 	public:
 		/** Ctor.
-		 * @param protocol Protocol.
 		 */
-		Server( Protocol& protocol );
+		Server();
 
 		/** Dtor.
 		 * Make sure to shut the server down gracefully with shutdown() before.
@@ -115,7 +113,6 @@ class Server : public NonCopyable {
 		ThreadPtrVector m_dispatch_threads;
 
 		std::string m_ip;
-		Protocol& m_protocol;
 		Selector m_selector;
 
 		std::size_t m_num_dispatch_threads;

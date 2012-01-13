@@ -17,8 +17,8 @@ class Login : public Message {
 		 */
 		Login();
 
-		void serialize( Protocol::Buffer& buffer ) const;
-		std::size_t deserialize( const Protocol::Buffer& buffer );
+		void serialize( Buffer& buffer ) const;
+		std::size_t deserialize( const Buffer& buffer );
 
 		/** Set username.
 		 * @param username Username,

@@ -2,7 +2,7 @@
 
 #include <FlexWorld/Socket.hpp>
 #include <FlexWorld/NonCopyable.hpp>
-#include <FlexWorld/Protocol.hpp>
+#include <FlexWorld/ServerProtocol.hpp>
 
 #include <vector>
 
@@ -13,7 +13,7 @@ namespace flex {
 class Peer : public NonCopyable {
 	public:
 		Socket socket; ///< Socket.
-		Protocol::Buffer buffer; ///< Buffer.
+		ServerProtocol::Buffer buffer; ///< Buffer.
 };
 
 }

@@ -38,6 +38,7 @@ set(
 	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Protocol.hpp
+	${INC_DIR}/FlexWorld/Protocol.inl
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
@@ -68,13 +69,11 @@ set(
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
-	${SRC_DIR}/FlexWorld/Protocol.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Selector.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
-	${SRC_DIR}/FlexWorld/ServerProtocol.cpp
 	${SRC_DIR}/FlexWorld/Socket.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp

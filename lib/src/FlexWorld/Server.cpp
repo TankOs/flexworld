@@ -6,9 +6,8 @@
 
 namespace flex {
 
-Server::Server( Protocol& protocol ) :
+Server::Server() :
 	m_ip( "0.0.0.0" ),
-	m_protocol( protocol ),
 	m_num_dispatch_threads( 1 ),
 	m_num_peers( 0 ),
 	m_port( 2593 ),
@@ -269,18 +268,18 @@ void Server::process_peers() {
 			std::memcpy( (&peer->buffer[0]) + (peer->buffer.size() - num_bytes_received), buffer, num_bytes_received );
 
 			// Call the protocol.
-			std::size_t bytes_processed = m_protocol.handle_incoming_data( peer_id, peer->buffer );
+			//std::size_t bytes_processed = m_protocol.handle_incoming_data( peer_id, peer->buffer );
 
 			// Shrink buffer.
-			if( bytes_processed > 0 ) {
-				if( bytes_processed >= peer->buffer.size() ) { // Kill whole buffer?
-					peer->buffer.clear();
-				}
-				else { // Move remaining data to front.
-					std::memmove( (&peer->buffer[0]) + bytes_processed, &peer->buffer[0], peer->buffer.size() - bytes_processed );
-					peer->buffer.resize( peer->buffer.size() - bytes_processed );
-				}
-			}
+			//if( bytes_processed > 0 ) {
+				//if( bytes_processed >= peer->buffer.size() ) { // Kill whole buffer?
+					//peer->buffer.clear();
+				//}
+				//else { // Move remaining data to front.
+					//std::memmove( (&peer->buffer[0]) + bytes_processed, &peer->buffer[0], peer->buffer.size() - bytes_processed );
+					//peer->buffer.resize( peer->buffer.size() - bytes_processed );
+				//}
+			//}
 		}
 
 	}

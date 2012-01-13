@@ -1,50 +1,41 @@
 #pragma once
 
-#include <FlexWorld/Exception.hpp>
-
 #include <vector>
+#include <cstdint>
 
 namespace flex {
 
-class Socket;
-
-/** Abstract class for protocols.
+/** Protocol.
+ * The protocol includes a dispatcher for dispatching incoming and serialized
+ * messages. It also defines some crucial properties of the underlying protocol
+ * like message ID type and buffer type.
+ *
+ * MessageTypelist specifies the typelist that's being used for deserializing
+ * and dispatching messages. MessageIDType specifies the type of message IDs.
+ * DataType specifies the buffer data type.
  */
+template <class MessageTypelist, class MessageIDType = uint8_t, class DataType = char>
 class Protocol {
 	public:
-		typedef std::size_t ConnectionID; ///< Connection ID.
-		typedef std::vector<char> Buffer; ///< Buffer.
+		typedef typename std::vector<DataType> Buffer; ///< Buffer.
+		typedef MessageIDType MessageID; ///< Message ID.
 
-		/** Thrown when handle_incoming_data() detected a bogus message.
+		/** Dispatch message.
+		 * The message will be parsed from the buffer. If parsing succeeds, the
+		 * message will be given to the proper method in the given handler.
+		 * @param id Message ID.
+		 * @param buffer Buffer.
+		 * @param handler Handler.
+		 * @return Processed bytes (useful for shrinking the buffer).
+		 * @throws UnknownMessageIDException when no message is registered for the given ID.
+		 * @throws BogusMessageDataException when buffer contains invalid data for the given message ID.
 		 */
-		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( BogusMessageException );
-
-		/** Dtor.
-		 */
-		virtual ~Protocol();
-
-		/** Handle connect.
-		 * @param id Connection ID.
-		 */
-		virtual void handle_connect( ConnectionID id );
-
-		/** Handle disconnect.
-		 * @param id Connection ID.
-		 */
-		virtual void handle_disconnect( ConnectionID id );
-
-		/** Handle incoming data.
-		 * This function doesn't change the buffer but instead reports how many
-		 * data has been processed successfully and can (should!) be removed from
-		 * the buffer (from the beginning).
-		 * @param id Connection ID.
-		 * @param buffer Data.
-		 * @return Number of bytes processed.
-		 * @throws BogusMessageException in case this function detects a bad message.
-		 */
-		virtual std::size_t handle_incoming_data( ConnectionID id, const Buffer& buffer );
+		template <class Handler>
+		static std::size_t dispatch( MessageID id, const Buffer& buffer, Handler& handler );
 
 	private:
 };
 
 }
+
+#include "Protocol.inl"

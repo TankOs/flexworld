@@ -11,7 +11,7 @@ Login::Login() :
 {
 }
 
-void Login::serialize( Protocol::Buffer& buffer ) const {
+void Login::serialize( Buffer& buffer ) const {
 	// TODO: Check for correct password size (SHA-1 hash length?).
 	// TODO: Check for valid characters?
 
@@ -40,7 +40,7 @@ void Login::serialize( Protocol::Buffer& buffer ) const {
 	std::memcpy( &buffer[buf_ptr], m_password.c_str(), m_password.size() ); buf_ptr += m_password.size();
 }
 
-std::size_t Login::deserialize( const Protocol::Buffer& buffer ) {
+std::size_t Login::deserialize( const Buffer& buffer ) {
 	std::size_t buf_ptr( 0 );
 
 	// Username length.
@@ -61,7 +61,7 @@ std::size_t Login::deserialize( const Protocol::Buffer& buffer ) {
 	}
 
 	// Remember username ptr.
-	const Protocol::Buffer::value_type* username_ptr = &buffer[buf_ptr];
+	const Buffer::value_type* username_ptr = &buffer[buf_ptr];
 	buf_ptr += username_length;
 
 	// Password.
@@ -82,7 +82,7 @@ std::size_t Login::deserialize( const Protocol::Buffer& buffer ) {
 	}
 
 	// Remember password ptr.
-	const Protocol::Buffer::value_type* password_ptr = &buffer[buf_ptr];
+	const Buffer::value_type* password_ptr = &buffer[buf_ptr];
 	buf_ptr += password_length;
 
 	// Everything okay, set props.
