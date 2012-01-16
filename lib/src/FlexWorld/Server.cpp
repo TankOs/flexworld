@@ -10,12 +10,12 @@ namespace flex {
 /// HANDLER
 
 void Server::Handler::handle_connect( ConnectionID id ) {
-	std::cout << "WARNING: Connection of #" << id << " not handled, closing." << std::endl;
+	std::cerr << "WARNING: Connection of #" << id << " not handled, closing." << std::endl;
 	// TODO Close connection.
 }
 
 void Server::Handler::handle_disconnect( ConnectionID id ) {
-	std::cout << "WARNING: Disconnection of #" << id << " not handled." << std::endl;
+	std::cerr << "WARNING: Disconnection of #" << id << " not handled." << std::endl;
 }
 
 // SERVER
@@ -123,7 +123,6 @@ bool Server::run() {
 		// If select() returns without sockets ready, something bad happened.
 		// Shutdown immediately.
 		if( num_ready == 0 ) {
-			std::cout << "No more sockets ready, cancelling." << std::endl;
 			break;
 		}
 
@@ -173,37 +172,25 @@ void Server::cleanup() {
 }
 
 void Server::run_dispatcher() {
-	std::cout << "Dispatcher runs." << std::endl;
-
 	boost::unique_lock<boost::mutex> lock( m_worker_mutex );
 
 	while( m_running ) {
-		std::cout << "Dispatcher waiting for data..." << std::endl;
 		m_work_condition.wait( lock );
 
 		{
 			boost::lock_guard<boost::mutex> data_lock( m_work_data_mutex );
-			std::cout << "No work for dispatcher." << std::endl;
 			continue;
-
-			std::cout << "Dispatcher is working!" << std::endl;
 		}
-
 	}
 
-	std::cout << "Dispatcher terminated." << std::endl;
 }
 
 void Server::process_listener() {
-	std::cout << "Listener has something." << std::endl;
-
 	// Create peer and accept connection.
 	std::shared_ptr<Peer> peer( new Peer );
 
 	// If accepting fails then the listener has been shutdown.
 	if( !m_listener->accept( peer->socket ) ) {
-		std::cout << "Listener died." << std::endl;
-
 		// Remove from m_selector and shutdown server.
 		m_selector.remove( *m_listener );
 		shutdown();
@@ -213,7 +200,6 @@ void Server::process_listener() {
 
 	// Connection accepted.
 	++m_num_peers;
-	std::cout << "Connection established, now " << m_num_peers << " clients." << std::endl;
 
 	// Check if there's a free slot.
 	ConnectionID peer_id( 0 );
@@ -278,7 +264,6 @@ void Server::process_peers() {
 			}
 
 			--m_num_peers;
-			std::cout << "Peer disconnected, " << m_num_peers << " connections left." << std::endl;
 
 			// Remove from m_selector.
 			m_selector.remove( peer->socket );

@@ -111,6 +111,8 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 			// Check for timeout.
 			BOOST_REQUIRE( time_passed < TIMEOUT );
+
+			socket[client_id].close();
 		}
 
 		// At this point all connections have been closed, so terminate server and wait for it.
