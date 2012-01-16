@@ -1,16 +1,18 @@
 #include <FlexWorld/ServerProtocol.hpp>
+#include <FlexWorld/MessageHandler.hpp>
 #include <FlexWorld/Messages/Login.hpp>
 
 #include <boost/test/unit_test.hpp>
 
-class Handler {
+class Handler : public flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID> {
 	public:
 		Handler() :
 			m_login_handled( false )
 		{
 		}
 
-		void handle_message( const flex::msg::Login& login ) {
+		void handle_message( const flex::msg::Login& login, std::size_t sender ) {
+			BOOST_CHECK( sender == 1337 );
 			BOOST_CHECK( login.get_username() == "Tank" );
 			BOOST_CHECK( login.get_password() == "h4x0r" );
 			m_login_handled = true;
@@ -30,7 +32,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		ServerProtocol::Buffer buffer;
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_THROW( eaten = protocol.dispatch( 254, buffer, handler ), ServerProtocol::UnknownMessageIDException );
+		BOOST_CHECK_THROW( eaten = protocol.dispatch( 254, buffer, handler, 1337 ), ServerProtocol::UnknownMessageIDException );
 		BOOST_CHECK( eaten == 0 );
 	}
 
@@ -47,7 +49,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT, buffer, handler ) );
+		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT, buffer, handler, 1337 ) );
 		BOOST_CHECK( eaten == 11 );
 		BOOST_CHECK( handler.m_login_handled == true );
 	}

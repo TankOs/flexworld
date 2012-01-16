@@ -9,6 +9,6 @@
 namespace flex {
 
 typedef tpl::Typelist<msg::Login> ServerMessageList;
-typedef Protocol<ServerMessageList, uint8_t, Message::Buffer::value_type> ServerProtocol;
+typedef Protocol<ServerMessageList> ServerProtocol;
 
 }

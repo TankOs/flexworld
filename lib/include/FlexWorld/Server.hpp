@@ -3,6 +3,8 @@
 #include <FlexWorld/Socket.hpp>
 #include <FlexWorld/Selector.hpp>
 #include <FlexWorld/NonCopyable.hpp>
+#include <FlexWorld/ServerProtocol.hpp>
+#include <FlexWorld/MessageHandler.hpp>
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
@@ -18,6 +20,7 @@ class thread;
 namespace flex {
 
 class Peer;
+
 
 /** Server for handling peers and traffic.
  * Configure the server before calling run(). The run() method will launch N
@@ -35,9 +38,26 @@ class Peer;
  */
 class Server : public NonCopyable {
 	public:
-		/** Ctor.
+		typedef ServerProtocol::ConnectionID ConnectionID; ///< Connection ID.
+
+		/** Handler interface.
 		 */
-		Server();
+		struct Handler : public MessageHandler<ServerMessageList, ConnectionID> {
+			/** Handle incoming connection.
+			 * @param id ID.
+			 */
+			virtual void handle_connect( ConnectionID id );
+
+			/** Handle disconnection.
+			 * @param id ID.
+			 */
+			virtual void handle_disconnect( ConnectionID id );
+		};
+
+		/** Ctor.
+		 * @param handler Handler.
+		 */
+		Server( Handler& handler );
 
 		/** Dtor.
 		 * Make sure to shut the server down gracefully with shutdown() before.
@@ -98,7 +118,7 @@ class Server : public NonCopyable {
 
 	private:
 		typedef std::vector<std::shared_ptr<Peer>> PeerPtrVector;
-		typedef std::map<Socket*, std::size_t> SocketIDMap;
+		typedef std::map<Socket*, ConnectionID> SocketIDMap;
 		typedef std::vector<boost::thread*> ThreadPtrVector;
 
 		void cleanup(); // Wait for threads, clean threads, clean sockets, clean socket->ID mappings.
@@ -116,8 +136,12 @@ class Server : public NonCopyable {
 		Selector m_selector;
 
 		std::size_t m_num_dispatch_threads;
+		Handler& m_handler;
+
 		uint32_t m_num_peers;
+
 		uint16_t m_port;
+
 		bool m_running;
 
 		boost::condition m_work_condition;

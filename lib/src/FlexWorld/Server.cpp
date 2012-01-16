@@ -2,13 +2,28 @@
 #include <FlexWorld/Peer.hpp>
 
 #include <boost/thread.hpp>
+#include <iostream>
 #include <cassert>
 
 namespace flex {
 
-Server::Server() :
+/// HANDLER
+
+void Server::Handler::handle_connect( ConnectionID id ) {
+	std::cout << "WARNING: Connection of #" << id << " not handled, closing." << std::endl;
+	// TODO Close connection.
+}
+
+void Server::Handler::handle_disconnect( ConnectionID id ) {
+	std::cout << "WARNING: Disconnection of #" << id << " not handled." << std::endl;
+}
+
+// SERVER
+
+Server::Server( Handler& handler ) :
 	m_ip( "0.0.0.0" ),
 	m_num_dispatch_threads( 1 ),
+	m_handler( handler ),
 	m_num_peers( 0 ),
 	m_port( 2593 ),
 	m_running( false )
@@ -201,7 +216,7 @@ void Server::process_listener() {
 	std::cout << "Connection established, now " << m_num_peers << " clients." << std::endl;
 
 	// Check if there's a free slot.
-	std::size_t peer_id( 0 );
+	ConnectionID peer_id( 0 );
 
 	for( peer_id = 0; peer_id < m_peers.size(); ++peer_id ) {
 		// If found, peer_id points to the correct index, so leave the loop.
@@ -220,13 +235,16 @@ void Server::process_listener() {
 
 	// Add to m_selector and remember socket->ID mapping.
 	m_selector.add( peer->socket );
+
+	// Notify handler.
+	m_handler.handle_connect( peer_id );
 }
 
 void Server::process_peers() {
 	// Check all peers.
 	std::size_t num_peers( m_peers.size() );
 
-	for( std::size_t peer_id = 0; peer_id < num_peers; ++peer_id ) {
+	for( ConnectionID peer_id = 0; peer_id < num_peers; ++peer_id ) {
 		std::shared_ptr<Peer> peer = m_peers[peer_id];
 
 		// Skip free slots.
@@ -248,8 +266,11 @@ void Server::process_peers() {
 			peer->socket.shutdown();
 			peer->socket.close();
 
+			// Notify handler.
+			m_handler.handle_disconnect( peer_id );
+
 			// If it's the last peer in the buffer, just shrink it.
-			if( peer_id + 1 == m_peers.size() ) {
+			if( static_cast<std::size_t>( peer_id + 1 ) == m_peers.size() ) {
 				m_peers.resize( m_peers.size() - 1 );
 			}
 			else { // Otherwise set the slot to NULL to indicate a free one.
