@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE( TestLoginMessage ) {
 	{
 		msg::Login msg;
 		std::size_t result = 0;
-		BOOST_CHECK_NO_THROW( result = msg.deserialize( source ) );
+		BOOST_CHECK_NO_THROW( result = msg.deserialize( &source[0], source.size() ) );
 		BOOST_CHECK( result == SIZE );
 		BOOST_CHECK( msg.get_username() == USERNAME );
 		BOOST_CHECK( msg.get_password() == PASSWORD );
@@ -83,25 +83,18 @@ BOOST_AUTO_TEST_CASE( TestLoginMessage ) {
 
 	// Deserialize wrong data.
 	{
-		// Empty buffer.
-		{
-			ServerProtocol::Buffer buffer;
-			msg::Login msg;
-			BOOST_CHECK( msg.deserialize( buffer ) == 0 );
-		}
-
 		// Zero-length username.
 		{
 			ServerProtocol::Buffer buffer( 1, 0 );
 			msg::Login msg;
-			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+			BOOST_CHECK_THROW( msg.deserialize( &buffer[0], buffer.size() ), msg::Login::BogusDataException );
 		}
 
 		// Too long username.
 		{
 			ServerProtocol::Buffer buffer( 1, msg::Login::MAX_USERNAME_LENGTH + 1 );
 			msg::Login msg;
-			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+			BOOST_CHECK_THROW( msg.deserialize( &buffer[0], buffer.size() ), msg::Login::BogusDataException );
 		}
 
 		// Zero-length password.
@@ -111,7 +104,7 @@ BOOST_AUTO_TEST_CASE( TestLoginMessage ) {
 			buffer[1] = 'a';
 
 			msg::Login msg;
-			BOOST_CHECK_THROW( msg.deserialize( buffer ), msg::Login::BogusDataException );
+			BOOST_CHECK_THROW( msg.deserialize( &buffer[0], buffer.size() ), msg::Login::BogusDataException );
 		}
 	}
 }

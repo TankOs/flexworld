@@ -38,9 +38,10 @@ class Message {
 		/** Deserialize from buffer.
 		 * Properties keep unchanged if deserialization fails.
 		 * @param buffer Buffer.
+		 * @param buffer_size Buffer size.
 		 * @return Number of bytes used for deserialization (0 means error).
 		 */
-		virtual std::size_t deserialize( const Buffer& buffer ) = 0;
+		virtual std::size_t deserialize( const char* buffer, std::size_t buffer_size ) = 0;
 
 	private:
 };

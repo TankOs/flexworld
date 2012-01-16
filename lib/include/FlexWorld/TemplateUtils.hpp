@@ -46,7 +46,7 @@ struct IndexOf {
 
 template <class T>
 struct IndexOf<T, None> {
-	static const std::size_t RESULT = std::numeric_limits<std::size_t>::max();
+	static const std::size_t RESULT = 0;
 };
 
 }

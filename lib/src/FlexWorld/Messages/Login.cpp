@@ -40,11 +40,11 @@ void Login::serialize( Buffer& buffer ) const {
 	std::memcpy( &buffer[buf_ptr], m_password.c_str(), m_password.size() ); buf_ptr += m_password.size();
 }
 
-std::size_t Login::deserialize( const Buffer& buffer ) {
+std::size_t Login::deserialize( const char* buffer, std::size_t buffer_size ) {
 	std::size_t buf_ptr( 0 );
 
 	// Username length.
-	if( buffer.size() - buf_ptr < sizeof( uint8_t ) ) {
+	if( buffer_size - buf_ptr < sizeof( uint8_t ) ) {
 		return 0;
 	}
 
@@ -56,7 +56,7 @@ std::size_t Login::deserialize( const Buffer& buffer ) {
 	}
 
 	// Check if username is present.
-	if( buffer.size() - buf_ptr < username_length ) {
+	if( buffer_size - buf_ptr < username_length ) {
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ std::size_t Login::deserialize( const Buffer& buffer ) {
 	buf_ptr += username_length;
 
 	// Password.
-	if( buffer.size() - buf_ptr < sizeof( uint8_t ) ) {
+	if( buffer_size - buf_ptr < sizeof( uint8_t ) ) {
 		return 0;
 	}
 
@@ -77,7 +77,7 @@ std::size_t Login::deserialize( const Buffer& buffer ) {
 	}
 
 	// Check if password present.
-	if( buffer.size() - buf_ptr < password_length ) {
+	if( buffer_size - buf_ptr < password_length ) {
 		return 0;
 	}
 

@@ -273,8 +273,50 @@ void Server::process_peers() {
 			peer->buffer.resize( peer->buffer.size() + num_bytes_received );
 			std::memcpy( (&peer->buffer[0]) + (peer->buffer.size() - num_bytes_received), buffer, num_bytes_received );
 
+			// Process only if message ID + data received.
+			if( peer->buffer.size() > sizeof( ServerProtocol::MessageID ) ) {
+				// Dispatch.
+				try {
+					std::size_t eaten = ServerProtocol::dispatch( peer->buffer, m_handler, peer_id );
+
+					if( eaten > 0 ) {
+						assert( eaten <= peer->buffer.size() );
+
+						if( eaten == peer->buffer.size() ) {
+							peer->buffer.clear();
+						}
+						else {
+							std::memmove(
+								&peer->buffer[0],
+								&peer->buffer[eaten],
+								peer->buffer.size() - eaten
+							);
+							peer->buffer.resize( peer->buffer.size() - eaten );
+						}
+					}
+				}
+				catch( const ServerProtocol::UnknownMessageIDException& e ) {
+					// Unknown message ID, disconnect peer. TODO
+					std::cerr << e.what() << std::endl;
+				}
+				catch( const ServerProtocol::BogusMessageDataException& e ) {
+					// Bogus message, disconnect peer. TODO
+					std::cerr << e.what() << std::endl;
+				}
+			}
+
+			// If no message ID yet, peek.
+			//if( peer->message_id == ServerProtocol::INVALID_MESSAGE_ID ) {
+				//peer->message_id = peer->buffer[0];
+				//peer->buffer.resize(
+			//}
+
+			// If message ID is set, process buffer.
+			//if( peer->message_id != ServerProtocol::INVALID_MESSAGE_ID ) {
+			//}
+
 			// Call the protocol.
-			//std::size_t bytes_processed = m_protocol.handle_incoming_data( peer_id, peer->buffer );
+			//std::size_t bytes_eaten = ServerProtocol::dispa
 
 			// Shrink buffer.
 			//if( bytes_processed > 0 ) {

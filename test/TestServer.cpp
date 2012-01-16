@@ -6,7 +6,9 @@
 #include <functional>
 
 struct Handler : flex::Server::Handler {
-	Handler() {
+	Handler() :
+		login_handled( 0 )
+	{
 	}
 
 	void handle_connect( flex::Server::ConnectionID id ) {
@@ -17,7 +19,16 @@ struct Handler : flex::Server::Handler {
 		connected_clients.erase( id );
 	}
 
+	void handle_message( const flex::msg::Login& msg, flex::Server::ConnectionID sender ) {
+		BOOST_CHECK( connected_clients.find( sender ) != connected_clients.end() );
+		BOOST_CHECK( msg.get_username() == "Tank" );
+		BOOST_CHECK( msg.get_password() == "h4x0r" );
+
+		++login_handled;
+	}
+
 	std::set<flex::Server::ConnectionID> connected_clients;
+	std::size_t login_handled;
 };
 
 bool g_thread_running = false;
@@ -58,7 +69,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		BOOST_CHECK( server.get_num_dispatch_threads() == 4 );
 	}
 
-	static const uint32_t WAIT_INTERVAL = 50;
+	static const uint32_t WAIT_INTERVAL = 25;
 	static const uint32_t TIMEOUT = 2000;
 	static const uint32_t NUM_CLIENTS = 10;
 
@@ -116,6 +127,58 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		}
 
 		// At this point all connections have been closed, so terminate server and wait for it.
+		server.shutdown();
+		thread.join();
+	}
+
+	// Connect client and send data.
+	{
+		Handler handler;
+		Server server( handler );
+
+		// Start server and wait until ready.
+		boost::thread thread( std::bind( &run_server, &server ) );
+		g_thread_running = true;
+
+		while( !server.is_running() && g_thread_running ) {
+			boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
+		}
+
+		BOOST_REQUIRE( server.is_running() );
+
+		// Connect client and wait until it has been accepted.
+		Socket client;
+		BOOST_REQUIRE( client.connect( server.get_ip(), server.get_port() ) );
+
+		while( handler.connected_clients.size() != 1 ) {
+			boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
+		}
+
+		// Send login message to server.
+		msg::Login login;
+		login.set_username( "Tank" );
+		login.set_password( "h4x0r" );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( ServerProtocol::serialize_message( login, buffer ) );
+
+		client.send( &buffer.front(), buffer.size() );
+
+		// Wait until login message arrives.
+		{
+			std::size_t time_passed = 0;
+
+			while( time_passed < TIMEOUT && handler.login_handled == 0 ) {
+				boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
+				time_passed += WAIT_INTERVAL;
+			}
+
+			BOOST_REQUIRE( time_passed < TIMEOUT );
+			BOOST_CHECK( handler.login_handled == 1 );
+		}
+
+		// Checks complete, shutdown server.
+		client.shutdown();
 		server.shutdown();
 		thread.join();
 	}

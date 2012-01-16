@@ -27,12 +27,18 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	ServerProtocol protocol;
 	Handler handler;
 
+	// Incomplete message.
+	{
+		ServerProtocol::Buffer buffer( 1, 244 ); // Message ID only.
+		BOOST_CHECK_THROW( protocol.dispatch( buffer, handler, 1337 ), ServerProtocol::BogusMessageDataException );
+	}
+
 	// Dispatch unknown message.
 	{
-		ServerProtocol::Buffer buffer;
+		ServerProtocol::Buffer buffer( 2, 244 ); // 244 = unknown message ID.
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_THROW( eaten = protocol.dispatch( 254, buffer, handler, 1337 ), ServerProtocol::UnknownMessageIDException );
+		BOOST_CHECK_THROW( eaten = protocol.dispatch( buffer, handler, 1337 ), ServerProtocol::UnknownMessageIDException );
 		BOOST_CHECK( eaten == 0 );
 	}
 
@@ -42,6 +48,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		const std::string username( "Tank" );
 		const std::string password( "h4x0r" );
 		
+		buffer.push_back( static_cast<char>( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT ) );
 		buffer.push_back( static_cast<char>( username.size() ) );
 		buffer.insert( buffer.end(), username.begin(), username.end() );
 		buffer.push_back( static_cast<char>( password.size() ) );
@@ -49,8 +56,8 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT, buffer, handler, 1337 ) );
-		BOOST_CHECK( eaten == 11 );
+		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( buffer, handler, 1337 ) );
+		BOOST_CHECK( eaten == 12 );
 		BOOST_CHECK( handler.m_login_handled == true );
 	}
 }
