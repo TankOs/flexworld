@@ -46,7 +46,7 @@ class Server : public NonCopyable {
 		Server( Handler& handler );
 
 		/** Dtor.
-		 * Make sure to shut the server down gracefully with shutdown() before.
+		 * Make sure to shut the server down gracefully with stop() before.
 		 * Read the notes there!
 		 */
 		~Server();
@@ -81,11 +81,11 @@ class Server : public NonCopyable {
 		 */
 		bool is_running() const;
 
-		/** Shutdown server (thread-safe).
+		/** Stop server.
 		 * This will gracefully disconnect all peers and shutdown the listener.
 		 * Make sure to still wait for run() to return.
 		 */
-		void shutdown();
+		void stop();
 
 		/** Run (thread-safe).
 		 * @return true if everything went right.

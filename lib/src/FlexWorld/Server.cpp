@@ -72,8 +72,6 @@ bool Server::run() {
 		return false;
 	}
 
-	m_running = true;
-
 	asio::io_service io_service;
 
 	// Setup the listener.
@@ -92,12 +90,14 @@ bool Server::run() {
 
 		// Listen!
 		m_acceptor->listen();
+
 	}
 	catch( const boost::system::system_error& e ) {
 		m_acceptor.reset();
-		m_running = false;
 		return false;
 	}
+
+	m_running = true;
 
 	// Accept connection.
 	start_accept();
@@ -192,6 +192,13 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 	std::cout << num_bytes_read << " bytes arrived from #" << peer->id << std::endl;
 
 	start_read( peer );
+}
+
+void Server::stop() {
+	assert( m_running );
+
+	m_peers.clear();
+	m_acceptor.reset();
 }
 
 }
