@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		BOOST_CHECK( eaten == 0 );
 	}
 
-	// Dispatch login message.
+	// Dispatch known message.
 	{
 		ServerProtocol::Buffer buffer;
 		const std::string username( "Tank" );
