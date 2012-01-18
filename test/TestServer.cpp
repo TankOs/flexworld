@@ -7,13 +7,13 @@
 #include <functional>
 
 enum {
-	WAIT_INTERVAL = 25,
-	TIMEOUT = 2000
+	WAIT_INTERVAL = 5,
+	TIMEOUT = 5000
 };
 
 struct Handler : flex::Server::Handler {
 	Handler() :
-		login_handled( 0 )
+		num_logins_handled( 0 )
 	{
 	}
 
@@ -29,12 +29,11 @@ struct Handler : flex::Server::Handler {
 		BOOST_CHECK( connected_clients.find( sender ) != connected_clients.end() );
 		BOOST_CHECK( msg.get_username() == "Tank" );
 		BOOST_CHECK( msg.get_password() == "h4x0r" );
-
-		++login_handled;
+		++num_logins_handled;
 	}
 
 	std::set<flex::Server::ConnectionID> connected_clients;
-	std::size_t login_handled;
+	std::size_t num_logins_handled;
 };
 
 bool g_thread_running = false;
@@ -257,27 +256,75 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		{
 			unsigned int time_passed = 0;
 
-			while( time_passed < THIS_TIMEOUT && handler.login_handled != NUM_MESSAGES ) {
+			while( time_passed < THIS_TIMEOUT && handler.num_logins_handled != NUM_MESSAGES ) {
 				boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
 				time_passed += WAIT_INTERVAL;
 			}
 
 			BOOST_REQUIRE( time_passed < THIS_TIMEOUT );
-			BOOST_REQUIRE( handler.login_handled == NUM_MESSAGES );
+			BOOST_REQUIRE( handler.num_logins_handled == NUM_MESSAGES );
 		}
 
 		server.stop();
 		thread->join();
 	}
 
-	// Connect clients and send login messages (server->client) one by one.
-	/*{
+	// Connect clients and send login messages (server->client).
+	{
 		Handler handler;
 		Server server( handler );
 
 		server.set_ip( "127.0.0.1" );
 		server.set_port( 2593 );
 
-		std::shared_ptr<boost::thread> thread = start_server_and_wait( server );*/
+		std::shared_ptr<boost::thread> thread = start_server_and_wait( server );
+
+		enum {
+			NUM_CLIENTS = 20,
+			NUM_MESSAGES_PER_CLIENT = 50
+		};
+
+		std::unique_ptr<ip::tcp::socket> client[NUM_CLIENTS];
+		io_service service;
+
+		// Connect all clients.
+		for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
+			client[client_id].reset( new ip::tcp::socket( service ) );
+			connect_client_and_wait( *client[client_id], server );
+		}
+
+		// Confirm.
+		BOOST_REQUIRE( handler.connected_clients.size() == NUM_CLIENTS );
+
+		// Now send messages to each client.
+		msg::Login msg;
+		msg.set_username( "Tank" );
+		msg.set_password( "h4x0r" );
+
+		for( std::size_t msg_id = 0; msg_id < NUM_MESSAGES_PER_CLIENT; ++msg_id ) {
+			for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
+				server.send_message( msg, static_cast<flex::Server::ConnectionID>( client_id ) );
+			}
+		}
+
+		// Receive messages.
+		for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
+			char buf[12];
+
+			for( std::size_t msg_id = 0; msg_id < NUM_MESSAGES_PER_CLIENT; ++msg_id ) {
+				std::size_t num_received = client[client_id]->receive( buffer( buf, 12 ) );
+
+				BOOST_REQUIRE( num_received == 12 );
+				BOOST_REQUIRE( buf[0] == 0 ); // Check msg ID.
+				BOOST_REQUIRE( msg.deserialize( buf + 1, 11 ) == 11 ); // Skip msg id.
+
+				BOOST_REQUIRE( msg.get_username() == "Tank" );
+				BOOST_REQUIRE( msg.get_password() == "h4x0r" );
+			}
+		}
+
+		server.stop();
+		thread->join();
+	}
 
 }
