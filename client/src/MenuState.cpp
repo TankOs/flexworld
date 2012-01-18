@@ -178,6 +178,9 @@ void MenuState::update( uint32_t delta ) {
 			cloud_iter->Move( 0.f, static_cast<float>( get_render_target().GetHeight() ) + cloud_iter->GetGlobalBounds().Height );
 		}
 	}
+
+	// Update desktop.
+	m_desktop.Update( f_time );
 }
 
 void MenuState::render() const {
@@ -190,10 +193,11 @@ void MenuState::render() const {
 	SpriteList::const_iterator cloud_iter_end( m_cloud_sprites.end() );
 
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		window.Draw( *cloud_iter, sf::BlendAdd );
+		window.Draw( *cloud_iter );
 	}
 
-	m_desktop.Expose( window );
+	// Render GUI.
+	sfg::Context::Get().GetRenderer().Display( window );
 
 	window.Display();
 }

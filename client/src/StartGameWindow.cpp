@@ -3,7 +3,7 @@
 #include "StartGameWindow.hpp"
 
 StartGameWindow::StartGameWindow() :
-	Window()
+	Window( Window::Toplevel )
 {
 }
 

@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		server_thread->join();
 	}
 
-	// Connect client and send login message.
+	// Connect client and send login message (client->server).
 	{
 		Handler handler;
 		Server server( handler );
@@ -269,4 +269,15 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		server.stop();
 		thread->join();
 	}
+
+	// Connect clients and send login messages (server->client) one by one.
+	/*{
+		Handler handler;
+		Server server( handler );
+
+		server.set_ip( "127.0.0.1" );
+		server.set_port( 2593 );
+
+		std::shared_ptr<boost::thread> thread = start_server_and_wait( server );*/
+
 }
