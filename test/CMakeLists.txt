@@ -24,15 +24,12 @@ set(
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestMessage.cpp
-	TestNetworking.cpp
 	TestPlanet.cpp
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp
-	TestSelector.cpp
 	TestServer.cpp
 	TestServerProtocol.cpp
-	TestSocket.cpp
 	TestVersion.cpp
 	TestWorld.cpp
 )

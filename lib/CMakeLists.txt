@@ -33,7 +33,6 @@ set(
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
 	${INC_DIR}/FlexWorld/Messages/Login.hpp
-	${INC_DIR}/FlexWorld/Networking.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
@@ -42,10 +41,8 @@ set(
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
-	${INC_DIR}/FlexWorld/Selector.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
 	${INC_DIR}/FlexWorld/ServerProtocol.hpp
-	${INC_DIR}/FlexWorld/Socket.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
 	${INC_DIR}/FlexWorld/Version.hpp
@@ -65,16 +62,13 @@ set(
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
 	${SRC_DIR}/FlexWorld/Messages/Login.cpp
-	${SRC_DIR}/FlexWorld/Networking.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
-	${SRC_DIR}/FlexWorld/Selector.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
-	${SRC_DIR}/FlexWorld/Socket.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
