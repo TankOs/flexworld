@@ -58,7 +58,7 @@ class Protocol : public flex::ProtocolImpl<MessageTypelist, MessageTypelist> {
 		typedef typename std::vector<char> Buffer; ///< Buffer.
 		typedef uint8_t MessageID; ///< Message ID.
 		typedef uint16_t ConnectionID; ///< Connection ID.
-		static const MessageID INVALID_MESSAGE_ID = std::numeric_limits<uint8_t>::max(); ///< Invalid message ID.
+		static const MessageID INVALID_MESSAGE_ID; ///< Invalid message ID.
 
 		/** Thrown when message is invalid (too small, missing ID and/or data).
 		 */

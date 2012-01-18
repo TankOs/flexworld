@@ -90,6 +90,12 @@ if( COMPILER_GCC )
 	endif()
 endif()
 
+#
+# Boost-specific.
+#
+add_definitions( -DBOOST_DATE_TIME_NO_LIB )
+add_definitions( -DBOOST_REGEX_NO_LIB )
+
 add_subdirectory( "lib" )
 
 if( FW_BUILD_DOC )

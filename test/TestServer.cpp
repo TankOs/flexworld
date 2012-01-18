@@ -5,6 +5,7 @@
 #include <boost/thread.hpp>
 #include <set>
 #include <functional>
+#include <iostream> // XXX
 
 enum {
 	WAIT_INTERVAL = 5,
@@ -65,6 +66,8 @@ std::shared_ptr<boost::thread> start_server_and_wait( flex::Server& server ) {
 }
 
 void connect_client_and_wait( boost::asio::ip::tcp::socket& client, flex::Server& server ) {
+	std::size_t num_clients = server.get_num_peers();
+
 	BOOST_CHECK_NO_THROW(
 		client.connect(
 			boost::asio::ip::tcp::endpoint(
@@ -75,7 +78,6 @@ void connect_client_and_wait( boost::asio::ip::tcp::socket& client, flex::Server
 	);
 
 	unsigned int time_passed = 0;
-	std::size_t num_clients = server.get_num_peers();
 
 	while( time_passed < TIMEOUT && server.get_num_peers() == num_clients ) {
 		boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
@@ -173,6 +175,9 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 	{
 		ServerHandler handler;
 		Server server( handler );
+
+		server.set_ip( "127.0.0.1" );
+		server.set_port( 2593 );
 
 		std::shared_ptr<boost::thread> server_thread = start_server_and_wait( server );
 

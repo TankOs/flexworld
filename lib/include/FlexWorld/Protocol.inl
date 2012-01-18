@@ -5,6 +5,9 @@
 
 namespace flex {
 
+template <class MessageTypelist>
+const typename Protocol<MessageTypelist>::MessageID Protocol<MessageTypelist>::INVALID_MESSAGE_ID = std::numeric_limits<uint8_t>::max();
+
 // Impl for end of typelist dispatch.
 template <class Org>
 template <class Handler>
