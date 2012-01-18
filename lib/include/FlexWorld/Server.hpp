@@ -3,16 +3,17 @@
 #include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <FlexWorld/MessageHandler.hpp>
+#include <FlexWorld/Peer.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/placeholders.hpp>
+#include <boost/bind.hpp>
 #include <vector>
 #include <string>
 #include <memory>
 #include <cstdint>
 
 namespace flex {
-
-class Peer;
 
 /** Server for handling peers and traffic.
  *
@@ -92,6 +93,14 @@ class Server : public NonCopyable {
 		 */
 		bool run();
 
+		/** Send message to single client.
+		 * Exceptions by MsgType::serialize() are not catched.
+		 * @param message Message.
+		 * @param conn_id Client connection ID (must be valid).
+		 */
+		template <class MsgType>
+		void send_message( const MsgType& message, ConnectionID conn_id );
+
 	private:
 		typedef std::vector<std::shared_ptr<Peer> > PeerPtrVector;
 
@@ -99,6 +108,7 @@ class Server : public NonCopyable {
 		void handle_accept( std::shared_ptr<Peer> peer, const boost::system::error_code& error );
 		void start_read( std::shared_ptr<Peer> peer );
 		void handle_read( std::shared_ptr<Peer> peer, const boost::system::error_code& error, std::size_t num_bytes_read );
+		void handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> buffer, ConnectionID conn_id );
 
 		PeerPtrVector m_peers;
 
@@ -115,3 +125,5 @@ class Server : public NonCopyable {
 };
 
 }
+
+#include "Server.inl"

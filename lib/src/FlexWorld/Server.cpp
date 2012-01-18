@@ -3,7 +3,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include <iostream> // XXX 
+#include <iostream>
 #include <cassert>
 
 namespace flex {
@@ -11,12 +11,11 @@ namespace flex {
 /// HANDLER
 
 void Server::Handler::handle_connect( ConnectionID id ) {
-	std::cerr << "WARNING: Connection of #" << id << " not handled, closing." << std::endl;
-	// TODO Close connection.
+	std::cerr << "WARNING: Connection of #" << id << " not handled!" << std::endl;
 }
 
 void Server::Handler::handle_disconnect( ConnectionID id ) {
-	std::cerr << "WARNING: Disconnection of #" << id << " not handled." << std::endl;
+	std::cerr << "WARNING: Disconnection of #" << id << " not handled!" << std::endl;
 }
 
 // SERVER
@@ -109,6 +108,7 @@ bool Server::run() {
 	// Cleanup.
 	m_peers.clear();
 	m_acceptor.reset();
+	m_num_peers = 0;
 
 	m_running = false;
 	return true;
@@ -133,7 +133,6 @@ void Server::handle_accept( std::shared_ptr<Peer> peer, const boost::system::err
 	}
 
 	++m_num_peers;
-	std::cout << "Connection accepted, now " << m_num_peers << "." << std::endl;
 
 	// Get next free connection ID.
 	std::size_t conn_id = 0;
@@ -153,6 +152,9 @@ void Server::handle_accept( std::shared_ptr<Peer> peer, const boost::system::err
 	}
 
 	peer->id = static_cast<Peer::ConnectionID>( conn_id );
+
+	// Notify observer.
+	m_handler.handle_connect( peer->id );
 
 	start_read( peer );
 	start_accept();
@@ -175,7 +177,7 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 	// Client disconnected?
 	if( error ) {
 		assert( peer->id < m_peers.size() );
-		assert( peer == m_peers[peer->id] );
+		assert( m_peers[peer->id] == peer );
 
 		if( static_cast<std::size_t>( peer->id + 1 ) == m_peers.size() ) {
 			m_peers.pop_back();
@@ -185,11 +187,26 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 		}
 
 		--m_num_peers;
-		std::cout << "Client disconnected, " << m_num_peers << " left." << std::endl;
+		m_handler.handle_disconnect( peer->id );
+
 		return;
 	}
 
-	std::cout << num_bytes_read << " bytes arrived from #" << peer->id << std::endl;
+	// Add to peer's buffer.
+	peer->buffer.insert( peer->buffer.end(), peer->read_buffer, peer->read_buffer + num_bytes_read );
+
+	// Try to dispatch.
+	std::size_t consumed = 0;
+
+	while( peer->buffer.size() && (consumed = ServerProtocol::dispatch( peer->buffer, m_handler, peer->id )) > 0 ) {
+		if( consumed == peer->buffer.size() ) {
+			peer->buffer.clear();
+		}
+		else {
+			std::memmove( &peer->buffer[0], &peer->buffer[consumed], peer->buffer.size() - consumed );
+			peer->buffer.resize( peer->buffer.size() - consumed );
+		}
+	}
 
 	start_read( peer );
 }
@@ -197,8 +214,28 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 void Server::stop() {
 	assert( m_running );
 
-	m_peers.clear();
-	m_acceptor.reset();
+	// Do it cleanly be closing all sockets. The IO service will stop
+	// automagically because there's no more work to do.
+	for( std::size_t conn_id = 0; conn_id < m_peers.size(); ++conn_id ) {
+		if( m_peers[conn_id] ) {
+			m_peers[conn_id]->socket->close();
+		}
+	}
+
+	m_acceptor->close();
+}
+
+void Server::handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> /*buffer*/, ConnectionID conn_id ) {
+	// If failed to write, disconnect peer.
+	if( error ) {
+		std::cerr << "ERROR: Failed to send data to client #" << conn_id << ", disconnecting." << std::endl;
+
+		if( conn_id < m_peers.size() && m_peers[conn_id] != nullptr ) {
+			m_peers[conn_id]->socket->close();
+		}
+
+		return;
+	}
 }
 
 }
