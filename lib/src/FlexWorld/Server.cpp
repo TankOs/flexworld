@@ -71,10 +71,8 @@ bool Server::run() {
 		return false;
 	}
 
-	asio::io_service io_service;
-
 	// Setup the listener.
-	m_acceptor.reset( new ip::tcp::acceptor( io_service ) );
+	m_acceptor.reset( new ip::tcp::acceptor( m_io_service ) );
 	m_acceptor->open( ip::tcp::v4() );
 	m_acceptor->set_option( asio::socket_base::reuse_address( true ) );
 
@@ -103,7 +101,7 @@ bool Server::run() {
 
 	// Run the service. This will block until all connections have been closed
 	// and the listener died.
-	io_service.run();
+	m_io_service.run();
 
 	// Cleanup.
 	m_peers.clear();
@@ -213,16 +211,7 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 
 void Server::stop() {
 	assert( m_running );
-
-	// Do it cleanly be closing all sockets. The IO service will stop
-	// automagically because there's no more work to do.
-	for( std::size_t conn_id = 0; conn_id < m_peers.size(); ++conn_id ) {
-		if( m_peers[conn_id] ) {
-			m_peers[conn_id]->socket->close();
-		}
-	}
-
-	m_acceptor->close();
+	m_io_service.stop();
 }
 
 void Server::handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> /*buffer*/, ConnectionID conn_id ) {

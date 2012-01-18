@@ -25,6 +25,8 @@ set(
 	${INC_DIR}/FlexWorld/Class.hpp
 	${INC_DIR}/FlexWorld/ClassCache.hpp
 	${INC_DIR}/FlexWorld/ClassDriver.hpp
+	${INC_DIR}/FlexWorld/Client.hpp
+	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
@@ -42,6 +44,7 @@ set(
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
+	${INC_DIR}/FlexWorld/Server.inl
 	${INC_DIR}/FlexWorld/ServerProtocol.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
@@ -54,6 +57,7 @@ set(
 	${SRC_DIR}/FlexWorld/Class.cpp
 	${SRC_DIR}/FlexWorld/ClassCache.cpp
 	${SRC_DIR}/FlexWorld/ClassDriver.cpp
+	${SRC_DIR}/FlexWorld/Client.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
 	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp

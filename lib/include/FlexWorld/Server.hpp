@@ -110,6 +110,7 @@ class Server : public NonCopyable {
 		void handle_read( std::shared_ptr<Peer> peer, const boost::system::error_code& error, std::size_t num_bytes_read );
 		void handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> buffer, ConnectionID conn_id );
 
+		boost::asio::io_service m_io_service;
 		PeerPtrVector m_peers;
 
 		std::string m_ip;

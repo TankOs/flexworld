@@ -11,7 +11,6 @@ set(
 	SOURCES
 	${PROJECT_BINARY_DIR}/Config.hpp
 	Test.cpp
-	Test.cpp
 	TestAccount.cpp
 	TestAccountDriver.cpp
 	TestAccountManager.cpp
@@ -19,6 +18,7 @@ set(
 	TestClass.cpp
 	TestClassCache.cpp
 	TestClassDriver.cpp
+	TestClient.cpp
 	TestEntity.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp

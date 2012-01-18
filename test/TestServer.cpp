@@ -11,8 +11,8 @@ enum {
 	TIMEOUT = 5000
 };
 
-struct Handler : flex::Server::Handler {
-	Handler() :
+struct ServerHandler : flex::Server::Handler {
+	ServerHandler() :
 		num_logins_handled( 0 )
 	{
 	}
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 	// Initial state.
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		BOOST_CHECK( server.get_ip() == "0.0.0.0" );
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 	// Basic properties.
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		server.set_ip( "127.0.0.1" );
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 	// Connect and disconnect a client.
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		server.set_ip( "127.0.0.1" );
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 	// - Disconnect 1
 	// - Connect 1
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		std::shared_ptr<boost::thread> server_thread = start_server_and_wait( server );
@@ -214,6 +214,11 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		BOOST_CHECK( handler.connected_clients.find( 3 ) != handler.connected_clients.end() );
 
 		// Stop.
+		client0.close();
+		client1.close();
+		client2.close();
+		client3.close();
+
 		server.stop();
 		wait_for_num_clients( 0, server );
 		server_thread->join();
@@ -221,7 +226,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 	// Connect client and send login message (client->server).
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		server.set_ip( "127.0.0.1" );
@@ -265,13 +270,14 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 			BOOST_REQUIRE( handler.num_logins_handled == NUM_MESSAGES );
 		}
 
+		client.close();
 		server.stop();
 		thread->join();
 	}
 
 	// Connect clients and send login messages (server->client).
 	{
-		Handler handler;
+		ServerHandler handler;
 		Server server( handler );
 
 		server.set_ip( "127.0.0.1" );
@@ -323,8 +329,13 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 			}
 		}
 
+		// Disconnect all clients.
+		for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
+			client[client_id]->close();
+			client[client_id].reset();
+		}
+
 		server.stop();
 		thread->join();
 	}
-
 }
