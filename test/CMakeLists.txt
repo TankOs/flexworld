@@ -32,6 +32,7 @@ set(
 	TestSaveInfoDriver.cpp
 	TestServer.cpp
 	TestServerProtocol.cpp
+	TestSessionHost.cpp
 	TestVersion.cpp
 	TestWorld.cpp
 )

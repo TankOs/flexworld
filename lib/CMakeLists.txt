@@ -48,6 +48,7 @@ set(
 	${INC_DIR}/FlexWorld/Server.hpp
 	${INC_DIR}/FlexWorld/Server.inl
 	${INC_DIR}/FlexWorld/ServerProtocol.hpp
+	${INC_DIR}/FlexWorld/SessionHost.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
 	${INC_DIR}/FlexWorld/Version.hpp
@@ -77,6 +78,7 @@ set(
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
+	${SRC_DIR}/FlexWorld/SessionHost.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
