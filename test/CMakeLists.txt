@@ -23,8 +23,10 @@ set(
 	TestFlexID.cpp
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
+	TestLockFacility.cpp
 	TestMessage.cpp
 	TestPlanet.cpp
+	TestRefLock.cpp
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp

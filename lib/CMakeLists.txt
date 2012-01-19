@@ -32,6 +32,7 @@ set(
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/GameMode.hpp
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
+	${INC_DIR}/FlexWorld/LockFacility.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
 	${INC_DIR}/FlexWorld/Messages/Login.hpp
@@ -40,6 +41,7 @@ set(
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Protocol.hpp
 	${INC_DIR}/FlexWorld/Protocol.inl
+	${INC_DIR}/FlexWorld/RefLock.hpp
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
@@ -63,12 +65,14 @@ set(
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/GameMode.cpp
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
+	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
 	${SRC_DIR}/FlexWorld/Messages/Login.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
+	${SRC_DIR}/FlexWorld/RefLock.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
