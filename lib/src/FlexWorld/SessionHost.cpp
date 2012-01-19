@@ -1,4 +1,5 @@
 #include <FlexWorld/SessionHost.hpp>
+#include <FlexWorld/Messages/ServerInfo.hpp>
 
 namespace flex {
 
@@ -46,6 +47,15 @@ void SessionHost::stop() {
 
 bool SessionHost::is_running() const {
 	return m_server.is_running();
+}
+
+void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
+	// Client connected, send server info.
+	msg::ServerInfo msg;
+	msg.set_auth_mode( msg::ServerInfo::OPEN_AUTH );
+	msg.set_flags( msg::ServerInfo::NO_FLAGS );
+
+	m_server.send_message( msg, conn_id );
 }
 
 }

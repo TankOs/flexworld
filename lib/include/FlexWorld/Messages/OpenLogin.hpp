@@ -7,15 +7,15 @@
 namespace flex {
 namespace msg {
 
-/** Login network message.
+/** OpenLogin network message.
  */
-class Login : public Message {
+class OpenLogin : public Message {
 	public:
 		static const uint8_t MAX_USERNAME_LENGTH = 24; ///< Maximum username length.
 
 		/** Ctor.
 		 */
-		Login();
+		OpenLogin();
 
 		void serialize( Buffer& buffer ) const;
 		std::size_t deserialize( const char* buffer, std::size_t buffer_size );
@@ -40,9 +40,20 @@ class Login : public Message {
 		 */
 		const std::string& get_password() const;
 
+		/** Set server password.
+		 * @param server_password Server password.
+		 */
+		void set_server_password( const std::string& server_password );
+
+		/** Get server password.
+		 * @return Server password.
+		 */
+		const std::string& get_server_password() const;
+
 	private:
 		std::string m_username;
 		std::string m_password;
+		std::string m_server_password;
 };
 
 }

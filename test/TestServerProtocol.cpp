@@ -1,20 +1,23 @@
 #include <FlexWorld/ServerProtocol.hpp>
 #include <FlexWorld/MessageHandler.hpp>
-#include <FlexWorld/Messages/Login.hpp>
+#include <FlexWorld/Messages/OpenLogin.hpp>
 
 #include <boost/test/unit_test.hpp>
 
-class Handler : public flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID> {
+class SPHandler : public flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID> {
 	public:
-		Handler() :
+		using flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID>::handle_message;
+
+		SPHandler() :
 			m_login_handled( false )
 		{
 		}
 
-		void handle_message( const flex::msg::Login& login, std::size_t sender ) {
-			BOOST_CHECK( sender == 1337 );
+		void handle_message( const flex::msg::OpenLogin& login, flex::ServerProtocol::ConnectionID sender ) {
+			BOOST_CHECK( sender == 9949 );
 			BOOST_CHECK( login.get_username() == "Tank" );
 			BOOST_CHECK( login.get_password() == "h4x0r" );
+			BOOST_CHECK( login.get_server_password() == "me0w" );
 			m_login_handled = true;
 		}
 
@@ -25,12 +28,12 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 	using namespace flex;
 
 	ServerProtocol protocol;
-	Handler handler;
+	SPHandler handler;
 
 	// Incomplete message.
 	{
 		ServerProtocol::Buffer buffer( 1, 244 ); // Message ID only.
-		BOOST_CHECK_THROW( protocol.dispatch( buffer, handler, 1337 ), ServerProtocol::BogusMessageDataException );
+		BOOST_CHECK_THROW( protocol.dispatch( buffer, handler, 9949 ), ServerProtocol::BogusMessageDataException );
 	}
 
 	// Dispatch unknown message.
@@ -38,7 +41,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		ServerProtocol::Buffer buffer( 2, 244 ); // 244 = unknown message ID.
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_THROW( eaten = protocol.dispatch( buffer, handler, 1337 ), ServerProtocol::UnknownMessageIDException );
+		BOOST_CHECK_THROW( eaten = protocol.dispatch( buffer, handler, 9949 ), ServerProtocol::UnknownMessageIDException );
 		BOOST_CHECK( eaten == 0 );
 	}
 
@@ -47,17 +50,20 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		ServerProtocol::Buffer buffer;
 		const std::string username( "Tank" );
 		const std::string password( "h4x0r" );
+		const std::string server_password( "me0w" );
 		
-		buffer.push_back( static_cast<char>( tpl::IndexOf<flex::msg::Login, ServerMessageList>::RESULT ) );
+		buffer.push_back( static_cast<char>( tpl::IndexOf<flex::msg::OpenLogin, ServerMessageList>::RESULT ) );
 		buffer.push_back( static_cast<char>( username.size() ) );
 		buffer.insert( buffer.end(), username.begin(), username.end() );
 		buffer.push_back( static_cast<char>( password.size() ) );
 		buffer.insert( buffer.end(), password.begin(), password.end() );
+		buffer.push_back( static_cast<char>( server_password.size() ) );
+		buffer.insert( buffer.end(), server_password.begin(), server_password.end() );
 
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( buffer, handler, 1337 ) );
-		BOOST_CHECK( eaten == 12 );
+		BOOST_CHECK_NO_THROW( eaten = protocol.dispatch( buffer, handler, 9949 ) );
+		BOOST_CHECK( eaten == 17 );
 		BOOST_CHECK( handler.m_login_handled == true );
 	}
 }

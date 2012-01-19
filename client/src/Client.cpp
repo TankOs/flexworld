@@ -48,7 +48,7 @@ void Client::run() {
 		bool set_defaults( false );
 
 		if( boost::filesystem::exists( UserSettings::get_profile_path() + "/settings.yml" ) ) {
-			if( !Shared::get().get_user_settings().load( UserSettings::get_profile_path() + "/settings.yml" ) ) {
+			if( !Shared::get().user_settings.load( UserSettings::get_profile_path() + "/settings.yml" ) ) {
 				std::cerr << "Failed to load settings from " << UserSettings::get_profile_path() << "/settings.yml." << std::endl;
 				set_defaults = true;
 			}
@@ -61,19 +61,21 @@ void Client::run() {
 		if( set_defaults ) {
 			std::cerr << "Using default values for settings." << std::endl;
 
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::W, Controls::WALK_FORWARD );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::S, Controls::WALK_BACKWARD );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::A, Controls::STRAFE_LEFT );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::D, Controls::STRAFE_RIGHT );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::Space, Controls::JUMP );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::LControl, Controls::CROUCH );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::E, Controls::USE );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::X, Controls::DROP );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::F, Controls::INVENTORY );
-			Shared::get().get_user_settings().get_controls().map_key( sf::Keyboard::T, Controls::CHAT );
+			Controls& controls = Shared::get().user_settings.get_controls();
 
-			Shared::get().get_user_settings().get_controls().map_button( sf::Mouse::Left, Controls::PRIMARY_ATTACK );
-			Shared::get().get_user_settings().get_controls().map_button( sf::Mouse::Right, Controls::SECONDARY_ATTACK );
+			controls.map_key( sf::Keyboard::W, Controls::WALK_FORWARD );
+			controls.map_key( sf::Keyboard::S, Controls::WALK_BACKWARD );
+			controls.map_key( sf::Keyboard::A, Controls::STRAFE_LEFT );
+			controls.map_key( sf::Keyboard::D, Controls::STRAFE_RIGHT );
+			controls.map_key( sf::Keyboard::Space, Controls::JUMP );
+			controls.map_key( sf::Keyboard::LControl, Controls::CROUCH );
+			controls.map_key( sf::Keyboard::E, Controls::USE );
+			controls.map_key( sf::Keyboard::X, Controls::DROP );
+			controls.map_key( sf::Keyboard::F, Controls::INVENTORY );
+			controls.map_key( sf::Keyboard::T, Controls::CHAT );
+
+			controls.map_button( sf::Mouse::Left, Controls::PRIMARY_ATTACK );
+			controls.map_button( sf::Mouse::Right, Controls::SECONDARY_ATTACK );
 		}
 	}
 

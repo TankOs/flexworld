@@ -19,13 +19,10 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	window->m_game_mode_combo = sfg::ComboBox::Create();
 	window->m_password_entry = sfg::Entry::Create();
 	window->m_password_entry->HideText( '*' );
-	window->m_public_check = sfg::CheckButton::Create( L"Others can join this game*" );
+	window->m_public_check = sfg::CheckButton::Create( L"Friends may join" );
 	window->m_max_players_scale = sfg::Scale::Create( 1.f, 16.f, 1.f );
 	window->m_max_players_label = sfg::Label::Create( L"1" );
 	window->m_max_players_label->SetRequisition( sf::Vector2f( 25.f, 0.f ) );
-
-	sfg::Label::Ptr inet_label( sfg::Label::Create( L"* Internet connection required." ) );
-	inet_label->SetClass( "info" );
 
 	// Layout.
 	uint32_t row_index( 0 );
@@ -52,14 +49,13 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 
 	row_index = 0;
 	++row_index;
-	multiplayer_table->Attach( sfg::Label::Create( L"Password:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	multiplayer_table->Attach( sfg::Label::Create( L"Server password:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	multiplayer_table->Attach( sfg::Label::Create( L"Max. players:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
 	row_index = 0;
 	multiplayer_table->Attach( window->m_public_check, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	multiplayer_table->Attach( window->m_password_entry, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	multiplayer_table->Attach( max_players_box, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	multiplayer_table->Attach( inet_label, sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), 0, sfg::Table::FILL );
 
 	sfg::Frame::Ptr multiplayer_frame = sfg::Frame::Create( L"Multiplayer" );
 	multiplayer_frame->Add( multiplayer_table );

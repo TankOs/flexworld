@@ -8,6 +8,6 @@ Shared& Shared::get() {
 	return shared;
 }
 
-UserSettings& Shared::get_user_settings() {
-	return m_user_settings;
+Shared& get_shared() {
+	return Shared::get();
 }

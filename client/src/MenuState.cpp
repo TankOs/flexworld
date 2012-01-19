@@ -1,5 +1,6 @@
 #include "MenuState.hpp"
 #include "StartGameWindow.hpp"
+#include "ConnectState.hpp"
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
@@ -161,7 +162,7 @@ void MenuState::handle_event( const sf::Event& event ) {
 }
 
 void MenuState::update( uint32_t delta ) {
-	float f_time( static_cast<float>( delta ) / 1000.f );
+	float f_time( std::max( 1.0f, static_cast<float>( delta ) ) / 1000.f );
 
 	// Move clouds.
 	SpriteList::iterator cloud_iter( m_cloud_sprites.begin() );
@@ -207,7 +208,7 @@ void MenuState::on_options_click() {
 		return;
 	}
 
-	m_options_window = OptionsWindow::Create( Shared::get().get_user_settings() );
+	m_options_window = OptionsWindow::Create( Shared::get().user_settings );
 	m_options_window->SetRequisition( sf::Vector2f( 500.f, 0.f ) );
 	m_desktop.Add( m_options_window );
 
@@ -284,8 +285,8 @@ void MenuState::on_start_game_click() {
 
 void MenuState::on_options_accept() {
 	// Apply user settings.
-	Shared::get().get_user_settings() = m_options_window->get_user_settings();
-	Shared::get().get_user_settings().save( UserSettings::get_profile_path() + "/settings.yml" );
+	Shared::get().user_settings = m_options_window->get_user_settings();
+	Shared::get().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
@@ -309,7 +310,7 @@ void MenuState::on_start_game_accept() {
 	m_desktop.Remove( m_start_game_window );
 	m_start_game_window.reset();
 
-	m_window->Show( true );
+	leave( new ConnectState( get_render_target() ) );
 }
 
 void MenuState::on_start_game_reject() {
@@ -323,8 +324,8 @@ void MenuState::check_required_settings() {
 	bool valid( true );
 
 	if(
-		Shared::get().get_user_settings().get_username().empty() ||
-		Shared::get().get_user_settings().get_serial().empty()
+		Shared::get().user_settings.get_username().empty() ||
+		Shared::get().user_settings.get_serial().empty()
 	) {
 		valid = false;
 	}

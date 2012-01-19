@@ -30,9 +30,10 @@ struct ClientHandler : flex::Client::Handler {
 		connected = false;
 	}
 
-	void handle_message( const flex::msg::Login& msg, flex::Client::ConnectionID /*id*/ ) {
+	void handle_message( const flex::msg::OpenLogin& msg, flex::Client::ConnectionID /*id*/ ) {
 		BOOST_CHECK( msg.get_username() == "Tank" );
 		BOOST_CHECK( msg.get_password() == "h4x0r" );
+		BOOST_CHECK( msg.get_server_password() == "me0w" );
 		++num_logins_handled;
 	}
 
@@ -119,9 +120,10 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 		BOOST_REQUIRE( client.is_connected() );
 
 		// Prepare message.
-		msg::Login msg;
+		msg::OpenLogin msg;
 		msg.set_username( "Tank" );
 		msg.set_password( "h4x0r" );
+		msg.set_server_password( "me0w" );
 
 		ServerProtocol::Buffer buf;
 		ServerProtocol::serialize_message( msg, buf );
@@ -164,9 +166,10 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 		BOOST_REQUIRE( client.is_connected() );
 
 		// Prepare message.
-		msg::Login msg;
+		msg::OpenLogin msg;
 		msg.set_username( "Tank" );
 		msg.set_password( "h4x0r" );
+		msg.set_server_password( "me0w" );
 
 		// Send to server.
 		client.send_message( msg );

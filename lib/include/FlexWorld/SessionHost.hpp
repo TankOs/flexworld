@@ -69,6 +69,8 @@ class SessionHost : private Server::Handler {
 		bool is_running() const;
 
 	private:
+		void handle_connect( Server::ConnectionID conn_id );
+
 		Server m_server;
 
 		LockFacility& m_lock_facility;

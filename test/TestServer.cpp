@@ -26,10 +26,11 @@ struct ServerHandler : flex::Server::Handler {
 		connected_clients.erase( id );
 	}
 
-	void handle_message( const flex::msg::Login& msg, flex::Server::ConnectionID sender ) {
+	void handle_message( const flex::msg::OpenLogin& msg, flex::Server::ConnectionID sender ) {
 		BOOST_CHECK( connected_clients.find( sender ) != connected_clients.end() );
 		BOOST_CHECK( msg.get_username() == "Tank" );
 		BOOST_CHECK( msg.get_password() == "h4x0r" );
+		BOOST_CHECK( msg.get_server_password() == "me0w" );
 		++num_logins_handled;
 	}
 
@@ -247,9 +248,10 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		wait_for_num_clients( 1, server );
 
 		// Send login message.
-		msg::Login msg;
+		msg::OpenLogin msg;
 		msg.set_username( "Tank" );
 		msg.set_password( "h4x0r" );
+		msg.set_server_password( "me0w" );
 
 		ServerProtocol::Buffer buf;
 		ServerProtocol::serialize_message( msg, buf );
@@ -308,9 +310,10 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		BOOST_REQUIRE( handler.connected_clients.size() == NUM_CLIENTS );
 
 		// Now send messages to each client.
-		msg::Login msg;
+		msg::OpenLogin msg;
 		msg.set_username( "Tank" );
 		msg.set_password( "h4x0r" );
+		msg.set_server_password( "me0w" );
 
 		for( std::size_t msg_id = 0; msg_id < NUM_MESSAGES_PER_CLIENT; ++msg_id ) {
 			for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
@@ -320,17 +323,18 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 		// Receive messages.
 		for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
-			char buf[12];
+			char buf[17];
 
 			for( std::size_t msg_id = 0; msg_id < NUM_MESSAGES_PER_CLIENT; ++msg_id ) {
-				std::size_t num_received = client[client_id]->receive( buffer( buf, 12 ) );
+				std::size_t num_received = client[client_id]->receive( buffer( buf, 17 ) );
 
-				BOOST_REQUIRE( num_received == 12 );
+				BOOST_REQUIRE( num_received == 17 );
 				BOOST_REQUIRE( buf[0] == 0 ); // Check msg ID.
-				BOOST_REQUIRE( msg.deserialize( buf + 1, 11 ) == 11 ); // Skip msg id.
+				BOOST_REQUIRE( msg.deserialize( buf + 1, 16 ) == 16 ); // Skip msg id.
 
 				BOOST_REQUIRE( msg.get_username() == "Tank" );
 				BOOST_REQUIRE( msg.get_password() == "h4x0r" );
+				BOOST_REQUIRE( msg.get_server_password() == "me0w" );
 			}
 		}
 

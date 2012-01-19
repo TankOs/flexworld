@@ -19,6 +19,8 @@ class Client {
 		/** Handler interface.
 		 */
 		struct Handler : public MessageHandler<ServerMessageList, ConnectionID> {
+			using MessageHandler<ServerMessageList, ConnectionID>::handle_message;
+
 			/** Handle incoming connection.
 			 * @param id ID.
 			 */
