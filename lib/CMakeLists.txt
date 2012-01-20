@@ -33,6 +33,8 @@ set(
 	${INC_DIR}/FlexWorld/GameMode.hpp
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
 	${INC_DIR}/FlexWorld/LockFacility.hpp
+	${INC_DIR}/FlexWorld/Log.hpp
+	${INC_DIR}/FlexWorld/Log.inl
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
@@ -68,6 +70,7 @@ set(
 	${SRC_DIR}/FlexWorld/GameMode.cpp
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
+	${SRC_DIR}/FlexWorld/Log.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp

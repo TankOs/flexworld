@@ -21,7 +21,7 @@ class ConnectState : public State, public flex::Client::Handler {
 		void init();
 		void cleanup();
 		void handle_event( const sf::Event& event );
-		void update( uint32_t delta );
+		void update( const sf::Time& delta );
 		void render() const;
 
 		void session_host_func();

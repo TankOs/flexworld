@@ -161,15 +161,15 @@ void MenuState::handle_event( const sf::Event& event ) {
 
 }
 
-void MenuState::update( uint32_t delta ) {
-	float f_time( std::max( 1.0f, static_cast<float>( delta ) ) / 1000.f );
+void MenuState::update( const sf::Time& delta ) {
+	float seconds( delta.AsSeconds() );
 
 	// Move clouds.
 	SpriteList::iterator cloud_iter( m_cloud_sprites.begin() );
 	SpriteList::iterator cloud_iter_end( m_cloud_sprites.end() );
 
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		cloud_iter->Move( f_time * 10.f, f_time * -5.f );
+		cloud_iter->Move( seconds * 10.f, seconds * -5.f );
 
 		if( cloud_iter->GetGlobalBounds().Left >= static_cast<float>( get_render_target().GetWidth() ) ) {
 			cloud_iter->Move( -static_cast<float>( get_render_target().GetWidth() ) - cloud_iter->GetGlobalBounds().Width, 0.f );
@@ -181,7 +181,7 @@ void MenuState::update( uint32_t delta ) {
 	}
 
 	// Update desktop.
-	m_desktop.Update( f_time );
+	m_desktop.Update( seconds );
 }
 
 void MenuState::render() const {

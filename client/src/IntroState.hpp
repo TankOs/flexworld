@@ -15,9 +15,9 @@ class IntroState : public State {
 		void init();
 		void cleanup();
 		void handle_event( const sf::Event& event );
-		void update( uint32_t delta );
+		void update( const sf::Time& delta );
 		void render() const;
 
 	private:
-		uint32_t m_elapsed;
+		sf::Time m_elapsed;
 };

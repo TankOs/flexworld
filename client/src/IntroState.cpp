@@ -6,8 +6,7 @@
 #include <iostream>// XXX 
 
 IntroState::IntroState( sf::RenderWindow& target ) :
-	State( target ),
-	m_elapsed( 0 )
+	State( target )
 {
 }
 
@@ -26,10 +25,10 @@ void IntroState::handle_event( const sf::Event& event ) {
 	}
 }
 
-void IntroState::update( uint32_t delta ) {
+void IntroState::update( const sf::Time& delta ) {
 	m_elapsed += delta;
 
-	if( m_elapsed >= 100 ) {
+	if( m_elapsed.AsMilliseconds() >= 100 ) {
 		leave( new MenuState( get_render_target() ) );
 	}
 }

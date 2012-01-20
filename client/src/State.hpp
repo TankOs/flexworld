@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/System/Time.hpp>
 #include <cstdint>
 
 namespace sf {
@@ -42,7 +43,7 @@ class State {
 		/** Update logic.
 		 * @param delta Time passed since last call to update().
 		 */
-		virtual void update( uint32_t delta ) = 0;
+		virtual void update( const sf::Time& delta ) = 0;
 
 		/** Render.
 		 */
@@ -71,8 +72,8 @@ class State {
 	private:
 		sf::RenderWindow& m_render_target;
 
-		uint32_t m_logic_interval;
-		uint32_t m_render_interval;
+		sf::Time m_logic_interval;
+		sf::Time m_render_interval;
 
 		bool m_run;
 		State* m_next_state;

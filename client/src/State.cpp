@@ -29,8 +29,8 @@ State* State::run() {
 	m_run = true;
 	sf::Clock clock;
 
-	uint32_t logic_elapsed( 0 );
-	uint32_t render_elapsed( 0 );
+	sf::Time logic_elapsed;
+	sf::Time render_elapsed;
 	sf::Event event;
 
 	init();
@@ -65,15 +65,15 @@ State* State::run() {
 			}
 		}
 
-		uint32_t elapsed( clock.GetElapsedTime() );
-		clock.Reset();
+		sf::Time elapsed =clock.GetElapsedTime();
+		clock.Restart();
 
 		logic_elapsed += elapsed;
 		render_elapsed += elapsed;
 
 		// If interval for logic AND rendering not expired, save the CPU the trouble.
 		if( logic_elapsed < m_logic_interval && elapsed < m_render_interval ) {
-			uint32_t wait_time( std::min( m_logic_interval - elapsed, m_render_interval - elapsed ) );
+			sf::Time wait_time( std::min( m_logic_interval - elapsed, m_render_interval - elapsed ) );
 			
 			sf::Sleep( wait_time );
 			logic_elapsed += wait_time;
@@ -82,8 +82,8 @@ State* State::run() {
 
 		// Logics.
 		if( logic_elapsed >= m_logic_interval ) {
-			while( logic_elapsed > 0 ) {
-				uint32_t delta( std::min( m_logic_interval, logic_elapsed ) );
+			while( logic_elapsed > sf::Time::Zero ) {
+				sf::Time delta( std::min( m_logic_interval, logic_elapsed ) );
 
 				update( delta );
 				logic_elapsed -= delta;
@@ -97,7 +97,7 @@ State* State::run() {
 		// Rendering.
 		if( render_elapsed >= m_render_interval ) {
 			render();
-			render_elapsed = 0;
+			render_elapsed = sf::Time::Zero;
 		}
 	}
 
@@ -107,11 +107,11 @@ State* State::run() {
 }
 
 void State::set_logic_fps( uint16_t fps ) {
-	m_logic_interval = 1000 / fps;
+	m_logic_interval = sf::Seconds( 1.0f / static_cast<float>( fps ) );
 }
 
 void State::set_render_fps( uint16_t fps ) {
-	m_render_interval = 1000 / fps;
+	m_render_interval = sf::Seconds( 1.0f / static_cast<float>( fps ) );
 }
 
 void State::leave( State* state ) {

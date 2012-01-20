@@ -1,5 +1,7 @@
 #include <FlexWorld/SessionHost.hpp>
 #include <FlexWorld/Messages/ServerInfo.hpp>
+#include <FlexWorld/LockFacility.hpp>
+#include <FlexWorld/Log.hpp>
 
 namespace flex {
 
@@ -56,6 +58,14 @@ void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
 	msg.set_flags( msg::ServerInfo::NO_FLAGS );
 
 	m_server.send_message( msg, conn_id );
+}
+
+void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id ) {
+	m_lock_facility.lock_account_manager( true );
+
+	m_lock_facility.lock_account_manager( false );
+
+	Log::Logger() << "Client wants to login as " << login_msg.get_username() << ", password " << login_msg.get_password() << "." << Log::endl;
 }
 
 }

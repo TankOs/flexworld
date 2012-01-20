@@ -99,9 +99,7 @@ void ConnectState::handle_event( const sf::Event& event ) {
 	}
 }
 
-void ConnectState::update( uint32_t delta ) {
-	float f_time( std::max( 1.0f, static_cast<float>( delta ) ) / 1000.0f );
-
+void ConnectState::update( const sf::Time& delta ) {
 	// Make connection when session host is running.
 	if( get_shared().client_thread == nullptr && get_shared().host != nullptr && get_shared().host->is_running() ) {
 		get_shared().client_thread.reset( new boost::thread( std::bind( &ConnectState::connect_func, this ) ) );
@@ -114,7 +112,7 @@ void ConnectState::update( uint32_t delta ) {
 		m_next_info_text.clear();
 	}
 
-	m_desktop.Update( f_time );
+	m_desktop.Update( delta.AsSeconds() );
 }
 
 void ConnectState::render() const {
@@ -133,7 +131,7 @@ void ConnectState::connect_func() {
 }
 
 void ConnectState::handle_connect( flex::Client::ConnectionID ) {
-	m_next_info_text = "Connection established. Let's go!";
+	m_next_info_text = "Connection established.";
 }
 
 void ConnectState::handle_disconnect( flex::Client::ConnectionID ) {
@@ -146,6 +144,19 @@ void ConnectState::session_host_func() {
 	get_shared().host->run();
 }
 
-void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID conn_id ) {
-	// TODO
+void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+	if( msg.get_auth_mode() == flex::msg::ServerInfo::OPEN_AUTH ) {
+		// Send username & password. TODO: Ask for password for remote connections.
+		flex::msg::OpenLogin login_msg;
+		login_msg.set_username( get_shared().user_settings.get_username() );
+		login_msg.set_password( "LOCAL" );
+
+		get_shared().client->send_message( login_msg );
+
+		m_next_info_text = "Logging in...";
+	}
+	else {
+		m_next_info_text = "Unknown auth type sent by server.";
+		m_canceled = true;
+	}
 }

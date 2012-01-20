@@ -70,6 +70,7 @@ class SessionHost : private Server::Handler {
 
 	private:
 		void handle_connect( Server::ConnectionID conn_id );
+		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 
 		Server m_server;
 
