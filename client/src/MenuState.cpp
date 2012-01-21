@@ -330,7 +330,6 @@ void MenuState::on_start_game_accept() {
 		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
 
 		for( std::size_t package_idx = 0 ; package_idx < game_mode.get_num_packages(); ++package_idx ) {
-			std::cout << "Load " << game_mode.get_package( package_idx ).get() << "..." << std::endl;
 		}
 
 		// Head over to connect state.

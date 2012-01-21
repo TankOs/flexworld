@@ -6,10 +6,18 @@ enum { NUM_LOCKS = 200 };
 enum { NUM_THREADS = 50 };
 
 bool g_wait = true;
+boost::mutex g_wait_mutex;
 
 void thread_func( flex::RefLock* lock ) {
 	// Wait until all threads are ready.
-	while( g_wait ) {}
+	while( true ) {
+		g_wait_mutex.lock();
+		if( !g_wait ) {
+			g_wait_mutex.unlock();
+			break;
+		}
+		g_wait_mutex.unlock();
+	}
 
 	// Lock.
 	for( std::size_t iter = 0; iter < NUM_LOCKS; ++iter ) {
@@ -64,11 +72,14 @@ BOOST_AUTO_TEST_CASE( TestRefLock ) {
 		std::vector<std::shared_ptr<boost::thread> > thread_pool;
 
 		for( std::size_t thread_idx = 0; thread_idx < NUM_THREADS; ++thread_idx ) {
-			thread_pool.push_back( std::shared_ptr<boost::thread>( new boost::thread( std::bind( &thread_func, &lock ) ) ) );
+			std::shared_ptr<boost::thread> da_thread( new boost::thread( std::bind( &thread_func, &lock ) ) );
+			thread_pool.push_back( da_thread );
 		}
 
 		// Signal threads to run.
+		g_wait_mutex.lock();
 		g_wait = false;
+		g_wait_mutex.unlock();
 
 		// Wait for threads to finish.
 		for( std::size_t thread_idx = 0; thread_idx < NUM_THREADS; ++thread_idx ) {
