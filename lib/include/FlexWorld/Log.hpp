@@ -17,7 +17,7 @@ class Log {
 			DEBUG = 0,
 			INFO,
 			WARNING,
-			ERROR,
+			ERR,
 			FATAL
 		};
 

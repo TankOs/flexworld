@@ -2,6 +2,7 @@
 
 #include "State.hpp"
 #include "OptionsWindow.hpp"
+#include "StartGameWindow.hpp"
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -41,7 +42,7 @@ class MenuState : public State {
 		sfg::Label::Ptr m_settings_hint_label;
 
 		OptionsWindow::Ptr m_options_window;
-		sfg::Widget::Ptr m_start_game_window;
+		StartGameWindow::Ptr m_start_game_window;
 
 		sf::Texture m_cloud_texture;
 		SpriteList m_cloud_sprites;

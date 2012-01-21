@@ -12,11 +12,11 @@ SessionHost::SessionHost(
 	LockFacility& lock_facility,
 	AccountManager& account_manager
 ) :
-	m_server( *this ),
 	m_auth_mode( OPEN_AUTH ),
 	m_lock_facility( lock_facility ),
 	m_account_manager( account_manager )
 {
+	m_server.reset( new Server( *this ) );
 }
 
 const LockFacility& SessionHost::get_lock_facility() const {
@@ -28,58 +28,58 @@ const AccountManager& SessionHost::get_account_manager() const {
 }
 
 void SessionHost::set_ip( const std::string& ip ) {
-	m_server.set_ip( ip );
+	m_server->set_ip( ip );
 }
 
 void SessionHost::set_port( unsigned short port ) {
-	m_server.set_port( port );
+	m_server->set_port( port );
 }
 
 const std::string& SessionHost::get_ip() const {
-	return m_server.get_ip();
+	return m_server->get_ip();
 }
 
 unsigned short SessionHost::get_port() const {
-	return m_server.get_port();
+	return m_server->get_port();
 }
 
 bool SessionHost::run() {
-	return m_server.run();
+	return m_server->run();
 }
 
 void SessionHost::stop() {
-	m_server.stop();
+	m_server->stop();
 }
 
 bool SessionHost::is_running() const {
-	return m_server.is_running();
+	return m_server->is_running();
 }
 
 void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
-	Log::Logger( Log::INFO ) << "Client connected from " << m_server.get_client_ip( conn_id ) << "." << Log::endl;
+	Log::Logger( Log::INFO ) << "Client connected from " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
 
 	// Client connected, send server info.
 	msg::ServerInfo msg;
 	msg.set_auth_mode( m_auth_mode == OPEN_AUTH ? msg::ServerInfo::OPEN_AUTH : msg::ServerInfo::KEY_AUTH );
 	msg.set_flags( msg::ServerInfo::NO_FLAGS );
 
-	m_server.send_message( msg, conn_id );
+	m_server->send_message( msg, conn_id );
 }
 
 void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id ) {
-	const std::string& remote_ip = m_server.get_client_ip( conn_id );
+	const std::string& remote_ip = m_server->get_client_ip( conn_id );
 
 	// If we're not in open auth mode, disconnect client.
 	if( m_auth_mode != OPEN_AUTH ) {
 		Log::Logger( Log::INFO ) << "Client " << remote_ip << " tried to open-auth, but we're setup for key auth." << Log::endl;
-		m_server.disconnect_client( conn_id );
+		m_server->disconnect_client( conn_id );
 		return;
 	}
 
 	bool is_local = false;
 
 	// Check if client is a local client.
-	if( m_server.get_client_ip( conn_id ) == "127.0.0.1" ) {
+	if( m_server->get_client_ip( conn_id ) == "127.0.0.1" ) {
 		is_local = true;
 	}
 
@@ -109,7 +109,7 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 		// Check for correct password.
 		if( account->get_password() != login_msg.get_password() ) {
 			Log::Logger( Log::INFO ) << "Client " << remote_ip << " gave wrong password for account " << login_msg.get_password() << "." << Log::endl;
-			m_server.disconnect_client( conn_id );
+			m_server->disconnect_client( conn_id );
 			return;
 		}
 	}
@@ -118,7 +118,7 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 
 	// Everything is good, log the player in!
 	msg::LoginOK ok_msg;
-	m_server.send_message( ok_msg, conn_id );
+	m_server->send_message( ok_msg, conn_id );
 }
 
 void SessionHost::set_auth_mode( AuthMode mode ) {

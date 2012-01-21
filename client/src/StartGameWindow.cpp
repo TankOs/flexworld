@@ -123,3 +123,14 @@ void StartGameWindow::add_game_mode( const flex::GameMode& game_mode ) {
 	// Store for returning it later.
 	m_game_modes.push_back( game_mode );
 }
+
+bool StartGameWindow::is_game_mode_selected() const {
+	return m_game_mode_combo->GetSelectedItem() != sfg::ComboBox::NONE;
+}
+
+const flex::GameMode& StartGameWindow::get_selected_game_mode() const {
+	assert( is_game_mode_selected() == true );
+	assert( m_game_mode_combo->GetSelectedItem() < m_game_modes.size() );
+
+	return m_game_modes[m_game_mode_combo->GetSelectedItem()];
+}

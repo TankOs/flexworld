@@ -1,5 +1,4 @@
 #include "MenuState.hpp"
-#include "StartGameWindow.hpp"
 #include "ConnectState.hpp"
 #include "Shared.hpp"
 
@@ -313,21 +312,32 @@ void MenuState::on_quit_click() {
 
 void MenuState::on_start_game_accept() {
 	m_desktop.Remove( m_start_game_window );
+
+	if( m_start_game_window->is_game_mode_selected() ) {
+		// Prepare backend and session host.
+		get_shared().account_manager.reset( new flex::AccountManager );
+		get_shared().lock_facility.reset( new flex::LockFacility );
+		get_shared().host.reset(
+			new flex::SessionHost(
+				*get_shared().lock_facility,
+				*get_shared().account_manager
+			)
+		);
+
+		get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
+
+		// Load classes specified by selected game mode.
+		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
+
+		for( std::size_t package_idx = 0 ; package_idx < game_mode.get_num_packages(); ++package_idx ) {
+			std::cout << "Load " << game_mode.get_package( package_idx ).get() << "..." << std::endl;
+		}
+
+		// Head over to connect state.
+		leave( new ConnectState( get_render_target() ) );
+	}
+
 	m_start_game_window.reset();
-
-	// Prepare backend and session host.
-	get_shared().account_manager.reset( new flex::AccountManager );
-	get_shared().lock_facility.reset( new flex::LockFacility );
-	get_shared().host.reset(
-		new flex::SessionHost(
-			*get_shared().lock_facility,
-			*get_shared().account_manager
-		)
-	);
-
-	get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
-
-	leave( new ConnectState( get_render_target() ) );
 }
 
 void MenuState::on_start_game_reject() {

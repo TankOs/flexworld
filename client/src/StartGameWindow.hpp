@@ -24,6 +24,16 @@ class StartGameWindow : public sfg::Window {
 		 */
 		void add_game_mode( const flex::GameMode& game_mode );
 
+		/** Check if a game mode has been selected.
+		 * @return true if selected.
+		 */
+		bool is_game_mode_selected() const;
+
+		/** Get selected game mode.
+		 * @return Game mode.
+		 */
+		const flex::GameMode& get_selected_game_mode() const;
+
 		sfg::Signal OnAccept; ///< Fired when OK clicked.
 		sfg::Signal OnReject; ///< Fired when cancel clicked.
 

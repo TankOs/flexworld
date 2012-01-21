@@ -2,6 +2,8 @@
 
 #include <FlexWorld/Server.hpp>
 
+#include <memory>
+
 namespace flex {
 
 class LockFacility;
@@ -89,7 +91,7 @@ class SessionHost : private Server::Handler {
 		void handle_connect( Server::ConnectionID conn_id );
 		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 
-		Server m_server;
+		std::unique_ptr<Server> m_server;
 
 		AuthMode m_auth_mode;
 
