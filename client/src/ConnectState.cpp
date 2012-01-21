@@ -1,5 +1,6 @@
 #include "ConnectState.hpp"
 #include "MenuState.hpp"
+#include "PlayState.hpp"
 #include "Shared.hpp"
 
 ConnectState::ConnectState( sf::RenderWindow& target ) :
@@ -154,6 +155,8 @@ void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Clien
 	}
 }
 
-void ConnectState::handle_message( const flex::msg::LoginOK& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void ConnectState::handle_message( const flex::msg::LoginOK& /*msg*/, flex::Client::ConnectionID /*conn_id*/ ) {
 	m_next_info_text = "Login successful, get ready!";
+
+	leave( new PlayState( get_render_target() ) );
 }

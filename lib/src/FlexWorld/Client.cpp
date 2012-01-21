@@ -15,7 +15,7 @@ void Client::Handler::handle_disconnect( ConnectionID id ) {
 }
 
 Client::Client( Handler& handler ) :
-	m_handler( handler ),
+	m_handler( &handler ),
 	m_connected( false )
 {
 }
@@ -61,12 +61,12 @@ void Client::handle_connect( const boost::system::error_code& error ) {
 	// If connecting fails notify observer.
 	if( error ) {
 		m_connected = false;
-		m_handler.handle_disconnect( 0 );
+		m_handler->handle_disconnect( 0 );
 		return;
 	}
 
 	// Notify observer.
-	m_handler.handle_connect( 0 );
+	m_handler->handle_connect( 0 );
 
 	// Connection succeeded, start to read data.
 	start_read();
@@ -89,7 +89,7 @@ void Client::start_read() {
 
 void Client::handle_read( const boost::system::error_code& error, std::size_t num_bytes_read ) {
 	if( error ) {
-		m_handler.handle_disconnect( 0 );
+		m_handler->handle_disconnect( 0 );
 		return;
 	}
 
@@ -99,7 +99,7 @@ void Client::handle_read( const boost::system::error_code& error, std::size_t nu
 	// Dispatch until buffer empty.
 	std::size_t consumed = 0;
 
-	while( m_buffer.size() && (consumed = ServerProtocol::dispatch( m_buffer, m_handler, 0 )) > 0 ) {
+	while( m_buffer.size() && (consumed = ServerProtocol::dispatch( m_buffer, *m_handler, 0 )) > 0 ) {
 		if( consumed == m_buffer.size() ) {
 			m_buffer.clear();
 		}
@@ -124,6 +124,14 @@ void Client::handle_write( const boost::system::error_code& error, std::shared_p
 		stop();
 		return;
 	}
+}
+
+void Client::set_handler( Handler& handler ) {
+	m_handler = &handler;
+}
+
+Client::Handler& Client::get_handler() {
+	return *m_handler;
 }
 
 }

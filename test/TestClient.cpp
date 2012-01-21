@@ -69,6 +69,18 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 		BOOST_CHECK( client.is_connected() == false );
 	}
 
+	// Basic properties.
+	{
+		ClientHandler handler0;
+		ClientHandler handler1;
+
+		Client client( handler0 );
+		BOOST_CHECK( &client.get_handler() == &handler0 );
+
+		client.set_handler( handler1 );
+		BOOST_CHECK( &client.get_handler() == &handler1 );
+	}
+
 	// Connect to server.
 	{
 		io_service service;

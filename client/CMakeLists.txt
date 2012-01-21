@@ -27,6 +27,7 @@ set(
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
+	${INC_DIR}/PlayState.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
@@ -40,6 +41,7 @@ set(
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp
+	${SRC_DIR}/PlayState.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp

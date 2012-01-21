@@ -63,6 +63,16 @@ class Client {
 		template <class MsgType>
 		void send_message( const MsgType& message );
 
+		/** Set handler.
+		 * @param handler Handler.
+		 */
+		void set_handler( Handler& handler );
+
+		/** Get handler.
+		 * @return Handler.
+		 */
+		Handler& get_handler();
+
 	private:
 		enum { READ_BUFFER_SIZE = 1024 };
 
@@ -77,7 +87,7 @@ class Client {
 		char m_receive_buffer[READ_BUFFER_SIZE];
 		ServerProtocol::Buffer m_buffer;
 
-		Handler& m_handler;
+		Handler* m_handler;
 		bool m_connected;
 };
 
