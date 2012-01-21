@@ -19,10 +19,10 @@ std::size_t World::get_num_entities() const {
 	return m_entities.size();
 }
 
-const Planet* World::find_planet( const std::string& id ) const {
+Planet* World::find_planet( const std::string& id ) {
 	assert( !id.empty() );
 
-	PlanetMap::const_iterator iter( m_planets.find( id ) );
+	PlanetMap::iterator iter( m_planets.find( id ) );
 	return iter != m_planets.end() ? iter->second : nullptr;
 }
 

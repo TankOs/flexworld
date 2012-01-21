@@ -9,6 +9,9 @@
 
 namespace flex {
 
+static const Chunk::Vector DEFAULT_CHUNK_SIZE = Chunk::Vector( 16, 16, 16 );
+static const Planet::Vector DEFAULT_CONSTRUCT_SIZE = Planet::Vector( 16, 16, 16 );
+
 SessionHost::SessionHost(
 	LockFacility& lock_facility,
 	AccountManager& account_manager,
@@ -56,6 +59,41 @@ bool SessionHost::run() {
 	if( !grass_cls ) {
 		Log::Logger( Log::FATAL ) << id.get() << " doesn't exist but needed for planet \"construct\"." << Log::endl;
 		return false;
+	}
+
+	// Construct planet.
+	if( m_world.find_planet( "construct" ) != nullptr ) {
+		Log::Logger( Log::FATAL ) << "Planet \"construct\" does already exist." << Log::endl;
+		return false;
+	}
+
+	m_world.create_planet( "construct", DEFAULT_CONSTRUCT_SIZE, DEFAULT_CHUNK_SIZE );
+
+	Planet* planet = m_world.find_planet( "construct" );
+	if( !planet ) {
+		Log::Logger( Log::FATAL ) << "Failed to create \"construct\"." << Log::endl;
+		return false;
+	}
+
+	// Create grass plane.
+	{
+		Planet::Vector chunk_pos( 0, 0, 0 );
+		Chunk::Vector block_pos( 0, 0, 0 );
+
+		for( chunk_pos.x = 0; chunk_pos.x < DEFAULT_CONSTRUCT_SIZE.x; ++chunk_pos.x ) {
+			for( chunk_pos.z = 0; chunk_pos.z < DEFAULT_CONSTRUCT_SIZE.z; ++chunk_pos.z ) {
+				// Create chunk
+				if( !planet->has_chunk( chunk_pos ) ) {
+					planet->create_chunk( chunk_pos );
+				}
+
+				for( block_pos.x = 0; block_pos.x < DEFAULT_CHUNK_SIZE.x; ++block_pos.x ) {
+					for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
+						planet->set_block( chunk_pos, block_pos, *grass_cls );
+					}
+				}
+			}
+		}
 	}
 
 	return m_server->run();
