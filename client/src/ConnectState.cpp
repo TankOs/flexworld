@@ -15,7 +15,7 @@ void ConnectState::init() {
 	m_info_window = sfg::Window::Create( sfg::Window::Background );
 	m_info_window->SetTitle( L"Connecting..." );
 
-	m_info_label = sfg::Label::Create( L"Preparing game session..." );
+	m_info_label = sfg::Label::Create( L"" );
 
 	// Layout.
 	sfg::Box::Ptr vbox( sfg::Box::Create( sfg::Box::VERTICAL, 5.0f ) );
@@ -34,29 +34,22 @@ void ConnectState::init() {
 
 	m_desktop.Add( m_info_window );
 
-	// TODO: When connecting to a remote, do things differently!!!
 	// Prepare backend.
-	assert( get_shared().account_manager == nullptr );
-	assert( get_shared().lock_facility == nullptr );
 	assert( get_shared().host_thread == nullptr );
 	assert( get_shared().client_thread == nullptr );
-	assert( get_shared().host == nullptr );
 	assert( get_shared().client == nullptr );
-
-	get_shared().account_manager.reset( new flex::AccountManager );
-	get_shared().lock_facility.reset( new flex::LockFacility );
-	get_shared().host.reset(
-		new flex::SessionHost(
-			*get_shared().lock_facility,
-			*get_shared().account_manager
-		)
-	);
 
 	get_shared().client.reset( new flex::Client( *this ) );
 
-	// Launch session host and wait until it's ready.
-	get_shared().host_thread.reset( new boost::thread( std::bind( &ConnectState::session_host_func, this ) ) );
-
+	// If a session host exists, we want to launch a local server. If not, just
+	// connect.
+	if( get_shared().host ) {
+		get_shared().host_thread.reset( new boost::thread( std::bind( &ConnectState::session_host_func, this ) ) );
+		m_next_info_text = "Preparing game...";
+	}
+	else {
+		assert( 0 && "IMPLEMENT REMOTE CONNECTIONS" );
+	}
 }
 
 void ConnectState::cleanup() {
@@ -70,18 +63,18 @@ void ConnectState::cleanup() {
 			get_shared().client_thread->join();
 		}
 
-		if( get_shared().host->is_running() ) {
-			get_shared().host->stop();
-		}
+		if( get_shared().host ) {
+			if( get_shared().host->is_running() ) {
+				get_shared().host->stop();
+			}
 
-		if( get_shared().host_thread ) {
-			get_shared().host_thread->join();
+			if( get_shared().host_thread ) {
+				get_shared().host_thread->join();
+			}
 		}
 
 		// Free all backend stuff.
 		get_shared().client.reset();
-		get_shared().host.reset();
-		get_shared().account_manager.reset();
 		get_shared().lock_facility.reset();
 		get_shared().client_thread.reset();
 		get_shared().host_thread.reset();
@@ -159,4 +152,8 @@ void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Clien
 		m_next_info_text = "Unknown auth type sent by server.";
 		m_canceled = true;
 	}
+}
+
+void ConnectState::handle_message( const flex::msg::LoginOK& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+	m_next_info_text = "Login successful, get ready!";
 }

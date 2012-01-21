@@ -95,6 +95,17 @@ class Server : public NonCopyable {
 		 */
 		bool run();
 
+		/** Get IP of client.
+		 * @param conn_id Connection ID.
+		 * @return IP.
+		 */
+		const std::string& get_client_ip( ConnectionID conn_id ) const;
+
+		/** Disconnect client.
+		 * @param conn_id Connection ID.
+		 */
+		void disconnect_client( ConnectionID conn_id );
+
 		/** Send message to single client.
 		 * Exceptions by MsgType::serialize() are not catched.
 		 * @param message Message.

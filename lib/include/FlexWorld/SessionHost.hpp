@@ -13,6 +13,13 @@ class AccountManager;
  */
 class SessionHost : private Server::Handler {
 	public:
+		/** Auth mode.
+		 */
+		enum AuthMode {
+			OPEN_AUTH = 0,
+			KEY_AUTH
+		};
+
 		/** Ctor.
 		 * References to the objects are stored, therefore they must be kept alive!
 		 * @param lock_facility Lock facility.
@@ -68,11 +75,23 @@ class SessionHost : private Server::Handler {
 		 */
 		bool is_running() const;
 
+		/** Set auth mode.
+		 * @param mode Auth mode.
+		 */
+		void set_auth_mode( AuthMode mode );
+
+		/** Get auth mode.
+		 * @return Auth mode.
+		 */
+		AuthMode get_auth_mode() const;
+
 	private:
 		void handle_connect( Server::ConnectionID conn_id );
 		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 
 		Server m_server;
+
+		AuthMode m_auth_mode;
 
 		LockFacility& m_lock_facility;
 		AccountManager& m_account_manager;

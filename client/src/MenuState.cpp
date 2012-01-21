@@ -130,6 +130,11 @@ void MenuState::init() {
 			m_cloud_sprites.push_back( cloud_sprite );
 		}
 	}
+
+	// Cleanup the backend.
+	get_shared().account_manager.reset();
+	get_shared().host.reset();
+	get_shared().lock_facility.reset();
 }
 
 void MenuState::cleanup() {
@@ -208,7 +213,7 @@ void MenuState::on_options_click() {
 		return;
 	}
 
-	m_options_window = OptionsWindow::Create( Shared::get().user_settings );
+	m_options_window = OptionsWindow::Create( get_shared().user_settings );
 	m_options_window->SetRequisition( sf::Vector2f( 500.f, 0.f ) );
 	m_desktop.Add( m_options_window );
 
@@ -285,8 +290,8 @@ void MenuState::on_start_game_click() {
 
 void MenuState::on_options_accept() {
 	// Apply user settings.
-	Shared::get().user_settings = m_options_window->get_user_settings();
-	Shared::get().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
+	get_shared().user_settings = m_options_window->get_user_settings();
+	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	m_desktop.Remove( m_options_window );
 	m_options_window.reset();
@@ -310,6 +315,18 @@ void MenuState::on_start_game_accept() {
 	m_desktop.Remove( m_start_game_window );
 	m_start_game_window.reset();
 
+	// Prepare backend and session host.
+	get_shared().account_manager.reset( new flex::AccountManager );
+	get_shared().lock_facility.reset( new flex::LockFacility );
+	get_shared().host.reset(
+		new flex::SessionHost(
+			*get_shared().lock_facility,
+			*get_shared().account_manager
+		)
+	);
+
+	get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
+
 	leave( new ConnectState( get_render_target() ) );
 }
 
@@ -324,8 +341,8 @@ void MenuState::check_required_settings() {
 	bool valid( true );
 
 	if(
-		Shared::get().user_settings.get_username().empty() ||
-		Shared::get().user_settings.get_serial().empty()
+		get_shared().user_settings.get_username().empty() ||
+		get_shared().user_settings.get_serial().empty()
 	) {
 		valid = false;
 	}

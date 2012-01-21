@@ -3,6 +3,7 @@
 #include <FlexWorld/Message.hpp>
 #include <FlexWorld/Messages/OpenLogin.hpp>
 #include <FlexWorld/Messages/ServerInfo.hpp>
+#include <FlexWorld/Messages/LoginOK.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
@@ -214,5 +215,52 @@ BOOST_AUTO_TEST_CASE( TestServerInfoMessage ) {
 
 		BOOST_CHECK( msg.get_auth_mode() == AUTH_MODE );
 		BOOST_CHECK( msg.get_flags() == FLAGS );
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
+	using namespace flex;
+
+	const std::size_t SIZE = sizeof( uint8_t );
+
+	// Initial state.
+	{
+		msg::LoginOK msg;
+	}
+
+	// Basic properties.
+	{
+		msg::LoginOK msg;
+	}
+
+	ServerProtocol::Buffer source( 1, 0 );
+
+	// Serialize.
+	{
+		msg::LoginOK msg;
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::LoginOK msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+		BOOST_CHECK( eaten == SIZE );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::LoginOK msg;
+
+		for( std::size_t amount = 0; amount < SIZE; ++amount ) {
+			ServerProtocol::Buffer buffer( amount, 0 );
+			BOOST_CHECK( msg.deserialize( &buffer[0], buffer.size() ) == 0 );
+		}
 	}
 }

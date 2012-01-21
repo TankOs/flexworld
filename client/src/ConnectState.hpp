@@ -29,7 +29,9 @@ class ConnectState : public State, public flex::Client::Handler {
 		void connect_func();
 		void handle_connect( flex::Client::ConnectionID );
 		void handle_disconnect( flex::Client::ConnectionID );
+
 		void handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID conn_id );
+		void handle_message( const flex::msg::LoginOK& msg, flex::Client::ConnectionID conn_id );
 
 		sfg::Desktop m_desktop;
 		std::string m_next_info_text;

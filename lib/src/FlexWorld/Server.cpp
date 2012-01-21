@@ -149,7 +149,9 @@ void Server::handle_accept( std::shared_ptr<Peer> peer, const boost::system::err
 		m_peers[conn_id] = peer;
 	}
 
+	// Save ID and IP.
 	peer->id = static_cast<Peer::ConnectionID>( conn_id );
+	peer->ip = peer->socket->remote_endpoint().address().to_string();
 
 	// Notify observer.
 	m_handler.handle_connect( peer->id );
@@ -225,6 +227,20 @@ void Server::handle_write( const boost::system::error_code& error, std::shared_p
 
 		return;
 	}
+}
+
+const std::string& Server::get_client_ip( ConnectionID conn_id ) const {
+	assert( conn_id < m_peers.size() );
+	assert( m_peers[conn_id] != nullptr );
+
+	return m_peers[conn_id]->ip;
+}
+
+void Server::disconnect_client( ConnectionID conn_id ) {
+	assert( conn_id < m_peers.size() );
+	assert( m_peers[conn_id] != nullptr );
+
+	m_peers[conn_id]->socket->close();
 }
 
 }

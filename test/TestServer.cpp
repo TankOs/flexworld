@@ -142,8 +142,13 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 		ip::tcp::socket client( service );
 		connect_client_and_wait( client, server );
 
+		BOOST_CHECK( server.get_num_peers() == 1 );
+
+		// Check IP.
+		BOOST_CHECK( server.get_client_ip( 0 ) == "127.0.0.1" );
+
 		// Disconnect client.
-		client.close();
+		server.disconnect_client( 0 );
 
 		// Wait for server to signal he hasn't got clients anymore.
 		{
