@@ -1,5 +1,6 @@
 #include <FlexWorld/Log.hpp>
 
+#include <sstream>
 #include <iomanip>
 #include <ctime>
 #include <cassert>
@@ -46,14 +47,36 @@ Log& Log::operator()( Level level ) {
 	std::time_t time = std::time( 0 );
 	std::tm* time_s = std::localtime( &time );
 
+	std::stringstream intro;
+
+	intro
+		<< "["
+		<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_hour << ":"
+		<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_min << ":"
+		<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_sec
+		<< "] "
+	;
+
+	if( level == DEBUG ) {
+		intro << "DEBUG";
+	}
+	else if( level == INFO ) {
+		intro << "INFO";
+	}
+	else if( level == WARNING ) {
+		intro << "WARNING";
+	}
+	else if( level == ERR ) {
+		intro << "ERROR";
+	}
+	else if( level == FATAL ) {
+		intro << "***FATAL***";
+	}
+
+	intro << ": ";
+
 	if( m_console_logging ) {
-		std::cout
-			<< "["
-			<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_hour << ":"
-			<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_min << ":"
-			<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_sec
-			<< "] "
-		;
+		std::cout << intro.str();
 	}
 
 	return *this;

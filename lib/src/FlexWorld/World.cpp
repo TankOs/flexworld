@@ -47,4 +47,21 @@ void World::wipe() {
 	m_planets.clear();
 }
 
+std::size_t World::get_num_classes() const {
+	return m_classes.size();
+}
+
+const Class* World::find_class( const FlexID& id ) const {
+	assert( id.is_valid_resource() );
+
+	ClassMap::const_iterator c_iter( m_classes.find( id.get() ) );
+	return c_iter == m_classes.end() ? nullptr : &c_iter->second;
+}
+
+void World::add_class( const Class& cls ) {
+	assert( m_classes.find( cls.get_id().get() ) == m_classes.end() );
+
+	m_classes.insert( std::pair<const std::string, Class>( cls.get_id().get(), cls ) );
+}
+
 }

@@ -1,6 +1,7 @@
 #include <FlexWorld/SessionHost.hpp>
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/LockFacility.hpp>
+#include <FlexWorld/World.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/thread.hpp>
@@ -20,10 +21,12 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	{
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
-		SessionHost host( lock_facility, acc_mgr );
+		World world;
+		SessionHost host( lock_facility, acc_mgr, world );
 
 		BOOST_CHECK( &host.get_lock_facility() == &lock_facility );
 		BOOST_CHECK( &host.get_account_manager() == &acc_mgr );
+		BOOST_CHECK( &host.get_world() == &world );
 		BOOST_CHECK( host.get_ip() == "0.0.0.0" );
 		BOOST_CHECK( host.get_port() == 2593 );
 		BOOST_CHECK( host.get_auth_mode() == SessionHost::OPEN_AUTH );
@@ -33,7 +36,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	{
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
-		SessionHost host( lock_facility, acc_mgr );
+		World world;
+		SessionHost host( lock_facility, acc_mgr, world );
 
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
@@ -51,10 +55,19 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	{
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
-		SessionHost host( lock_facility, acc_mgr );
+		World world;
+		SessionHost host( lock_facility, acc_mgr, world );
 
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
+
+		// Need to add fw.base/grass to world, otherwise session host won't boot
+		// up.
+		FlexID id;
+		id.parse( "fw.base/grass" );
+
+		Class cls( id );
+		world.add_class( cls );
 
 		g_sh_thread_running = true;
 		boost::thread host_thread( std::bind( &run_host, &host ) );

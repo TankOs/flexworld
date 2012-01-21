@@ -25,6 +25,7 @@ set(
 	TestGameModeDriver.cpp
 	TestLockFacility.cpp
 	TestMessage.cpp
+	TestPackageEnumerator.cpp
 	TestPlanet.cpp
 	TestRefLock.cpp
 	TestResource.cpp

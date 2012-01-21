@@ -115,6 +115,12 @@ class FlexID {
 		 */
 		bool operator!=( const FlexID& other ) const;
 
+		/** Convert to path.
+		 * A trailing slash is appended to package ID paths.
+		 * @return Path.
+		 */
+		std::string as_path() const;
+
 	private:
 		std::string m_package;
 		std::string m_resource;

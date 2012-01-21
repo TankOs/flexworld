@@ -135,7 +135,9 @@ void ConnectState::handle_disconnect( flex::Client::ConnectionID ) {
 
 void ConnectState::session_host_func() {
 	// Run session host.
-	get_shared().host->run();
+	if( !get_shared().host->run() ) {
+		m_next_info_text = "Host failed to start. Press ESC.";
+	}
 }
 
 void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID /*conn_id*/ ) {

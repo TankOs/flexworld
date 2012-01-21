@@ -41,6 +41,7 @@ set(
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
 	${INC_DIR}/FlexWorld/Messages/ServerInfo.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
+	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
 	${INC_DIR}/FlexWorld/Protocol.hpp
@@ -78,6 +79,7 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp
 	${SRC_DIR}/FlexWorld/Messages/ServerInfo.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
+	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
 	${SRC_DIR}/FlexWorld/RefLock.cpp

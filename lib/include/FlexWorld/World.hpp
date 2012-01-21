@@ -2,6 +2,7 @@
 
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Entity.hpp>
+#include <FlexWorld/Class.hpp>
 
 #include <map>
 
@@ -45,14 +46,34 @@ class World {
 		 */
 		void create_planet( const std::string& id, const Planet::Vector& size, const Chunk::Vector& chunk_size );
 
+		/** Get number of classes.
+		 * @return Number of classes.
+		 */
+		std::size_t get_num_classes() const;
+
+		/** Find class by ID.
+		 * @param id ID.
+		 * @return Class or nullptr.
+		 */
+		const Class* find_class( const FlexID& id ) const;
+
+		/** Add a class.
+		 * The given class is copied. The classes ID must be unique, otherwise
+		 * undefined behaviour.
+		 * @param cls Class.
+		 */
+		void add_class( const Class& cls );
+
 	private:
 		typedef std::map<const std::string, Planet*> PlanetMap;
 		typedef std::map<const std::string, Entity> EntityMap;
+		typedef std::map<const std::string, Class> ClassMap;
 
 		void wipe();
 
 		PlanetMap m_planets;
 		EntityMap m_entities;
+		ClassMap m_classes;
 };
 
 }

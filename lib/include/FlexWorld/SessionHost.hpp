@@ -8,6 +8,7 @@ namespace flex {
 
 class LockFacility;
 class AccountManager;
+class World;
 
 /** SessionHost.
  *
@@ -26,10 +27,12 @@ class SessionHost : private Server::Handler {
 		 * References to the objects are stored, therefore they must be kept alive!
 		 * @param lock_facility Lock facility.
 		 * @param account_manager Account manager.
+		 * @param world World.
 		 */
 		SessionHost(
 			LockFacility& lock_facility,
-			AccountManager& account_manager
+			AccountManager& account_manager,
+			World& world
 		);
 
 		/** Get lock facility.
@@ -41,6 +44,11 @@ class SessionHost : private Server::Handler {
 		 * @return Account manager.
 		 */
 		const AccountManager& get_account_manager() const;
+
+		/** Get world.
+		 * @return World.
+		 */
+		const World& get_world() const;
 
 		/** Set server IP.
 		 * @param ip IP.
@@ -97,6 +105,7 @@ class SessionHost : private Server::Handler {
 
 		LockFacility& m_lock_facility;
 		AccountManager& m_account_manager;
+		World& m_world;
 };
 
 }

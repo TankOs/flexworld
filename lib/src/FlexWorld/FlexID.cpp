@@ -1,5 +1,7 @@
 #include <FlexWorld/FlexID.hpp>
 
+#include <cassert>
+
 namespace flex {
 
 FlexID FlexID::make( const std::string& string ) {
@@ -151,6 +153,27 @@ bool FlexID::set_resource( const std::string& resource ) {
 	// Resource valid, take it.
 	m_resource = resource;
 	return true;
+}
+
+std::string FlexID::as_path() const {
+	assert( is_valid_package() == true );
+
+	std::string path = get();
+
+	for( std::size_t idx = 0; idx < path.size(); ++idx ) {
+		if( path[idx] == '.' ) {
+			path[idx] = '/';
+		}
+		else if( path[idx] == '/' ) {
+			break;
+		}
+	}
+
+	if( !is_valid_resource() ) {
+		path += '/';
+	}
+
+	return path;
 }
 
 }

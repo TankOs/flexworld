@@ -219,5 +219,14 @@ BOOST_AUTO_TEST_CASE( TestFlexID ) {
 		BOOST_CHECK( id.get_package() == "fw.weapons" );
 		BOOST_CHECK( id.get_resource() == "sword.png" );
 	}
+
+	// Make path.
+	{
+		FlexID pkg_id = FlexID::make( "fw.base" );
+		FlexID res_id = FlexID::make( "fw.base/grass.png" );
+
+		BOOST_CHECK( pkg_id.as_path() == "fw/base/" );
+		BOOST_CHECK( res_id.as_path() == "fw/base/grass.png" );
+	}
 }
 

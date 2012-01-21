@@ -5,16 +5,19 @@
 #include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/Account.hpp>
+#include <FlexWorld/World.hpp>
 
 namespace flex {
 
 SessionHost::SessionHost(
 	LockFacility& lock_facility,
-	AccountManager& account_manager
+	AccountManager& account_manager,
+	World& world
 ) :
 	m_auth_mode( OPEN_AUTH ),
 	m_lock_facility( lock_facility ),
-	m_account_manager( account_manager )
+	m_account_manager( account_manager ),
+	m_world( world )
 {
 	m_server.reset( new Server( *this ) );
 }
@@ -44,6 +47,17 @@ unsigned short SessionHost::get_port() const {
 }
 
 bool SessionHost::run() {
+	// Make sure fw.base/grass is present for construction the planet
+	// "construct".
+	FlexID id;
+	id.parse( "fw.base/grass" );
+
+	const Class* grass_cls = m_world.find_class( id );
+	if( !grass_cls ) {
+		Log::Logger( Log::FATAL ) << "fw.base/grass doesn't exist." << Log::endl;
+		return false;
+	}
+
 	return m_server->run();
 }
 
@@ -127,6 +141,10 @@ void SessionHost::set_auth_mode( AuthMode mode ) {
 
 SessionHost::AuthMode SessionHost::get_auth_mode() const {
 	return m_auth_mode;
+}
+
+const World& SessionHost::get_world() const {
+	return m_world;
 }
 
 }

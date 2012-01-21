@@ -1,5 +1,7 @@
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/FlexID.hpp>
+#include <FlexWorld/Class.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -12,6 +14,7 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 
 		BOOST_CHECK( world.get_num_planets() == 0 );
 		BOOST_CHECK( world.get_num_entities() == 0 );
+		BOOST_CHECK( world.get_num_classes() == 0 );
 	}
 
 	// Create planets.
@@ -49,5 +52,20 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 		BOOST_CHECK( planet->get_id() == "construct" );
 		BOOST_CHECK( planet->get_size() == Planet::Vector( 4, 4, 4 ) );
 		BOOST_CHECK( planet->get_chunk_size() == Chunk::Vector( 16, 16, 16 ) );
+	}
+
+	// Manage classes.
+	{
+		FlexID id;
+		id.parse( "id.base/grass" );
+
+		Class cls( id );
+
+		World world;
+		BOOST_CHECK( world.find_class( id ) == nullptr );
+
+		world.add_class( cls );
+		BOOST_CHECK( world.find_class( id ) != nullptr );
+		BOOST_CHECK( world.find_class( id ) != &cls );
 	}
 }

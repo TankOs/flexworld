@@ -24,15 +24,10 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 		hook = cls.find_hook( "bottom" );
 		BOOST_CHECK( hook && *hook == sf::Vector3f( 1.0f, 0.9f, 0.8f ) );
 
-		BOOST_CHECK( cls.get_num_textures() == 2 );
+		BOOST_CHECK( cls.get_num_textures() == 1 );
 
-		if( cls.has_texture( 0 ) ) {
-			BOOST_CHECK( cls.get_texture( 0 ).get_id().get() == "test/grass.png" );
-		}
-
-		if( cls.has_texture( 1 ) ) {
-			BOOST_CHECK( cls.get_texture( 1 ).get_id().get() == "test/dummy.png" );
-		}
+		BOOST_REQUIRE( cls.has_texture( 0 ) == true );
+		BOOST_CHECK( cls.get_texture( 0 ).get_id().get() == "test/grass.png" );
 
 		BOOST_CHECK( cls.has_model() && cls.get_model().get_id().get() == "test/block.fwm" );
 	}

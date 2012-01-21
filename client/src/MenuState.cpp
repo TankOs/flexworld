@@ -134,6 +134,7 @@ void MenuState::init() {
 	get_shared().account_manager.reset();
 	get_shared().host.reset();
 	get_shared().lock_facility.reset();
+	get_shared().world.reset();
 }
 
 void MenuState::cleanup() {
@@ -317,10 +318,13 @@ void MenuState::on_start_game_accept() {
 		// Prepare backend and session host.
 		get_shared().account_manager.reset( new flex::AccountManager );
 		get_shared().lock_facility.reset( new flex::LockFacility );
+		get_shared().world.reset( new flex::World );
+
 		get_shared().host.reset(
 			new flex::SessionHost(
 				*get_shared().lock_facility,
-				*get_shared().account_manager
+				*get_shared().account_manager,
+				*get_shared().world
 			)
 		);
 
