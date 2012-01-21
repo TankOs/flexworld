@@ -47,14 +47,14 @@ unsigned short SessionHost::get_port() const {
 }
 
 bool SessionHost::run() {
-	// Make sure fw.base/grass is present for construction the planet
+	// Make sure fw.base.nature/grass is present for construction the planet
 	// "construct".
 	FlexID id;
-	id.parse( "fw.base/grass" );
+	id.parse( "fw.base.nature/grass" );
 
 	const Class* grass_cls = m_world.find_class( id );
 	if( !grass_cls ) {
-		Log::Logger( Log::FATAL ) << "fw.base/grass doesn't exist." << Log::endl;
+		Log::Logger( Log::FATAL ) << id.get() << " doesn't exist but needed for planet \"construct\"." << Log::endl;
 		return false;
 	}
 

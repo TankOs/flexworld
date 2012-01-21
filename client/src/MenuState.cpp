@@ -4,6 +4,9 @@
 
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/GameModeDriver.hpp>
+#include <FlexWorld/PackageEnumerator.hpp>
+#include <FlexWorld/ClassDriver.hpp>
+#include <FlexWorld/Log.hpp>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -334,6 +337,41 @@ void MenuState::on_start_game_accept() {
 		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
 
 		for( std::size_t package_idx = 0 ; package_idx < game_mode.get_num_packages(); ++package_idx ) {
+			// Enumerate package.
+			flex::PackageEnumerator enumerator;
+
+			const flex::FlexID& package_id = game_mode.get_package( package_idx );
+			std::string package_path = flex::ROOT_DATA_DIRECTORY + std::string( "packages/" ) + package_id.as_path();
+
+			if( !enumerator.enumerate( package_path ) ) {
+				flex::Log::Logger( flex::Log::WARNING ) << "Failed to load package from " << package_id.get() << "." << flex::Log::endl;
+				continue;
+			}
+
+			// Load classes.
+			flex::Log::Logger( flex::Log::DEBUG ) << "Loading " << enumerator.get_num_class_files() << " class(es) from " << package_id.get() << ":" << flex::Log::endl;
+
+			for( std::size_t class_idx = 0; class_idx < enumerator.get_num_class_files(); ++class_idx ) {
+				const std::string& filename = enumerator.get_class_file( class_idx );
+
+				flex::Log::Logger( flex::Log::DEBUG ) << "-> " << filename << flex::Log::endl;
+
+				try {
+					flex::Class loaded_cls = flex::ClassDriver::load( filename );
+
+					// Make sure same class wasn't added before.
+					if( get_shared().world->find_class( loaded_cls.get_id() ) != nullptr ) {
+						flex::Log::Logger( flex::Log::WARNING ) << "Duplicate class " << loaded_cls.get_id().get() << " loaded from package " << package_id.get() << ", skipping." << flex::Log::endl;
+					}
+					else {
+						get_shared().world->add_class( loaded_cls );
+						flex::Log::Logger( flex::Log::DEBUG ) << "--> " << loaded_cls.get_id().get() << flex::Log::endl;
+					}
+				}
+				catch( const flex::ClassDriver::LoadException& /*e*/ ) {
+					flex::Log::Logger( flex::Log::WARNING ) << "Failed to load class from " << filename << "." << flex::Log::endl;
+				}
+			}
 		}
 
 		// Head over to connect state.

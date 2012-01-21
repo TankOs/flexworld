@@ -61,10 +61,10 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
 
-		// Need to add fw.base/grass to world, otherwise session host won't boot
+		// Need to add fw.base.nature/grass to world, otherwise session host won't boot
 		// up.
 		FlexID id;
-		id.parse( "fw.base/grass" );
+		id.parse( "fw.base.nature/grass" );
 
 		Class cls( id );
 		world.add_class( cls );

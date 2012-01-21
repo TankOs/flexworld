@@ -7,4 +7,4 @@ Meta:
   MaxFlexWorldVersion: [0, 0, 0]
   Thumbnail: fw.gm.tutorial/thumbnail.png
 Packages:
-  - fw.gm.tutorial
+  - fw.base
