@@ -115,7 +115,7 @@ void ConnectState::render() const {
 	window.Clear();
 
 	// Render GUI.
-	sfg::Context::Get().GetRenderer().Display( window );
+	sfg::Renderer::Get().Display( window );
 
 	window.Display();
 }
