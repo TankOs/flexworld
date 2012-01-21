@@ -3,11 +3,19 @@
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
+#include <FlexWorld/Log.hpp>
+
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
 
 Client::Client() {
+	// Setup logger.
+	#if defined( NDEBUG )
+		flex::Log::Logger.set_min_level( flex::Log::INFO );
+	#else
+		flex::Log::Logger.set_min_level( flex::Log::DEBUG );
+	#endif
 }
 
 void Client::run() {
