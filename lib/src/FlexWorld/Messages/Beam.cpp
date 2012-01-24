@@ -20,6 +20,18 @@ void Beam::serialize( Buffer& buffer ) const {
 		throw InvalidDataException( "Invalid planet name." );
 	}
 
+	if( m_planet_size.x < 1 || m_planet_size.y < 1 || m_planet_size.z < 1 ) {
+		throw InvalidDataException( "Invalid planet size." );
+	}
+
+	if( m_chunk_size.x < 1 || m_chunk_size.y < 1 || m_chunk_size.z < 1 ) {
+		throw InvalidDataException( "Invalid chunk size." );
+	}
+
+	if( m_position.x < 0 || m_position.y < 0 || m_position.z < 0 ) {
+		throw InvalidDataException( "Invalid position." );
+	}
+
 	std::size_t buf_ptr = buffer.size();
 
 	// Enlarge buffer.
@@ -62,7 +74,7 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 		return 0;
 	}
 
-	// Remember username ptr.
+	// Remember planet name ptr.
 	const Buffer::value_type* planet_name_ptr = &buffer[buf_ptr];
 	buf_ptr += planet_name_length;
 
@@ -74,6 +86,10 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 	sf::Vector3f position = *reinterpret_cast<const sf::Vector3f*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( position );
 
+	if( position.x < 0 || position.y < 0 || position.z < 0 ) {
+		throw BogusDataException( "Invalid position." );
+	}
+
 	// Angle.
 	if( buffer_size - buf_ptr < sizeof( m_angle ) ) {
 		return 0;
@@ -81,6 +97,10 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 
 	uint16_t angle = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( angle );
+
+	if( angle >= 360 ) {
+		throw BogusDataException( "Invalid angle." );
+	}
 
 	// Planet size.
 	if( buffer_size - buf_ptr < sizeof( m_planet_size ) ) {
@@ -90,6 +110,10 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 	Planet::Vector planet_size = *reinterpret_cast<const Planet::Vector*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( planet_size );
 
+	if( planet_size.x < 1 || planet_size.y < 1 || planet_size.z < 1 ) {
+		throw BogusDataException( "Invalid planet size." );
+	}
+
 	// Chunk size.
 	if( buffer_size - buf_ptr < sizeof( m_chunk_size ) ) {
 		return 0;
@@ -97,6 +121,10 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 
 	Chunk::Vector chunk_size = *reinterpret_cast<const Chunk::Vector*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( chunk_size );
+
+	if( chunk_size.x < 1 || chunk_size.y < 1 || chunk_size.z < 1 ) {
+		throw BogusDataException( "Invalid chunk size." );
+	}
 
 	// Everything okay, set props.
 	m_planet_name = std::string( planet_name_ptr, planet_name_length );
@@ -137,7 +165,7 @@ void Beam::set_position( const sf::Vector3f& position ) {
 }
 
 void Beam::set_angle( uint16_t angle ) {
-	m_angle = angle;
+	m_angle = angle % 360;
 }
 
 void Beam::set_planet_size( const Planet::Vector& planet_size ) {

@@ -6,6 +6,7 @@
 #include <FlexWorld/Messages/LoginOK.hpp>
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/Beam.hpp>
+//#include <FlexWorld/Messages/Chunk.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
@@ -384,6 +385,134 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		BOOST_CHECK( buffer == source );
 	}
 
+	// Serialize with invalid planet name.
+	{
+		msg::Beam msg;
+		msg.set_planet_name( "" );
+		msg.set_position( POSITION );
+		msg.set_angle( ANGLE );
+		msg.set_planet_size( PLANET_SIZE );
+		msg.set_chunk_size( CHUNK_SIZE );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+
+		std::vector<char> invalid_name( msg::Beam::MAX_PLANET_NAME_LENGTH + 1, 'a' );
+		msg.set_planet_name( std::string( &invalid_name.front(), invalid_name.size() ) );
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+	}
+
+	// Serialize with invalid position.
+	{
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( sf::Vector3f( -1, 0, 0 ) );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( sf::Vector3f( 0, -1, 0 ) );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( sf::Vector3f( 0, 0, -1 ) );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+	}
+
+	// Serialize with invalid planet size.
+	{
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( Planet::Vector( 1, 1, 0 ) );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( Planet::Vector( 1, 0, 1 ) );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( Planet::Vector( 0, 1, 1 ) );
+			msg.set_chunk_size( CHUNK_SIZE );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+	}
+
+	// Serialize with invalid chunk size.
+	{
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( Chunk::Vector( 0, 1, 1 ) );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( Chunk::Vector( 1, 0, 1 ) );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+		{
+			msg::Beam msg;
+			msg.set_planet_name( PLANET_NAME );
+			msg.set_position( POSITION );
+			msg.set_angle( ANGLE );
+			msg.set_planet_size( PLANET_SIZE );
+			msg.set_chunk_size( Chunk::Vector( 1, 1, 0 ) );
+
+			ServerProtocol::Buffer buffer;
+			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		}
+	}
+
 	// Deserialize.
 	{
 		msg::Beam msg;
@@ -399,13 +528,188 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
 	}
 
+	// Deserialize with invalid planet name.
+	{
+		ServerProtocol::Buffer i_buffer( 1, 0 );
+
+		msg::Beam msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_THROW( eaten = msg.deserialize( &i_buffer.front(), i_buffer.size() ), msg::Beam::BogusDataException );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with invalid position.
+	{
+		{
+			sf::Vector3f invalid_position( -1, 0, 0 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			sf::Vector3f invalid_position( 0, -1, 0 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			sf::Vector3f invalid_position( 0, 0, -1 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+	}
+
+	// Deserialize with invalid planet size.
+	{
+		{
+			Planet::Vector invalid_size( 1, 0, 1 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			Planet::Vector invalid_size( 1, 1, 0 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			Planet::Vector invalid_size( 0, 1, 1 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+	}
+
+	// Deserialize with invalid chunk size.
+	{
+		{
+			Chunk::Vector invalid_size( 1, 0, 1 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			Chunk::Vector invalid_size( 1, 1, 0 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+		{
+			Chunk::Vector invalid_size( 0, 1, 1 );
+
+			ServerProtocol::Buffer invalid_source;
+			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
+
+			msg::Beam msg;
+			std::size_t eaten = 0;
+
+			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK( eaten == 0 );
+		}
+	}
+
 	// Deserialize with too less data.
-	/*{
+	{
 		msg::Beam msg;
 
-		for( std::size_t amount = 0; amount < SIZE; ++amount ) {
-			ServerProtocol::Buffer buffer( amount, 0 );
-			BOOST_CHECK( msg.deserialize( &buffer[0], buffer.size() ) == 0 );
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
 		}
-	}*/
+	}
 }
