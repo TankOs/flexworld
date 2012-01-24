@@ -9,6 +9,7 @@ namespace flex {
 class LockFacility;
 class AccountManager;
 class World;
+class Account;
 
 /** SessionHost.
  *
@@ -95,18 +96,42 @@ class SessionHost : private Server::Handler {
 		 */
 		AuthMode get_auth_mode() const;
 
+		/** Set player limit.
+		 * @param limit Player limit.
+		 */
+		void set_player_limit( std::size_t limit );
+
+		/** Get player limit.
+		 * @return Player limit.
+		 */
+		std::size_t get_player_limit() const;
+
 	private:
+		struct PlayerInfo {
+			PlayerInfo();
+
+			Account* account;
+			Planet* planet;
+			bool connected;
+		};
+
+		typedef std::vector<PlayerInfo> PlayerInfoVector;
+
 		void handle_connect( Server::ConnectionID conn_id );
+		void handle_disconnect( Server::ConnectionID conn_id );
 		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 		void handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id );
 
-		std::unique_ptr<Server> m_server;
-
-		AuthMode m_auth_mode;
+		PlayerInfoVector m_player_infos;
 
 		LockFacility& m_lock_facility;
 		AccountManager& m_account_manager;
 		World& m_world;
+
+		std::unique_ptr<Server> m_server;
+
+		AuthMode m_auth_mode;
+		std::size_t m_player_limit;
 };
 
 }

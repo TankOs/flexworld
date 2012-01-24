@@ -179,6 +179,8 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 		assert( peer->id < m_peers.size() );
 		assert( m_peers[peer->id] == peer );
 
+		m_handler.handle_disconnect( peer->id );
+
 		if( static_cast<std::size_t>( peer->id + 1 ) == m_peers.size() ) {
 			m_peers.pop_back();
 		}
@@ -187,8 +189,6 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 		}
 
 		--m_num_peers;
-		m_handler.handle_disconnect( peer->id );
-
 		return;
 	}
 

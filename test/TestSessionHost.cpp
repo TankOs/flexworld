@@ -30,6 +30,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		BOOST_CHECK( host.get_ip() == "0.0.0.0" );
 		BOOST_CHECK( host.get_port() == 2593 );
 		BOOST_CHECK( host.get_auth_mode() == SessionHost::OPEN_AUTH );
+		BOOST_CHECK( host.get_player_limit() == 1 );
 	}
 
 	// Basic properties.
@@ -42,10 +43,12 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
 		host.set_auth_mode( SessionHost::KEY_AUTH );
+		host.set_player_limit( 128 );
 
 		BOOST_CHECK( host.get_ip() == "127.0.0.1" );
 		BOOST_CHECK( host.get_port() == 2593 );
 		BOOST_CHECK( host.get_auth_mode() == SessionHost::KEY_AUTH );
+		BOOST_CHECK( host.get_player_limit() == 128 );
 	}
 
 	enum { TIMEOUT = 2000 };

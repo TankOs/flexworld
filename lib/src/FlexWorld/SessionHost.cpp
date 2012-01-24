@@ -13,15 +13,23 @@ namespace flex {
 static const Chunk::Vector DEFAULT_CHUNK_SIZE = Chunk::Vector( 16, 16, 16 );
 static const Planet::Vector DEFAULT_CONSTRUCT_SIZE = Planet::Vector( 16, 16, 16 );
 
+SessionHost::PlayerInfo::PlayerInfo() :
+	account( nullptr ),
+	planet( nullptr ),
+	connected( false )
+{
+}
+
 SessionHost::SessionHost(
 	LockFacility& lock_facility,
 	AccountManager& account_manager,
 	World& world
 ) :
-	m_auth_mode( OPEN_AUTH ),
 	m_lock_facility( lock_facility ),
 	m_account_manager( account_manager ),
-	m_world( world )
+	m_world( world ),
+	m_auth_mode( OPEN_AUTH ),
+	m_player_limit( 1 )
 {
 	m_server.reset( new Server( *this ) );
 }
@@ -111,12 +119,37 @@ bool SessionHost::is_running() const {
 void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
 	Log::Logger( Log::INFO ) << "Client connected from " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
 
+	// Check limit.
+	if( m_server->get_num_peers() > m_player_limit ) {
+		Log::Logger( Log::WARNING ) << "Server full, disconnecting " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
+		m_server->disconnect_client( conn_id );
+		return;
+	}
+
+	// Prepare player info.
+	if( conn_id >= m_player_infos.size() ) {
+		m_player_infos.resize( conn_id + 1 );
+	}
+
+	assert( m_player_infos[conn_id].connected == false );
+	m_player_infos[conn_id].connected = true;
+
 	// Client connected, send server info.
 	msg::ServerInfo msg;
 	msg.set_auth_mode( m_auth_mode == OPEN_AUTH ? msg::ServerInfo::OPEN_AUTH : msg::ServerInfo::KEY_AUTH );
 	msg.set_flags( msg::ServerInfo::NO_FLAGS );
 
 	m_server->send_message( msg, conn_id );
+}
+
+void SessionHost::handle_disconnect( Server::ConnectionID conn_id ) {
+	assert( conn_id < m_player_infos.size() );
+	assert( m_player_infos[conn_id].connected == true );
+
+	// Reset player info.
+	m_player_infos[conn_id] = PlayerInfo();
+
+	Log::Logger( Log::INFO ) << "Client " << m_server->get_client_ip( conn_id ) << " disconnected." << Log::endl;
 }
 
 void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id ) {
@@ -186,7 +219,16 @@ const World& SessionHost::get_world() const {
 	return m_world;
 }
 
-void SessionHost::handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id ) {
+void SessionHost::set_player_limit( std::size_t limit ) {
+	assert( !is_running() );
+	m_player_limit = limit;
+}
+
+std::size_t SessionHost::get_player_limit() const {
+	return m_player_limit;
+}
+
+void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::ConnectionID conn_id ) {
 	// Get construct.
 	m_lock_facility.lock_world( true );
 
@@ -214,7 +256,7 @@ void SessionHost::handle_message( const msg::Ready& login_msg, Server::Connectio
 
 	m_lock_facility.lock_planet( *construct, false );
 
-	// Send.
+	// Beam.
 	m_server->send_message( beam_msg, conn_id );
 }
 
