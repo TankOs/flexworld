@@ -4,6 +4,8 @@
 #include <FlexWorld/Messages/OpenLogin.hpp>
 #include <FlexWorld/Messages/ServerInfo.hpp>
 #include <FlexWorld/Messages/LoginOK.hpp>
+#include <FlexWorld/Messages/Ready.hpp>
+#include <FlexWorld/Messages/Beam.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
@@ -263,4 +265,147 @@ BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
 			BOOST_CHECK( msg.deserialize( &buffer[0], buffer.size() ) == 0 );
 		}
 	}
+}
+
+BOOST_AUTO_TEST_CASE( TestReadyMessage ) {
+	using namespace flex;
+
+	const std::size_t SIZE = sizeof( uint8_t );
+
+	// Initial state.
+	{
+		msg::Ready msg;
+	}
+
+	// Basic properties.
+	{
+		msg::Ready msg;
+	}
+
+	ServerProtocol::Buffer source( 1, 0 );
+
+	// Serialize.
+	{
+		msg::Ready msg;
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::Ready msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+		BOOST_CHECK( eaten == SIZE );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::Ready msg;
+
+		for( std::size_t amount = 0; amount < SIZE; ++amount ) {
+			ServerProtocol::Buffer buffer( amount, 0 );
+			BOOST_CHECK( msg.deserialize( &buffer[0], buffer.size() ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
+	using namespace flex;
+
+	const std::string PLANET_NAME = "construct";
+	const sf::Vector3f POSITION = sf::Vector3f( 1, 2, 3 );
+	const uint16_t ANGLE = 180;
+	const Planet::Vector PLANET_SIZE = Planet::Vector( 10, 20, 30 );
+	const Chunk::Vector CHUNK_SIZE = Chunk::Vector( 32, 64, 128 );
+
+	const std::size_t SIZE =
+		+ sizeof( uint8_t ) // Planet name length.
+		+ sizeof( char ) * PLANET_NAME.size()
+		+ sizeof( POSITION )
+		+ sizeof( ANGLE )
+		+ sizeof( PLANET_SIZE )
+		+ sizeof( CHUNK_SIZE )
+	;
+
+	// Initial state.
+	{
+		msg::Beam msg;
+
+		BOOST_CHECK( msg.get_planet_name() == "" );
+		BOOST_CHECK( msg.get_position() == sf::Vector3f( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_angle() == 0 );
+		BOOST_CHECK( msg.get_planet_size() == Planet::Vector( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_chunk_size() == Chunk::Vector( 0, 0, 0 ) );
+	}
+
+	// Basic properties.
+	{
+		msg::Beam msg;
+
+		msg.set_planet_name( PLANET_NAME );
+		msg.set_position( POSITION );
+		msg.set_angle( ANGLE );
+		msg.set_planet_size( PLANET_SIZE );
+		msg.set_chunk_size( CHUNK_SIZE );
+
+		BOOST_CHECK( msg.get_planet_name() == PLANET_NAME );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_angle() == ANGLE );
+		BOOST_CHECK( msg.get_planet_size() == PLANET_SIZE );
+		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
+	}
+
+	ServerProtocol::Buffer source;
+	source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
+	source.insert( source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
+
+	// Serialize.
+	{
+		msg::Beam msg;
+
+		msg.set_planet_name( PLANET_NAME );
+		msg.set_position( POSITION );
+		msg.set_angle( ANGLE );
+		msg.set_planet_size( PLANET_SIZE );
+		msg.set_chunk_size( CHUNK_SIZE );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::Beam msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == SIZE );
+		BOOST_CHECK( msg.get_planet_name() == PLANET_NAME );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_angle() == ANGLE );
+		BOOST_CHECK( msg.get_planet_size() == PLANET_SIZE );
+		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
+	}
+
+	// Deserialize with too less data.
+	/*{
+		msg::Beam msg;
+
+		for( std::size_t amount = 0; amount < SIZE; ++amount ) {
+			ServerProtocol::Buffer buffer( amount, 0 );
+			BOOST_CHECK( msg.deserialize( &buffer[0], buffer.size() ) == 0 );
+		}
+	}*/
 }

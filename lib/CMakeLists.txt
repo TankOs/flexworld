@@ -36,9 +36,11 @@ set(
 	${INC_DIR}/FlexWorld/Log.hpp
 	${INC_DIR}/FlexWorld/Log.inl
 	${INC_DIR}/FlexWorld/Message.hpp
+	${INC_DIR}/FlexWorld/Messages/Beam.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
 	${INC_DIR}/FlexWorld/Messages/LoginOK.hpp
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
+	${INC_DIR}/FlexWorld/Messages/Ready.hpp
 	${INC_DIR}/FlexWorld/Messages/ServerInfo.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
@@ -74,9 +76,11 @@ set(
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Log.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
+	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
 	${SRC_DIR}/FlexWorld/Messages/LoginOK.cpp
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp
+	${SRC_DIR}/FlexWorld/Messages/Ready.cpp
 	${SRC_DIR}/FlexWorld/Messages/ServerInfo.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp

@@ -2,6 +2,8 @@
 #include "MenuState.hpp"
 #include "Shared.hpp"
 
+#include <FlexWorld/Messages/Ready.hpp>
+
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target )
 {
@@ -10,6 +12,10 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 void PlayState::init() {
 	// Reset handler.
 	get_shared().client->set_handler( *this );
+
+	// Notify server that we're ready.
+	flex::msg::Ready ready_msg;
+	get_shared().client->send_message( ready_msg );
 }
 
 void PlayState::cleanup() {

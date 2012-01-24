@@ -185,4 +185,9 @@ const World& SessionHost::get_world() const {
 	return m_world;
 }
 
+void SessionHost::handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id ) {
+	// Client is ready, send him to the construct planet.
+
+}
+
 }
