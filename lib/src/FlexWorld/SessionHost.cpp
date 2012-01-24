@@ -1,6 +1,7 @@
 #include <FlexWorld/SessionHost.hpp>
 #include <FlexWorld/Messages/ServerInfo.hpp>
 #include <FlexWorld/Messages/LoginOK.hpp>
+#include <FlexWorld/Messages/Beam.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
@@ -186,8 +187,35 @@ const World& SessionHost::get_world() const {
 }
 
 void SessionHost::handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id ) {
-	// Client is ready, send him to the construct planet.
+	// Get construct.
+	m_lock_facility.lock_world( true );
 
+	Planet* construct = m_world.find_planet( "construct" );
+
+	if( construct ) {
+		m_lock_facility.lock_planet( *construct, true );
+	}
+
+	m_lock_facility.lock_world( false );
+
+	if( !construct ) {
+		Log::Logger( Log::FATAL ) << "Planet construct is unavailable!" << Log::endl;
+		m_server->disconnect_client( conn_id );
+		return;
+	}
+
+	// Client is ready, send him to the construct planet.
+	msg::Beam beam_msg;
+	beam_msg.set_planet_name( construct->get_id() );
+	beam_msg.set_position( sf::Vector3f( 0, 0, 0 ) );
+	beam_msg.set_angle( 0 );
+	beam_msg.set_planet_size( construct->get_size() );
+	beam_msg.set_chunk_size( construct->get_chunk_size() );
+
+	m_lock_facility.lock_planet( *construct, false );
+
+	// Send.
+	m_server->send_message( beam_msg, conn_id );
 }
 
 }
