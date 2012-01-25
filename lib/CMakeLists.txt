@@ -38,6 +38,7 @@ set(
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
+	${INC_DIR}/FlexWorld/Messages/Chunk.hpp
 	${INC_DIR}/FlexWorld/Messages/LoginOK.hpp
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
 	${INC_DIR}/FlexWorld/Messages/Ready.hpp
@@ -78,6 +79,7 @@ set(
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
+	${SRC_DIR}/FlexWorld/Messages/Chunk.cpp
 	${SRC_DIR}/FlexWorld/Messages/LoginOK.cpp
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp
 	${SRC_DIR}/FlexWorld/Messages/Ready.cpp
