@@ -824,6 +824,19 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
 
 		BOOST_CHECK( eaten == source_buffer.size() );
+
+		BOOST_CHECK( msg.get_num_blocks() == CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE );
+
+		class_id_idx = 0;
+		flags = 0;
+
+		for( std::size_t block_idx = 0; block_idx < CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE; ++block_idx ) {
+			BOOST_CHECK( msg.get_block_class_id( block_idx ) == class_ids[class_id_idx] );
+			BOOST_CHECK( msg.get_block_flags( block_idx ) == flags );
+
+			class_id_idx = static_cast<uint16_t>( (class_id_idx + 1) % class_ids.size() );
+			flags = (flags + 1) & 0x0f;
+		}
 	}
 
 	// Deserialize without class IDs.
