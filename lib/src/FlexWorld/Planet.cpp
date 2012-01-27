@@ -182,4 +182,14 @@ void Planet::remove_entity( const Entity& entity ) {
 	m_entities.erase( entity.get_id() );
 }
 
+const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position ) const {
+	assert( position.x < m_size.x );
+	assert( position.y < m_size.y );
+	assert( position.z < m_size.z );
+	assert( has_chunk( position ) );
+
+	ChunkMap::const_iterator iter( m_chunks.find( position ) );
+	return iter->second->get_raw_data();
+}
+
 }

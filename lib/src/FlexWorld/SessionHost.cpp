@@ -2,6 +2,7 @@
 #include <FlexWorld/Messages/ServerInfo.hpp>
 #include <FlexWorld/Messages/LoginOK.hpp>
 #include <FlexWorld/Messages/Beam.hpp>
+#include <FlexWorld/Messages/Chunk.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
@@ -13,13 +14,6 @@ namespace flex {
 static const Chunk::Vector DEFAULT_CHUNK_SIZE = Chunk::Vector( 16, 16, 16 );
 static const Planet::Vector DEFAULT_CONSTRUCT_SIZE = Planet::Vector( 16, 16, 16 );
 
-SessionHost::PlayerInfo::PlayerInfo() :
-	account( nullptr ),
-	planet( nullptr ),
-	connected( false )
-{
-}
-
 SessionHost::SessionHost(
 	LockFacility& lock_facility,
 	AccountManager& account_manager,
@@ -29,7 +23,8 @@ SessionHost::SessionHost(
 	m_account_manager( account_manager ),
 	m_world( world ),
 	m_auth_mode( OPEN_AUTH ),
-	m_player_limit( 1 )
+	m_player_limit( 1 ),
+	m_max_view_radius( 10 )
 {
 	m_server.reset( new Server( *this ) );
 }
@@ -247,17 +242,117 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	}
 
 	// Client is ready, send him to the construct planet.
-	msg::Beam beam_msg;
-	beam_msg.set_planet_name( construct->get_id() );
-	beam_msg.set_position( sf::Vector3f( 0, 0, 0 ) );
-	beam_msg.set_angle( 0 );
-	beam_msg.set_planet_size( construct->get_size() );
-	beam_msg.set_chunk_size( construct->get_chunk_size() );
-
 	m_lock_facility.lock_planet( *construct, false );
 
 	// Beam.
-	m_server->send_message( beam_msg, conn_id );
+	beam_player( conn_id, "construct", sf::Vector3f( 0, 0, 0 ), 0 );
+}
+
+void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, uint16_t angle ) {
+	assert( conn_id < m_player_infos.size() && m_player_infos[conn_id].connected == true );
+	assert( !planet_id.empty() );
+	assert( position.x >= 0 && position.y >= 0 && position.z >= 0 );
+
+	angle = angle % 360;
+	PlayerInfo& info = m_player_infos[conn_id];
+
+	// Get planet.
+	m_lock_facility.lock_world( true );
+
+	Planet* planet = m_world.find_planet( planet_id );
+
+	m_lock_facility.lock_planet( *planet, true );
+	m_lock_facility.lock_world( false );
+
+	assert( planet != nullptr );
+
+	// Transform coord.
+	Planet::Vector chunk_pos( 0, 0, 0 );
+	Chunk::Vector block_pos( 0, 0, 0 );
+
+	bool result = planet->transform( position, chunk_pos, block_pos );
+	assert( result == true );
+
+	// Set player info's props
+	info.m_view_cuboid = PlayerInfo::ViewCuboid(
+		chunk_pos.x < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.x - m_max_view_radius ),
+		chunk_pos.y < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.y - m_max_view_radius ),
+		chunk_pos.z < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.z - m_max_view_radius ),
+		0,
+		0,
+		0
+	);
+
+	// If position can't be expanded fully due to reaching the planet's border,
+	// calculate extra chunks to add to dimensions so that the cuboid expands
+	// correctly.
+	Planet::Vector extra_chunks(
+		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.x - info.m_view_cuboid.x) ),
+		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.y - info.m_view_cuboid.y) ),
+		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.z - info.m_view_cuboid.z) )
+	);
+
+	// Calculate dimensions.
+	info.m_view_cuboid.width  = std::min( static_cast<Planet::ScalarType>( planet->get_size().x - info.m_view_cuboid.x ), static_cast<Planet::ScalarType>( (chunk_pos.x - info.m_view_cuboid.x) + m_max_view_radius + 1 ) );
+	info.m_view_cuboid.height = std::min( static_cast<Planet::ScalarType>( planet->get_size().y - info.m_view_cuboid.y ), static_cast<Planet::ScalarType>( (chunk_pos.y - info.m_view_cuboid.y) + m_max_view_radius + 1 ) );
+	info.m_view_cuboid.depth  = std::min( static_cast<Planet::ScalarType>( planet->get_size().z - info.m_view_cuboid.z ), static_cast<Planet::ScalarType>( (chunk_pos.z - info.m_view_cuboid.z) + m_max_view_radius + 1 ) );
+
+	// Assign props to player.
+	info.planet = planet;
+
+	// Send chunks.
+	send_chunks( info.m_view_cuboid, conn_id );
+
+	m_lock_facility.lock_planet( *planet, false );
+}
+
+void SessionHost::send_chunks( const PlayerInfo::ViewCuboid& cuboid, Server::ConnectionID conn_id ) {
+	assert( conn_id < m_player_infos.size() && m_player_infos[conn_id].connected == true );
+
+	PlayerInfo& info = m_player_infos[conn_id];
+	assert( info.planet != nullptr );
+
+	assert( cuboid.x + cuboid.width  <= info.planet->get_size().x );
+	assert( cuboid.y + cuboid.height <= info.planet->get_size().y );
+	assert( cuboid.z + cuboid.depth  <= info.planet->get_size().z );
+
+	Planet::Vector runner( cuboid.x, cuboid.y, cuboid.z );
+	PlayerInfo::ViewCuboid::Type max_x = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.x + cuboid.width );
+	PlayerInfo::ViewCuboid::Type max_y = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.y + cuboid.height );
+	PlayerInfo::ViewCuboid::Type max_z = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.z + cuboid.depth );
+
+	for( runner.z = cuboid.z; runner.z < max_z ; ++runner.z ) {
+		for( runner.y = cuboid.y; runner.y < max_y ; ++runner.y ) {
+			for( runner.x = cuboid.x; runner.x < max_x ; ++runner.x ) {
+				// TODO: Send EmptyChunk message!
+				if( !info.planet->has_chunk( runner ) ) {
+				}
+				else {
+					// Construct Chunk message and send it.
+					msg::Chunk chunk_msg;
+					chunk_msg.set_position( runner );
+
+					Chunk::Vector block_pos( 0, 0, 0 );
+
+					/*for( block_pos.z = 0; block_pos.z < info.planet->get_chunk_size().z; ++block_pos.z ) {
+						for( block_pos.y = 0; block_pos.y < info.planet->get_chunk_size().y; ++block_pos.y ) {
+							for( block_pos.x = 0; block_pos.x < info.planet->get_chunk_size().x; ++block_pos.x ) {
+								const Class* cls = info.planet->find_block( runner, block_pos );
+
+								if( cls != nullptr ) {
+
+								}
+								else {
+								}
+							}
+						}
+					}*/
+
+				}
+			}
+		}
+	}
+
 }
 
 }

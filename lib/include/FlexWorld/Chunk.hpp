@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/NonCopyable.hpp>
 
 #include <SFML/System/Vector3.hpp>
@@ -16,7 +15,10 @@ class Class;
 class Chunk : public NonCopyable {
 	public:
 		typedef uint8_t ScalarType; ///< Size type for block coordinates.
+		typedef uint16_t Block; ///< Block.
 		typedef sf::Vector3<ScalarType> Vector; ///< Vector.
+
+		static const Block MAX_BLOCK_ID; ///< Maximum allowed block class ID.
 
 		/** Ctor.
 		 * @param size Size.
@@ -43,27 +45,34 @@ class Chunk : public NonCopyable {
 		const Vector& get_size() const;
 
 		/** Get block.
+		 * Undefined behaviour if no block is set at given position.
 		 * @param pos Position.
-		 * @return Internal class ID (0 = error).
+		 * @return Block (class ID).
+		 * @see is_block_set
 		 */
-		ClassCache::IdType get_block( const Vector& pos ) const;
+		Block get_block( const Vector& pos ) const;
 
 		/** Set block.
 		 * @param pos Position.
-		 * @param class_id Internal class ID.
+		 * @param id ID.
 		 */
-		void set_block( const Vector& pos, ClassCache::IdType class_id );
+		void set_block( const Vector& pos, Block id );
 
 		/** Reset block.
 		 * @param pos Position.
 		 */
 		void reset_block( const Vector& pos );
 
+		/** Get raw block data.
+		 * @return Block data.
+		 */
+		const Block* get_raw_data() const;
+
 	private:
-		static const ClassCache::IdType INVALID_ID;
+		static const Block INVALID_BLOCK; ///< Invalid/unset block.
 
 		Vector m_size;
-		ClassCache::IdType* m_blocks;
+		Block* m_blocks;
 };
 
 }

@@ -1,7 +1,6 @@
 #include <FlexWorld/Messages/Beam.hpp>
 
 #include <cstring>
-#include <iostream> // XXX 
 
 namespace flex {
 namespace msg {

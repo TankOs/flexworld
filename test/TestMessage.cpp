@@ -722,26 +722,50 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		msg::Chunk msg;
 
 		BOOST_CHECK( msg.get_num_blocks() == 0 );
+		BOOST_CHECK( msg.get_position() == Planet::Vector( 0, 0, 0 ) );
+	}
+
+	// Basic properties.
+	{
+		msg::Chunk msg;
+
+		msg.set_position( Planet::Vector( 1, 2, 3 ) );
+
+		BOOST_CHECK( msg.get_position() == Planet::Vector( 1, 2, 3 ) );
 	}
 
 	enum { CHUNK_SIZE = 16 };
 
-	std::vector<std::string> class_ids;
-	class_ids.push_back( "fw.base.nature/grass" );
-	class_ids.push_back( "fw.base.human/dwarf_male" );
-	class_ids.push_back( "fw.base.primitives/cube" );
+	// Serialize.
+	{
+		Chunk chunk( Chunk::Vector( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE ) );
+
+		// Set blocks.
+		{
+			Chunk::Vector block_pos( 0, 0, 0 );
+
+			for( block_pos.z = 0; block_pos.z < CHUNK_SIZE; ++block_pos.z ) {
+				for( block_pos.y = 0; block_pos.y < CHUNK_SIZE; ++block_pos.y ) {
+					for( block_pos.x = 0; block_pos.x < CHUNK_SIZE; ++block_pos.x ) {
+					}
+				}
+			}
+		}
+
+		msg::Chunk msg;
+	}
 
 	// Add blocks.
-	{
+	/*{
 		msg::Chunk msg;
 
-		std::size_t class_id_idx = 0;
+		uint16_t class_id_idx = 0;
 		uint8_t flags = 0;
 
 		for( std::size_t block_idx = 0; block_idx < CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE; ++block_idx ) {
 			msg.add_block( class_ids[class_id_idx], flags );
 
-			class_id_idx = (class_id_idx + 1) % class_ids.size();
+			class_id_idx = (class_id_idx + 1) % (Chunk::MAX_BLOCK_ID + 1);
 			flags = (flags + 1) & 0x0f;
 		}
 
@@ -750,28 +774,22 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		class_id_idx = 0;
 		flags = 0;
 
+		// Validate.
 		for( std::size_t block_idx = 0; block_idx < CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE; ++block_idx ) {
-			BOOST_CHECK( msg.get_block_class_id( block_idx ) == class_ids[class_id_idx] );
+			BOOST_CHECK( msg.get_block_class_id( block_idx ) == class_id_idx );
 			BOOST_CHECK( msg.get_block_flags( block_idx ) == flags );
 
-			class_id_idx = (class_id_idx + 1) % class_ids.size();
+			class_id_idx = (class_id_idx + 1) % (Chunk::MAX_BLOCK_ID + 1);
 			flags = (flags + 1) & 0x0f;
 		}
 	}
 
-	static const uint16_t NUM_CLASS_IDS = static_cast<uint16_t>( class_ids.size() );
+	static const Planet::Vector POSITION( 11, 22, 33 );
 
 	ServerProtocol::Buffer source_buffer;
 
-	// Add class IDs to buffer.
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &NUM_CLASS_IDS ), reinterpret_cast<const char*>( &NUM_CLASS_IDS ) + sizeof( NUM_CLASS_IDS ) );
-
-	for( std::size_t class_id_idx = 0; class_id_idx < class_ids.size(); ++class_id_idx ) {
-		std::uint8_t class_id_length = static_cast<uint8_t>( class_ids[class_id_idx].size() );
-
-		source_buffer.push_back( class_id_length );
-		source_buffer.insert( source_buffer.end(), class_ids[class_id_idx].c_str(), class_ids[class_id_idx].c_str() + class_id_length );
-	}
+	// Add position.
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
 
 	// Add blocks to buffer.
 	uint8_t flags = 0;
@@ -785,7 +803,7 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		uint16_t ref = static_cast<uint16_t>( (flags << 12) | (class_id_idx & 0xfff) );
 		source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &ref ), reinterpret_cast<const char*>( &ref ) + sizeof( ref ) );
 
-		class_id_idx = static_cast<uint16_t>( (class_id_idx + 1) % class_ids.size() );
+		class_id_idx = (class_id_idx + 1) % (Chunk::MAX_BLOCK_ID + 1);
 		flags = (flags + 1) & 0x0f;
 	}
 
@@ -793,13 +811,15 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 	{
 		msg::Chunk msg;
 
+		msg.set_position( POSITION );
+
 		class_id_idx = 0;
 		flags = 0;
 
 		for( std::size_t block_idx = 0; block_idx < CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE; ++block_idx ) {
 			msg.add_block( class_ids[class_id_idx], flags );
 
-			class_id_idx = static_cast<uint16_t>( (class_id_idx + 1) % class_ids.size() );
+			class_id_idx = (class_id_idx + 1) % (Chunk::MAX_BLOCK_ID + 1);
 			flags = (flags + 1) & 0x0f;
 		}
 
@@ -826,6 +846,7 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		BOOST_CHECK( eaten == source_buffer.size() );
 
 		BOOST_CHECK( msg.get_num_blocks() == CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE );
+		BOOST_CHECK( msg.get_position() == POSITION );
 
 		class_id_idx = 0;
 		flags = 0;
@@ -841,7 +862,7 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 	// Deserialize without class IDs.
 	{
-		ServerProtocol::Buffer invalid_buffer( 2, 0 );
+		ServerProtocol::Buffer invalid_buffer( 6 + 2, 0 );
 
 		msg::Chunk msg;
 		std::size_t eaten = 0;
@@ -852,9 +873,9 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 	// Deserialize with too many class IDs.
 	{
-		ServerProtocol::Buffer invalid_buffer( 2, 0 );
-		invalid_buffer[0] = static_cast<uint8_t>( 0xff );
-		invalid_buffer[1] = static_cast<uint8_t>( 0x10 );
+		ServerProtocol::Buffer invalid_buffer( 6 + 2, 0 );
+		invalid_buffer[6] = static_cast<uint8_t>( 0xff );
+		invalid_buffer[7] = static_cast<uint8_t>( 0x10 );
 
 		msg::Chunk msg;
 		std::size_t eaten = 0;
@@ -865,8 +886,8 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 	// Deserialize with zero class ID length.
 	{
-		ServerProtocol::Buffer invalid_buffer( 3, 0 );
-		invalid_buffer[0] = static_cast<uint8_t>( 0x01 );
+		ServerProtocol::Buffer invalid_buffer( 6 + 3, 0 );
+		invalid_buffer[6] = static_cast<uint8_t>( 0x01 );
 
 		msg::Chunk msg;
 		std::size_t eaten = 0;
@@ -877,15 +898,15 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 	// Deserialize with invalid number of blocks.
 	{
-		ServerProtocol::Buffer invalid_buffer( 6 );
-		invalid_buffer[0] = static_cast<uint8_t>( 0x01 ); // Num class IDs.
-		invalid_buffer[1] = static_cast<uint8_t>( 0x00 );
+		ServerProtocol::Buffer invalid_buffer( 6 + 6 );
+		invalid_buffer[6] = static_cast<uint8_t>( 0x01 ); // Num class IDs.
+		invalid_buffer[7] = static_cast<uint8_t>( 0x00 );
 
-		invalid_buffer[2] = static_cast<uint8_t>( 0x01 ); // Class ID: 1 char.
-		invalid_buffer[3] = 'X';
+		invalid_buffer[8] = static_cast<uint8_t>( 0x01 ); // Class ID: 1 char.
+		invalid_buffer[9] = 'X';
 
-		invalid_buffer[4] = static_cast<uint8_t>( 0x00 ); // Number of blocks.
-		invalid_buffer[5] = static_cast<uint8_t>( 0x00 );
+		invalid_buffer[10] = static_cast<uint8_t>( 0x00 ); // Number of blocks.
+		invalid_buffer[11] = static_cast<uint8_t>( 0x00 );
 
 		msg::Chunk msg;
 		std::size_t eaten = 0;
@@ -896,18 +917,18 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 	// Deserialize with invalid referenced class ID.
 	{
-		ServerProtocol::Buffer invalid_buffer( 8 );
-		invalid_buffer[0] = static_cast<uint8_t>( 0x01 ); // Num class IDs.
-		invalid_buffer[1] = static_cast<uint8_t>( 0x00 );
-
-		invalid_buffer[2] = static_cast<uint8_t>( 0x01 ); // Class ID: 1 char.
-		invalid_buffer[3] = 'X';
-
-		invalid_buffer[4] = static_cast<uint8_t>( 0x01 ); // Number of blocks.
-		invalid_buffer[5] = static_cast<uint8_t>( 0x00 );
-
-		invalid_buffer[6] = static_cast<uint8_t>( 0x01 ); // Block.
+		ServerProtocol::Buffer invalid_buffer( 6 + 8 );
+		invalid_buffer[6] = static_cast<uint8_t>( 0x01 ); // Num class IDs.
 		invalid_buffer[7] = static_cast<uint8_t>( 0x00 );
+
+		invalid_buffer[8] = static_cast<uint8_t>( 0x01 ); // Class ID: 1 char.
+		invalid_buffer[9] = 'X';
+
+		invalid_buffer[10] = static_cast<uint8_t>( 0x01 ); // Number of blocks.
+		invalid_buffer[11] = static_cast<uint8_t>( 0x00 );
+
+		invalid_buffer[12] = static_cast<uint8_t>( 0x01 ); // Block.
+		invalid_buffer[13] = static_cast<uint8_t>( 0x00 );
 
 		msg::Chunk msg;
 		std::size_t eaten = 0;
@@ -923,5 +944,5 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		for( std::size_t amount = 0; amount < source_buffer.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source_buffer[0], amount ) == 0 );
 		}
-	}
+	}*/
 }

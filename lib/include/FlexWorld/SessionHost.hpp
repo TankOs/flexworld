@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FlexWorld/Server.hpp>
+#include <FlexWorld/PlayerInfo.hpp>
 
 #include <memory>
 
@@ -9,7 +10,6 @@ namespace flex {
 class LockFacility;
 class AccountManager;
 class World;
-class Account;
 
 /** SessionHost.
  *
@@ -107,20 +107,15 @@ class SessionHost : private Server::Handler {
 		std::size_t get_player_limit() const;
 
 	private:
-		struct PlayerInfo {
-			PlayerInfo();
-
-			Account* account;
-			Planet* planet;
-			bool connected;
-		};
-
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 
 		void handle_connect( Server::ConnectionID conn_id );
 		void handle_disconnect( Server::ConnectionID conn_id );
 		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 		void handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id );
+
+		void beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, uint16_t angle );
+		void send_chunks( const PlayerInfo::ViewCuboid& cuboid, Server::ConnectionID conn_id );
 
 		PlayerInfoVector m_player_infos;
 
@@ -132,6 +127,7 @@ class SessionHost : private Server::Handler {
 
 		AuthMode m_auth_mode;
 		std::size_t m_player_limit;
+		Planet::ScalarType m_max_view_radius;
 };
 
 }

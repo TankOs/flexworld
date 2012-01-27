@@ -6,7 +6,6 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <iostream> // XXX 
 
 State::State( sf::RenderWindow& target ) :
 	m_render_target( target ),

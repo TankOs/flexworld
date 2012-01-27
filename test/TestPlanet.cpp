@@ -84,6 +84,7 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		planet.create_chunk( POSITION );
 		BOOST_CHECK( planet.get_num_chunks() == 1 );
 		BOOST_CHECK( planet.has_chunk( POSITION ) == true );
+		BOOST_CHECK( planet.get_raw_chunk_data( POSITION ) != nullptr );
 	}
 
 	// Set some blocks.
@@ -138,6 +139,8 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		for( chunk_pos.z = 0; chunk_pos.z < PLANET_SIZE.z; ++chunk_pos.z ) {
 			for( chunk_pos.y = 0; chunk_pos.y < PLANET_SIZE.y; ++chunk_pos.y ) {
 				for( chunk_pos.x = 0; chunk_pos.x < PLANET_SIZE.x; ++chunk_pos.x ) {
+					BOOST_CHECK( planet.get_raw_chunk_data( chunk_pos ) != nullptr );
+
 					for( block_pos.z = 0; block_pos.z < CHUNK_SIZE.z; ++block_pos.z ) {
 						for( block_pos.y = 0; block_pos.y < CHUNK_SIZE.y; ++block_pos.y ) {
 							for( block_pos.x = 0; block_pos.x < CHUNK_SIZE.x; ++block_pos.x ) {

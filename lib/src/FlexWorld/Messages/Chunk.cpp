@@ -8,7 +8,8 @@ namespace flex {
 namespace msg {
 
 Chunk::Chunk() :
-	Message()
+	Message(),
+	m_position( 0, 0, 0 )
 {
 }
 
@@ -40,6 +41,7 @@ void Chunk::serialize( Buffer& buffer ) const {
 	// Enlarge buffer.
 	buffer.resize(
 		+ buf_ptr
+		+ sizeof( m_position ) // Position.
 		+ sizeof( uint16_t ) // Number of class IDs.
 		+ sizeof( uint8_t ) * m_class_ids.size() // Class ID lengths.
 		+ total_class_id_length
@@ -47,6 +49,11 @@ void Chunk::serialize( Buffer& buffer ) const {
 		+ sizeof( uint16_t ) * m_blocks.size() // Block data.
 	);
 
+	// Position.
+	*reinterpret_cast<Planet::Vector*>( &buffer[buf_ptr] ) = m_position;
+	buf_ptr += sizeof( Planet::Vector );
+
+	// Number of class IDs.
 	*reinterpret_cast<uint16_t*>( &buffer[buf_ptr] ) = static_cast<uint16_t>( m_class_ids.size() );
 	buf_ptr += sizeof( uint16_t );
 
@@ -74,6 +81,14 @@ void Chunk::serialize( Buffer& buffer ) const {
 
 std::size_t Chunk::deserialize( const char* buffer, std::size_t buffer_size ) {
 	std::size_t buf_ptr( 0 );
+
+	// Position.
+	if( buffer_size - buf_ptr < sizeof( m_position ) ) {
+		return 0;
+	}
+
+	Planet::Vector position = *reinterpret_cast<const Planet::Vector*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( position );
 
 	// Number of class IDs.
 	if( buffer_size - buf_ptr < sizeof( uint16_t ) ) {
@@ -143,7 +158,9 @@ std::size_t Chunk::deserialize( const char* buffer, std::size_t buffer_size ) {
 		}
 	}
 
-	// Everything okay, store class IDs and block data.
+	// Everything okay, store values.
+	m_position = position;
+
 	m_class_ids.clear();
 
 	for( std::size_t class_id_idx = 0; class_id_idx < num_class_ids; ++class_id_idx ) {
@@ -190,6 +207,14 @@ const std::string& Chunk::get_block_class_id( std::size_t index ) const {
 uint8_t Chunk::get_block_flags( std::size_t index ) const {
 	assert( index < m_blocks.size() );
 	return static_cast<uint8_t>( m_blocks[index] >> 12 );
+}
+
+void Chunk::set_position( const Planet::Vector& pos ) {
+	m_position = pos;
+}
+
+const Planet::Vector& Chunk::get_position() const {
+	return m_position;
 }
 
 }

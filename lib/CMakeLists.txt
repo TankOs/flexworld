@@ -28,6 +28,8 @@ set(
 	${INC_DIR}/FlexWorld/Client.hpp
 	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
+	${INC_DIR}/FlexWorld/Cuboid.hpp
+	${INC_DIR}/FlexWorld/Cuboid.inl
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/GameMode.hpp
@@ -47,6 +49,7 @@ set(
 	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
+	${INC_DIR}/FlexWorld/PlayerInfo.hpp
 	${INC_DIR}/FlexWorld/Protocol.hpp
 	${INC_DIR}/FlexWorld/Protocol.inl
 	${INC_DIR}/FlexWorld/RefLock.hpp
@@ -88,6 +91,7 @@ set(
 	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp
+	${SRC_DIR}/FlexWorld/PlayerInfo.cpp
 	${SRC_DIR}/FlexWorld/RefLock.cpp
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
@@ -105,6 +109,7 @@ include_directories( ${Boost_INCLUDE_DIR} )
 
 add_library( flexworld ${SOURCES} )
 
+target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
 target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )
 target_link_libraries( flexworld ${Boost_FILESYSTEM_LIBRARY} )

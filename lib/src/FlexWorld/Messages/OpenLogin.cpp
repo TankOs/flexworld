@@ -1,7 +1,6 @@
 #include <FlexWorld/Messages/OpenLogin.hpp>
 
 #include <cstring>
-#include <iostream> // XXX 
 
 namespace flex {
 namespace msg {

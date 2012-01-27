@@ -129,6 +129,12 @@ class Planet : public NonCopyable {
 		 */
 		std::size_t get_num_entities() const;
 
+		/** Get raw chunk data.
+		 * @param position Position (must be valid).
+		 * @return Raw chunk data.
+		 */
+		const Chunk::Block* get_raw_chunk_data( const Planet::Vector& position ) const;
+
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
 		typedef std::set<Entity::ID> EntityIDSet;

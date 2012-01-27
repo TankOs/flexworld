@@ -2,6 +2,7 @@
 
 #include <FlexWorld/Message.hpp>
 #include <FlexWorld/Chunk.hpp>
+#include <FlexWorld/Planet.hpp>
 
 #include <vector>
 #include <string>
@@ -51,12 +52,23 @@ class Chunk : public Message {
 		 */
 		uint8_t get_block_flags( std::size_t index ) const;
 
+		/** Set position.
+		 * @param pos Position.
+		 */
+		void set_position( const Planet::Vector& pos );
+
+		/** Get position.
+		 * @return Position.
+		 */
+		const Planet::Vector& get_position() const;
+
 	private:
 		typedef std::vector<std::string> ClassIDVector;
 		typedef std::vector<uint16_t> BlockVector;
 
 		ClassIDVector m_class_ids;
 		BlockVector m_blocks;
+		Planet::Vector m_position;
 };
 
 }
