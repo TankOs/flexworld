@@ -33,25 +33,6 @@ class Chunk : public Message {
 		 */
 		std::size_t get_num_blocks() const;
 
-		/** Add block.
-		 * If the given class ID is already used, it's being referenced internally.
-		 * @param class_id Class ID (must be non-empty).
-		 * @param flags Flags (only the 4 least-significant bits are used).
-		 */
-		void add_block( const std::string& class_id, uint8_t flags );
-
-		/** Get a block's class ID.
-		 * @param index Block index (must be valid).
-		 * @return Class ID.
-		 */
-		const std::string& get_block_class_id( std::size_t index ) const;
-
-		/** Get a block's flags.
-		 * @param index Block index (must be valid).
-		 * @return Flags.
-		 */
-		uint8_t get_block_flags( std::size_t index ) const;
-
 		/** Set position.
 		 * @param pos Position.
 		 */
@@ -62,11 +43,21 @@ class Chunk : public Message {
 		 */
 		const Planet::Vector& get_position() const;
 
-	private:
-		typedef std::vector<std::string> ClassIDVector;
-		typedef std::vector<uint16_t> BlockVector;
+		/** Set blocks.
+		 * @param chunk Chunk to extract blocks from.
+		 */
+		void set_blocks( const flex::Chunk& chunk );
 
-		ClassIDVector m_class_ids;
+		/** Get block.
+		 * @param index Block index (must be valid).
+		 * @return Block.
+		 */
+		flex::Chunk::Block get_block( std::size_t index ) const;
+
+	private:
+		typedef std::vector<flex::Chunk::Block> BlockVector;
+		typedef uint16_t NumBlocksType;
+
 		BlockVector m_blocks;
 		Planet::Vector m_position;
 };
