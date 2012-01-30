@@ -7,6 +7,7 @@
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/Beam.hpp>
 #include <FlexWorld/Messages/Chunk.hpp>
+#include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
@@ -774,5 +775,59 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 		}
 
 		BOOST_CHECK( all_sane == true );
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
+	using namespace flex;
+
+	static const Planet::Vector POSITION( 1, 2, 3 );
+	static const msg::RequestChunk::Timestamp TIMESTAMP( 12345 );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source_buffer;
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &TIMESTAMP ), reinterpret_cast<const char*>( &TIMESTAMP ) + sizeof( TIMESTAMP ) );
+
+	// Initial state.
+	{
+		msg::RequestChunk msg;
+
+		BOOST_CHECK( msg.get_position() == Planet::Vector( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_timestamp() == 0 );
+	}
+
+	// Basic properties.
+	{
+		msg::RequestChunk msg;
+		msg.set_position( POSITION );
+		msg.set_timestamp( TIMESTAMP );
+
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_timestamp() == TIMESTAMP );
+	}
+
+	// Serialize.
+	{
+		msg::RequestChunk msg;
+		msg.set_position( POSITION );
+		msg.set_timestamp( TIMESTAMP );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source_buffer );
+	}
+
+	// Deserialize.
+	{
+		msg::RequestChunk msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
+
+		BOOST_CHECK( eaten == source_buffer.size() );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_timestamp() == TIMESTAMP );
 	}
 }
