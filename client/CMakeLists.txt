@@ -2,8 +2,6 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldClient )
 
-set(Boost_USE_STATIC_LIBS ON)
-
 find_package( Boost 1.46 REQUIRED filesystem system )
 find_package( OpenGL REQUIRED )
 find_package( SFGUI REQUIRED )
@@ -30,6 +28,7 @@ set(
 	${INC_DIR}/OptionsWindow.hpp
 	${INC_DIR}/PlayState.hpp
 	${INC_DIR}/Shared.cpp
+	${INC_DIR}/Sky.hpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/UserSettings.cpp
@@ -45,6 +44,7 @@ set(
 	${SRC_DIR}/OptionsWindow.cpp
 	${SRC_DIR}/PlayState.cpp
 	${SRC_DIR}/Shared.hpp
+	${SRC_DIR}/Sky.cpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
 	${SRC_DIR}/UserSettings.hpp

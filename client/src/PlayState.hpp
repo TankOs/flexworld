@@ -2,12 +2,14 @@
 
 #include "State.hpp"
 #include "Console.hpp"
+#include "Sky.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Cuboid.hpp>
 
 #include <SFGUI/SFGUI.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
 /** Play state.
  */
@@ -33,8 +35,10 @@ class PlayState : public State, flex::Client::Handler {
 		void request_chunks( const ViewCuboid& cuboid );
 
 		sfg::Desktop m_desktop;
+		sf::Texture m_sun_texture;
 
 		ViewCuboid m_view_cuboid;
 
+		std::unique_ptr<Sky> m_sky;
 		Console::Ptr m_console;
 };

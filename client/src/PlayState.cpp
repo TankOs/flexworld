@@ -1,9 +1,12 @@
+#include <GL/glew.h>
+
 #include "PlayState.hpp"
 #include "MenuState.hpp"
 #include "Shared.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
+#include <FlexWorld/Config.hpp>
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -14,6 +17,9 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 }
 
 void PlayState::init() {
+	// Init GLEW.
+	//glewInit();
+
 	// Reset handler.
 	get_shared().client->set_handler( *this );
 
@@ -30,6 +36,38 @@ void PlayState::init() {
 	);
 
 	m_console->add_message( "Press F11 to show/hide the console." );
+	m_console->Show( false );
+
+	// Setup scene.
+	// Sky.
+	m_sky.reset( new Sky );
+	glClearColor(
+		static_cast<float>( m_sky->get_sky_color().r ) / 255.f,
+		static_cast<float>( m_sky->get_sky_color().g ) / 255.f,
+		static_cast<float>( m_sky->get_sky_color().b ) / 255.f,
+		static_cast<float>( m_sky->get_sky_color().a ) / 255.f
+	);
+
+	m_sun_texture.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
+	m_sun_texture.SetSmooth( true );
+	m_sky->set_sun_texture( m_sun_texture );
+
+	// Projection matrix.
+	glMatrixMode( GL_PROJECTION );
+	glPushMatrix();
+	glLoadIdentity();
+
+	gluPerspective(
+		90.f,
+		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() ),
+		0.1f,
+		100.0f
+	);
+	
+	// Texture matrix.
+	glMatrixMode( GL_TEXTURE );
+	glPushMatrix();
+	glLoadIdentity();
 
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
@@ -61,16 +99,34 @@ void PlayState::cleanup() {
 	get_shared().lock_facility.reset();
 	get_shared().client_thread.reset();
 	get_shared().host_thread.reset();
+
+	// Restore old matrices.
+	glMatrixMode( GL_PROJECTION );
+	glPopMatrix();
+
+	glMatrixMode( GL_TEXTURE );
+	glPopMatrix();
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
+	bool give_gui = true;
+
 	if(
 		event.Type == sf::Event::Closed ||
 		(event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape)
 	) {
 		leave( new MenuState( get_render_target() ) );
+		give_gui = false;
 	}
-	else {
+
+	if( event.Type == sf::Event::KeyPressed ) {
+		if( event.Key.Code == sf::Keyboard::F11 ) {
+			m_console->Show( !m_console->IsVisible() );
+			give_gui = false;
+		}
+	}
+
+	if( give_gui ) {
 		m_desktop.HandleEvent( event );
 	}
 }
@@ -82,11 +138,24 @@ void PlayState::update( const sf::Time& delta ) {
 void PlayState::render() const {
 	sf::RenderWindow& target = get_render_target();
 
-	target.Clear( sf::Color( 0x12, 0x34, 0x56 ) );
+	// Clear.
+	glClear( GL_COLOR_BUFFER_BIT );
+
+	// Render sky.
+	m_sky->render();
+
+	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
+	target.PushGLStates();
+
+	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
+	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( target );
 
+	// Restore SFML's states and render everything.
+	target.PopGLStates();
 	target.Display();
 }
 
