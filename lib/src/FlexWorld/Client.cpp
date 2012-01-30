@@ -99,7 +99,7 @@ void Client::handle_read( const boost::system::error_code& error, std::size_t nu
 	// Dispatch until buffer empty.
 	std::size_t consumed = 0;
 
-	while( m_buffer.size() && (consumed = ServerProtocol::dispatch( m_buffer, *m_handler, 0 )) > 0 ) {
+	while( m_buffer.size() > 1 && (consumed = ServerProtocol::dispatch( m_buffer, *m_handler, 0 )) > 0 ) {
 		if( consumed == m_buffer.size() ) {
 			m_buffer.clear();
 		}

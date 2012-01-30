@@ -40,7 +40,7 @@ Button:ACTIVE {
 
 Entry {
 	BackgroundColor: #18325cff;
-	BorderColor: #000000ff;
+	BorderColor: #18325cff;
 }
 
 Scale {

@@ -18,9 +18,10 @@ struct PlayerInfo {
 	 */
 	PlayerInfo();
 
-	ViewCuboid m_view_cuboid; ///< View range.
+	ViewCuboid view_cuboid; ///< View range.
 	Account* account; ///< Associated account.
 	Planet* planet; ///< Associated planet.
+	bool local; ///< Local connection?
 	bool connected; ///< Connected?
 };
 

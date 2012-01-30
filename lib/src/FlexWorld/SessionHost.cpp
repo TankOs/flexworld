@@ -171,6 +171,8 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 		Log::Logger( Log::INFO ) << "Client " << login_msg.get_username() << " is connecting from this machine, authenticated." << Log::endl;
 	}
 
+	m_player_infos[conn_id].local = is_local;
+
 	m_lock_facility.lock_account_manager( true );
 
 	// Check if an account for that username exists.
@@ -273,86 +275,65 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 	bool result = planet->transform( position, chunk_pos, block_pos );
 	assert( result == true );
 
-	// Set player info's props
-	info.m_view_cuboid = PlayerInfo::ViewCuboid(
-		chunk_pos.x < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.x - m_max_view_radius ),
-		chunk_pos.y < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.y - m_max_view_radius ),
-		chunk_pos.z < m_max_view_radius ? Planet::ScalarType( 0 ) : static_cast<Planet::ScalarType>( chunk_pos.z - m_max_view_radius ),
-		0,
-		0,
-		0
-	);
+	// Update view cuboid.
+	info.view_cuboid.x = static_cast<Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, m_max_view_radius ) );
+	info.view_cuboid.y = static_cast<Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, m_max_view_radius ) );
+	info.view_cuboid.z = static_cast<Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, m_max_view_radius ) );
+	info.view_cuboid.width = std::min( static_cast<Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), m_max_view_radius );
+	info.view_cuboid.height = std::min( static_cast<Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), m_max_view_radius );
+	info.view_cuboid.depth = std::min( static_cast<Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), m_max_view_radius );
 
-	// If position can't be expanded fully due to reaching the planet's border,
-	// calculate extra chunks to add to dimensions so that the cuboid expands
-	// correctly.
-	Planet::Vector extra_chunks(
-		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.x - info.m_view_cuboid.x) ),
-		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.y - info.m_view_cuboid.y) ),
-		static_cast<Planet::ScalarType>( m_max_view_radius - (chunk_pos.z - info.m_view_cuboid.z) )
-	);
-
-	// Calculate dimensions.
-	info.m_view_cuboid.width  = std::min( static_cast<Planet::ScalarType>( planet->get_size().x - info.m_view_cuboid.x ), static_cast<Planet::ScalarType>( (chunk_pos.x - info.m_view_cuboid.x) + m_max_view_radius + 1 ) );
-	info.m_view_cuboid.height = std::min( static_cast<Planet::ScalarType>( planet->get_size().y - info.m_view_cuboid.y ), static_cast<Planet::ScalarType>( (chunk_pos.y - info.m_view_cuboid.y) + m_max_view_radius + 1 ) );
-	info.m_view_cuboid.depth  = std::min( static_cast<Planet::ScalarType>( planet->get_size().z - info.m_view_cuboid.z ), static_cast<Planet::ScalarType>( (chunk_pos.z - info.m_view_cuboid.z) + m_max_view_radius + 1 ) );
-
-	// Assign props to player.
+	// Save current planet.
 	info.planet = planet;
 
-	// Send chunks.
-	send_chunks( info.m_view_cuboid, conn_id );
+	// Send message.
+	msg::Beam beam_msg;
+	beam_msg.set_planet_name( planet->get_id() );
+	beam_msg.set_chunk_size( planet->get_chunk_size() );
+	beam_msg.set_planet_size( planet->get_size() );
+	beam_msg.set_position( sf::Vector3f( 0, 0, 0 ) ); // TODO Set actual position.
+	beam_msg.set_angle( 0 ); // TODO Set actual angle.
 
 	m_lock_facility.lock_planet( *planet, false );
+
+	m_server->send_message( beam_msg, conn_id );
 }
 
-void SessionHost::send_chunks( const PlayerInfo::ViewCuboid& cuboid, Server::ConnectionID conn_id ) {
-	assert( conn_id < m_player_infos.size() && m_player_infos[conn_id].connected == true );
-
+void SessionHost::handle_message( const msg::RequestChunk& req_chunk_msg, Server::ConnectionID conn_id ) {
 	PlayerInfo& info = m_player_infos[conn_id];
-	assert( info.planet != nullptr );
 
-	assert( cuboid.x + cuboid.width  <= info.planet->get_size().x );
-	assert( cuboid.y + cuboid.height <= info.planet->get_size().y );
-	assert( cuboid.z + cuboid.depth  <= info.planet->get_size().z );
-
-	Planet::Vector runner( cuboid.x, cuboid.y, cuboid.z );
-	PlayerInfo::ViewCuboid::Type max_x = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.x + cuboid.width );
-	PlayerInfo::ViewCuboid::Type max_y = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.y + cuboid.height );
-	PlayerInfo::ViewCuboid::Type max_z = static_cast<PlayerInfo::ViewCuboid::Type>( cuboid.z + cuboid.depth );
-
-	for( runner.z = cuboid.z; runner.z < max_z ; ++runner.z ) {
-		for( runner.y = cuboid.y; runner.y < max_y ; ++runner.y ) {
-			for( runner.x = cuboid.x; runner.x < max_x ; ++runner.x ) {
-				// TODO: Send EmptyChunk message!
-				if( !info.planet->has_chunk( runner ) ) {
-				}
-				else {
-					// Construct Chunk message and send it.
-					msg::Chunk chunk_msg;
-					chunk_msg.set_position( runner );
-
-					Chunk::Vector block_pos( 0, 0, 0 );
-
-					/*for( block_pos.z = 0; block_pos.z < info.planet->get_chunk_size().z; ++block_pos.z ) {
-						for( block_pos.y = 0; block_pos.y < info.planet->get_chunk_size().y; ++block_pos.y ) {
-							for( block_pos.x = 0; block_pos.x < info.planet->get_chunk_size().x; ++block_pos.x ) {
-								const Class* cls = info.planet->find_block( runner, block_pos );
-
-								if( cls != nullptr ) {
-
-								}
-								else {
-								}
-							}
-						}
-					}*/
-
-				}
-			}
-		}
+	// Make sure client is at a planet.
+	if( info.planet == nullptr ) {
+		Log::Logger( Log::ERR ) << "Client #" << conn_id << " requested a chunk but isn't on a planet." << Log::endl;
+		m_server->disconnect_client( conn_id );
+		return;
 	}
 
+	// Check for valid chunk position.
+	if(
+		req_chunk_msg.get_position().x >= info.planet->get_size().x ||
+		req_chunk_msg.get_position().y >= info.planet->get_size().y ||
+		req_chunk_msg.get_position().z >= info.planet->get_size().z
+	) {
+		Log::Logger( Log::ERR ) << "Client #" << conn_id << " requested an invalid chunk." << Log::endl;
+		m_server->disconnect_client( conn_id );
+		return;
+	}
+
+	// Check if chunk exists.
+	if( !info.planet->has_chunk( req_chunk_msg.get_position() ) ) {
+		// TODO: Send EmptyChunk msg.
+	}
+	else {
+		// Check if chunk hasn't changed or client is connected from the local
+		// machine (so that it uses the same backend).
+		// TODO: Timestamp check.
+		if( info.local ) {
+			msg::ChunkUnchanged unch_msg;
+			unch_msg.set_position( req_chunk_msg.get_position() );
+			m_server->send_message( unch_msg, conn_id );
+		}
+	}
 }
 
 }

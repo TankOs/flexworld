@@ -113,9 +113,9 @@ class SessionHost : private Server::Handler {
 		void handle_disconnect( Server::ConnectionID conn_id );
 		void handle_message( const msg::OpenLogin& login_msg, Server::ConnectionID conn_id );
 		void handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id );
+		void handle_message( const msg::RequestChunk& req_chunk_msg, Server::ConnectionID conn_id );
 
 		void beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, uint16_t angle );
-		void send_chunks( const PlayerInfo::ViewCuboid& cuboid, Server::ConnectionID conn_id );
 
 		PlayerInfoVector m_player_infos;
 

@@ -1,5 +1,6 @@
 #include <FlexWorld/Server.hpp>
 #include <FlexWorld/Peer.hpp>
+#include <FlexWorld/Log.hpp> // XXX 
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
@@ -198,7 +199,7 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 	// Try to dispatch.
 	std::size_t consumed = 0;
 
-	while( peer->buffer.size() && (consumed = ServerProtocol::dispatch( peer->buffer, m_handler, peer->id )) > 0 ) {
+	while( peer->buffer.size() > 1 && (consumed = ServerProtocol::dispatch( peer->buffer, m_handler, peer->id )) > 0 ) {
 		if( consumed == peer->buffer.size() ) {
 			peer->buffer.clear();
 		}
