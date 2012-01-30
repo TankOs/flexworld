@@ -3,6 +3,7 @@
 #include "State.hpp"
 #include "Console.hpp"
 #include "Sky.hpp"
+#include "Camera.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
@@ -37,6 +38,7 @@ class PlayState : public State, flex::Client::Handler {
 		sfg::Desktop m_desktop;
 		sf::Texture m_sun_texture;
 
+		Camera m_camera;
 		ViewCuboid m_view_cuboid;
 
 		std::unique_ptr<Sky> m_sky;

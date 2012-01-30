@@ -41,16 +41,19 @@ void PlayState::init() {
 	// Setup scene.
 	// Sky.
 	m_sky.reset( new Sky );
-	glClearColor(
-		static_cast<float>( m_sky->get_sky_color().r ) / 255.f,
-		static_cast<float>( m_sky->get_sky_color().g ) / 255.f,
-		static_cast<float>( m_sky->get_sky_color().b ) / 255.f,
-		static_cast<float>( m_sky->get_sky_color().a ) / 255.f
-	);
+	m_sky->set_camera( m_camera );
 
 	m_sun_texture.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
 	m_sun_texture.SetSmooth( true );
 	m_sky->set_sun_texture( m_sun_texture );
+
+	m_sky->generate_stars( 500 );
+
+	// Setup camera.
+	m_camera.set_fov( 90.0f );
+	m_camera.set_aspect_ratio(
+		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
+	);
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -58,8 +61,8 @@ void PlayState::init() {
 	glLoadIdentity();
 
 	gluPerspective(
-		90.f,
-		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() ),
+		m_camera.get_fov(),
+		m_camera.get_aspect_ratio(),
 		0.1f,
 		100.0f
 	);
@@ -132,13 +135,50 @@ void PlayState::handle_event( const sf::Event& event ) {
 }
 
 void PlayState::update( const sf::Time& delta ) {
+	// Update sky.
+	m_sky->set_time_of_day( m_sky->get_time_of_day() + (delta.AsSeconds() * (0.041f / 30.0f)) );
+
+	// Update GUI.
 	m_desktop.Update( delta.AsSeconds() );
+
+	// Get mouse movement.
+	sf::Vector2i mouse_delta(
+		sf::Mouse::GetPosition( get_render_target() ) -
+		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 )
+	);
+
+	// Rotate camera.
+	m_camera.turn(
+		sf::Vector3f(
+			(
+			 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
+			 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity()
+			),
+			static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity(),
+			0.0f
+		)
+	);
+
+	// Reset mouse.
+	sf::Mouse::SetPosition(
+		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
+		get_render_target()
+	);
 }
 
 void PlayState::render() const {
 	sf::RenderWindow& target = get_render_target();
 
 	// Clear.
+	sf::Color local_sky_color = m_sky->get_local_sky_color();
+
+	glClearColor(
+		static_cast<float>( local_sky_color.r ) / 255.f,
+		static_cast<float>( local_sky_color.g ) / 255.f,
+		static_cast<float>( local_sky_color.b ) / 255.f,
+		static_cast<float>( local_sky_color.a ) / 255.f
+	);
+
 	glClear( GL_COLOR_BUFFER_BIT );
 
 	// Render sky.
