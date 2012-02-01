@@ -55,9 +55,17 @@ class Camera {
 		 */
 		void turn( const sf::Vector3f& angle );
 
+		/** Clamp pitch.
+		 * @param clamp Clamp (degrees).
+		 */
+		void set_pitch_clamp( float clamp );
+
 	private:
+		void apply_clamp();
+
 		sf::Vector3f m_position;
 		sf::Vector3f m_rotation;
 		float m_fov;
 		float m_aspect;
+		float m_pitch_clamp;
 };

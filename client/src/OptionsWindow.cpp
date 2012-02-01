@@ -27,7 +27,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Controls.
 	window->m_mouse_inverted_check = sfg::CheckButton::Create( L"Inverted" );
 	window->m_mouse_inverted_check->SetActive( window->m_user_settings.get_controls().is_mouse_inverted() );
-	window->m_mouse_sensitivity_scale = sfg::Scale::Create( .1f, 5.f, .05f );
+	window->m_mouse_sensitivity_scale = sfg::Scale::Create( .01f, 2.f, .01f );
 	window->m_mouse_sensitivity_scale->SetValue( window->m_user_settings.get_controls().get_mouse_sensitivity() );
 	window->m_mouse_sensitivity_label = sfg::Label::Create( L"--" );
 

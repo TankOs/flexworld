@@ -10,7 +10,7 @@ void Controls::clear() {
 	m_keys.clear();
 	m_buttons.clear();
 
-	m_mouse_sensitivity = 1.f;
+	m_mouse_sensitivity = 0.10f;
 	m_mouse_inverted = true;
 }
 

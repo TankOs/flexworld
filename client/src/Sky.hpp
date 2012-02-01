@@ -68,11 +68,6 @@ class Sky {
 		 */
 		sf::Color get_local_sky_color() const;
 
-		/** Generate stars.
-		 * @param num_stars Number of stars.
-		 */
-		void generate_stars( std::size_t num_stars );
-
 	private:
 		sf::Color m_sky_color;
 		const sf::Texture* m_sun_texture;
@@ -82,12 +77,7 @@ class Sky {
 		GLuint m_sun_tbo;
 		GLuint m_sun_cbo;
 
-		GLuint m_stars_vbo;
-		GLuint m_stars_cbo;
-
 		float m_radius;
 		float m_time_of_day;
 		float m_max_sun_height;
-
-		std::size_t m_num_stars;
 };

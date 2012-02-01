@@ -41,6 +41,8 @@ class PlayState : public State, flex::Client::Handler {
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;
 
+		std::string m_current_planet_id;
+
 		std::unique_ptr<Sky> m_sky;
 		Console::Ptr m_console;
 };

@@ -47,13 +47,12 @@ void PlayState::init() {
 	m_sun_texture.SetSmooth( true );
 	m_sky->set_sun_texture( m_sun_texture );
 
-	m_sky->generate_stars( 500 );
-
 	// Setup camera.
-	m_camera.set_fov( 90.0f );
+	m_camera.set_fov( 70.0f );
 	m_camera.set_aspect_ratio(
 		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
 	);
+	m_camera.set_pitch_clamp( 90.f );
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -64,7 +63,7 @@ void PlayState::init() {
 		m_camera.get_fov(),
 		m_camera.get_aspect_ratio(),
 		0.1f,
-		100.0f
+		150.0f
 	);
 	
 	// Texture matrix.
@@ -240,6 +239,9 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 		return;
 	}
 
+	// Save current planet ID.
+	m_current_planet_id = msg.get_planet_name();
+
 	// Update view cuboid.
 	flex::Planet::Vector chunk_pos;
 	flex::Chunk::Vector block_pos;
@@ -273,4 +275,22 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 }
 
 void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+	if( !m_current_planet_id.size() ) {
+		return;
+	}
+
+	get_shared().lock_facility->lock_world( true );
+	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+
+	if( planet ) {
+		get_shared().lock_facility->lock_planet( *planet, true );
+	}
+
+	get_shared().lock_facility->lock_world( false );
+
+	if( !planet ) {
+		return;
+	}
+
+	get_shared().lock_facility->lock_planet( *planet, false );
 }
