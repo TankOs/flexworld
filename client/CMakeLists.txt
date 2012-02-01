@@ -27,7 +27,9 @@ set(
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsWindow.hpp
+	${INC_DIR}/PlanetRenderer.hpp
 	${INC_DIR}/PlayState.hpp
+	${INC_DIR}/ResourceManager.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/Sky.hpp
 	${INC_DIR}/StartGameWindow.hpp
@@ -44,7 +46,9 @@ set(
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsWindow.cpp
+	${SRC_DIR}/PlanetRenderer.cpp
 	${SRC_DIR}/PlayState.cpp
+	${SRC_DIR}/ResourceManager.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/Sky.cpp
 	${SRC_DIR}/StartGameWindow.cpp
