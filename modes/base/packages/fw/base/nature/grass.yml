@@ -5,6 +5,5 @@ Hooks:
   top: [0.1, 0.2, 0.3]
   bottom: [1.0, 0.9, 0.8]
 Textures:
-  - "test/grass.png"
-  - "test/dummy.png"
+  - "fw.base.nature/grass.png"
 Model: "fw.base.shapes/cube.fwm"

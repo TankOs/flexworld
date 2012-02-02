@@ -5,6 +5,8 @@
 #include <boost/thread.hpp>
 #include <list>
 
+class ResourceManager;
+
 /** Planet renderer.
  *
  * This renderer renders a planet's chunks.
@@ -12,16 +14,14 @@
 class PlanetRenderer {
 	public:
 		/** Ctor.
+		 * @param planet Planet.
+		 * @param resource_manager Resource manager.
 		 */
-		PlanetRenderer();
+		PlanetRenderer( const flex::Planet& planet, const ResourceManager& resource_manager );
 
-		/** Set planet.
-		 * This erases ALL previously prepared data. The planet itself is only
-		 * queued in the update() function, so make sure to lock the planet when
-		 * calling it.
-		 * @param planet Planet (reference stored).
+		/** Render.
 		 */
-		void set_planet( const flex::Planet& planet );
+		void render() const;
 
 		/** Prepare chunk.
 		 * Preparing a chunk will prepare vertices and texture coordinates without
@@ -32,5 +32,6 @@ class PlanetRenderer {
 		void prepare_chunk( const flex::Planet::Vector& chunk_pos );
 
 	private:
-		const flex::Planet* m_planet;
+		const flex::Planet& m_planet;
+		const ResourceManager& m_resource_manager;
 };

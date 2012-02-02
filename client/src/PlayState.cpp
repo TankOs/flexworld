@@ -12,7 +12,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
-	m_console( Console::Create() )
+	m_console( Console::Create() ),
+	m_do_prepare_chunks( false )
 {
 }
 
@@ -77,6 +78,9 @@ void PlayState::init() {
 }
 
 void PlayState::cleanup() {
+	// Terminate chunk preparation thread.
+	stop_and_wait_for_chunk_preparation_thread();
+
 	// Close connections and wait for threads to complete.
 	if( get_shared().client->is_connected() ) {
 		get_shared().client->stop();
@@ -183,6 +187,11 @@ void PlayState::render() const {
 	// Render sky.
 	m_sky->render();
 
+	// Render planet.
+	if( m_planet_renderer ) {
+		m_planet_renderer->render();
+	}
+
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	target.PushGLStates();
 
@@ -239,6 +248,9 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 		return;
 	}
 
+	// Stop preparation thread.
+	stop_and_wait_for_chunk_preparation_thread();
+
 	// Save current planet ID.
 	m_current_planet_id = msg.get_planet_name();
 
@@ -248,6 +260,7 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 
 	if( !planet->transform( msg.get_position(), chunk_pos, block_pos ) ) {
 		m_console->add_message( "Host gave invalid beam position." );
+		get_shared().lock_facility->lock_planet( *planet, false );
 		return;
 	}
 
@@ -257,6 +270,17 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_view_cuboid.width = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), flex::Planet::ScalarType( 10 ) );
 	m_view_cuboid.height = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), flex::Planet::ScalarType( 10 ) );
 	m_view_cuboid.depth = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), flex::Planet::ScalarType( 10 ) );
+
+	// Setup resource manager.
+	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+
+	// Setup planet renderer.
+	m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );
+
+	get_shared().lock_facility->lock_planet( *planet, false );
+
+	// Setup preparation thread for chunks.
+	launch_chunk_preparation_thread();
 
 	// XXX 
 	std::stringstream debug_msg;
@@ -270,8 +294,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 
 	// Request chunks.
 	request_chunks( m_view_cuboid );
-
-	get_shared().lock_facility->lock_planet( *planet, false );
 }
 
 void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID /*conn_id*/ ) {
@@ -282,8 +304,10 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 	get_shared().lock_facility->lock_world( true );
 	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 
-	if( planet ) {
-		get_shared().lock_facility->lock_planet( *planet, true );
+	if( !planet ) {
+#if !defined( NDEBUG )
+		std::cout << "WARNING: Host notified about an unchaned chunk at an invalid planet." << std::endl;
+#endif
 	}
 
 	get_shared().lock_facility->lock_world( false );
@@ -292,5 +316,125 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 		return;
 	}
 
-	get_shared().lock_facility->lock_planet( *planet, false );
+	// Add chunk to preparation list.
+	{
+		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
+		m_chunk_list.push_back( msg.get_position() );
+	}
+
+	// Notify thread.
+	m_prepare_chunks_condition.notify_one();
+}
+
+void PlayState::prepare_chunks() {
+	// We need a valid context for loading textures.
+	sf::Context context;
+
+	boost::unique_lock<boost::mutex> do_lock( m_prepare_chunks_mutex );
+
+	while( m_do_prepare_chunks ) {
+		m_prepare_chunks_condition.wait( do_lock );
+
+		// Work until all chunks have been processed.
+		m_chunk_list_mutex.lock();
+
+		while( m_chunk_list.size() > 0 ) {
+			// Get next chunk position.
+			flex::Planet::Vector chunk_pos = m_chunk_list.front();
+			m_chunk_list.pop_front();
+
+			m_chunk_list_mutex.unlock();
+
+			// Get planet.
+			get_shared().lock_facility->lock_world( true );
+
+			const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+			assert( planet );
+			get_shared().lock_facility->lock_planet( *planet, true );
+
+			get_shared().lock_facility->lock_world( false );
+
+			// Make sure chunk exists.
+			if( !planet->has_chunk( chunk_pos ) ) {
+#if !defined( NDEBUG )
+				std::cout << "Skipping, no chunk at given position." << std::endl;
+#endif
+				get_shared().lock_facility->lock_planet( *planet, false );
+				continue;
+			}
+
+			// Load all missing textures.
+			{
+				flex::Chunk::Vector block_runner;
+				flex::Chunk::Vector chunk_size = planet->get_chunk_size();
+				const flex::Class* block_cls = nullptr;
+				bool load_result = false;
+
+				for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
+					for( block_runner.y = 0; block_runner.y < chunk_size.y; ++block_runner.y ) {
+						for( block_runner.x = 0; block_runner.x < chunk_size.x; ++block_runner.x ) {
+							// Skip empty blocks.
+							block_cls = planet->find_block( chunk_pos, block_runner );
+
+							if( block_cls == nullptr ) {
+								continue;
+							}
+
+							boost::lock_guard<boost::mutex> mgr_lock( m_resource_manager_mutex );
+
+							// Check if texture already exists.
+							for( std::size_t tex_idx = 0; tex_idx < block_cls->get_num_textures(); ++tex_idx ) {
+								const flex::FlexID& tex_id = block_cls->get_texture( tex_idx ).get_id();
+
+								if( m_resource_manager.find_texture( tex_id ) == nullptr ) {
+									load_result = m_resource_manager.load_texture( tex_id );
+
+									assert( load_result );
+									if( !load_result ) {
+										// TODO Cancel game?
+									}
+								}
+							}
+						}
+					}
+				}
+
+			} // Load textures.
+
+			// Prepare chunk in renderer.
+			m_planet_renderer->prepare_chunk( chunk_pos );
+
+			get_shared().lock_facility->lock_planet( *planet, false );
+
+			m_chunk_list_mutex.lock();
+		}
+
+		m_chunk_list_mutex.unlock();
+	}
+
+}
+
+void PlayState::launch_chunk_preparation_thread() {
+	assert( !m_prepare_chunks_thread );
+	assert( m_do_prepare_chunks == false );
+
+	m_do_prepare_chunks = true;
+	m_prepare_chunks_thread.reset( new boost::thread( std::bind( &PlayState::prepare_chunks, this ) ) );
+}
+
+void PlayState::stop_and_wait_for_chunk_preparation_thread() {
+	// Do nothing if thread is not running.
+	if( !m_prepare_chunks_thread ) {
+		return;
+	}
+
+	{
+		boost::lock_guard<boost::mutex> do_lock( m_prepare_chunks_mutex );
+		m_do_prepare_chunks = false;
+	}
+
+	m_prepare_chunks_condition.notify_one();
+	m_prepare_chunks_thread->join();
+
+	m_prepare_chunks_thread.reset();
 }
