@@ -65,6 +65,7 @@ set(
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
 	${INC_DIR}/FlexWorld/Version.hpp
+	${INC_DIR}/FlexWorld/Vertex.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/AccountDriver.cpp
@@ -103,6 +104,7 @@ set(
 	${SRC_DIR}/FlexWorld/Server.cpp
 	${SRC_DIR}/FlexWorld/SessionHost.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
+	${SRC_DIR}/FlexWorld/Vertex.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
 

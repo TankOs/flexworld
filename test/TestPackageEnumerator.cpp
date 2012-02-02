@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 			}
 		}
 
-		if( enumerator.get_model_file( 0 ) == base_dir + "test/block.fwm" ) {
+		if( enumerator.get_model_file( 0 ) == base_dir + "test/cube.fwm" ) {
 			block_model = true;
 		}
 
