@@ -24,7 +24,9 @@ set(
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestLockFacility.cpp
+	TestMesh.cpp
 	TestMessage.cpp
+	TestModel.cpp
 	TestPackageEnumerator.cpp
 	TestPlanet.cpp
 	TestRefLock.cpp
@@ -34,6 +36,7 @@ set(
 	TestServer.cpp
 	TestServerProtocol.cpp
 	TestSessionHost.cpp
+	TestTriangle.cpp
 	TestVersion.cpp
 	TestVertex.cpp
 	TestWorld.cpp

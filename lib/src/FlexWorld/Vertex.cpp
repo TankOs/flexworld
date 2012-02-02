@@ -2,11 +2,32 @@
 
 namespace flex {
 
-Vertex::Vertex() :
-	position( 0, 0, 0 ),
-	normal( 0, 1, 0 ),
-	uv( 0, 0 )
+Vertex::Vertex(
+	const sf::Vector3f& position_,
+	const sf::Vector3f& normal_,
+	const sf::Vector2f& uv_
+) :
+	position( position_ ),
+	normal( normal_ ),
+	uv( uv_ )
 {
 }
+
+bool operator==( const Vertex& first, const Vertex& second ) {
+	return
+		first.position == second.position &&
+		first.normal == second.normal &&
+		first.uv == second.uv
+	;
+}
+
+bool operator!=( const Vertex& first, const Vertex& second ) {
+	return
+		first.position != second.position ||
+		first.normal != second.normal ||
+		first.uv != second.uv
+	;
+}
+
 
 }

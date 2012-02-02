@@ -37,6 +37,7 @@ set(
 	${INC_DIR}/FlexWorld/LockFacility.hpp
 	${INC_DIR}/FlexWorld/Log.hpp
 	${INC_DIR}/FlexWorld/Log.inl
+	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
@@ -47,6 +48,7 @@ set(
 	${INC_DIR}/FlexWorld/Messages/Ready.hpp
 	${INC_DIR}/FlexWorld/Messages/RequestChunk.hpp
 	${INC_DIR}/FlexWorld/Messages/ServerInfo.hpp
+	${INC_DIR}/FlexWorld/Model.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
@@ -64,6 +66,7 @@ set(
 	${INC_DIR}/FlexWorld/SessionHost.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
+	${INC_DIR}/FlexWorld/Triangle.hpp
 	${INC_DIR}/FlexWorld/Version.hpp
 	${INC_DIR}/FlexWorld/Vertex.hpp
 	${INC_DIR}/FlexWorld/World.hpp
@@ -82,6 +85,7 @@ set(
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Log.cpp
+	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
@@ -92,6 +96,7 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/Ready.cpp
 	${SRC_DIR}/FlexWorld/Messages/RequestChunk.cpp
 	${SRC_DIR}/FlexWorld/Messages/ServerInfo.cpp
+	${SRC_DIR}/FlexWorld/Model.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
@@ -103,6 +108,7 @@ set(
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 	${SRC_DIR}/FlexWorld/SessionHost.cpp
+	${SRC_DIR}/FlexWorld/Triangle.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/Vertex.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
