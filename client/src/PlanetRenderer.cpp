@@ -31,7 +31,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 		}
 	}
 
-	std::cout << clock.GetElapsedTime().AsMicroseconds() << " µs" << std::endl;
+	//std::cout << clock.GetElapsedTime().AsMicroseconds() << " µs" << std::endl;
 }
 
 void PlanetRenderer::render() const {
