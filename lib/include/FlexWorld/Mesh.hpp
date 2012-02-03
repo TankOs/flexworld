@@ -14,6 +14,7 @@ class Mesh {
 	public:
 		typedef uint8_t TextureSlot; ///< Texture slot.
 		typedef Triangle::VertexIndex VertexIndex; ///< Vertex index type.
+		typedef uint16_t TriangleIndex; ///< Triangle index type.
 
 		/** Ctor.
 		 */
@@ -54,7 +55,8 @@ class Mesh {
 
 		/** Define a new triangle.
 		 * Triangle indices must be valid and different from each other, otherwise
-		 * behaviour is undefined.
+		 * behaviour is undefined. Also the maximum amount of max( TriangleIndex )
+		 * shall not be exceeded.
 		 * @param triangle Triangle.
 		 */
 		void define_triangle( const Triangle& triangle );
@@ -64,7 +66,7 @@ class Mesh {
 		 * @param index Index.
 		 * @return Triangle.
 		 */
-		const Triangle& get_triangle( std::size_t index ) const;
+		const Triangle& get_triangle( TriangleIndex index ) const;
 
 		/** Clear.
 		 */

@@ -27,6 +27,7 @@ set(
 	TestMesh.cpp
 	TestMessage.cpp
 	TestModel.cpp
+	TestModelDriver.cpp
 	TestPackageEnumerator.cpp
 	TestPlanet.cpp
 	TestRefLock.cpp

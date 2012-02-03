@@ -39,6 +39,7 @@ const Vertex& Mesh::get_vertex( VertexIndex index ) const {
 }
 
 void Mesh::define_triangle( const Triangle& triangle ) {
+	assert( m_triangles.size() < std::numeric_limits<TriangleIndex>::max() );
 	assert(
 		triangle.vertices[0] != triangle.vertices[1] &&
 		triangle.vertices[0] != triangle.vertices[2] &&
@@ -53,7 +54,7 @@ void Mesh::define_triangle( const Triangle& triangle ) {
 	m_triangles.push_back( triangle );
 }
 
-const Triangle& Mesh::get_triangle( std::size_t index ) const {
+const Triangle& Mesh::get_triangle( TriangleIndex index ) const {
 	assert( index < m_triangles.size() );
 
 	return m_triangles[index];

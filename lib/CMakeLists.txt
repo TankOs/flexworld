@@ -49,6 +49,7 @@ set(
 	${INC_DIR}/FlexWorld/Messages/RequestChunk.hpp
 	${INC_DIR}/FlexWorld/Messages/ServerInfo.hpp
 	${INC_DIR}/FlexWorld/Model.hpp
+	${INC_DIR}/FlexWorld/ModelDriver.hpp
 	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
@@ -97,6 +98,7 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/RequestChunk.cpp
 	${SRC_DIR}/FlexWorld/Messages/ServerInfo.cpp
 	${SRC_DIR}/FlexWorld/Model.cpp
+	${SRC_DIR}/FlexWorld/ModelDriver.cpp
 	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
