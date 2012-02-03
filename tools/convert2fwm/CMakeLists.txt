@@ -15,4 +15,4 @@ include_directories( ${PROJECT_SOURCE_DIR}/../../lib/include/ )
 include_directories( ${ASSIMP_INCLUDE_DIR} )
 
 add_executable( convert2fwm ${SOURCES} )
-target_link_libraries( convert2fwm FlexWorldLibrary ${ASSIMP_LIBRARY} )
+target_link_libraries( convert2fwm flexworld ${ASSIMP_LIBRARY} )

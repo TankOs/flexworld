@@ -8,13 +8,13 @@
 #include <assimp/aiPostProcess.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 void print_usage() {
 	std::cout << "Usage: convert2fwm [OPTIONS...] INPUT OUTPUT" << std::endl
 		<< "Convert INPUT model file to OUTPUT FlexWorld Model file." << std::endl
 		<< std::endl
 		<< "Options:" << std::endl
-		<< "  -a NAME, --author NAME   Set author to NAME." << std::endl
 		<< "  -iv, --invertv           Invert V component of UV coordinates." << std::endl
 		<< "  -h, --help               Show this help text." << std::endl
 	;
@@ -23,7 +23,6 @@ void print_usage() {
 int main( int argc, char** argv ) {
 	std::string in_filename( "" );
 	std::string out_filename( "" );
-	std::string author( "" );
 	bool invert_v( false );
 
 	// Extract commandline arguments.
@@ -36,16 +35,7 @@ int main( int argc, char** argv ) {
 				return -1;
 			}
 
-			if( arg == "-a" || arg == "--author" ) { // Author.
-				++arg_index;
-				if( arg_index >= argc ) {
-					std::cerr << "Missing value after author option. Try --help." << std::endl;
-					return -1;
-				}
-
-				author = argv[arg_index];
-			}
-			else if( arg == "-h" || arg == "--help" ) { // Help.
+			if( arg == "-h" || arg == "--help" ) { // Help.
 				print_usage();
 				return 0;
 			}
@@ -71,15 +61,10 @@ int main( int argc, char** argv ) {
 		}
 	}
 
-	// Check if needed options are present and give info if author setting is missing.
+	// Check if needed options are present.
 	if( in_filename.empty() || out_filename.empty() ) {
 		std::cerr << "Missing arguments. Try --help." << std::endl;
 		return -1;
-	}
-
-	if( !author.size() ) {
-		author = "Unknown";
-		std::cout << "Warning: Author set to \"Unknown\". Enter your name using the --author option." << std::endl;
 	}
 
 	// Load input file.
@@ -94,7 +79,6 @@ int main( int argc, char** argv ) {
 	}
 
 	flex::Model model;
-	model.SetAuthor( author );
 
 	// Add meshes.
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
@@ -114,7 +98,7 @@ int main( int argc, char** argv ) {
 		// Only materials beginning with "slot:" are treated as texture slot definitions.
 		if( material_name.substr( 0, 5 ) == "slot:" ) {
 			std::stringstream sstr( material_name.substr( 5 ) );
-			unsigned int texture_slot( 0 );
+			uint16_t texture_slot( 0 );
 
 			sstr >> texture_slot;
 			if( !sstr || texture_slot > 255 ) {
@@ -122,7 +106,7 @@ int main( int argc, char** argv ) {
 				return -1;
 			}
 
-			mesh.SetTextureSlot( static_cast<unsigned char>( texture_slot ) );
+			mesh.set_texture_slot( static_cast<unsigned char>( texture_slot ) );
 		}
 
 		// Add vertices.
@@ -150,7 +134,7 @@ int main( int argc, char** argv ) {
 				)
 			);
 
-			mesh.AddVertex( vertex );
+			mesh.add_vertex( vertex );
 		}
 
 		// Add triangles.
@@ -163,18 +147,44 @@ int main( int argc, char** argv ) {
 				return -1;
 			}
 
-			mesh.AddTriangle( ai_face.mIndices[0], ai_face.mIndices[1], ai_face.mIndices[2] );
+			// Check for valid triangle.
+			flex::Triangle triangle(
+				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[0] ),
+				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[1] ),
+				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[2] )
+			);
+
+			if(
+				triangle.vertices[0] >= mesh.get_num_vertices() ||
+				triangle.vertices[1] >= mesh.get_num_vertices() ||
+				triangle.vertices[2] >= mesh.get_num_vertices() ||
+				triangle.vertices[0] == triangle.vertices[1] ||
+				triangle.vertices[0] == triangle.vertices[2] ||
+				triangle.vertices[1] == triangle.vertices[2]
+			) {
+				std::cerr << "Invalid vertex index in mesh " << mesh_index << ", face " << triangle_index << ": Index too high or indices equal." << std::endl;
+				return -1;
+			}
+
+			mesh.define_triangle( triangle );
 		}
 
-		model.AddMesh( mesh );
+		model.add_mesh( mesh );
 	}
 
 	// Write output file.
+	flex::ModelDriver::Buffer buffer;
+	buffer = flex::ModelDriver::serialize( model );
 
-	if( !flex::ModelDriver::SaveModelToFile( argv[2], model ) ) {
+	std::ofstream out_file( argv[2], std::ios::binary | std::ios::out );
+
+	if( !out_file.is_open() ) {
 		std::cerr << "Failed to save FlexWorld Model to " << argv[2] << "." << std::endl;
 		return -1;
 	}
+
+	out_file.write( &buffer[0], buffer.size() );
+	out_file.close();
 
 	return 0;
 }
