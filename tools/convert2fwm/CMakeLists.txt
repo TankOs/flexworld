@@ -16,3 +16,17 @@ include_directories( ${ASSIMP_INCLUDE_DIR} )
 
 add_executable( convert2fwm ${SOURCES} )
 target_link_libraries( convert2fwm flexworld ${ASSIMP_LIBRARY} )
+
+if( FW_PORTABLE_INSTALL OR WINDOWS )
+	install(
+		TARGETS convert2fwm
+		DESTINATION .
+	)
+elseif( LINUX )
+	install(
+		TARGETS convert2fwm
+		DESTINATION bin
+	)
+else()
+	message( FATAL_ERROR "Install?!?!?!" )
+endif()
