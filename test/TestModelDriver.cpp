@@ -6,6 +6,19 @@
 
 #include <boost/test/unit_test.hpp>
 
+bool deserialize_and_check_exception( const flex::ModelDriver::Buffer& buffer, const std::string& expected_what ) {
+	bool correct = false;
+
+	try {
+		flex::ModelDriver::deserialize( buffer );
+	}
+	catch( const flex::ModelDriver::DeserializationException& e ) {
+		correct = (e.what() == expected_what);
+	}
+
+	return correct;
+}
+
 BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	using namespace flex;
 
@@ -302,4 +315,143 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 			BOOST_CHECK( mesh.get_triangle( 9 ) == Triangle( 6, 4, 7 ) );
 		}
 	}
+
+	// Deserialize with wrong data.
+	{
+		ModelDriver::Buffer buffer;
+
+		// Missing identifier.
+		buffer.push_back( 'F' );
+		buffer.push_back( 'W' );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Identifier missing." ) );
+
+		// Wrong identifier.
+		buffer.push_back( '_' );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong identifier." ) );
+		buffer[2] = 'M';
+
+		// Version missing.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Version missing." ) );
+
+		// Wrong version.
+		buffer.push_back( static_cast<char>( 0xff ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong version." ) );
+		buffer[buffer.size() - 1] = 0x00;
+
+		// Missing number of meshes.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Mesh count missing." ) );
+
+		// Invalid number of meshes.
+		buffer.push_back( 0 );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Meshes missing." ) );
+		buffer[buffer.size() - 1] = 0x01;
+
+		// Missing number of vertices.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Vertex count missing." ) );
+
+		// Invalid number of vertices.
+		buffer.push_back( 0x00 );
+		buffer.push_back( 0x00 );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Vertices missing." ) );
+
+		buffer[buffer.size() - 2] = 0x01;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Vertices missing." ) );
+
+		buffer[buffer.size() - 2] = 0x02;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Vertices missing." ) );
+
+		buffer[buffer.size() - 2] = 0x03;
+		buffer[buffer.size() - 1] = 0x00;
+
+		// Missing number of triangles.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Triangle count missing." ) );
+
+		// Invalid number of triangles.
+		buffer.push_back( 0x00 );
+		buffer.push_back( 0x00 );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Triangles missing." ) );
+
+		buffer[buffer.size() - 2] = 0x01;
+		buffer[buffer.size() - 1] = 0x00;
+
+		// Texture slot missing.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Texture slot missing." ) );
+		buffer.push_back( 0x00 );
+
+		// Too less vertices.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Too less vertices." ) );
+
+		buffer.insert( buffer.end(), sizeof( Vertex ), 0 );
+		buffer.insert( buffer.end(), sizeof( Vertex ), 0 );
+		buffer.insert( buffer.end(), sizeof( Vertex ), 0 );
+
+		// Too less triangles.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Too less triangles." ) );
+
+		// Invalid triangles.
+		buffer.insert( buffer.end(), sizeof( Triangle ), 0 );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		buffer[buffer.size() - 6] = 0x01;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x00;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x00;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		buffer[buffer.size() - 6] = 0x00;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x01;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x00;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		buffer[buffer.size() - 6] = 0x00;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x00;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x01;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		// Too high indices.
+		buffer[buffer.size() - 6] = 0x00;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x01;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x03;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		buffer[buffer.size() - 6] = 0x00;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x03;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x01;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		buffer[buffer.size() - 6] = 0x03;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x01;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x00;
+		buffer[buffer.size() - 1] = 0x00;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
+
+		// Correct all failures and check.
+		buffer[buffer.size() - 6] = 0x00;
+		buffer[buffer.size() - 5] = 0x00;
+		buffer[buffer.size() - 4] = 0x01;
+		buffer[buffer.size() - 3] = 0x00;
+		buffer[buffer.size() - 2] = 0x02;
+		buffer[buffer.size() - 1] = 0x00;
+
+		BOOST_CHECK_NO_THROW( ModelDriver::deserialize( buffer ) );
+	}
+
 }

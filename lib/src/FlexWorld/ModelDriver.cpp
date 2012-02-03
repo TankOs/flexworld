@@ -116,7 +116,7 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		num_vertices = *reinterpret_cast<const Mesh::VertexIndex*>( &buffer[buf_ptr] );
 		buf_ptr += sizeof( num_vertices );
 
-		if( num_vertices < 1 ) {
+		if( num_vertices < 3 ) {
 			throw DeserializationException( "Vertices missing." );
 		}
 
