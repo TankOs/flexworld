@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	Mesh::TriangleIndex index_value = 0;
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -118,8 +118,8 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -154,8 +154,8 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = -1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
-	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
 	// Triangles.
@@ -217,9 +217,9 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		mesh.set_texture_slot( 0 );
 
 		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bac left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Fwd left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Fwd right.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bac right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Fwd left.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Fwd right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bac right.
 
 		mesh.define_triangle( Triangle( 0, 1, 2 ) );
 		mesh.define_triangle( Triangle( 1, 2, 3 ) );
@@ -232,14 +232,14 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		mesh.set_texture_slot( 1 );
 
 		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Top bac left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Top fwd left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Top fwd right.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Top bac right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Top fwd left.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Top fwd right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Top bac right.
 
 		mesh.add_vertex( Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bot bac left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Bot fwd left.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 0, 0 ) ) ); // Bot fwd right.
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bot bac right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Bot fwd left.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Bot fwd right.
+		mesh.add_vertex( Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bot bac right.
 
 		mesh.define_triangle( Triangle( 0, 4, 1 ) );
 		mesh.define_triangle( Triangle( 4, 5, 1 ) );
@@ -278,9 +278,9 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 			BOOST_CHECK( mesh.get_num_triangles() == 2 );
 
 			BOOST_CHECK( mesh.get_vertex( 0 ) == Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
 
 			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 1, 2 ) );
 			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 1, 2, 3 ) );
@@ -295,13 +295,13 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 			BOOST_CHECK( mesh.get_num_triangles() == 10 );
 
 			BOOST_CHECK( mesh.get_vertex( 0 ) == Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
 			BOOST_CHECK( mesh.get_vertex( 4 ) == Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 5 ) == Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 6 ) == Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 7 ) == Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 5 ) == Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 6 ) == Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 7 ) == Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) );
 
 			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 4, 1 ) );
 			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 4, 5, 1 ) );
