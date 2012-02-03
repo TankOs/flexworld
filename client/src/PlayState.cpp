@@ -380,9 +380,7 @@ void PlayState::prepare_chunks() {
 								continue;
 							}
 
-							boost::lock_guard<boost::mutex> mgr_lock( m_resource_manager_mutex );
-
-							// Check if texture already exists.
+							// Load textures.
 							for( std::size_t tex_idx = 0; tex_idx < block_cls->get_num_textures(); ++tex_idx ) {
 								const flex::FlexID& tex_id = block_cls->get_texture( tex_idx ).get_id();
 
@@ -395,6 +393,31 @@ void PlayState::prepare_chunks() {
 									}
 								}
 							}
+
+							// Load model.
+							const flex::FlexID& model_id = block_cls->get_model().get_id();
+
+							if( m_resource_manager.find_model( model_id ) == nullptr ) {
+								load_result = m_resource_manager.load_model( model_id );
+
+								assert( load_result );
+								if( !load_result ) {
+									// TODO Cancel game?
+								}
+
+								// Check all meshes' texture slots.
+								std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
+								assert( model );
+
+								for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
+									assert( model->get_mesh( mesh_idx ).get_texture_slot() < block_cls->get_num_textures() );
+
+									if( model->get_mesh( mesh_idx ).get_texture_slot() >= block_cls->get_num_textures() ) {
+										// TODO Cancel game?
+									}
+								}
+							}
+
 						}
 					}
 				}

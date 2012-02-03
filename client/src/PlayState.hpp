@@ -49,7 +49,6 @@ class PlayState : public State, flex::Client::Handler {
 		ViewCuboid m_view_cuboid;
 
 		ResourceManager m_resource_manager;
-		boost::mutex m_resource_manager_mutex;
 
 		std::string m_current_planet_id;
 

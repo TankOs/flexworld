@@ -1,5 +1,10 @@
 #include "ResourceManager.hpp"
 
+#include <FlexWorld/ModelDriver.hpp>
+
+#include <fstream>
+#include <iterator>
+
 void ResourceManager::set_base_path( const std::string& path ) {
 	m_base_path = path;
 
@@ -12,6 +17,7 @@ void ResourceManager::set_base_path( const std::string& path ) {
 bool ResourceManager::load_texture( const flex::FlexID& id ) {
 	// Erase texture with same ID.
 	if( find_texture( id ) ) {
+		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
 		m_textures.erase( id.get() );
 	}
 
@@ -29,21 +35,35 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 		return false;
 	}
 
-	m_textures[id.get()] = texture;
+	{
+		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
+		m_textures[id.get()] = texture;
+	}
+
 	return true;
 }
 
 std::shared_ptr<const sf::Texture> ResourceManager::find_texture( const flex::FlexID& id ) const {
-	TextureMap::const_iterator tex_iter( m_textures.find( id.get() ) );
+	std::shared_ptr<const sf::Texture> texture;
 
-	if( tex_iter == m_textures.end() ) {
-		return std::shared_ptr<const sf::Texture>();
+	// Guarded.
+	{
+		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
+
+		TextureMap::const_iterator tex_iter( m_textures.find( id.get() ) );
+
+		if( tex_iter != m_textures.end() ) {
+			texture = tex_iter->second;
+		}
 	}
 
-	return tex_iter->second;
+	return texture;
 }
 
 void ResourceManager::garbage_collect() {
+	boost::lock_guard<boost::mutex> textures_lock( m_textures_mutex );
+	boost::lock_guard<boost::mutex> models_lock( m_models_mutex );
+
 	// Collect textures.
 	{
 		std::vector<std::string> ids_to_kill;
@@ -61,5 +81,65 @@ void ResourceManager::garbage_collect() {
 			m_textures.erase( ids_to_kill[kill_idx] );
 		}
 	}
+}
 
+bool ResourceManager::load_model( const flex::FlexID& id ) {
+	// Erase model with same ID.
+	if( find_model( id ) ) {
+		boost::lock_guard<boost::mutex> lock( m_models_mutex );
+		m_models.erase( id.get() );
+	}
+
+	// Open file.
+	std::string path = m_base_path + id.as_path();
+	std::ifstream in_file( path.c_str(), std::ios::in | std::ios::binary );
+
+	if( !in_file.is_open() ) {
+		return false;
+	}
+
+	// Read whole file.
+	flex::ModelDriver::Buffer buffer;
+	in_file >> std::noskipws;
+
+	std::copy(
+		std::istream_iterator<char>( in_file ),
+		std::istream_iterator<char>(),
+		std::back_inserter( buffer )
+	);
+
+	in_file.close();
+
+	// Deserialize model.
+	std::shared_ptr<flex::Model> model( new flex::Model );
+
+	try {
+		*model = flex::ModelDriver::deserialize( buffer );
+	}
+	catch( const flex::ModelDriver::DeserializationException& /*e*/ ) {
+		return false;
+	}
+
+	{
+		boost::lock_guard<boost::mutex> lock( m_models_mutex );
+		m_models[id.get()] = model;
+	}
+
+	return true;
+}
+
+std::shared_ptr<const flex::Model> ResourceManager::find_model( const flex::FlexID& id ) const {
+	std::shared_ptr<const flex::Model> model;
+
+	{
+		boost::lock_guard<boost::mutex> lock( m_models_mutex );
+
+		ModelMap::const_iterator model_iter( m_models.find( id.get() ) );
+
+		if( model_iter != m_models.end() ) {
+			model = model_iter->second;
+		}
+	}
+
+	return model;
 }
