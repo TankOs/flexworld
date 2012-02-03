@@ -251,6 +251,55 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	{
 		Model model;
 
-		//BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
+		BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
+
+		// Validate.
+		BOOST_CHECK( model.get_num_meshes() == 2 );
+
+		// Mesh 0.
+		{
+			const Mesh& mesh = model.get_mesh( 0 );
+
+			BOOST_CHECK( mesh.get_texture_slot() == 0 );
+			BOOST_CHECK( mesh.get_num_vertices() == 4 );
+			BOOST_CHECK( mesh.get_num_triangles() == 2 );
+
+			BOOST_CHECK( mesh.get_vertex( 0 ) == Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+
+			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 1, 2 ) );
+			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 1, 2, 3 ) );
+		}
+
+		// Mesh 1.
+		{
+			const Mesh& mesh = model.get_mesh( 1 );
+
+			BOOST_CHECK( mesh.get_texture_slot() == 1 );
+			BOOST_CHECK( mesh.get_num_vertices() == 8 );
+			BOOST_CHECK( mesh.get_num_triangles() == 10 );
+
+			BOOST_CHECK( mesh.get_vertex( 0 ) == Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 1 ) == Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 2 ) == Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 3 ) == Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 4 ) == Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 5 ) == Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 6 ) == Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_vertex( 7 ) == Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
+
+			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 4, 1 ) );
+			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 4, 5, 1 ) );
+			BOOST_CHECK( mesh.get_triangle( 2 ) == Triangle( 1, 5, 2 ) );
+			BOOST_CHECK( mesh.get_triangle( 3 ) == Triangle( 5, 6, 2 ) );
+			BOOST_CHECK( mesh.get_triangle( 4 ) == Triangle( 2, 6, 7 ) );
+			BOOST_CHECK( mesh.get_triangle( 5 ) == Triangle( 2, 7, 3 ) );
+			BOOST_CHECK( mesh.get_triangle( 6 ) == Triangle( 4, 3, 7 ) );
+			BOOST_CHECK( mesh.get_triangle( 7 ) == Triangle( 4, 0, 3 ) );
+			BOOST_CHECK( mesh.get_triangle( 8 ) == Triangle( 5, 4, 6 ) );
+			BOOST_CHECK( mesh.get_triangle( 9 ) == Triangle( 6, 4, 7 ) );
+		}
 	}
 }
