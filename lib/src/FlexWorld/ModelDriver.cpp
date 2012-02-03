@@ -31,7 +31,7 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 		buffer.push_back( mesh.get_texture_slot() );
 
 		// Vertices.
-		for( Mesh::VertexIndex vertex_idx = 0; vertex_idx < mesh.get_num_vertices(); ++vertex_idx ) {
+		for( Mesh::VertexIndex vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
 			const Vertex& vertex = mesh.get_vertex( vertex_idx );
 
 			buffer.insert(
@@ -42,7 +42,7 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 		}
 
 		// Triangles.
-		for( Mesh::TriangleIndex tri_idx = 0; tri_idx < mesh.get_num_triangles(); ++tri_idx ) {
+		for( Mesh::TriangleIndex tri_idx = 0; tri_idx < num_triangles; ++tri_idx ) {
 			const Triangle& triangle = mesh.get_triangle( tri_idx );
 
 			buffer.insert(

@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	source_buffer.push_back( 'W' );
 	source_buffer.push_back( 'M' );
 	source_buffer.push_back( 0x00 ); // Version.
-	source_buffer.push_back( 0x01 ); // Num meshes.
+	source_buffer.push_back( 0x02 ); // Num meshes.
 
 	// Mesh 0.
 	source_buffer.push_back( 0x04 ); // Num vertices.
@@ -247,4 +247,10 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK( buffer == source_buffer );
 	}
 
+	// Deserialize.
+	{
+		Model model;
+
+		//BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
+	}
 }
