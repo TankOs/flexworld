@@ -1,5 +1,8 @@
 #pragma once
 
+#include "BufferObject.hpp"
+#include "Camera.hpp"
+
 #include <FlexWorld/Planet.hpp>
 
 #include <SFML/OpenGL.hpp>
@@ -37,15 +40,27 @@ class PlanetRenderer {
 		 */
 		void prepare_chunk( const flex::Planet::Vector& chunk_pos );
 
+		/** Set camera.
+		 * @param camera Camera.
+		 */
+		void set_camera( const Camera& camera );
+
 	private:
-		typedef std::vector<GLuint> VBOVector;
+		typedef std::vector<std::shared_ptr<BufferObject>> VBOVector;
 		typedef uint32_t ChunkPosition;
 		typedef std::map<ChunkPosition, std::size_t> ChunkVBOIndexMap;
-		typedef std::map<std::shared_ptr<std::shared_ptr<const sf::Texture>>, ChunkVBOIndexMap> TextureChunkPositionMap;
+		typedef std::map<std::shared_ptr<const sf::Texture>, ChunkVBOIndexMap> TextureChunkPositionMap;
 
-		const flex::Planet& m_planet;
-		ResourceManager& m_resource_manager;
+		void pause();
+		void resume();
+
+		mutable boost::mutex m_render_mutex;
 
 		VBOVector m_vbos;
 		TextureChunkPositionMap m_chunk_positions;
+
+		const Camera* m_camera;
+
+		const flex::Planet& m_planet;
+		ResourceManager& m_resource_manager;
 };

@@ -143,7 +143,8 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 void PlayState::update( const sf::Time& delta ) {
 	// Update sky.
-	m_sky->set_time_of_day( m_sky->get_time_of_day() + (delta.AsSeconds() * (0.041f / 30.0f)) );
+	//m_sky->set_time_of_day( m_sky->get_time_of_day() + (delta.AsSeconds() * (0.041f / 30.0f)) );
+	m_sky->set_time_of_day( 0.1f );
 
 	// Update GUI.
 	m_desktop.Update( delta.AsSeconds() );
@@ -193,7 +194,9 @@ void PlayState::render() const {
 
 	// Render planet.
 	if( m_planet_renderer ) {
-		//m_planet_renderer->render();
+		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		m_planet_renderer->render();
+		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 	}
 
 	glMatrixMode( GL_MODELVIEW );
@@ -286,6 +289,7 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 
 	// Setup planet renderer.
 	m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );
+	m_planet_renderer->set_camera( m_camera );
 
 	get_shared().lock_facility->lock_planet( *planet, false );
 

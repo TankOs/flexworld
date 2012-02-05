@@ -74,7 +74,7 @@ void Sky::render() const {
 	m_sun_bo.render();
 
 	// Render test floor.
-	glLoadIdentity();
+	/*glLoadIdentity();
 	glBindTexture( GL_TEXTURE_2D, 0 );
 
 	if( m_camera ) {
@@ -88,7 +88,7 @@ void Sky::render() const {
 		glVertex3f( -20.0f, -1.0f, 20.0f );
 		glVertex3f( 20.0f, -1.0f, 20.0f );
 		glVertex3f( 20.0f, -1.0f, -20.0f );
-	} glEnd();
+	} glEnd();*/
 
 	glPopMatrix();
 }
