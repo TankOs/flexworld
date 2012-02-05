@@ -17,6 +17,7 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
+	${INC_DIR}/BufferObject.hpp
 	${INC_DIR}/Camera.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
@@ -35,6 +36,7 @@ set(
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/UserSettings.cpp
+	${SRC_DIR}/BufferObject.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp

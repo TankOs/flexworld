@@ -1,7 +1,8 @@
 #pragma once
 
+#include "BufferObject.hpp"
+
 #include <SFML/Graphics/Color.hpp>
-#include <SFML/OpenGL.hpp>
 #include <cstdint>
 
 namespace sf {
@@ -69,13 +70,11 @@ class Sky {
 		sf::Color get_local_sky_color() const;
 
 	private:
+		BufferObject m_sun_bo;
+
 		sf::Color m_sky_color;
 		const sf::Texture* m_sun_texture;
 		const Camera* m_camera;
-
-		GLuint m_sun_vbo;
-		GLuint m_sun_tbo;
-		GLuint m_sun_cbo;
 
 		float m_radius;
 		float m_time_of_day;

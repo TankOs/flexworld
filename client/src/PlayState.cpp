@@ -8,6 +8,8 @@
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Config.hpp>
 
+#include "BufferObject.hpp" // XXX 
+
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
@@ -71,6 +73,8 @@ void PlayState::init() {
 	glMatrixMode( GL_TEXTURE );
 	glPushMatrix();
 	glLoadIdentity();
+
+	glMatrixMode( GL_MODELVIEW );
 
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
@@ -189,8 +193,14 @@ void PlayState::render() const {
 
 	// Render planet.
 	if( m_planet_renderer ) {
-		m_planet_renderer->render();
+		//m_planet_renderer->render();
 	}
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+
+	glTranslatef( 0, 2, -5 );
+	glColor3f( 1, 0, 0 );
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	target.PushGLStates();
