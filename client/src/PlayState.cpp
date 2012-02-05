@@ -364,7 +364,7 @@ void PlayState::prepare_chunks() {
 			}
 
 			// Load all missing textures.
-			{
+			/*{
 				flex::Chunk::Vector block_runner;
 				flex::Chunk::Vector chunk_size = planet->get_chunk_size();
 				const flex::Class* block_cls = nullptr;
@@ -423,6 +423,7 @@ void PlayState::prepare_chunks() {
 				}
 
 			} // Load textures.
+			*/
 
 			// Prepare chunk in renderer.
 			m_planet_renderer->prepare_chunk( chunk_pos );

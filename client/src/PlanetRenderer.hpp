@@ -19,7 +19,7 @@ class PlanetRenderer {
 		 * @param planet Planet.
 		 * @param resource_manager Resource manager.
 		 */
-		PlanetRenderer( const flex::Planet& planet, const ResourceManager& resource_manager );
+		PlanetRenderer( const flex::Planet& planet, ResourceManager& resource_manager );
 
 		/** Dtor.
 		 */
@@ -31,7 +31,8 @@ class PlanetRenderer {
 
 		/** Prepare chunk.
 		 * Completely prepare a chunk for rendering the next time render() is
-		 * called.
+		 * called. This will also issue the resource manager in case a model or
+		 * texture is not loaded.
 		 * @param chunk_pos Chunk position.
 		 */
 		void prepare_chunk( const flex::Planet::Vector& chunk_pos );
@@ -40,10 +41,10 @@ class PlanetRenderer {
 		typedef std::vector<GLuint> VBOVector;
 		typedef uint32_t ChunkPosition;
 		typedef std::map<ChunkPosition, std::size_t> ChunkVBOIndexMap;
-		typedef std::map<std::shared_ptr<const sf::Texture>, ChunkVBOIndexMap> TextureChunkPositionMap;
+		typedef std::map<std::shared_ptr<std::shared_ptr<const sf::Texture>>, ChunkVBOIndexMap> TextureChunkPositionMap;
 
 		const flex::Planet& m_planet;
-		const ResourceManager& m_resource_manager;
+		ResourceManager& m_resource_manager;
 
 		VBOVector m_vbos;
 		TextureChunkPositionMap m_chunk_positions;
