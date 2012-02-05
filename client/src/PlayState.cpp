@@ -355,81 +355,17 @@ void PlayState::prepare_chunks() {
 			get_shared().lock_facility->lock_world( false );
 
 			// Make sure chunk exists.
-			if( !planet->has_chunk( chunk_pos ) ) {
+			if( planet->has_chunk( chunk_pos ) ) {
+				// Prepare chunk in renderer.
+				m_planet_renderer->prepare_chunk( chunk_pos );
+			}
+			else {
 #if !defined( NDEBUG )
 				std::cout << "Skipping, no chunk at given position." << std::endl;
 #endif
-				get_shared().lock_facility->lock_planet( *planet, false );
-				continue;
 			}
 
-			// Load all missing textures.
-			/*{
-				flex::Chunk::Vector block_runner;
-				flex::Chunk::Vector chunk_size = planet->get_chunk_size();
-				const flex::Class* block_cls = nullptr;
-				bool load_result = false;
-
-				for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
-					for( block_runner.y = 0; block_runner.y < chunk_size.y; ++block_runner.y ) {
-						for( block_runner.x = 0; block_runner.x < chunk_size.x; ++block_runner.x ) {
-							// Skip empty blocks.
-							block_cls = planet->find_block( chunk_pos, block_runner );
-
-							if( block_cls == nullptr ) {
-								continue;
-							}
-
-							// Load textures.
-							for( std::size_t tex_idx = 0; tex_idx < block_cls->get_num_textures(); ++tex_idx ) {
-								const flex::FlexID& tex_id = block_cls->get_texture( tex_idx ).get_id();
-
-								if( m_resource_manager.find_texture( tex_id ) == nullptr ) {
-									load_result = m_resource_manager.load_texture( tex_id );
-
-									assert( load_result );
-									if( !load_result ) {
-										// TODO Cancel game?
-									}
-								}
-							}
-
-							// Load model.
-							const flex::FlexID& model_id = block_cls->get_model().get_id();
-
-							if( m_resource_manager.find_model( model_id ) == nullptr ) {
-								load_result = m_resource_manager.load_model( model_id );
-
-								assert( load_result );
-								if( !load_result ) {
-									// TODO Cancel game?
-								}
-
-								// Check all meshes' texture slots.
-								std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
-								assert( model );
-
-								for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
-									assert( model->get_mesh( mesh_idx ).get_texture_slot() < block_cls->get_num_textures() );
-
-									if( model->get_mesh( mesh_idx ).get_texture_slot() >= block_cls->get_num_textures() ) {
-										// TODO Cancel game?
-									}
-								}
-							}
-
-						}
-					}
-				}
-
-			} // Load textures.
-			*/
-
-			// Prepare chunk in renderer.
-			m_planet_renderer->prepare_chunk( chunk_pos );
-
 			get_shared().lock_facility->lock_planet( *planet, false );
-
 			m_chunk_list_mutex.lock();
 		}
 
