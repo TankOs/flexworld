@@ -21,6 +21,7 @@ Client::Client() {
 void Client::run() {
 	// Setup window.
 	m_window.Create( sf::VideoMode::GetDesktopMode(), "", sf::Style::Fullscreen );
+	m_window.EnableVerticalSync( false );
 
 	{
 		std::stringstream sstr;

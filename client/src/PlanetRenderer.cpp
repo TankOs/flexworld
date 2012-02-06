@@ -94,7 +94,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 						std::shared_ptr<BufferObject>& vbo = new_vbos[texture];
 
 						if( vbo == nullptr ) {
-							vbo.reset( new BufferObject( BufferObject::TEX_COORDS ) );
+							vbo.reset( new BufferObject( BufferObject::TEX_COORDS | BufferObject::NORMALS ) );
 						}
 
 						// Iterate over triangles.
@@ -198,7 +198,7 @@ void PlanetRenderer::render() const {
 		glTranslatef( -m_camera->get_position().x, -m_camera->get_position().y, -m_camera->get_position().z );
 	}
 
-	glTranslatef( -50, -3, -50 );
+	glTranslatef( -50, -2.70f, -50 );
 
 	std::size_t vbo_idx = 0;
 	std::size_t num_vbos = 0;

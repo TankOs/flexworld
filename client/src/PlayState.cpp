@@ -84,6 +84,9 @@ void PlayState::init() {
 
 	glMatrixMode( GL_MODELVIEW );
 
+	// Misc.
+	get_render_target().ShowMouseCursor( false );
+
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
 	get_shared().client->send_message( ready_msg );
@@ -124,6 +127,8 @@ void PlayState::cleanup() {
 
 	glMatrixMode( GL_TEXTURE );
 	glPopMatrix();
+
+	get_render_target().ShowMouseCursor( true );
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
@@ -252,7 +257,11 @@ void PlayState::render() const {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		}
 
+		glCullFace( GL_BACK );
+
+		glEnable( GL_CULL_FACE );
 		m_planet_renderer->render();
+		glDisable( GL_CULL_FACE );
 
 		if( m_wireframe ) {
 			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
