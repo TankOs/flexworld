@@ -48,68 +48,66 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 				// Skip empty blocks.
 				block_cls = m_planet.find_block( chunk_pos, block_runner );
 
-				if( block_cls == nullptr ) {
-					continue;
-				}
+				if( block_cls != nullptr ) {
+					// Get model.
+					const flex::FlexID& model_id = block_cls->get_model().get_id();
+					std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
 
-				// Get model.
-				const flex::FlexID& model_id = block_cls->get_model().get_id();
-				std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
-
-				if( model == nullptr ) {
-					// Try to load.
-					if( !m_resource_manager.load_model( model_id ) ) {
-#if !defined( NDEBUG )
-						std::cerr << "Failed to load model: " << model_id.get() << std::endl;
-#endif
-						return;
-						// TODO Exception?
-					}
-
-					model = m_resource_manager.find_model( model_id );
-					assert( model );
-				}
-
-				// Iterate over meshes.
-				for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
-					const flex::Mesh& mesh = model->get_mesh( mesh_idx );
-
-					assert( mesh.get_texture_slot() < block_cls->get_num_textures() );
-
-					// Get texture.
-					const flex::FlexID& texture_id = block_cls->get_texture( mesh.get_texture_slot() ).get_id();
-					std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( texture_id );
-
-					if( texture == nullptr ) {
+					if( model == nullptr ) {
 						// Try to load.
-						if( !m_resource_manager.load_texture( texture_id ) ) {
+						if( !m_resource_manager.load_model( model_id ) ) {
 #if !defined( NDEBUG )
-							std::cerr << "Failed to load texture: " << texture_id.get() << std::endl;
+							std::cerr << "Failed to load model: " << model_id.get() << std::endl;
 #endif
 							return;
+							// TODO Exception?
 						}
 
-						texture = m_resource_manager.find_texture( texture_id );
-						assert( texture );
+						model = m_resource_manager.find_model( model_id );
+						assert( model );
 					}
 
-					// Get VBO or generate a new one.
-					std::shared_ptr<BufferObject>& vbo = new_vbos[texture];
+					// Iterate over meshes.
+					for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
+						const flex::Mesh& mesh = model->get_mesh( mesh_idx );
 
-					if( vbo == nullptr ) {
-						vbo.reset( new BufferObject( BufferObject::TEX_COORDS ) );
-					}
+						assert( mesh.get_texture_slot() < block_cls->get_num_textures() );
 
-					// Iterate over triangles.
-					for( flex::Mesh::TriangleIndex tri_idx = 0; tri_idx < mesh.get_num_triangles(); ++tri_idx ) {
-						const flex::Triangle& tri = mesh.get_triangle( tri_idx );
+						// Get texture.
+						const flex::FlexID& texture_id = block_cls->get_texture( mesh.get_texture_slot() ).get_id();
+						std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( texture_id );
 
-						// Add triangle's vertices to VBO.
-						for( vertex_idx = 0; vertex_idx < 3; ++vertex_idx ) {
-							vertex = mesh.get_vertex( tri.vertices[vertex_idx] );
+						if( texture == nullptr ) {
+							// Try to load.
+							if( !m_resource_manager.load_texture( texture_id ) ) {
+#if !defined( NDEBUG )
+								std::cerr << "Failed to load texture: " << texture_id.get() << std::endl;
+#endif
+								return;
+							}
 
-							vertex.position += offset;
-							vbo->add_vertex( vertex );
+							texture = m_resource_manager.find_texture( texture_id );
+							assert( texture );
+						}
+
+						// Get VBO or generate a new one.
+						std::shared_ptr<BufferObject>& vbo = new_vbos[texture];
+
+						if( vbo == nullptr ) {
+							vbo.reset( new BufferObject( BufferObject::TEX_COORDS ) );
+						}
+
+						// Iterate over triangles.
+						for( flex::Mesh::TriangleIndex tri_idx = 0; tri_idx < mesh.get_num_triangles(); ++tri_idx ) {
+							const flex::Triangle& tri = mesh.get_triangle( tri_idx );
+
+							// Add triangle's vertices to VBO.
+							for( vertex_idx = 0; vertex_idx < 3; ++vertex_idx ) {
+								vertex = mesh.get_vertex( tri.vertices[vertex_idx] );
+
+								vertex.position += offset;
+								vbo->add_vertex( vertex );
+							}
 						}
 					}
 				}
@@ -178,8 +176,6 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 		// Save VBO and create link between chunk/texture -> VBO.
 		vbos[vbo_idx] = new_vbo_iter->second;
 		m_chunk_textures[abs_chunk_pos][new_vbo_iter->first] = vbo_idx;
-
-		std::cout << "Added, now: " << m_vbos.begin()->second.size() << " VBOs." << std::endl;
 	}
 
 	resume();
@@ -211,15 +207,9 @@ void PlanetRenderer::render() const {
 	TextureVBOVectorMap::const_iterator tex_vbo_iter( m_vbos.begin() );
 	TextureVBOVectorMap::const_iterator tex_vbo_iter_end( m_vbos.end() );
 
-	if( m_vbos.size() > 0 ) {
-		std::cout << m_vbos.size() << std::endl;
-	}
-	
 	for( ; tex_vbo_iter != tex_vbo_iter_end; ++tex_vbo_iter ) {
 		vbos = &tex_vbo_iter->second;
 		num_vbos = vbos->size();
-
-		std::cout << num_vbos << std::endl;
 
 		// Bind texture.
 		tex_vbo_iter->first->Bind();

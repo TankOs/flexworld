@@ -1,0 +1,5 @@
+ID: "fw.base.nature/stone"
+Name: "Stone"
+Textures:
+  - "fw.base.nature/stone.png"
+Model: "fw.base.prim/cube.fwm"

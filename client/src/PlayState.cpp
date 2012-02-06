@@ -355,8 +355,6 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 }
 
 void PlayState::prepare_chunks() {
-	std::cout << "Launched" << std::endl;
-
 	// We need a valid context for loading textures.
 	sf::Context context;
 
@@ -374,7 +372,6 @@ void PlayState::prepare_chunks() {
 
 		// Work until all chunks have been processed.
 		while( m_chunk_list.size() > 0 ) {
-			std::cout << "Prepare..." << std::endl;
 			// Get next chunk position.
 			flex::Planet::Vector chunk_pos = m_chunk_list.front();
 			m_chunk_list.pop_front();

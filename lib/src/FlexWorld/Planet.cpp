@@ -1,4 +1,5 @@
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/Class.hpp>// XXX 
 
 #include <cassert>
 #include <iostream>

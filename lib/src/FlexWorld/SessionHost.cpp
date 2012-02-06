@@ -98,6 +98,40 @@ bool SessionHost::run() {
 				}
 			}
 		}
+
+		// Some test blocks. XXX
+		FlexID stone_id = FlexID::make( "fw.base.nature/stone" );
+		const Class* stone_cls = m_world.find_class( stone_id );
+
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 0 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 1, 0 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 1, 0 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 1, 0 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 0 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 4 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 1, 4 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 1, 4 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 1, 4 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 4 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 2 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 3 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 2 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 3 ), *stone_cls );
+
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 2, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 3 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 2, 3 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 3 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 2 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 1 ), *stone_cls );
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 2 ), *stone_cls );
+
+		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 3, 2 ), *stone_cls );
 	}
 
 	return m_server->run();
