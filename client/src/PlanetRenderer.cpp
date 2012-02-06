@@ -195,6 +195,7 @@ void PlanetRenderer::render() const {
 	if( m_camera ) {
 		glRotatef( m_camera->get_rotation().x, 1.0f, 0.0f, 0.0f );
 		glRotatef( m_camera->get_rotation().y, 0.0f, 1.0f, 0.0f );
+		glTranslatef( -m_camera->get_position().x, -m_camera->get_position().y, -m_camera->get_position().z );
 	}
 
 	glTranslatef( -50, -3, -50 );

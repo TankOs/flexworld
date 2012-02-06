@@ -1,5 +1,7 @@
 #include "Camera.hpp"
 
+#include <FlexWorld/Math.hpp>
+
 #include <algorithm>
 
 Camera::Camera() :
@@ -56,4 +58,14 @@ void Camera::set_pitch_clamp( float clamp ) {
 
 void Camera::apply_clamp() {
 	m_rotation.x = std::max( -m_pitch_clamp, std::min( m_pitch_clamp, m_rotation.x ) );
+}
+
+void Camera::walk( float distance ) {
+	m_position.x -= std::sin( m_rotation.y * flex::PI / 180.0f ) * distance;
+	m_position.z += std::cos( m_rotation.y * flex::PI / 180.0f ) * distance;
+}
+
+void Camera::strafe( float distance ) {
+	m_position.x -= std::sin( (m_rotation.y - 90.0f) * flex::PI / 180.0f ) * distance;
+	m_position.z += std::cos( (m_rotation.y - 90.0f) * flex::PI / 180.0f ) * distance;
 }

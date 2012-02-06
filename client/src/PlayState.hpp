@@ -69,4 +69,13 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_prepare_thread_ready;
 
 		bool m_wireframe;
+
+		// Controls.
+		sf::Vector3f m_velocity;
+
+		bool m_update_velocity;
+		bool m_walk_forward;
+		bool m_walk_backward;
+		bool m_strafe_left;
+		bool m_strafe_right;
 };

@@ -6,6 +6,7 @@
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
+#include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
 
 #include "BufferObject.hpp" // XXX 
@@ -16,7 +17,13 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_console( Console::Create() ),
 	m_do_prepare_chunks( false ),
-	m_wireframe( false )
+	m_wireframe( false ),
+	m_velocity( 0, 0, 0 ),
+	m_update_velocity( false ),
+	m_walk_forward( false ),
+	m_walk_backward( false ),
+	m_strafe_left( false ),
+	m_strafe_right( false )
 {
 }
 
@@ -141,6 +148,34 @@ void PlayState::handle_event( const sf::Event& event ) {
 		}
 	}
 
+	// Check for movement keys.
+	if( event.Type == sf::Event::KeyPressed || event.Type == sf::Event::KeyReleased ) {
+		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.Key.Code );
+
+		if( action != Controls::UNMAPPED ) {
+			bool pressed = (event.Type == sf::Event::KeyPressed) ? true : false;
+			give_gui = false;
+
+			if( action == Controls::WALK_FORWARD ) {
+				m_walk_forward = pressed;
+				m_update_velocity = true;
+			}
+			else if( action == Controls::WALK_BACKWARD ) {
+				m_walk_backward = pressed;
+				m_update_velocity = true;
+			}
+			else if( action == Controls::STRAFE_LEFT ) {
+				m_strafe_left = pressed;
+				m_update_velocity = true;
+			}
+			else if( action == Controls::STRAFE_RIGHT ) {
+				m_strafe_right = pressed;
+				m_update_velocity = true;
+			}
+		}
+
+	}
+
 	if( give_gui ) {
 		m_desktop.HandleEvent( event );
 	}
@@ -177,6 +212,19 @@ void PlayState::update( const sf::Time& delta ) {
 		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
 		get_render_target()
 	);
+
+	// Movement.
+	if( m_update_velocity ) {
+		m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+		m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+
+		flex::normalize( m_velocity );
+
+		m_update_velocity = false;
+	}
+
+	m_camera.walk( (m_velocity.z * 2.0f) * delta.AsSeconds() );
+	m_camera.strafe( (m_velocity.x * 2.0f) * delta.AsSeconds() );
 }
 
 void PlayState::render() const {

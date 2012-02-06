@@ -60,6 +60,16 @@ class Camera {
 		 */
 		void set_pitch_clamp( float clamp );
 
+		/** Walk (along local -z axis).
+		 * @param distance Distance.
+		 */
+		void walk( float distance );
+
+		/** Strafe (along local +x axis).
+		 * @param distance Distance.
+		 */
+		void strafe( float distance );
+
 	private:
 		void apply_clamp();
 

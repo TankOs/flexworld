@@ -86,6 +86,7 @@ set(
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Log.cpp
+	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
