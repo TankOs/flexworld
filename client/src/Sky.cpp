@@ -123,9 +123,9 @@ float Sky::get_time_of_day() const {
 
 sf::Color Sky::get_local_sky_color() const {
 	return sf::Color(
-		static_cast<sf::Uint8>( std::sin( m_time_of_day * flex::PI ) * static_cast<float>( m_sky_color.r ) ),
-		static_cast<sf::Uint8>( std::sin( m_time_of_day * flex::PI ) * static_cast<float>( m_sky_color.g ) ),
-		static_cast<sf::Uint8>( std::sin( m_time_of_day * flex::PI ) * static_cast<float>( m_sky_color.b ) ),
+		static_cast<sf::Uint8>( std::sin( (m_time_of_day + 0.2f) * flex::PI ) * static_cast<float>( m_sky_color.r ) ),
+		static_cast<sf::Uint8>( std::sin( (m_time_of_day + 0.2f) * flex::PI ) * static_cast<float>( m_sky_color.g ) ),
+		static_cast<sf::Uint8>( std::sin( (m_time_of_day + 0.2f) * flex::PI ) * static_cast<float>( m_sky_color.b ) ),
 		m_sky_color.a
 	);
 }

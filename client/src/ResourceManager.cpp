@@ -35,6 +35,8 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 		return false;
 	}
 
+	texture->SetSmooth( true );
+
 	{
 		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
 		m_textures[id.get()] = texture;

@@ -27,19 +27,21 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 	sf::Clock clock;
 
-	flex::Chunk::Vector block_runner;
-	flex::Chunk::Vector chunk_size = m_planet.get_chunk_size();
-	const flex::Class* block_cls = nullptr;
+	const flex::Chunk::Vector& chunk_size = m_planet.get_chunk_size();
+
 	sf::Vector3f org_offset(
-		static_cast<float>( chunk_pos.x * m_planet.get_chunk_size().x ) * GRID_SIZE,
-		static_cast<float>( chunk_pos.y * m_planet.get_chunk_size().y ) * GRID_SIZE,
-		static_cast<float>( chunk_pos.z * m_planet.get_chunk_size().z ) * GRID_SIZE
+		static_cast<float>( chunk_pos.x * chunk_size.x ) * GRID_SIZE,
+		static_cast<float>( chunk_pos.y * chunk_size.y ) * GRID_SIZE,
+		static_cast<float>( chunk_pos.z * chunk_size.z ) * GRID_SIZE
 	);
 	sf::Vector3f offset = org_offset;
-	TextureVBOMap vbos;
+
+	const flex::Class* block_cls = nullptr;
 	std::size_t vertex_idx = 0;
 	flex::Vertex vertex;
+	TextureVBOMap new_vbos;
 
+	flex::Chunk::Vector block_runner;
 	for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
 		for( block_runner.y = 0; block_runner.y < chunk_size.y; ++block_runner.y ) {
 			for( block_runner.x = 0; block_runner.x < chunk_size.x; ++block_runner.x ) {
@@ -92,10 +94,10 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 					}
 
 					// Get VBO or generate a new one.
-					std::shared_ptr<BufferObject>& vbo = vbos[texture];
+					std::shared_ptr<BufferObject>& vbo = new_vbos[texture];
 
 					if( vbo == nullptr ) {
-						vbo.reset( new BufferObject( BufferObject::VERTICES_ONLY ) );
+						vbo.reset( new BufferObject( BufferObject::TEX_COORDS ) );
 					}
 
 					// Iterate over triangles.
@@ -109,7 +111,6 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							vertex.position += offset;
 							vbo->add_vertex( vertex );
 						}
-
 					}
 				}
 
@@ -139,54 +140,46 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	// Apply VBOs to main rendering pool.
 	//
 
-	TextureVBOMap::iterator tex_vbo_iter( vbos.begin() );
-	TextureVBOMap::iterator tex_vbo_iter_end( vbos.end() );
-	std::size_t vbo_idx = 0;
+	// Remove all VBOs that were created for this chunk before.
+	ChunkTextureMap::iterator chunk_tex_iter = m_chunk_textures.find( abs_chunk_pos );
+
+	if( chunk_tex_iter != m_chunk_textures.end() ) {
+		TextureVBOIndexMap::iterator vbo_iter = chunk_tex_iter->second.begin();
+		TextureVBOIndexMap::iterator vbo_iter_end = chunk_tex_iter->second.end();
+
+		for( ; vbo_iter != vbo_iter_end; ++vbo_iter ) {
+			m_vbos[vbo_iter->first][vbo_iter->second].reset();
+		}
+
+		m_chunk_textures.erase( chunk_tex_iter );
+	}
 	
-	for( ; tex_vbo_iter != tex_vbo_iter_end; ++tex_vbo_iter ) {
-		// Get old index if any.
-		vbo_idx = m_vbos.size();
+	// Add prepared VBOs to main pool.
+	TextureVBOMap::iterator new_vbo_iter = new_vbos.begin();
+	TextureVBOMap::iterator new_vbo_iter_end = new_vbos.end();
+	std::size_t vbo_idx = 0;
 
-		// Check if this chunk had a VBO before. If so, remove it from the VBO array.
-		{
-			TextureChunkPositionMap::iterator tex_pos_iter = m_chunk_positions.find( tex_vbo_iter->first );
+	for( ; new_vbo_iter != new_vbo_iter_end; ++new_vbo_iter ) {
+		// Get reference to VBO pool for a specific texture.
+		VBOVector& vbos = m_vbos[new_vbo_iter->first];
 
-			if( tex_pos_iter != m_chunk_positions.end() ) {
-				ChunkVBOIndexMap::iterator pos_vbo_iter = tex_pos_iter->second.find( abs_chunk_pos );
-
-				if( pos_vbo_iter != tex_pos_iter->second.end() ) {
-					// Save old index, so it's being reused.
-					vbo_idx = pos_vbo_iter->second;
-
-					// Reset the previous VBO.
-					m_vbos[vbo_idx].reset();
-
-					// Do not remove link (doesn't have to be done, gets overwritten anyways).
-					//tex_pos_iter->second.erase( pos_vbo_iter );
-				}
+		// Search for free slot.
+		for( vbo_idx = 0; vbo_idx < vbos.size(); ++vbo_idx ) {
+			if( vbos[vbo_idx] == nullptr ) {
+				break;
 			}
 		}
 
-		// Check if the VBO vbo_idx is pointing to can be reused.
-		if( vbo_idx >= m_vbos.size() || m_vbos[vbo_idx] != nullptr ) {
-			// Can't be reused, find next free slot.
-			for( vbo_idx = 0; vbo_idx < m_vbos.size(); ++vbo_idx ) {
-				if( m_vbos[vbo_idx] == nullptr ) {
-					break;
-				}
-			}
+		// Check if VBO pool needs to be enlarged.
+		if( vbo_idx >= vbos.size() ) {
+			vbos.resize( vbos.size() + 1 );
 		}
 
-		// If no free slot found, create a new one.
-		if( vbo_idx >= m_vbos.size() ) {
-			m_vbos.push_back( std::shared_ptr<BufferObject>() );
-		}
+		// Save VBO and create link between chunk/texture -> VBO.
+		vbos[vbo_idx] = new_vbo_iter->second;
+		m_chunk_textures[abs_chunk_pos][new_vbo_iter->first] = vbo_idx;
 
-		assert( vbo_idx < m_vbos.size() );
-
-		// Save VBO and link.
-		m_vbos[vbo_idx] = tex_vbo_iter->second;
-		m_chunk_positions[tex_vbo_iter->first][abs_chunk_pos] = vbo_idx;
+		std::cout << "Added, now: " << m_vbos.begin()->second.size() << " VBOs." << std::endl;
 	}
 
 	resume();
@@ -200,8 +193,6 @@ void PlanetRenderer::render() const {
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 
-	glBindTexture( GL_TEXTURE_2D, 0 );
-
 	glColor3f( 1, 1, 1 );
 
 	// Apply camera.
@@ -213,19 +204,42 @@ void PlanetRenderer::render() const {
 	glTranslatef( -50, -3, -50 );
 
 	std::size_t vbo_idx = 0;
-	std::size_t num_vbos = m_vbos.size();
+	std::size_t num_vbos = 0;
+	const VBOVector* vbos;
+	std::shared_ptr<BufferObject> buffer;
 
-	for( ; vbo_idx < num_vbos; ++vbo_idx ) {
-		if( m_vbos[vbo_idx] == nullptr ) {
-			continue;
+	TextureVBOVectorMap::const_iterator tex_vbo_iter( m_vbos.begin() );
+	TextureVBOVectorMap::const_iterator tex_vbo_iter_end( m_vbos.end() );
+
+	if( m_vbos.size() > 0 ) {
+		std::cout << m_vbos.size() << std::endl;
+	}
+	
+	for( ; tex_vbo_iter != tex_vbo_iter_end; ++tex_vbo_iter ) {
+		vbos = &tex_vbo_iter->second;
+		num_vbos = vbos->size();
+
+		std::cout << num_vbos << std::endl;
+
+		// Bind texture.
+		tex_vbo_iter->first->Bind();
+
+		for( vbo_idx = 0; vbo_idx < num_vbos; ++vbo_idx ) {
+			buffer = (*vbos)[vbo_idx];
+
+			// Skip free VBO slots.
+			if( buffer == nullptr ) {
+				continue;
+			}
+
+			// Upload data to GPU if needed.
+			if( buffer->is_upload_needed() ) {
+				buffer->upload();
+			}
+
+			// Render VBO.
+			buffer->render();
 		}
-
-		// Upload data to GPU if needed.
-		if( m_vbos[vbo_idx]->is_upload_needed() ) {
-			m_vbos[vbo_idx]->upload();
-		}
-
-		m_vbos[vbo_idx]->render();
 	}
 }
 

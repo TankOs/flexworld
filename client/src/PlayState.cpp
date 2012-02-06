@@ -15,7 +15,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_desktop( target ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_console( Console::Create() ),
-	m_do_prepare_chunks( false )
+	m_do_prepare_chunks( false ),
+	m_wireframe( false )
 {
 }
 
@@ -134,6 +135,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 			m_console->Show( !m_console->IsVisible() );
 			give_gui = false;
 		}
+		else if( event.Key.Code == sf::Keyboard::F3 ) {
+			m_wireframe = !m_wireframe;
+			give_gui = false;
+		}
 	}
 
 	if( give_gui ) {
@@ -187,16 +192,23 @@ void PlayState::render() const {
 		static_cast<float>( local_sky_color.a ) / 255.f
 	);
 
-	glClear( GL_COLOR_BUFFER_BIT );
+	glEnable( GL_DEPTH_TEST );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// Render sky.
 	m_sky->render();
 
 	// Render planet.
 	if( m_planet_renderer ) {
-		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		if( m_wireframe ) {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		}
+
 		m_planet_renderer->render();
-		glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
+		if( m_wireframe ) {
+			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+		}
 	}
 
 	glMatrixMode( GL_MODELVIEW );
@@ -206,6 +218,8 @@ void PlayState::render() const {
 	glColor3f( 1, 0, 0 );
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
+	glDisable( GL_DEPTH_TEST );
+
 	target.PushGLStates();
 
 	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
@@ -267,6 +281,9 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	// Save current planet ID.
 	m_current_planet_id = msg.get_planet_name();
 
+	// Setup preparation thread for chunks.
+	launch_chunk_preparation_thread();
+
 	// Update view cuboid.
 	flex::Planet::Vector chunk_pos;
 	flex::Chunk::Vector block_pos;
@@ -292,9 +309,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_planet_renderer->set_camera( m_camera );
 
 	get_shared().lock_facility->lock_planet( *planet, false );
-
-	// Setup preparation thread for chunks.
-	launch_chunk_preparation_thread();
 
 	// XXX 
 	std::stringstream debug_msg;
@@ -341,18 +355,26 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 }
 
 void PlayState::prepare_chunks() {
+	std::cout << "Launched" << std::endl;
+
 	// We need a valid context for loading textures.
 	sf::Context context;
 
 	boost::unique_lock<boost::mutex> do_lock( m_prepare_chunks_mutex );
 
 	while( m_do_prepare_chunks ) {
-		m_prepare_chunks_condition.wait( do_lock );
-
-		// Work until all chunks have been processed.
+		// If there's no data, wait.
 		m_chunk_list_mutex.lock();
 
+		if( m_chunk_list.size() == 0 ) {
+			m_chunk_list_mutex.unlock();
+			m_prepare_chunks_condition.wait( do_lock );
+			continue;
+		}
+
+		// Work until all chunks have been processed.
 		while( m_chunk_list.size() > 0 ) {
+			std::cout << "Prepare..." << std::endl;
 			// Get next chunk position.
 			flex::Planet::Vector chunk_pos = m_chunk_list.front();
 			m_chunk_list.pop_front();

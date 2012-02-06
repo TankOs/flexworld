@@ -66,4 +66,7 @@ class PlayState : public State, flex::Client::Handler {
 
 		ChunkPositionList m_chunk_list;
 		bool m_do_prepare_chunks;
+		bool m_prepare_thread_ready;
+
+		bool m_wireframe;
 };

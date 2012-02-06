@@ -8,6 +8,9 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <boost/thread.hpp>
+#include <map>
+#include <vector>
+#include <unordered_map>
 #include <cstdint>
 
 class ResourceManager;
@@ -47,17 +50,19 @@ class PlanetRenderer {
 
 	private:
 		typedef std::vector<std::shared_ptr<BufferObject>> VBOVector;
+		typedef std::unordered_map<std::shared_ptr<const sf::Texture>, VBOVector> TextureVBOVectorMap;
+
 		typedef uint32_t ChunkPosition;
-		typedef std::map<ChunkPosition, std::size_t> ChunkVBOIndexMap;
-		typedef std::map<std::shared_ptr<const sf::Texture>, ChunkVBOIndexMap> TextureChunkPositionMap;
+		typedef std::map<std::shared_ptr<const sf::Texture>, std::size_t> TextureVBOIndexMap;
+		typedef std::map<ChunkPosition, TextureVBOIndexMap> ChunkTextureMap;
 
 		void pause();
 		void resume();
 
 		mutable boost::mutex m_render_mutex;
 
-		VBOVector m_vbos;
-		TextureChunkPositionMap m_chunk_positions;
+		TextureVBOVectorMap m_vbos;
+		ChunkTextureMap m_chunk_textures;
 
 		const Camera* m_camera;
 
