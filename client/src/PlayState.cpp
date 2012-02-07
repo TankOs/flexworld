@@ -8,16 +8,17 @@
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
+#include <sstream>
 
 #include "BufferObject.hpp" // XXX 
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
-	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_console( Console::Create() ),
-	m_do_prepare_chunks( false ),
 	m_wireframe( false ),
+	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
+	m_do_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
 	m_walk_forward( false ),
@@ -48,6 +49,9 @@ void PlayState::init() {
 
 	m_console->add_message( "Press F11 to show/hide the console." );
 	m_console->Show( false );
+
+	// Setup UI.
+	m_fps_text.SetCharacterSize( 12 );
 
 	// Setup scene.
 	// Sky.
@@ -230,6 +234,20 @@ void PlayState::update( const sf::Time& delta ) {
 
 	m_camera.walk( (m_velocity.z * 2.0f) * delta.AsSeconds() );
 	m_camera.strafe( (m_velocity.x * 2.0f) * delta.AsSeconds() );
+
+	// Update FPS string.
+	static sf::Time elapsed;
+	
+	elapsed += delta;
+
+	if( elapsed >= sf::Microseconds( 1000000 / 2 ) ) {
+		std::stringstream sstr;
+		sstr << "FPS renderer/logic: " << get_render_fps() << "/" << get_logic_fps();
+
+		m_fps_text.SetString( sstr.str() );
+
+		elapsed = sf::Time::Zero;
+	}
 }
 
 void PlayState::render() const {
@@ -283,11 +301,15 @@ void PlayState::render() const {
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
 	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 
+	// FPS.
+	target.Draw( m_fps_text );
+
 	// Render GUI.
 	sfg::Renderer::Get().Display( target );
 
 	// Restore SFML's states and render everything.
 	target.PopGLStates();
+
 	target.Display();
 }
 

@@ -13,6 +13,7 @@
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Text.hpp>
 #include <boost/thread.hpp>
 
 /** Play state.
@@ -42,19 +43,26 @@ class PlayState : public State, flex::Client::Handler {
 
 		void request_chunks( const ViewCuboid& cuboid );
 
+		// UI.
 		sfg::Desktop m_desktop;
+		Console::Ptr m_console;
+
+		sf::Text m_fps_text;
+
+		// Resources.
+		ResourceManager m_resource_manager;
+
+		// Scene.
 		sf::Texture m_sun_texture;
+		std::unique_ptr<Sky> m_sky;
+		std::unique_ptr<PlanetRenderer> m_planet_renderer;
+		bool m_wireframe;
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;
 
-		ResourceManager m_resource_manager;
-
+		// Backend data.
 		std::string m_current_planet_id;
-
-		std::unique_ptr<Sky> m_sky;
-		std::unique_ptr<PlanetRenderer> m_planet_renderer;
-		Console::Ptr m_console;
 
 		// Chunk preparation thread.
 		typedef std::list<flex::Planet::Vector> ChunkPositionList;
@@ -67,8 +75,6 @@ class PlayState : public State, flex::Client::Handler {
 		ChunkPositionList m_chunk_list;
 		bool m_do_prepare_chunks;
 		bool m_prepare_thread_ready;
-
-		bool m_wireframe;
 
 		// Controls.
 		sf::Vector3f m_velocity;

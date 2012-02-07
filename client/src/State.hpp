@@ -69,11 +69,24 @@ class State {
 		 */
 		sf::RenderWindow& get_render_target() const;
 
+		/** Get rendering FPS.
+		 * @return Rendering FPS.
+		 */
+		unsigned int get_render_fps() const;
+
+		/** Get logic FPS.
+		 * @return Logic FPS.
+		 */
+		unsigned int get_logic_fps() const;
+
 	private:
 		sf::RenderWindow& m_render_target;
 
 		sf::Time m_logic_interval;
 		sf::Time m_render_interval;
+
+		unsigned int m_render_fps;
+		unsigned int m_logic_fps;
 
 		bool m_run;
 		State* m_next_state;
