@@ -6,8 +6,6 @@ endif()
 
 project( FlexWorld )
 
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake" )
-
 #
 # Detections.
 #
@@ -24,6 +22,8 @@ if( CMAKE_COMPILER_IS_GNUCXX )
 elseif( MSVC_VERSION )
 	set( COMPILER_MSVC 1 )
 endif()
+
+set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlibs/SFML/cmake/Modules;${PROJECT_SOURCE_DIR}/extlibs/SFGUI/cmake" )
 
 #
 # Global project settings.
@@ -56,8 +56,6 @@ set( FW_BUILD_CONVERT2FWM false CACHE BOOL "Build convert2fwm tool." )
 #
 if( WINDOWS )
 	set( BIN_EXTENSION ".exe" )
-	set( SFML_STATIC false CACHE BOOL "Was SFML built as a static library?" )
-	set( SFGUI_STATIC false CACHE BOOL "Was SFGUI built as a static library?" )
 	set( SHARE_TARGET_DIR . )
 	add_definitions( -DWINDOWS )
 else()
@@ -66,15 +64,11 @@ else()
 endif()
 
 #
-# Linkage.
+# Linker options.
 #
-if( SFGUI_STATIC )
-	add_definitions( -DSFGUI_STATIC )
-endif()
-
-if( SFML_STATIC )
-	add_definitions( -DSFML_STATIC_LIBRARIES )
-endif()
+set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
+set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
+set( SFGUI_STATIC_LIBRARIES false CACHE BOOL "Was SFGUI built as a static library?" )
 
 #
 # Compiler-specific.
@@ -96,6 +90,10 @@ endif()
 #
 add_definitions( -DBOOST_DATE_TIME_NO_LIB )
 add_definitions( -DBOOST_REGEX_NO_LIB )
+
+if( WINDOWS )
+	add_definitions( -D_WIN32_WINNT=0x0501 )
+endif()
 
 add_subdirectory( "lib" )
 

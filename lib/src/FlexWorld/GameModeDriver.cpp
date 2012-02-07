@@ -112,7 +112,7 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 				(*version_node)[1] >> elements[1];
 				(*version_node)[2] >> elements[2];
 			}
-			catch( const YAML::Exception& e ) {
+			catch( const YAML::Exception& /*e*/ ) {
 				throw DeserializeException( "Invalid version values." );
 			}
 
@@ -144,7 +144,7 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 				(*min_flexworld_version_node)[1] >> elements[1];
 				(*min_flexworld_version_node)[2] >> elements[2];
 			}
-			catch( const YAML::Exception& e ) {
+			catch( const YAML::Exception& /*e*/ ) {
 				throw DeserializeException( "Invalid MinFlexWorldVersion values." );
 			}
 
@@ -176,7 +176,7 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 				(*max_flexworld_version_node)[1] >> elements[1];
 				(*max_flexworld_version_node)[2] >> elements[2];
 			}
-			catch( const YAML::Exception& e ) {
+			catch( const YAML::Exception& /*e*/ ) {
 				throw DeserializeException( "Invalid MaxFlexWorldVersion values." );
 			}
 

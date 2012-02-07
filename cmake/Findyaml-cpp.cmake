@@ -16,7 +16,7 @@ if( NOT YAML_CPP_INCLUDE_DIR )
 endif()
 
 find_library(
-	YAML_CPP_LIBRARY
+	YAML_CPP_LIBRARY_RELEASE
 	NAMES libyaml-cppmd libyaml-cpp libyaml-cpp.a
 	PATH_SUFFIXES lib lib64
 	PATHS
@@ -25,6 +25,31 @@ find_library(
 		${YAML_CPP_DIR}
 		$ENV{YAML_CPP_DIR}
 )
+
+find_library(
+	YAML_CPP_LIBRARY_DEBUG
+	NAMES libyaml-cppmdd libyaml-cppd libyaml-cppd.a
+	PATH_SUFFIXES lib lib64
+	PATHS
+		/usr/
+		/usr/local/
+		${YAML_CPP_DIR}
+		$ENV{YAML_CPP_DIR}
+)
+
+if( YAML_CPP_LIBRARY_RELEASE AND YAML_CPP_LIBRARY_DEBUG )
+	set( YAML_CPP_LIBRARY debug ${YAML_CPP_LIBRARY_DEBUG} optimized ${YAML_CPP_LIBRARY_RELEASE} )
+endif()
+
+if( YAML_CPP_LIBRARY_RELEASE AND NOT YAML_CPP_LIBRARY_DEBUG )
+	set( YAML_CPP_LIBRARY_DEBUG ${YAML_CPP_LIBRARY_RELEASE} )
+	set( YAML_CPP_LIBRARY ${YAML_CPP_LIBRARY_RELEASE} )
+endif()
+
+if( YAML_CPP_LIBRARY_DEBUG AND NOT YAML_CPP_LIBRARY_RELEASE )
+	set( YAML_CPP_LIBRARY_RELEASE ${YAML_CPP_LIBRARY_DEBUG} )
+	set( YAML_CPP_LIBRARY ${YAML_CPP_LIBRARY_DEBUG} )
+endif()
 
 if( NOT YAML_CPP_LIBRARY )
 	message( FATAL_ERROR "yaml-cpp library not found. Try setting YAML_CPP_DIR.")

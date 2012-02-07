@@ -103,7 +103,7 @@ Class ClassDriver::load( const std::string& path ) {
 			(*origin_node)[1] >> origin.y;
 			(*origin_node)[2] >> origin.z;
 		}
-		catch( const YAML::Exception& e ) {
+		catch( const YAML::Exception& /*e*/ ) {
 			throw LoadException( "Invalid origin value(s)." );
 		}
 
@@ -138,7 +138,7 @@ Class ClassDriver::load( const std::string& path ) {
 					hook_iter.second()[1] >> hook_origin.y;
 					hook_iter.second()[2] >> hook_origin.z;
 				}
-				catch( const YAML::Exception& e ) {
+				catch( const YAML::Exception& /*e*/ ) {
 					throw LoadException( "Invalid hook origin value (" + hook_name + ")." );
 				}
 

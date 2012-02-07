@@ -284,7 +284,7 @@ void MenuState::on_start_game_click() {
 			// Worked, add to dialog.
 			sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->add_game_mode( mode );
 		}
-		catch( const flex::GameModeDriver::DeserializeException& e ) {
+		catch( const flex::GameModeDriver::DeserializeException& /*e*/ ) {
 			// Skip.
 			continue;
 		}

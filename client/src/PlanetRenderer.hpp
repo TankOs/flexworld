@@ -10,7 +10,6 @@
 #include <boost/thread.hpp>
 #include <map>
 #include <vector>
-#include <unordered_map>
 #include <cstdint>
 
 class ResourceManager;
@@ -50,7 +49,7 @@ class PlanetRenderer {
 
 	private:
 		typedef std::vector<std::shared_ptr<BufferObject>> VBOVector;
-		typedef std::unordered_map<std::shared_ptr<const sf::Texture>, VBOVector> TextureVBOVectorMap;
+		typedef std::map<std::shared_ptr<const sf::Texture>, VBOVector> TextureVBOVectorMap;
 
 		typedef uint32_t ChunkPosition;
 		typedef std::map<std::shared_ptr<const sf::Texture>, std::size_t> TextureVBOIndexMap;

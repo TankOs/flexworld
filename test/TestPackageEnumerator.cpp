@@ -3,9 +3,11 @@
 #include <FlexWorld/PackageEnumerator.hpp>
 
 #include <boost/test/unit_test.hpp>
+#include <boost/filesystem.hpp>
 
 BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 	using namespace flex;
+	namespace fs = boost::filesystem;
 
 	// Initial state.
 	{
@@ -20,15 +22,15 @@ BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 	{
 		PackageEnumerator enumerator;
 
-		BOOST_CHECK( enumerator.enumerate( DATA_DIRECTORY + "/does_not_exist/" ) == false );
+		BOOST_CHECK( enumerator.enumerate( (fs::path( DATA_DIRECTORY ) / "does_not_exist").string() ) == false );
 	}
 
 	// Enumerate.
 	{
-		const std::string base_dir = DATA_DIRECTORY + "/packages/";
+		const fs::path base_dir = fs::path( DATA_DIRECTORY ) / "packages";
 
 		PackageEnumerator enumerator;
-		BOOST_CHECK( enumerator.enumerate( base_dir ) );
+		BOOST_CHECK( enumerator.enumerate( base_dir.string() ) );
 
 		BOOST_CHECK( enumerator.get_num_class_files() == 2 );
 		BOOST_CHECK( enumerator.get_num_image_files() == 2 );
@@ -41,24 +43,24 @@ BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 		bool block_model = false;
 
 		for( std::size_t class_idx = 0; class_idx < enumerator.get_num_class_files(); ++class_idx ) {
-			if( enumerator.get_class_file( class_idx ) == base_dir + "test/grass.yml" ) {
+			if( enumerator.get_class_file( class_idx ) == (base_dir / "test" / "grass.yml").string() ) {
 				grass_class = true;
 			}
-			else if( enumerator.get_class_file( class_idx ) == base_dir + "test/stone.yml" ) {
+			else if( enumerator.get_class_file( class_idx ) == (base_dir / "test" / "stone.yml").string() ) {
 				stone_class = true;
 			}
 		}
 
 		for( std::size_t image_idx = 0; image_idx < enumerator.get_num_image_files(); ++image_idx ) {
-			if( enumerator.get_image_file( image_idx ) == base_dir + "test/grass.png" ) {
+			if( enumerator.get_image_file( image_idx ) == (base_dir / "test" / "grass.png").string() ) {
 				grass_image = true;
 			}
-			else if( enumerator.get_image_file( image_idx ) == base_dir + "test/stone.png" ) {
+			else if( enumerator.get_image_file( image_idx ) == (base_dir / "test" / "stone.png").string() ) {
 				stone_image = true;
 			}
 		}
 
-		if( enumerator.get_model_file( 0 ) == base_dir + "test/cube.fwm" ) {
+		if( enumerator.get_model_file( 0 ) == (base_dir / "test" / "cube.fwm").string() ) {
 			block_model = true;
 		}
 

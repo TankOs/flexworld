@@ -59,6 +59,7 @@ set(
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/GLEW/include )
 include_directories( ${SFGUI_INCLUDE_DIR} )
 include_directories( ${OPENGL_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )

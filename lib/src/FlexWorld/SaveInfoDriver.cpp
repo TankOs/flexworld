@@ -62,7 +62,7 @@ SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 			try {
 				*timestamp_node >> timestamp;
 			}
-			catch( const YAML::Exception& e ) {
+			catch( const YAML::Exception& /*e*/ ) {
 				throw DeserializeException( "Invalid timestamp." );
 			}
 

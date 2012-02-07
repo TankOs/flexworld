@@ -90,7 +90,7 @@ bool Server::run() {
 		m_acceptor->listen();
 
 	}
-	catch( const boost::system::system_error& e ) {
+	catch( const boost::system::system_error& /*e*/ ) {
 		m_acceptor.reset();
 		return false;
 	}

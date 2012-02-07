@@ -93,7 +93,7 @@ std::size_t AccountManager::load_accounts_from_directory( const std::string& pat
 				}
 			}
 		}
-		catch( const AccountDriver::DeserializeException& e ) {
+		catch( const AccountDriver::DeserializeException& /*e*/ ) {
 			failed = true;
 		}
 

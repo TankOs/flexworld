@@ -1,7 +1,7 @@
 project( FlexWorldTest )
 
 #set(Boost_USE_STATIC_LIBS ON)
-find_package( Boost 1.46 REQUIRED thread unit_test_framework )
+find_package( Boost 1.47 REQUIRED thread unit_test_framework )
 find_package( SFML 2.0 )
 
 set( DATA_DIRECTORY ${PROJECT_SOURCE_DIR}/data )
