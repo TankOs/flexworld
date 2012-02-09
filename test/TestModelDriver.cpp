@@ -22,11 +22,14 @@ bool deserialize_and_check_exception( const flex::ModelDriver::Buffer& buffer, c
 BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	using namespace flex;
 
+	float value = 0;
+
 	ModelDriver::Buffer source_buffer;
 	source_buffer.push_back( 'F' );
 	source_buffer.push_back( 'W' );
 	source_buffer.push_back( 'M' );
 	source_buffer.push_back( 0x00 ); // Version.
+	value = 33.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	source_buffer.push_back( 0x02 ); // Num meshes.
 
 	// Mesh 0.
@@ -37,8 +40,6 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	source_buffer.push_back( 0x00 ); // Texture slot.
 
 	// Vertices.
-	float value = 0;
-
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -211,6 +212,8 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	{
 		Model model;
 
+		model.set_block_scale_divisor( 33.0f );
+
 		// Top vertices first.
 		Mesh mesh;
 
@@ -267,6 +270,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
 
 		// Validate.
+		BOOST_CHECK( model.get_block_scale_divisor() == 33.0f );
 		BOOST_CHECK( model.get_num_meshes() == 2 );
 
 		// Mesh 0.
@@ -337,6 +341,15 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		buffer.push_back( static_cast<char>( 0xff ) );
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong version." ) );
 		buffer[buffer.size() - 1] = 0x00;
+
+		// Version missing.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Block scale divisor missing." ) );
+
+		// Wrong version.
+		value = 0.9f;
+		buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong block scale divisor." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - sizeof( value )] ) = 33.0f;
 
 		// Missing number of meshes.
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Mesh count missing." ) );

@@ -12,6 +12,16 @@ BOOST_AUTO_TEST_CASE( TestModel ) {
 		Model model;
 
 		BOOST_CHECK( model.get_num_meshes() == 0 );
+		BOOST_CHECK( model.get_block_scale_divisor() == 1.0f );
+	}
+
+	// Basic properties.
+	{
+		Model model;
+
+		model.set_block_scale_divisor( 1.5f );
+
+		BOOST_CHECK( model.get_block_scale_divisor() == 1.5f );
 	}
 
 	// Add meshes.

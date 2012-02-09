@@ -105,7 +105,9 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							for( vertex_idx = 0; vertex_idx < 3; ++vertex_idx ) {
 								vertex = mesh.get_vertex( tri.vertices[vertex_idx] );
 
+								vertex.position /= model->get_block_scale_divisor();
 								vertex.position += offset;
+
 								vbo->add_vertex( vertex );
 							}
 						}

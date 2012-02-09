@@ -16,6 +16,10 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	buffer.push_back( 'W' );
 	buffer.push_back( 'M' );
 	buffer.push_back( 0x00 ); // Version.
+
+	float block_scale_divisor = model.get_block_scale_divisor();
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &block_scale_divisor ), reinterpret_cast<const char*>( &block_scale_divisor ) + sizeof( block_scale_divisor ) );
+
 	buffer.push_back( static_cast<char>( model.get_num_meshes() ) );
 
 	// Serialize meshes.
@@ -89,6 +93,20 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		throw DeserializationException( "Wrong version." );
 	}
 
+	// Block scale divisor.
+	float block_scale_divisor = 0.0f;
+
+	if( buffer.size() - buf_ptr < sizeof( block_scale_divisor ) ) {
+		throw DeserializationException( "Block scale divisor missing." );
+	}
+
+	block_scale_divisor = *reinterpret_cast<const float*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( block_scale_divisor );
+
+	if( block_scale_divisor < 1.0f ) {
+		throw DeserializationException( "Wrong block scale divisor." );
+	}
+
 	// Mesh count.
 	unsigned char num_meshes = 0;
 
@@ -105,6 +123,8 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 
 	// Load meshes.
 	Model model;
+
+	model.set_block_scale_divisor( block_scale_divisor );
 
 	for( std::size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx ) {
 		Mesh::VertexIndex num_vertices;

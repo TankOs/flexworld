@@ -16,14 +16,16 @@ void print_usage() {
 		<< std::endl
 		<< "Options:" << std::endl
 		<< "  -iv, --invertv           Invert V component of UV coordinates." << std::endl
+		<< "  -v, --verbose            Verbose." << std::endl
 		<< "  -h, --help               Show this help text." << std::endl
 	;
 }
 
 int main( int argc, char** argv ) {
-	std::string in_filename( "" );
-	std::string out_filename( "" );
-	bool invert_v( false );
+	std::string in_filename = "";
+	std::string out_filename = "";
+	bool invert_v = false;
+	bool verbose = false;
 
 	// Extract commandline arguments.
 	for( int arg_index = 1; arg_index < argc; ++arg_index ) {
@@ -41,6 +43,9 @@ int main( int argc, char** argv ) {
 			}
 			else if( arg == "-iv" || arg == "--invertv" ) { // Invert V of UV coordinates.
 				invert_v = true;
+			}
+			else if( arg == "-v" || arg == "--verbose" ) { // Verbose.
+				verbose = true;
 			}
 			else {
 				std::cerr << "Unrecognized option: " << arg << ". Try --help." << std::endl;
@@ -78,12 +83,89 @@ int main( int argc, char** argv ) {
 		return -1;
 	}
 
+	// Check basics.
+	if( scene->mNumMeshes < 1 ) {
+		std::cerr << "No meshes in the model, aborting." << std::endl;
+		return -1;
+	}
+
+	//////////////////////////////////////////////////
+	// PASS 1:
+	//   * Basic error checking.
+	//   * Get lowest vertex point.
+	//   * Get bounding box.
+	//   * Get highest position value for block scale divisor.
+	//////////////////////////////////////////////////
+	sf::Vector3f lowest_point( 0, 0, 0 );
+	sf::Vector3f highest_point( 1, 1, 1 );
+	//sf::Vector3f bounding_box_points[2] = {sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 )};
+
+	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
+		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
+
+		// Check for existance of vertices.
+		if( ai_mesh->mNumVertices < 3 ) {
+			std::cout << "Mesh " << mesh_index << " has less than 3 vertices, skipping." << std::endl;
+			continue;
+		}
+
+		if( ai_mesh->mNumFaces < 1 ) {
+			std::cout << "Mesh " << mesh_index << " doesn't contain any triangles, skipping." << std::endl;
+			continue;
+		}
+
+		for( unsigned int vertex_index = 0; vertex_index < ai_mesh->mNumVertices; ++vertex_index ) {
+			// Check if UV coordinate present.
+			if( !ai_mesh->mTextureCoords[0] ) {
+				std::cerr << "No UV coordinate for mesh " << mesh_index << ", vertex " << vertex_index << ", aborting." << std::endl;
+				return -1;
+			}
+
+			// For lazy people.
+			sf::Vector3f vec(
+				ai_mesh->mVertices[vertex_index].x,
+				ai_mesh->mVertices[vertex_index].y,
+				ai_mesh->mVertices[vertex_index].z
+			);
+
+			// Update lowest point for shifting later.
+			lowest_point.x = std::min( lowest_point.x, vec.x );
+			lowest_point.y = std::min( lowest_point.y, vec.y );
+			lowest_point.z = std::min( lowest_point.z, vec.z );
+
+			// Update highest point.
+			highest_point.x = std::max( highest_point.x, vec.x );
+			highest_point.y = std::max( highest_point.y, vec.y );
+			highest_point.z = std::max( highest_point.z, vec.z );
+		}
+	}
+
+	// Add shift to highest value.
+	highest_point -= lowest_point;
+	float highest_value = std::max( highest_point.x, std::max( highest_point.y, highest_point.z ) );
+
+	//////////////////////////////////////////////////
+	// PASS 2: Create model.
+	//   * Apply shift.
+	//////////////////////////////////////////////////
+	std::size_t num_total_vertices = 0;
+	std::size_t num_total_triangles = 0;
 	flex::Model model;
+
+	model.set_block_scale_divisor( highest_value );
 
 	// Add meshes.
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
 		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
 		flex::Mesh mesh;
+
+		// Skip empty meshes.
+		if( ai_mesh->mNumVertices < 3 || ai_mesh->mNumFaces < 1 ) {
+			continue;
+		}
+
+		num_total_vertices += ai_mesh->mNumVertices;
+		num_total_triangles += ai_mesh->mNumFaces;
 
 		// Extract texture slot.
 		std::string material_name;
@@ -108,20 +190,18 @@ int main( int argc, char** argv ) {
 
 			mesh.set_texture_slot( static_cast<unsigned char>( texture_slot ) );
 		}
+		else {
+			std::cerr << "Invalid material name for mesh " << mesh_index << ": \"" << material_name << "\". Aborting." << std::endl;
+			return -1;
+		}
 
 		// Add vertices.
 		for( unsigned int vertex_index = 0; vertex_index < ai_mesh->mNumVertices; ++vertex_index ) {
-			// Check if UV coordinate present.
-			if( !ai_mesh->mTextureCoords[0] ) {
-				std::cerr << "No UV coordinate for mesh " << mesh_index << ", vertex " << vertex_index << ", aborting." << std::endl;
-				return -1;
-			}
-
 			flex::Vertex vertex(
 				sf::Vector3f(
-					ai_mesh->mVertices[vertex_index].x,
-					ai_mesh->mVertices[vertex_index].y,
-					ai_mesh->mVertices[vertex_index].z
+					ai_mesh->mVertices[vertex_index].x + lowest_point.x,
+					ai_mesh->mVertices[vertex_index].y + lowest_point.y,
+					ai_mesh->mVertices[vertex_index].z + lowest_point.z
 				),
 				sf::Vector3f(
 					ai_mesh->mNormals[vertex_index].x,
@@ -185,6 +265,29 @@ int main( int argc, char** argv ) {
 
 	out_file.write( &buffer[0], buffer.size() );
 	out_file.close();
+
+	// Show a warning if the model got shifted.
+	if( lowest_point.x < 0 || lowest_point.y < 0 || lowest_point.z < 0 ) {
+		std::cout
+			<< "The source model hasn't got its origin at 0, 0, 0. It has been shifted by "
+			<< -lowest_point.x << ", " << -lowest_point.y << ", " << -lowest_point.z
+			<< " units."
+			<< std::endl
+		;
+	}
+
+	if( verbose ) {
+		// Give some info.
+		std::cout
+			<< "Model saved to " << argv[2]
+			<< " (" << model.get_num_meshes() << " mesh" << (model.get_num_meshes() > 1 ? "es" : "")
+			<< ", " << num_total_vertices << " vertices"
+			<< ", " << num_total_triangles << " triangle" << (num_total_triangles > 1 ? "s" : "")
+			<< ", block scale divisor " << highest_value
+			<< ")"
+			<< std::endl
+		;
+	}
 
 	return 0;
 }

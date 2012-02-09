@@ -32,10 +32,21 @@ class Model {
 		 */
 		const Mesh& get_mesh( std::size_t index ) const;
 
+		/** Set block scale divisor.
+		 * @param divisor Divisor (clamped to 1.0..INF).
+		 */
+		void set_block_scale_divisor( float divisor );
+
+		/** Get block scale divisor.
+		 * @return Scale divisor.
+		 */
+		float get_block_scale_divisor() const;
+
 	private:
 		typedef std::vector<Mesh> MeshVector;
 
 		MeshVector m_meshes;
+		float m_scale_divisor;
 };
 
 }
