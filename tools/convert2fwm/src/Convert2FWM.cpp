@@ -97,8 +97,8 @@ int main( int argc, char** argv ) {
 	//   * Get highest position value for block scale divisor.
 	//////////////////////////////////////////////////
 	sf::Vector3f lowest_point( 0, 0, 0 );
-	sf::Vector3f highest_point( 1, 1, 1 );
-	//sf::Vector3f bounding_box_points[2] = {sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 )};
+	sf::Vector3f highest_point( 0, 0, 0 );
+	sf::Vector3f shift( 0, 0, 0 );
 
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
 		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
@@ -128,7 +128,7 @@ int main( int argc, char** argv ) {
 				ai_mesh->mVertices[vertex_index].z
 			);
 
-			// Update lowest point for shifting later.
+			// Update lowest point.
 			lowest_point.x = std::min( lowest_point.x, vec.x );
 			lowest_point.y = std::min( lowest_point.y, vec.y );
 			lowest_point.z = std::min( lowest_point.z, vec.z );
@@ -140,9 +140,17 @@ int main( int argc, char** argv ) {
 		}
 	}
 
-	// Add shift to highest value.
-	highest_point -= lowest_point;
-	float highest_value = std::max( highest_point.x, std::max( highest_point.y, highest_point.z ) );
+	// Calc shift.
+	shift.x = std::abs( std::min( shift.x, lowest_point.x ) );
+	shift.y = std::abs( std::min( shift.y, lowest_point.y ) );
+	shift.z = std::abs( std::min( shift.z, lowest_point.z ) );
+
+	// Add shift to lowest and highest point.
+	highest_point += shift;
+	lowest_point += shift;
+
+	// Calculate highest value for block scale divisor.
+	float scale_divisor = std::max( highest_point.x, std::max( highest_point.y, highest_point.z ) );
 
 	//////////////////////////////////////////////////
 	// PASS 2: Create model.
@@ -152,7 +160,7 @@ int main( int argc, char** argv ) {
 	std::size_t num_total_triangles = 0;
 	flex::Model model;
 
-	model.set_block_scale_divisor( highest_value );
+	model.set_block_scale_divisor( scale_divisor );
 
 	// Add meshes.
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
@@ -199,9 +207,9 @@ int main( int argc, char** argv ) {
 		for( unsigned int vertex_index = 0; vertex_index < ai_mesh->mNumVertices; ++vertex_index ) {
 			flex::Vertex vertex(
 				sf::Vector3f(
-					ai_mesh->mVertices[vertex_index].x + lowest_point.x,
-					ai_mesh->mVertices[vertex_index].y + lowest_point.y,
-					ai_mesh->mVertices[vertex_index].z + lowest_point.z
+					ai_mesh->mVertices[vertex_index].x + shift.x,
+					ai_mesh->mVertices[vertex_index].y + shift.y,
+					ai_mesh->mVertices[vertex_index].z + shift.z
 				),
 				sf::Vector3f(
 					ai_mesh->mNormals[vertex_index].x,
@@ -267,10 +275,10 @@ int main( int argc, char** argv ) {
 	out_file.close();
 
 	// Show a warning if the model got shifted.
-	if( lowest_point.x < 0 || lowest_point.y < 0 || lowest_point.z < 0 ) {
+	if( shift.x > 0 || shift.y > 0 || shift.z > 0 ) {
 		std::cout
 			<< "The source model hasn't got its origin at 0, 0, 0. It has been shifted by "
-			<< -lowest_point.x << ", " << -lowest_point.y << ", " << -lowest_point.z
+			<< shift.x << ", " << shift.y << ", " << shift.z
 			<< " units."
 			<< std::endl
 		;
@@ -283,7 +291,7 @@ int main( int argc, char** argv ) {
 			<< " (" << model.get_num_meshes() << " mesh" << (model.get_num_meshes() > 1 ? "es" : "")
 			<< ", " << num_total_vertices << " vertices"
 			<< ", " << num_total_triangles << " triangle" << (num_total_triangles > 1 ? "s" : "")
-			<< ", block scale divisor " << highest_value
+			<< ", block scale divisor " << scale_divisor
 			<< ")"
 			<< std::endl
 		;
