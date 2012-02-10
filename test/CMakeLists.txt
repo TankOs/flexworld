@@ -24,6 +24,7 @@ set(
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestLockFacility.cpp
+	TestMath.cpp
 	TestMesh.cpp
 	TestMessage.cpp
 	TestModel.cpp

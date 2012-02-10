@@ -26,6 +26,8 @@ struct Cuboid {
 	T depth; ///< Depth.
 };
 
+typedef Cuboid<float> FloatCuboid; ///< Float cuboid.
+
 }
 
 #include "Cuboid.inl"

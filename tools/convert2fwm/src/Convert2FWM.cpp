@@ -2,13 +2,28 @@
 #include <FlexWorld/Model.hpp>
 #include <FlexWorld/Mesh.hpp>
 #include <FlexWorld/Vertex.hpp>
+#include <FlexWorld/Math.hpp>
 
 #include <assimp/assimp.hpp>
 #include <assimp/aiScene.h>
 #include <assimp/aiPostProcess.h>
+#include <SFML/Graphics/Rect.hpp>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <fstream>
+
+enum Face {
+	TOP,
+	BOTTOM,
+	BACK,
+	RIGHT,
+	FRONT,
+	LEFT,
+	NUM_FACES
+};
+
+static const float AREA_DIFFERENCE_TOLERANCE = 0.001f;
 
 void print_usage() {
 	std::cout << "Usage: convert2fwm [OPTIONS...] INPUT OUTPUT" << std::endl
@@ -17,15 +32,47 @@ void print_usage() {
 		<< "Options:" << std::endl
 		<< "  -iv, --invertv           Invert V component of UV coordinates." << std::endl
 		<< "  -v, --verbose            Verbose." << std::endl
+		<< "  -t, --tolerance          Boundary tolerance. (Default: 0.01)" << std::endl
 		<< "  -h, --help               Show this help text." << std::endl
 	;
 }
+
+void update_coverage( sf::FloatRect& coverage_rect, const sf::Vector2f& min, const sf::Vector2f& max ) {
+	// Check if coverage rect hasn't been initialized yet.
+	if( coverage_rect.Width == 0 && coverage_rect.Height == 0 ) {
+		coverage_rect.Left = min.x;
+		coverage_rect.Top = min.y;
+		coverage_rect.Width = max.x - min.x;
+		coverage_rect.Height = max.y - min.y;
+	}
+	else {
+		// Check if triangle is right of/at the coverage box.
+		if( min.x >= coverage_rect.Left ) {
+			coverage_rect.Width = std::max( coverage_rect.Width, max.x - coverage_rect.Left );
+		}
+		else { // Move coverage box and enlarge to cover previous polygons.
+			coverage_rect.Width += coverage_rect.Left - min.x;
+			coverage_rect.Left -= coverage_rect.Left - min.x;
+		}
+
+		// Check if triangle is below of/at the coverage box.
+		if( min.y >= coverage_rect.Top ) {
+			coverage_rect.Height = std::max( coverage_rect.Height, max.y - coverage_rect.Top );
+		}
+		else { // Move coverage box and enlarge to cover previous polygons.
+			coverage_rect.Height += coverage_rect.Top - min.y;
+			coverage_rect.Top -= coverage_rect.Top - min.y;
+		}
+	}
+}
+
 
 int main( int argc, char** argv ) {
 	std::string in_filename = "";
 	std::string out_filename = "";
 	bool invert_v = false;
 	bool verbose = false;
+	float boundary_tolerance = 0.01f;
 
 	// Extract commandline arguments.
 	for( int arg_index = 1; arg_index < argc; ++arg_index ) {
@@ -46,6 +93,22 @@ int main( int argc, char** argv ) {
 			}
 			else if( arg == "-v" || arg == "--verbose" ) { // Verbose.
 				verbose = true;
+			}
+			else if( arg == "-t" || arg == "--tolerance" ) { // Boundary tolerance.
+				if( arg_index + 1 >= argc ) {
+					std::cerr << "Missing tolerance value." << std::endl;
+					return -1;
+				}
+
+				++arg_index;
+				std::stringstream sstr;
+				sstr << argv[arg_index];
+				sstr >> boundary_tolerance;
+
+				if( !sstr || boundary_tolerance > 0.5f ) {
+					std::cerr << "Invalid boundary tolerance value." << std::endl;
+					return -1;
+				}
 			}
 			else {
 				std::cerr << "Unrecognized option: " << arg << ". Try --help." << std::endl;
@@ -92,9 +155,9 @@ int main( int argc, char** argv ) {
 	//////////////////////////////////////////////////
 	// PASS 1:
 	//   * Basic error checking.
-	//   * Get lowest vertex point.
-	//   * Get bounding box.
-	//   * Get highest position value for block scale divisor.
+	//   * Calc shift.
+	//   * Calc bounding box.
+	//   * Calc block scale divisor.
 	//////////////////////////////////////////////////
 	sf::Vector3f lowest_point( 0, 0, 0 );
 	sf::Vector3f highest_point( 0, 0, 0 );
@@ -155,11 +218,18 @@ int main( int argc, char** argv ) {
 	//////////////////////////////////////////////////
 	// PASS 2: Create model.
 	//   * Apply shift.
+	//   * Calc coverages.
 	//////////////////////////////////////////////////
 	std::size_t num_total_vertices = 0;
 	std::size_t num_total_triangles = 0;
-	flex::Model model;
 
+	std::vector<sf::FloatRect> coverage_rects( NUM_FACES, sf::FloatRect( 0, 0, 0, 0 ) );
+	std::vector<float> areas( NUM_FACES, 0 );
+
+	float big_boundary = 1.0f - boundary_tolerance;
+	float small_boundary = boundary_tolerance;
+
+	flex::Model model;
 	model.set_block_scale_divisor( scale_divisor );
 
 	// Add meshes.
@@ -254,10 +324,88 @@ int main( int argc, char** argv ) {
 				return -1;
 			}
 
+			// Get scaled vertices to calculate coverage.
+			const sf::Vector3f& v0 = mesh.get_vertex( triangle.vertices[0] ).position / model.get_block_scale_divisor();
+			const sf::Vector3f& v1 = mesh.get_vertex( triangle.vertices[1] ).position / model.get_block_scale_divisor();
+			const sf::Vector3f& v2 = mesh.get_vertex( triangle.vertices[2] ).position / model.get_block_scale_divisor();
+
+			const sf::Vector3f& n0 = mesh.get_vertex( triangle.vertices[0] ).normal;
+			const sf::Vector3f& n1 = mesh.get_vertex( triangle.vertices[1] ).normal;
+			const sf::Vector3f& n2 = mesh.get_vertex( triangle.vertices[2] ).normal;
+
+			// Get low values for each axis.
+			sf::Vector3f min(
+				std::min( v0.x, std::min( v1.x, v2.x ) ),
+				std::min( v0.y, std::min( v1.y, v2.z ) ),
+				std::min( v0.z, std::min( v1.z, v2.z ) )
+			);
+
+			// Get max values for each axis.
+			sf::Vector3f max(
+				std::max( v0.x, std::max( v1.x, v2.x ) ),
+				std::max( v0.y, std::max( v1.y, v2.z ) ),
+				std::max( v0.z, std::max( v1.z, v2.z ) )
+			);
+
+			// Update coverage rects.
+			if(
+				v0.y >= big_boundary && v1.y >= big_boundary && v2.y >= big_boundary &&
+				n0.y > 0.0f && n1.y > 0.0f && n2.y > 0.0f
+			) {
+				areas[TOP] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
+				update_coverage( coverage_rects[TOP], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
+			}
+			else if(
+				v0.y <= small_boundary && v1.y <= small_boundary && v2.y <= small_boundary &&
+				n0.y < 0.0f && n1.y < 0.0f && n2.y < 0.0f
+			) {
+				areas[BOTTOM] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
+				update_coverage( coverage_rects[BOTTOM], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
+			}
+			else if(
+				v0.z <= small_boundary && v1.z <= small_boundary && v2.z <= small_boundary &&
+				n0.z < 0.0f && n1.z < 0.0f && n2.z < 0.0f
+			) {
+				areas[BACK] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
+				update_coverage( coverage_rects[BACK], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
+			}
+			else if(
+				v0.z >= big_boundary && v1.z >= big_boundary && v2.z >= big_boundary &&
+				n0.z > 0.0f && n1.z > 0.0f && n2.z > 0.0f
+			) {
+				areas[FRONT] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
+				update_coverage( coverage_rects[FRONT], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
+			}
+			else if(
+				v0.x >= big_boundary && v1.x >= big_boundary && v2.x >= big_boundary &&
+				n0.x > 0.0f && n1.x > 0.0f && n2.x > 0.0f
+			) {
+				areas[RIGHT] += flex::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
+				update_coverage( coverage_rects[RIGHT], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
+			}
+			else if(
+				v0.x <= small_boundary && v1.x <= small_boundary && v2.x <= small_boundary &&
+				n0.x < 0.0f && n1.x < 0.0f && n2.x < 0.0f
+			) {
+				areas[LEFT] += flex::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
+				update_coverage( coverage_rects[LEFT], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
+			}
+
 			mesh.define_triangle( triangle );
 		}
 
 		model.add_mesh( mesh );
+	}
+
+	// Reset coverage rects that do not really cover the full rect.
+	for( int face_idx = 0; face_idx < NUM_FACES; ++face_idx ) {
+		sf::FloatRect& rect = coverage_rects[face_idx];
+		float diff = flex::calc_rect_area( rect.Width, rect.Height ) - areas[face_idx];
+
+		if( rect.Width == 0.0f || diff > AREA_DIFFERENCE_TOLERANCE ) {
+			rect.Width = 0.0f;
+			rect.Height = 0.0f;
+		}
 	}
 
 	// Write output file.
@@ -276,6 +424,8 @@ int main( int argc, char** argv ) {
 
 	// Show a warning if the model got shifted.
 	if( shift.x > 0 || shift.y > 0 || shift.z > 0 ) {
+		std::cout << std::scientific;
+
 		std::cout
 			<< "The source model hasn't got its origin at 0, 0, 0. It has been shifted by "
 			<< shift.x << ", " << shift.y << ", " << shift.z
@@ -287,12 +437,20 @@ int main( int argc, char** argv ) {
 	if( verbose ) {
 		// Give some info.
 		std::cout
-			<< "Model saved to " << argv[2]
-			<< " (" << model.get_num_meshes() << " mesh" << (model.get_num_meshes() > 1 ? "es" : "")
+			<< std::fixed
+			<< "Model saved to " << argv[2] << "."
+			<< std::endl
+			<< model.get_num_meshes() << " mesh" << (model.get_num_meshes() > 1 ? "es" : "")
 			<< ", " << num_total_vertices << " vertices"
 			<< ", " << num_total_triangles << " triangle" << (num_total_triangles > 1 ? "s" : "")
 			<< ", block scale divisor " << scale_divisor
-			<< ")"
+			<< ", coverage "
+			<< (coverage_rects[TOP].Width > 0.0f ? "U" : "")
+			<< (coverage_rects[BOTTOM].Width > 0.0f ? "D" : "")
+			<< (coverage_rects[BACK].Width > 0.0f ? "B" : "")
+			<< (coverage_rects[RIGHT].Width > 0.0f ? "R" : "")
+			<< (coverage_rects[FRONT].Width > 0.0f ? "F" : "")
+			<< (coverage_rects[LEFT].Width > 0.0f ? "L" : "")
 			<< std::endl
 		;
 	}
