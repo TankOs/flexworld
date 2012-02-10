@@ -19,6 +19,7 @@ set(
 	TestClassCache.cpp
 	TestClassDriver.cpp
 	TestClient.cpp
+	TestCuboid.cpp
 	TestEntity.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp

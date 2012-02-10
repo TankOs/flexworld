@@ -6,6 +6,7 @@
 namespace flex {
 
 Model::Model() :
+	m_bounding_box( 0, 0, 0, 0, 0, 0 ),
 	m_scale_divisor( 1.0f )
 {
 }
@@ -31,6 +32,34 @@ void Model::set_block_scale_divisor( float divisor ) {
 
 float Model::get_block_scale_divisor() const {
 	return m_scale_divisor;
+}
+
+void Model::set_bounding_box( const FloatCuboid& box ) {
+	assert( box.x >= 0.0f );
+	assert( box.y >= 0.0f );
+	assert( box.z >= 0.0f );
+
+	m_bounding_box = box;
+}
+
+const FloatCuboid& Model::get_bounding_box() const {
+	return m_bounding_box;
+}
+
+const sf::FloatRect& Model::get_face_coverage( Face face ) const {
+	assert( face < NUM_FACES && face >= 0 );
+
+	return m_coverages[face];
+}
+
+void Model::set_face_coverage( Face face, const sf::FloatRect& coverage ) {
+	assert( face < NUM_FACES && face >= 0 );
+	assert( coverage.Left >= 0.0f );
+	assert( coverage.Top >= 0.0f );
+	assert( coverage.Width >= 0.0f );
+	assert( coverage.Height >= 0.0f );
+
+	m_coverages[face] = coverage;
 }
 
 }

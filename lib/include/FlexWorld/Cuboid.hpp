@@ -28,6 +28,22 @@ struct Cuboid {
 
 typedef Cuboid<float> FloatCuboid; ///< Float cuboid.
 
+/** Test equality.
+ * @param first First cuboid.
+ * @param second Second cuboid.
+ * @return true if equal.
+ */
+template <class T>
+bool operator==( const Cuboid<T>& first, const Cuboid<T>& second );
+
+/** Test unequality.
+ * @param first First cuboid.
+ * @param second Second cuboid.
+ * @return true if unequal.
+ */
+template <class T>
+bool operator!=( const Cuboid<T>& first, const Cuboid<T>& second );
+
 }
 
 #include "Cuboid.inl"

@@ -31,6 +31,7 @@ set(
 	${INC_DIR}/FlexWorld/Cuboid.hpp
 	${INC_DIR}/FlexWorld/Cuboid.inl
 	${INC_DIR}/FlexWorld/Entity.hpp
+	${INC_DIR}/FlexWorld/Face.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/GameMode.hpp
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
