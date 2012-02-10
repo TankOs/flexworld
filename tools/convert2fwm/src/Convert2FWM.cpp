@@ -3,6 +3,7 @@
 #include <FlexWorld/Mesh.hpp>
 #include <FlexWorld/Vertex.hpp>
 #include <FlexWorld/Math.hpp>
+#include <FlexWorld/Cuboid.hpp>
 
 #include <assimp/assimp.hpp>
 #include <assimp/aiScene.h>
@@ -159,9 +160,10 @@ int main( int argc, char** argv ) {
 	//   * Calc bounding box.
 	//   * Calc block scale divisor.
 	//////////////////////////////////////////////////
-	sf::Vector3f lowest_point( 0, 0, 0 );
+	sf::Vector3f lowest_point( std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() );
 	sf::Vector3f highest_point( 0, 0, 0 );
 	sf::Vector3f shift( 0, 0, 0 );
+	flex::FloatCuboid bounding_box( 0, 0, 0, 0 );
 
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
 		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
@@ -200,20 +202,28 @@ int main( int argc, char** argv ) {
 			highest_point.x = std::max( highest_point.x, vec.x );
 			highest_point.y = std::max( highest_point.y, vec.y );
 			highest_point.z = std::max( highest_point.z, vec.z );
+
+			// Calc shift.
+			shift.x = std::abs( std::min( shift.x, lowest_point.x ) );
+			shift.y = std::abs( std::min( shift.y, lowest_point.y ) );
+			shift.z = std::abs( std::min( shift.z, lowest_point.z ) );
 		}
 	}
-
-	// Calc shift.
-	shift.x = std::abs( std::min( shift.x, lowest_point.x ) );
-	shift.y = std::abs( std::min( shift.y, lowest_point.y ) );
-	shift.z = std::abs( std::min( shift.z, lowest_point.z ) );
 
 	// Add shift to lowest and highest point.
 	highest_point += shift;
 	lowest_point += shift;
 
 	// Calculate highest value for block scale divisor.
-	float scale_divisor = std::max( highest_point.x, std::max( highest_point.y, highest_point.z ) );
+	float scale_divisor = std::max( 1.0f, std::max( highest_point.x, std::max( highest_point.y, highest_point.z ) ) );
+
+	// Calculate bounding box.
+	bounding_box.x = lowest_point.x;
+	bounding_box.y = lowest_point.y;
+	bounding_box.z = lowest_point.z;
+	bounding_box.width = highest_point.x - lowest_point.x;
+	bounding_box.height = highest_point.y - lowest_point.y;
+	bounding_box.depth = highest_point.z - lowest_point.z;
 
 	//////////////////////////////////////////////////
 	// PASS 2: Create model.
@@ -451,6 +461,9 @@ int main( int argc, char** argv ) {
 			<< (coverage_rects[RIGHT].Width > 0.0f ? "R" : "")
 			<< (coverage_rects[FRONT].Width > 0.0f ? "F" : "")
 			<< (coverage_rects[LEFT].Width > 0.0f ? "L" : "")
+			<< std::endl
+			<< "Bounding box: " << bounding_box.x << ", " << bounding_box.y << ", " << bounding_box.z
+			<< " / " << bounding_box.width << " * " << bounding_box.height << " * " << bounding_box.depth
 			<< std::endl
 		;
 	}
