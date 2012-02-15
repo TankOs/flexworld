@@ -41,6 +41,9 @@ void BufferObject::add_vertex( const flex::Vertex& vertex ) {
 void BufferObject::render() const {
 	assert( m_num_vertices > 0 );
 
+	// We don't used the element buffer, so make sure it's not set.
+	glBindBufferARB( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
 	// Enable client states and setup pointers.
 	glEnableClientState( GL_VERTEX_ARRAY );
 	glBindBufferARB( GL_ARRAY_BUFFER, m_buffers[VBO_INDEX] );

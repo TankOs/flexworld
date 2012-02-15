@@ -391,6 +391,9 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 void PlanetRenderer::render() const {
 	boost::lock_guard<boost::mutex> lock( m_render_mutex );
 
+	glMatrixMode( GL_TEXTURE );
+	glLoadIdentity();
+
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 

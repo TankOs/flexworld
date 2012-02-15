@@ -35,15 +35,6 @@ Sky::~Sky() {
 }
 
 void Sky::render() const {
-	glMatrixMode( GL_MODELVIEW );
-	glPushMatrix();
-
-	glLoadIdentity();
-	
-	if( m_sun_texture ) {
-		m_sun_texture->Bind();
-	}
-
 	glMatrixMode( GL_TEXTURE );
 	glLoadIdentity();
 
@@ -70,7 +61,12 @@ void Sky::render() const {
 	);
 
 	// Render sun.
+	if( m_sun_texture ) {
+		m_sun_texture->Bind();
+	}
+
 	glColor3f( 1, 1, 1 );
+
 	m_sun_bo.render();
 
 	// Render test floor.
@@ -89,8 +85,6 @@ void Sky::render() const {
 		glVertex3f( 20.0f, -1.0f, 20.0f );
 		glVertex3f( 20.0f, -1.0f, -20.0f );
 	} glEnd();*/
-
-	glPopMatrix();
 }
 
 void Sky::set_camera( const Camera& camera ) {
