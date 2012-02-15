@@ -32,6 +32,9 @@ void PlayState::init() {
 	// Init GLEW.
 	//glewInit();
 
+	set_logic_fps( 120 );
+	set_render_fps( 60 );
+
 	// Reset handler.
 	get_shared().client->set_handler( *this );
 
