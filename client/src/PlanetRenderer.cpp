@@ -479,15 +479,8 @@ std::shared_ptr<const sf::Texture> PlanetRenderer::get_texture( const flex::Flex
 	std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( id );
 
 	if( texture == nullptr ) {
-		// AMD/ATI refuses to work when loading textures in a separate thread in some
-		// situations. This may be a race condition somewhere. So just stop rendering
-		// while loading textures.
-		pause();
-
 		// Try to load.
-		bool result = m_resource_manager.load_texture( id );
-
-		resume();
+		bool result = m_resource_manager.prepare_texture( id );
 
 		if( !result ) {
 #if !defined( NDEBUG )

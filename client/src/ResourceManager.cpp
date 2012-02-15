@@ -21,17 +21,10 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 		m_textures.erase( id.get() );
 	}
 
-	// Load image.
-	sf::Image image;
+	// Create texture and load image into it.
+	TexturePtr texture( new sf::Texture );
 
-	if( !image.LoadFromFile( m_base_path + id.as_path() ) ) {
-		return false;
-	}
-
-	// Create and store texture.
-	std::shared_ptr<sf::Texture> texture( new sf::Texture );
-
-	if( !texture->LoadFromImage( image ) ) {
+	if( !texture->LoadFromFile( m_base_path + id.as_path() ) ) {
 		return false;
 	}
 
@@ -113,7 +106,7 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	in_file.close();
 
 	// Deserialize model.
-	std::shared_ptr<flex::Model> model( new flex::Model );
+	ModelPtr model( new flex::Model );
 
 	try {
 		*model = flex::ModelDriver::deserialize( buffer );
@@ -147,4 +140,46 @@ std::shared_ptr<const flex::Model> ResourceManager::find_model( const flex::Flex
 	}
 
 	return model;
+}
+
+bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
+	boost::lock_guard<boost::mutex> lock( m_textures_mutex );
+
+	// Remove texture with same ID, both prepared and finalized.
+	m_prepared_textures.erase( id.get() );
+	m_textures.erase( id.get() );
+
+	// Create new image and try to load.
+	ImagePtr image( new sf::Image );
+
+	if( !image->LoadFromFile( m_base_path + id.as_path() ) ) {
+		return false;
+	}
+
+	// Create new texture.
+	TexturePtr texture( new sf::Texture );
+
+	// Insert the prepared texture.
+	m_textures[id.get()] = texture;
+	m_prepared_textures[id.get()] = image;
+
+	return true;
+}
+
+void ResourceManager::finalize_prepared_textures() {
+	boost::lock_guard<boost::mutex> lock( m_textures_mutex );
+
+	if( !m_prepared_textures.size() ) {
+		return;
+	}
+
+	PreparedTextureMap::iterator tex_iter( m_prepared_textures.begin() );
+	PreparedTextureMap::iterator tex_iter_end( m_prepared_textures.end() );
+	
+	for( ; tex_iter != tex_iter_end; ++tex_iter ) {
+		m_textures[tex_iter->first]->LoadFromImage( *tex_iter->second );
+		m_textures[tex_iter->first]->SetSmooth( true );
+	}
+
+	m_prepared_textures.clear();
 }

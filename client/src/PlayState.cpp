@@ -251,6 +251,9 @@ void PlayState::update( const sf::Time& delta ) {
 
 		elapsed = sf::Time::Zero;
 	}
+
+	// Finalize previously prepared textures.
+	m_resource_manager.finalize_prepared_textures();
 }
 
 void PlayState::render() const {
