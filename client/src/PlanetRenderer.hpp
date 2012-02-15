@@ -64,8 +64,8 @@ class PlanetRenderer {
 		typedef std::map<std::shared_ptr<const sf::Texture>, std::size_t> TextureVBOIndexMap;
 		typedef std::map<ChunkPosition, TextureVBOIndexMap> ChunkTextureMap;
 
-		void pause();
-		void resume();
+		void pause() const;
+		void resume() const;
 
 		std::shared_ptr<const flex::Model> get_model( const flex::FlexID& id ) const;
 		std::shared_ptr<const sf::Texture> get_texture( const flex::FlexID& id ) const;

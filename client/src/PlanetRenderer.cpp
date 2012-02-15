@@ -73,7 +73,6 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	TextureVBOMap new_vbos;
 	flex::Vertex vertex[3];
 	const sf::FloatRect* coverage_rects[flex::NUM_FACES];
-	const flex::FloatCuboid* bounding_box = nullptr;
 
 	flex::Chunk::Vector block_runner;
 	for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
@@ -440,11 +439,11 @@ void PlanetRenderer::render() const {
 	}
 }
 
-void PlanetRenderer::pause() {
+void PlanetRenderer::pause() const {
 	m_render_mutex.lock();
 }
 
-void PlanetRenderer::resume() {
+void PlanetRenderer::resume() const {
 	m_render_mutex.unlock();
 }
 
@@ -480,8 +479,17 @@ std::shared_ptr<const sf::Texture> PlanetRenderer::get_texture( const flex::Flex
 	std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( id );
 
 	if( texture == nullptr ) {
+		// AMD/ATI refuses to work when loading textures in a separate thread in some
+		// situations. This may be a race condition somewhere. So just stop rendering
+		// while loading textures.
+		pause();
+
 		// Try to load.
-		if( !m_resource_manager.load_texture( id ) ) {
+		bool result = m_resource_manager.load_texture( id );
+
+		resume();
+
+		if( !result ) {
 #if !defined( NDEBUG )
 			std::cerr << "Failed to load texture: " << id.get() << std::endl;
 #endif
