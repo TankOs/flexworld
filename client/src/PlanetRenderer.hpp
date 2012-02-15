@@ -4,6 +4,10 @@
 #include "Camera.hpp"
 
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/Face.hpp>
+#include <FlexWorld/Chunk.hpp>
+#include <FlexWorld/Class.hpp>
+#include <FlexWorld/Model.hpp>
 
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics/Texture.hpp>
@@ -13,6 +17,11 @@
 #include <cstdint>
 
 class ResourceManager;
+
+namespace flex {
+class Model;
+class FlexID;
+}
 
 /** Planet renderer.
  *
@@ -57,6 +66,9 @@ class PlanetRenderer {
 
 		void pause();
 		void resume();
+
+		std::shared_ptr<const flex::Model> get_model( const flex::FlexID& id ) const;
+		std::shared_ptr<const sf::Texture> get_texture( const flex::FlexID& id ) const;
 
 		mutable boost::mutex m_render_mutex;
 

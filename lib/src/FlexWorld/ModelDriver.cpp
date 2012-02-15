@@ -17,6 +17,18 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	buffer.push_back( 'M' );
 	buffer.push_back( 0x00 ); // Version.
 
+	// Bounding box.
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_bounding_box() ), reinterpret_cast<const char*>( &model.get_bounding_box() ) + sizeof( flex::FloatCuboid ) );
+
+	// Coverage rects.
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ) + sizeof( sf::FloatRect ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( DOWN_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( DOWN_FACE ) ) + sizeof( sf::FloatRect ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( BACK_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( BACK_FACE ) ) + sizeof( sf::FloatRect ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( RIGHT_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( RIGHT_FACE ) ) + sizeof( sf::FloatRect ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( FRONT_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( FRONT_FACE ) ) + sizeof( sf::FloatRect ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( LEFT_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( LEFT_FACE ) ) + sizeof( sf::FloatRect ) );
+
+	// Block scale divisor.
 	float block_scale_divisor = model.get_block_scale_divisor();
 	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &block_scale_divisor ), reinterpret_cast<const char*>( &block_scale_divisor ) + sizeof( block_scale_divisor ) );
 
@@ -93,6 +105,45 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		throw DeserializationException( "Wrong version." );
 	}
 
+	// Bounding box.
+	flex::FloatCuboid bbox;
+
+	if( buffer.size() - buf_ptr < sizeof( bbox ) ) {
+		throw DeserializationException( "Bounding box missing." );
+	}
+
+	bbox = *reinterpret_cast<const flex::FloatCuboid*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( bbox );
+
+	if(
+		bbox.x < 0.0f || bbox.y < 0.0f || bbox.z < 0.0f ||
+		bbox.width <= 0.0f || bbox.height <= 0.0f || bbox.depth <= 0.0f
+	) {
+		throw DeserializationException( "Wrong bounding box." );
+	}
+
+	// Face coverage rects.
+	if( buffer.size() - buf_ptr < NUM_FACES * sizeof( sf::FloatRect ) ) {
+		throw DeserializationException( "Face coverage rect missing." );
+	}
+
+	sf::FloatRect coverage_rects[NUM_FACES];
+
+	for( int face = UP_FACE; face != NUM_FACES; ++face ) {
+		coverage_rects[face] = *reinterpret_cast<const sf::FloatRect*>( &buffer[buf_ptr] );
+		buf_ptr += sizeof( sf::FloatRect );
+
+		// Check.
+		if(
+			coverage_rects[face].Left < 0.0f ||
+			coverage_rects[face].Top < 0.0f ||
+			coverage_rects[face].Width < 0.0f ||
+			coverage_rects[face].Height < 0.0f
+		) {
+			throw DeserializationException( "Wrong face coverage rect." );
+		}
+	}
+
 	// Block scale divisor.
 	float block_scale_divisor = 0.0f;
 
@@ -121,11 +172,9 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		throw DeserializationException( "Meshes missing." );
 	}
 
-	// Load meshes.
 	Model model;
 
-	model.set_block_scale_divisor( block_scale_divisor );
-
+	// Load meshes.
 	for( std::size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx ) {
 		Mesh::VertexIndex num_vertices;
 
@@ -206,6 +255,15 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		}
 
 		model.add_mesh( mesh );
+	}
+
+	// Set basic props.
+	model.set_bounding_box( bbox );
+	model.set_block_scale_divisor( block_scale_divisor );
+
+	// Set face coverage rects.
+	for( int face = UP_FACE; face != NUM_FACES; ++face ) {
+		model.set_face_coverage( static_cast<Face>( face ), coverage_rects[face] );
 	}
 
 	return model;

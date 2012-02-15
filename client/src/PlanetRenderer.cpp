@@ -11,6 +11,35 @@
 #include <iostream> // XXX 
 
 static const float GRID_SIZE = 1.0f;
+static const float BOUNDARY_TOLERANCE = 0.001f;
+
+inline bool is_triangle_covered(
+	float v0x, float v0y,
+	float v1x, float v1y,
+	float v2x, float v2y,
+	const sf::FloatRect& rect
+) {
+	return
+		(
+			v0x + BOUNDARY_TOLERANCE >= rect.Left &&
+			v0y + BOUNDARY_TOLERANCE >= rect.Top &&
+			v0x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
+			v0y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+		) &&
+		(
+			v1x + BOUNDARY_TOLERANCE >= rect.Left &&
+			v1y + BOUNDARY_TOLERANCE >= rect.Top &&
+			v1x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
+			v1y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+		) &&
+		(
+			v2x + BOUNDARY_TOLERANCE >= rect.Left &&
+			v2y + BOUNDARY_TOLERANCE >= rect.Top &&
+			v2x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
+			v2y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+		)
+	;
+}
 
 PlanetRenderer::PlanetRenderer( const flex::Planet& planet, ResourceManager& resource_manager ) :
 	m_camera( nullptr ),
@@ -37,9 +66,14 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	sf::Vector3f offset = org_offset;
 
 	const flex::Class* block_cls = nullptr;
-	std::size_t vertex_idx = 0;
-	flex::Vertex vertex;
+	const flex::Class* nbor_block_cls = nullptr;
+	std::shared_ptr<const flex::Model> model;
+	std::shared_ptr<const flex::Model> nbor_model;
+	std::shared_ptr<const sf::Texture> texture;
 	TextureVBOMap new_vbos;
+	flex::Vertex vertex[3];
+	const sf::FloatRect* coverage_rects[flex::NUM_FACES];
+	const flex::FloatCuboid* bounding_box = nullptr;
 
 	flex::Chunk::Vector block_runner;
 	for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
@@ -50,22 +84,83 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 				if( block_cls != nullptr ) {
 					// Get model.
-					const flex::FlexID& model_id = block_cls->get_model().get_id();
-					std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
+					model = get_model( block_cls->get_model().get_id() );
 
-					if( model == nullptr ) {
-						// Try to load.
-						if( !m_resource_manager.load_model( model_id ) ) {
-#if !defined( NDEBUG )
-							std::cerr << "Failed to load model: " << model_id.get() << std::endl;
-#endif
-							return;
-							// TODO Exception?
-						}
-
-						model = m_resource_manager.find_model( model_id );
-						assert( model );
+					assert( model );
+					if( !model ) {
+						// TODO Error handling.
+						return;
 					}
+
+					////////////////////////////////////////////////////////////////
+					///////////// COVERAGE PREPARATION /////////////////////////////
+					////////////////////////////////////////////////////////////////
+					//
+					// Get all neighbour's coverage rects.
+
+					coverage_rects[flex::UP_FACE] =
+						(
+							block_runner.y + 1 < m_planet.get_chunk_size().y &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::DOWN_FACE )
+						: 0
+					;
+
+					coverage_rects[flex::DOWN_FACE] =
+						(
+							block_runner.y > 0 &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::UP_FACE )
+						: 0
+					;
+
+					coverage_rects[flex::LEFT_FACE] =
+						(
+							block_runner.x > 0 &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::RIGHT_FACE )
+						: 0
+					;
+
+					coverage_rects[flex::RIGHT_FACE] =
+						(
+							block_runner.x + 1 < m_planet.get_chunk_size().x &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::LEFT_FACE )
+						: 0
+					;
+
+					coverage_rects[flex::FRONT_FACE] =
+						(
+							block_runner.z + 1 < m_planet.get_chunk_size().z &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::BACK_FACE )
+						: 0
+					;
+
+					coverage_rects[flex::BACK_FACE] =
+						(
+							block_runner.z > 0 &&
+							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
+						)
+						? &nbor_model->get_face_coverage( flex::FRONT_FACE )
+						: 0
+					;
+
+					/////////////////////////////////////////////////////////////////
+					////////////// COVERAGE RECT PREPARATION DONE ///////////////////
+					/////////////////////////////////////////////////////////////////
 
 					// Iterate over meshes.
 					for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
@@ -74,20 +169,12 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 						assert( mesh.get_texture_slot() < block_cls->get_num_textures() );
 
 						// Get texture.
-						const flex::FlexID& texture_id = block_cls->get_texture( mesh.get_texture_slot() ).get_id();
-						std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( texture_id );
+						texture = get_texture( block_cls->get_texture( mesh.get_texture_slot() ).get_id() );
 
-						if( texture == nullptr ) {
-							// Try to load.
-							if( !m_resource_manager.load_texture( texture_id ) ) {
-#if !defined( NDEBUG )
-								std::cerr << "Failed to load texture: " << texture_id.get() << std::endl;
-#endif
-								return;
-							}
-
-							texture = m_resource_manager.find_texture( texture_id );
-							assert( texture );
+						assert( texture );
+						if( !texture ) {
+							// TODO Error handling.
+							return;
 						}
 
 						// Get VBO or generate a new one.
@@ -101,15 +188,132 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 						for( flex::Mesh::TriangleIndex tri_idx = 0; tri_idx < mesh.get_num_triangles(); ++tri_idx ) {
 							const flex::Triangle& tri = mesh.get_triangle( tri_idx );
 
-							// Add triangle's vertices to VBO.
-							for( vertex_idx = 0; vertex_idx < 3; ++vertex_idx ) {
-								vertex = mesh.get_vertex( tri.vertices[vertex_idx] );
+							// Get triangle's vertices.
+							vertex[0] = mesh.get_vertex( tri.vertices[0] );
+							vertex[1] = mesh.get_vertex( tri.vertices[1] );
+							vertex[2] = mesh.get_vertex( tri.vertices[2] );
 
-								vertex.position /= model->get_block_scale_divisor();
-								vertex.position += offset;
+							// Apply block scale divisor.
+							vertex[0].position /= model->get_block_scale_divisor();
+							vertex[1].position /= model->get_block_scale_divisor();
+							vertex[2].position /= model->get_block_scale_divisor();
 
-								vbo->add_vertex( vertex );
+							/////// Hidden-face-removal.
+							if(
+								// Left face.
+								(
+									coverage_rects[flex::LEFT_FACE] &&
+									vertex[0].position.x <= BOUNDARY_TOLERANCE &&
+									vertex[1].position.x <= BOUNDARY_TOLERANCE &&
+									vertex[2].position.x <= BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.y,
+										vertex[0].position.z,
+										vertex[1].position.y,
+										vertex[1].position.z,
+										vertex[2].position.y,
+										vertex[2].position.z,
+										*coverage_rects[flex::LEFT_FACE]
+									)
+								)
+								||
+								// Right face.
+								(
+									coverage_rects[flex::RIGHT_FACE] &&
+									vertex[0].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.y,
+										vertex[0].position.z,
+										vertex[1].position.y,
+										vertex[1].position.z,
+										vertex[2].position.y,
+										vertex[2].position.z,
+										*coverage_rects[flex::RIGHT_FACE]
+									)
+								)
+								||
+								// Up face.
+								(
+									coverage_rects[flex::UP_FACE] &&
+									vertex[0].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.x,
+										vertex[0].position.z,
+										vertex[1].position.x,
+										vertex[1].position.z,
+										vertex[2].position.x,
+										vertex[2].position.z,
+										*coverage_rects[flex::UP_FACE]
+									)
+								)
+								||
+								// Down face.
+								(
+									coverage_rects[flex::DOWN_FACE] &&
+									vertex[0].position.y <= BOUNDARY_TOLERANCE &&
+									vertex[1].position.y <= BOUNDARY_TOLERANCE &&
+									vertex[2].position.y <= BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.x,
+										vertex[0].position.z,
+										vertex[1].position.x,
+										vertex[1].position.z,
+										vertex[2].position.x,
+										vertex[2].position.z,
+										*coverage_rects[flex::DOWN_FACE]
+									)
+								)
+								||
+								// Front face.
+								(
+									coverage_rects[flex::FRONT_FACE] &&
+									vertex[0].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.x,
+										vertex[0].position.y,
+										vertex[1].position.x,
+										vertex[1].position.y,
+										vertex[2].position.x,
+										vertex[2].position.y,
+										*coverage_rects[flex::FRONT_FACE]
+									)
+								)
+								||
+								// Back face.
+								(
+									coverage_rects[flex::BACK_FACE] &&
+									vertex[0].position.z <= BOUNDARY_TOLERANCE &&
+									vertex[1].position.z <= BOUNDARY_TOLERANCE &&
+									vertex[2].position.z <= BOUNDARY_TOLERANCE &&
+									is_triangle_covered(
+										vertex[0].position.x,
+										vertex[0].position.y,
+										vertex[1].position.x,
+										vertex[1].position.y,
+										vertex[2].position.x,
+										vertex[2].position.y,
+										*coverage_rects[flex::BACK_FACE]
+									)
+								)
+							) {
+								// Triangle is covered, skip it.
+								continue;
 							}
+
+							// Apply world position.
+							vertex[0].position += offset;
+							vertex[1].position += offset;
+							vertex[2].position += offset;
+
+							vbo->add_vertex( vertex[0] );
+							vbo->add_vertex( vertex[1] );
+							vbo->add_vertex( vertex[2] );
 						}
 					}
 				}
@@ -246,4 +450,52 @@ void PlanetRenderer::resume() {
 
 void PlanetRenderer::set_camera( const Camera& camera ) {
 	m_camera = &camera;
+}
+
+std::shared_ptr<const flex::Model> PlanetRenderer::get_model( const flex::FlexID& id ) const {
+	std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( id );
+
+	if( model == nullptr ) {
+		// Try to load.
+		if( !m_resource_manager.load_model( id ) ) {
+#if !defined( NDEBUG )
+			std::cerr << "Failed to load model: " << id.get() << std::endl;
+#endif
+			return model;
+		}
+#if !defined( NDEBUG )
+		else {
+			std::cout << "Model loaded: " << id.get() << std::endl;
+		}
+#endif
+
+		model = m_resource_manager.find_model( id );
+		assert( model );
+	}
+
+	return model;
+}
+
+std::shared_ptr<const sf::Texture> PlanetRenderer::get_texture( const flex::FlexID& id ) const {
+	std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( id );
+
+	if( texture == nullptr ) {
+		// Try to load.
+		if( !m_resource_manager.load_texture( id ) ) {
+#if !defined( NDEBUG )
+			std::cerr << "Failed to load texture: " << id.get() << std::endl;
+#endif
+			return texture;
+		}
+#if !defined( NDEBUG )
+		else {
+			std::cout << "Texture loaded: " << id.get() << std::endl;
+		}
+#endif
+
+		texture = m_resource_manager.find_texture( id );
+		assert( texture );
+	}
+
+	return texture;
 }

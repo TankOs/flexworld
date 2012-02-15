@@ -23,13 +23,36 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	using namespace flex;
 
 	float value = 0;
+	FloatCuboid cuboid;
+	sf::FloatRect rect;
 
 	ModelDriver::Buffer source_buffer;
 	source_buffer.push_back( 'F' );
 	source_buffer.push_back( 'W' );
 	source_buffer.push_back( 'M' );
 	source_buffer.push_back( 0x00 ); // Version.
+
+	// Bounding box (x, y, z, width, height, depth).
+	cuboid = FloatCuboid( 0, 2, 4, 10, 20, 30 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &cuboid ), reinterpret_cast<const char*>( &cuboid ) + sizeof( cuboid ) );
+
+	// Coverage rects.
+	rect = sf::FloatRect( 100, 101, 102, 103 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+	rect = sf::FloatRect( 200, 201, 202, 203 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+	rect = sf::FloatRect( 300, 301, 302, 303 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+	rect = sf::FloatRect( 400, 401, 402, 403 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+	rect = sf::FloatRect( 500, 501, 502, 503 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+	rect = sf::FloatRect( 600, 601, 602, 603 );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+
+	// Block scale divisor.
 	value = 33.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+
 	source_buffer.push_back( 0x02 ); // Num meshes.
 
 	// Mesh 0.
@@ -212,6 +235,13 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	{
 		Model model;
 
+		model.set_bounding_box( flex::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		model.set_face_coverage( flex::UP_FACE, sf::FloatRect( 100, 101, 102, 103 ) );
+		model.set_face_coverage( flex::DOWN_FACE, sf::FloatRect( 200, 201, 202, 203 ) );
+		model.set_face_coverage( flex::BACK_FACE, sf::FloatRect( 300, 301, 302, 303 ) );
+		model.set_face_coverage( flex::RIGHT_FACE, sf::FloatRect( 400, 401, 402, 403 ) );
+		model.set_face_coverage( flex::FRONT_FACE, sf::FloatRect( 500, 501, 502, 503 ) );
+		model.set_face_coverage( flex::LEFT_FACE, sf::FloatRect( 600, 601, 602, 603 ) );
 		model.set_block_scale_divisor( 33.0f );
 
 		// Top vertices first.
@@ -270,6 +300,13 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
 
 		// Validate.
+		BOOST_CHECK( model.get_bounding_box() == flex::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::UP_FACE ) == sf::FloatRect( 100, 101, 102, 103 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::DOWN_FACE ) == sf::FloatRect( 200, 201, 202, 203 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::BACK_FACE ) == sf::FloatRect( 300, 301, 302, 303 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::RIGHT_FACE ) == sf::FloatRect( 400, 401, 402, 403 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::FRONT_FACE ) == sf::FloatRect( 500, 501, 502, 503 ) );
+		BOOST_CHECK( model.get_face_coverage( flex::LEFT_FACE ) == sf::FloatRect( 600, 601, 602, 603 ) );
 		BOOST_CHECK( model.get_block_scale_divisor() == 33.0f );
 		BOOST_CHECK( model.get_num_meshes() == 2 );
 
@@ -342,10 +379,80 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong version." ) );
 		buffer[buffer.size() - 1] = 0x00;
 
-		// Version missing.
+		// Bounding box missing.
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 0.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 2.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 4.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 10.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 20.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Bounding box missing." ) );
+
+		value = 30.0f; buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
+
+		// Wrong bounding box.
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 6 * sizeof( value )] ) = -1.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 6 * sizeof( value )] ) = 0.0f;
+
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 5 * sizeof( value )] ) = -1.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 5 * sizeof( value )] ) = 2.0f;
+
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 4 * sizeof( value )] ) = -1.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 4 * sizeof( value )] ) = 3.0f;
+
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 3 * sizeof( value )] ) = 0.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 3 * sizeof( value )] ) = 10.0f;
+
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 2 * sizeof( value )] ) = 0.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 2 * sizeof( value )] ) = 20.0f;
+
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 1 * sizeof( value )] ) = 0.0f;
+		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong bounding box." ) );
+		*reinterpret_cast<float*>( &buffer[buffer.size() - 1 * sizeof( value )] ) = 30.0f;
+
+		// Coverage rects missing.
+		rect = sf::FloatRect( 1, 2, 3, 4 );
+
+		for( int face_idx = 0; face_idx < NUM_FACES; ++face_idx ) {
+			buffer.insert( buffer.end(), reinterpret_cast<const char*>( &rect ), reinterpret_cast<const char*>( &rect ) + sizeof( rect ) );
+
+			if( face_idx + 1 < NUM_FACES ) {
+				BOOST_CHECK( deserialize_and_check_exception( buffer, "Face coverage rect missing." ) );
+			}
+		}
+
+		// Wrong coverage rects.
+		for( int face_idx = 0; face_idx < NUM_FACES; ++face_idx ) {
+			*reinterpret_cast<sf::FloatRect*>( &buffer[buffer.size() - (face_idx + 1) * sizeof( sf::FloatRect )] ) = sf::FloatRect( -1, +1, +1 ,+1 );
+			BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong face coverage rect." ) );
+			*reinterpret_cast<sf::FloatRect*>( &buffer[buffer.size() - (face_idx + 1) * sizeof( sf::FloatRect )] ) = sf::FloatRect( +1, -1, +1 ,+1 );
+			BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong face coverage rect." ) );
+			*reinterpret_cast<sf::FloatRect*>( &buffer[buffer.size() - (face_idx + 1) * sizeof( sf::FloatRect )] ) = sf::FloatRect( +1, +1, -1 ,+1 );
+			BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong face coverage rect." ) );
+			*reinterpret_cast<sf::FloatRect*>( &buffer[buffer.size() - (face_idx + 1) * sizeof( sf::FloatRect )] ) = sf::FloatRect( +1, +1, +1 ,-1 );
+			BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong face coverage rect." ) );
+
+			*reinterpret_cast<sf::FloatRect*>( &buffer[buffer.size() - (face_idx + 1) * sizeof( sf::FloatRect )] ) = sf::FloatRect( +1, +1, +1 ,+1 );
+		}
+
+		// Block scale divisor missing.
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Block scale divisor missing." ) );
 
-		// Wrong version.
+		// Wrong block scale divisor.
 		value = 0.9f;
 		buffer.insert( buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Wrong block scale divisor." ) );

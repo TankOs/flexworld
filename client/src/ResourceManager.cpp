@@ -118,7 +118,10 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	try {
 		*model = flex::ModelDriver::deserialize( buffer );
 	}
-	catch( const flex::ModelDriver::DeserializationException& /*e*/ ) {
+	catch( const flex::ModelDriver::DeserializationException& e ) {
+#if !defined( NDEBUG )
+		std::cerr << "Exception when loading a model: " << e.what() << std::endl;
+#endif
 		return false;
 	}
 
