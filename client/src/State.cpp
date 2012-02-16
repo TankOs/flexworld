@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -47,6 +48,22 @@ State* State::run() {
 		while( m_render_target.PollEvent( event ) ) {
 			// Check for F12 (screenshot).
 			if( event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::F12 ) {
+				// Construct base filename with date and time.
+				boost::posix_time::ptime now( boost::posix_time::second_clock::local_time() );
+
+				std::stringstream basename;
+				basename
+					<< "flexworld_"
+					<< std::setw( 4 ) << std::setfill( '0' ) << static_cast<int>( now.date().year() ) << "-"
+					<< std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( now.date().month() ) << "-"
+					<< std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( now.date().day() )
+					<< "_"
+					<< std::setw( 2 ) << std::setfill( '0' ) << now.time_of_day().hours() << "-"
+					<< std::setw( 2 ) << std::setfill( '0' ) << now.time_of_day().minutes() << "-"
+					<< std::setw( 2 ) << std::setfill( '0' ) << now.time_of_day().seconds()
+					<< "-"
+				;
+
 				// Find next free screenshot ID.
 				uint32_t id( 0 );
 				std::ifstream in;
@@ -54,7 +71,7 @@ State* State::run() {
 
 				do {
 					std::stringstream sstr;
-					sstr << "screenshot" << std::setfill( '0' ) << std::setw( 5 ) << id << ".png";
+					sstr << basename.str() << id << ".png";
 					filename = sstr.str();
 
 					in.close();

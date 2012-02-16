@@ -2,7 +2,7 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldClient )
 
-find_package( Boost 1.46 REQUIRED filesystem system )
+find_package( Boost 1.46 REQUIRED date_time filesystem system )
 find_package( OpenGL REQUIRED )
 find_package( SFGUI REQUIRED )
 find_package( SFML 2.0 REQUIRED GRAPHICS WINDOW AUDIO SYSTEM )
