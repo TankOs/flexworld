@@ -7,6 +7,7 @@
 namespace flex {
 
 class Planet;
+class Entity;
 
 /** Lock facility for securing several backend objects.
  *
@@ -47,14 +48,30 @@ class LockFacility {
 		 */
 		bool is_planet_locked( const Planet& planet ) const;
 
+		/** Lock or unlock entity.
+		 * @param entity Entity.
+		 * @param do_lock true to lock, false to unlock.
+		 */
+		void lock_entity( const Entity& entity, bool do_lock );
+
+		/** Check if entity is locked.
+		 * @param entity Entity.
+		 * @return true when locked.
+		 */
+		bool is_entity_locked( const Entity& entity ) const;
+
 	private:
 		typedef std::map<const Planet*, RefLock*> PlanetLockMap;
+		typedef std::map<const Entity*, RefLock*> EntityLockMap;
+
+		PlanetLockMap m_planet_locks;
+		EntityLockMap m_entity_locks;
 
 		RefLock m_account_manager_lock;
 		RefLock m_world_lock;
 
 		mutable boost::mutex m_planet_locks_mutex;
-		PlanetLockMap m_planet_locks;
+		mutable boost::mutex m_entity_locks_mutex;
 };
 
 }

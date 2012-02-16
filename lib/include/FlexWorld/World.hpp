@@ -10,6 +10,10 @@ namespace flex {
 
 /** World.
  * The world holds planets and entities and is used as a global storage.
+ *
+ * Please use this classes methods over children's methods if applicable. For
+ * example to add an entity to a planet, use link_entity_to_planet() instead of
+ * calling Planet::add_entity() yourself.
  */
 class World {
 	public:

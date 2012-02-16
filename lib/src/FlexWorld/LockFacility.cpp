@@ -66,4 +66,40 @@ bool LockFacility::is_planet_locked( const Planet& planet ) const {
 	return is_locked;
 }
 
+void LockFacility::lock_entity( const Entity& entity, bool do_lock ) {
+	boost::lock_guard<boost::mutex> map_lock( m_entity_locks_mutex );
+
+	if( do_lock ) {
+		EntityLockMap::iterator lock_iter = m_entity_locks.find( &entity );
+
+		if( lock_iter == m_entity_locks.end() ) {
+			lock_iter = m_entity_locks.insert( std::pair<const Entity*, RefLock*>( &entity, new RefLock ) ).first;
+		}
+
+		lock_iter->second->lock();
+	}
+	else {
+		EntityLockMap::iterator lock_iter = m_entity_locks.find( &entity );
+		assert( lock_iter != m_entity_locks.end() );
+
+		lock_iter->second->unlock();
+
+		if( lock_iter->second->get_usage_count() == 0 ) {
+			delete lock_iter->second;
+			m_entity_locks.erase( lock_iter );
+		}
+	}
+}
+
+bool LockFacility::is_entity_locked( const Entity& entity ) const {
+	bool is_locked = false;
+
+	{
+		boost::lock_guard<boost::mutex> map_lock( m_entity_locks_mutex );
+		is_locked = m_entity_locks.find( &entity ) != m_entity_locks.end();
+	}
+
+	return is_locked;
+}
+
 }
