@@ -2,7 +2,7 @@
 
 #include "Controls.hpp"
 
-#include <map>
+#include <cstdint>
 #include <string>
 
 /** User settings.
@@ -56,9 +56,33 @@ class UserSettings {
 		 */
 		const std::string& get_serial() const;
 
+		/** Enable or disable vsync.
+		 * @param enable Enable?
+		 */
+		void enable_vsync( bool enable );
+
+		/** Check if vsync is enabled.
+		 * @return true if enabled.
+		 */
+		bool is_vsync_enabled() const;
+
+		/** Set FPS limit.
+		 * @param limit Limit.
+		 */
+		void set_fps_limit( uint32_t limit );
+
+		/** Get FPS limit.
+		 * @return Limit.
+		 */
+		uint32_t get_fps_limit() const;
+
 	private:
+		Controls m_controls;
+
 		std::string m_username;
 		std::string m_serial;
 
-		Controls m_controls;
+		uint32_t m_fps_limit;
+
+		bool m_vsync;
 };

@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
-#include <iostream> // XXX 
+#include <cassert>
 
 State::State( sf::RenderWindow& target ) :
 	m_render_target( target ),
@@ -129,10 +129,12 @@ State* State::run() {
 }
 
 void State::set_logic_fps( uint16_t fps ) {
+	assert( fps > 0 );
 	m_logic_interval = sf::Microseconds( 1000000 / fps );
 }
 
 void State::set_render_fps( uint16_t fps ) {
+	assert( fps > 0 );
 	m_render_interval = sf::Microseconds( 1000000 / fps );
 }
 

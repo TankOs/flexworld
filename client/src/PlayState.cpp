@@ -33,7 +33,7 @@ void PlayState::init() {
 	//glewInit();
 
 	set_logic_fps( 120 );
-	set_render_fps( 60 );
+	set_render_fps( static_cast<uint16_t>( get_shared().user_settings.get_fps_limit() ) );
 
 	// Reset handler.
 	get_shared().client->set_handler( *this );
@@ -245,7 +245,13 @@ void PlayState::update( const sf::Time& delta ) {
 
 	if( elapsed >= sf::Microseconds( 1000000 / 2 ) ) {
 		std::stringstream sstr;
-		sstr << "FPS renderer/logic: " << get_render_fps() << "/" << get_logic_fps();
+		sstr
+			<< "FPS renderer/logic: "
+			<< get_render_fps()
+			<< (get_shared().user_settings.is_vsync_enabled() ? " (sync)" : "")
+			<< "/"
+			<< get_logic_fps()
+		;
 
 		m_fps_text.SetString( sstr.str() );
 

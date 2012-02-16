@@ -17,7 +17,10 @@ std::string UserSettings::get_profile_path() {
 #endif
 }
 
-UserSettings::UserSettings() {
+UserSettings::UserSettings() :
+	m_fps_limit( 60 ),
+	m_vsync( false )
+{
 }
 
 bool UserSettings::load( const std::string& filename ) {
@@ -53,6 +56,40 @@ bool UserSettings::load( const std::string& filename ) {
 		new_settings.m_controls.set_mouse_sensitivity( sens );
 	}
 	catch( ... ) {
+	}
+
+	// Video settings.
+	const YAML::Node* video_node = doc.FindValue( "Video" );
+
+	if( video_node ) {
+		const YAML::Node* vsync_node = video_node->FindValue( "VSync" );
+
+		if( vsync_node ) {
+			try {
+				bool enable = false;
+
+				*vsync_node >> enable;
+				new_settings.enable_vsync( enable );
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
+
+		const YAML::Node* fps_node = video_node->FindValue( "FPSLimit" );
+
+		if( fps_node ) {
+			try {
+				int fps_limit = 60;
+
+				*fps_node >> fps_limit;
+
+				if( fps_limit > 0 ) {
+					new_settings.set_fps_limit( static_cast<uint32_t>( fps_limit ) );
+				}
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
 	}
 
 	// Load key bindings.
@@ -123,6 +160,10 @@ bool UserSettings::save( const std::string& filename ) {
 				}
 
 			emitter << EndMap
+			<< Key << "Video" << Value << BeginMap
+				<< Key << "VSync" << Value << is_vsync_enabled()
+				<< Key << "FPSLimit" << Value << get_fps_limit()
+			<< EndMap
 			<< Key << "Controls" << Value << BeginMap
 				<< Key << "Mouse" << Value << BeginMap
 					<< Key << "Inverted" << Value << m_controls.is_mouse_inverted()
@@ -177,3 +218,21 @@ void UserSettings::set_serial( const std::string& serial ) {
 const std::string& UserSettings::get_serial() const {
 	return m_serial;
 }
+
+void UserSettings::enable_vsync( bool enable ) {
+	m_vsync = enable;
+}
+
+bool UserSettings::is_vsync_enabled() const {
+	return m_vsync;
+}
+
+void UserSettings::set_fps_limit( uint32_t limit ) {
+	assert( limit > 0 );
+	m_fps_limit = limit;
+}
+
+uint32_t UserSettings::get_fps_limit() const {
+	return m_fps_limit;
+}
+

@@ -60,7 +60,12 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_waiting_for_input_label = sfg::Label::Create( L"Press a key or mouse button (hit ESC to cancel)." );
 	window->m_waiting_for_input_label->Show( false );
 
-	// Layout.
+	// Video.
+	window->m_enable_vsync_check = sfg::CheckButton::Create( L"Vertical sync (avoids tearing)" );
+	window->m_fps_limit_scale = sfg::Scale::Create( 1.0f, 200.0f, 1.0f, sfg::Scale::HORIZONTAL );
+	window->m_fps_limit_label = sfg::Label::Create( L"(--)" );
+
+	// Layout //////////////////////////////////////////////////
 
 	// Account.
 	sfg::Table::Ptr acc_table( sfg::Table::Create() );
@@ -135,10 +140,31 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	controls_page_box->Pack( bindings_frame, false );
 	controls_page_box->Pack( window->m_waiting_for_input_label, false );
 
+	// Video.
+	sfg::Box::Ptr fps_limit_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f ) );
+	fps_limit_box->Pack( window->m_fps_limit_scale, true );
+	fps_limit_box->Pack( window->m_fps_limit_label, false );
+
+	sfg::Table::Ptr general_table( sfg::Table::Create() );
+	general_table->SetRowSpacings( 10.0f );
+	general_table->SetColumnSpacings( 10.0f );
+
+	general_table->Attach( window->m_enable_vsync_check, sf::Rect<sf::Uint32>( 1, 0, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	general_table->Attach( sfg::Label::Create( L"FPS limit:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( fps_limit_box, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	sfg::Frame::Ptr general_frame( sfg::Frame::Create( L"General" ) );
+	general_frame->Add( general_table );
+
+	sfg::Box::Ptr video_page_box( sfg::Box::Create( sfg::Box::VERTICAL, 5.0f ) );
+	video_page_box->Pack( general_frame, false );
+
 	// Notebook.
 	sfg::Notebook::Ptr notebook( sfg::Notebook::Create() );
 	notebook->AppendPage( account_page_box, sfg::Label::Create( L"Account" ) );
 	notebook->AppendPage( controls_page_box, sfg::Label::Create( L"Controls" ) );
+	notebook->AppendPage( video_page_box, sfg::Label::Create( L"Video" ) );
 
 	// ---
 	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
@@ -162,7 +188,13 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	ok_button->OnClick.Connect( &OptionsWindow::on_ok_click, &*window );
 	cancel_button->OnClick.Connect( &OptionsWindow::on_cancel_click, &*window );
 
+	window->m_fps_limit_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fps_limit_change, &*window );
+
 	// Init.
+	window->m_enable_vsync_check->SetActive( window->m_user_settings.is_vsync_enabled() );
+	window->m_fps_limit_scale->SetValue( static_cast<float>( window->m_user_settings.get_fps_limit() ) );
+	window->m_fps_limit_label->SetRequisition( sf::Vector2f( 40.0f, 0.0f ) );
+
 	window->refresh_action_button_labels();
 	window->on_sensitivity_change();
 
@@ -180,6 +212,8 @@ void OptionsWindow::on_ok_click() {
 	// Update user settings.
 	m_user_settings.set_username( m_username_entry->GetText() );
 	m_user_settings.set_serial( m_serial_entry->GetText() );
+	m_user_settings.enable_vsync( m_enable_vsync_check->IsActive() );
+	m_user_settings.set_fps_limit( static_cast<uint32_t>( m_fps_limit_scale->GetValue() ) );
 	m_user_settings.get_controls().set_mouse_inverted( m_mouse_inverted_check->IsActive() );
 	m_user_settings.get_controls().set_mouse_sensitivity( m_mouse_sensitivity_scale->GetValue() );
 
@@ -277,4 +311,11 @@ void OptionsWindow::on_sensitivity_change() {
 	std::stringstream sstr;
 	sstr << std::fixed << std::setprecision( 2 ) << m_mouse_sensitivity_scale->GetValue();
 	m_mouse_sensitivity_label->SetText( sstr.str() );
+}
+
+void OptionsWindow::on_fps_limit_change() {
+	std::stringstream sstr;
+
+	sstr << "(" << static_cast<int>( m_fps_limit_scale->GetValue() ) << ")";
+	m_fps_limit_label->SetText( sstr.str() );
 }

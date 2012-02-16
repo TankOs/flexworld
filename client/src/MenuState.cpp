@@ -26,6 +26,9 @@ MenuState::MenuState( sf::RenderWindow& target ) :
 void MenuState::init() {
 	srand( static_cast<unsigned int>( time( nullptr ) ) );
 
+	set_render_fps( 60 );
+	set_logic_fps( 60 );
+
 	// Widgets.
 	sfg::Label::Ptr title_label( sfg::Label::Create( L"FlexWorld" ) );
 	title_label->SetId( "title" );
@@ -301,6 +304,9 @@ void MenuState::on_options_accept() {
 
 	m_window->Show( true );
 	check_required_settings();
+
+	// Apply vsync setting.
+	get_render_target().EnableVerticalSync( get_shared().user_settings.is_vsync_enabled() );
 }
 
 void MenuState::on_options_reject() {

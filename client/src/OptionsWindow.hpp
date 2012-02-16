@@ -52,6 +52,8 @@ class OptionsWindow : public sfg::Window {
 		void on_action_button_click();
 		void on_sensitivity_change();
 
+		void on_fps_limit_change();
+
 		UserSettings m_user_settings;
 
 		bool m_event_processed;
@@ -62,13 +64,15 @@ class OptionsWindow : public sfg::Window {
 		ButtonActionMap m_button_actions;
 		ActionButtonMap m_action_buttons;
 
-		sfg::Box::Ptr m_account_page_box;
 		sfg::Entry::Ptr m_username_entry;
 		sfg::Entry::Ptr m_serial_entry;
 
-		sfg::Box::Ptr m_controls_page_box;
 		sfg::CheckButton::Ptr m_mouse_inverted_check;
 		sfg::Scale::Ptr m_mouse_sensitivity_scale;
 		sfg::Label::Ptr m_mouse_sensitivity_label;
 		sfg::Label::Ptr m_waiting_for_input_label;
+
+		sfg::CheckButton::Ptr m_enable_vsync_check;
+		sfg::Scale::Ptr m_fps_limit_scale;
+		sfg::Label::Ptr m_fps_limit_label;
 };

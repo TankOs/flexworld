@@ -21,7 +21,6 @@ Client::Client() {
 void Client::run() {
 	// Setup window.
 	m_window.Create( sf::VideoMode::GetDesktopMode(), "", sf::Style::Fullscreen );
-	m_window.EnableVerticalSync( false );
 
 	{
 		std::stringstream sstr;
@@ -86,6 +85,9 @@ void Client::run() {
 			controls.map_button( sf::Mouse::Right, Controls::SECONDARY_ATTACK );
 		}
 	}
+
+	// Setup window.
+	m_window.EnableVerticalSync( Shared::get().user_settings.is_vsync_enabled() );
 
 	// Launch first state.
 	State* state( new IntroState( m_window ) );
