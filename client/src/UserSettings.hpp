@@ -9,6 +9,9 @@
  */
 class UserSettings {
 	public:
+		static const uint8_t MAX_FOV; ///< Maximum FOV.
+		static const uint8_t MIN_FOV; ///< Minimum FOV.
+
 		/** Ctor.
 		 */
 		UserSettings();
@@ -76,6 +79,16 @@ class UserSettings {
 		 */
 		uint32_t get_fps_limit() const;
 
+		/** Set FOV.
+		 * @param fov FOV.
+		 */
+		void set_fov( uint8_t fov );
+
+		/** Get FOV.
+		 * @return FOV.
+		 */
+		uint8_t get_fov() const;
+
 	private:
 		Controls m_controls;
 
@@ -84,5 +97,6 @@ class UserSettings {
 
 		uint32_t m_fps_limit;
 
+		uint8_t m_fov;
 		bool m_vsync;
 };

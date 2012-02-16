@@ -64,6 +64,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_enable_vsync_check = sfg::CheckButton::Create( L"Vertical sync (avoids tearing)" );
 	window->m_fps_limit_scale = sfg::Scale::Create( 1.0f, 200.0f, 1.0f, sfg::Scale::HORIZONTAL );
 	window->m_fps_limit_label = sfg::Label::Create( L"(--)" );
+	window->m_fov_scale = sfg::Scale::Create( UserSettings::MIN_FOV, UserSettings::MAX_FOV, 1.0f, sfg::Scale::HORIZONTAL );
+	window->m_fov_label = sfg::Label::Create( L"(--)" );
 
 	// Layout //////////////////////////////////////////////////
 
@@ -145,6 +147,10 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	fps_limit_box->Pack( window->m_fps_limit_scale, true );
 	fps_limit_box->Pack( window->m_fps_limit_label, false );
 
+	sfg::Box::Ptr fov_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f ) );
+	fov_box->Pack( window->m_fov_scale, true );
+	fov_box->Pack( window->m_fov_label, false );
+
 	sfg::Table::Ptr general_table( sfg::Table::Create() );
 	general_table->SetRowSpacings( 10.0f );
 	general_table->SetColumnSpacings( 10.0f );
@@ -153,6 +159,9 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 	general_table->Attach( sfg::Label::Create( L"FPS limit:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	general_table->Attach( fps_limit_box, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	general_table->Attach( sfg::Label::Create( L"Field Of View:" ), sf::Rect<sf::Uint32>( 0, 2, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( fov_box, sf::Rect<sf::Uint32>( 1, 2, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
 
 	sfg::Frame::Ptr general_frame( sfg::Frame::Create( L"General" ) );
 	general_frame->Add( general_table );
@@ -189,14 +198,20 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	cancel_button->OnClick.Connect( &OptionsWindow::on_cancel_click, &*window );
 
 	window->m_fps_limit_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fps_limit_change, &*window );
+	window->m_fov_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fov_change, &*window );
 
 	// Init.
 	window->m_enable_vsync_check->SetActive( window->m_user_settings.is_vsync_enabled() );
 	window->m_fps_limit_scale->SetValue( static_cast<float>( window->m_user_settings.get_fps_limit() ) );
-	window->m_fps_limit_label->SetRequisition( sf::Vector2f( 40.0f, 0.0f ) );
+	window->m_fps_limit_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+	window->m_fov_scale->SetValue( static_cast<float>( window->m_user_settings.get_fov() ) );
+	window->m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
 
 	window->refresh_action_button_labels();
 	window->on_sensitivity_change();
+
+	window->on_fps_limit_change();
+	window->on_fov_change();
 
 	// Cycle through all notebook pages so that the size is maximized.
 	while( notebook->GetCurrentPage() + 1 < notebook->GetPageCount() ) {
@@ -214,6 +229,7 @@ void OptionsWindow::on_ok_click() {
 	m_user_settings.set_serial( m_serial_entry->GetText() );
 	m_user_settings.enable_vsync( m_enable_vsync_check->IsActive() );
 	m_user_settings.set_fps_limit( static_cast<uint32_t>( m_fps_limit_scale->GetValue() ) );
+	m_user_settings.set_fov( static_cast<uint8_t>( m_fov_scale->GetValue() ) );
 	m_user_settings.get_controls().set_mouse_inverted( m_mouse_inverted_check->IsActive() );
 	m_user_settings.get_controls().set_mouse_sensitivity( m_mouse_sensitivity_scale->GetValue() );
 
@@ -316,6 +332,13 @@ void OptionsWindow::on_sensitivity_change() {
 void OptionsWindow::on_fps_limit_change() {
 	std::stringstream sstr;
 
-	sstr << "(" << static_cast<int>( m_fps_limit_scale->GetValue() ) << ")";
+	sstr << static_cast<int>( m_fps_limit_scale->GetValue() );
 	m_fps_limit_label->SetText( sstr.str() );
+}
+
+void OptionsWindow::on_fov_change() {
+	std::stringstream sstr;
+
+	sstr << static_cast<int>( m_fov_scale->GetValue() ) << " deg";
+	m_fov_label->SetText( sstr.str() );
 }

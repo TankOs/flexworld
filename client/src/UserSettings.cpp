@@ -7,6 +7,9 @@
 	#include <cstdlib>
 #endif
 
+const uint8_t UserSettings::MAX_FOV = 120;
+const uint8_t UserSettings::MIN_FOV = 60;
+
 std::string UserSettings::get_profile_path() {
 #if defined( LINUX )
 	return std::string( std::getenv( "HOME" ) ) + "/.flexworld";
@@ -19,6 +22,7 @@ std::string UserSettings::get_profile_path() {
 
 UserSettings::UserSettings() :
 	m_fps_limit( 60 ),
+	m_fov( 60 ),
 	m_vsync( false )
 {
 }
@@ -86,6 +90,22 @@ bool UserSettings::load( const std::string& filename ) {
 				if( fps_limit > 0 ) {
 					new_settings.set_fps_limit( static_cast<uint32_t>( fps_limit ) );
 				}
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
+
+		const YAML::Node* fov_node = video_node->FindValue( "FOV" );
+
+		if( fov_node ) {
+			try {
+				int read = 60;
+
+				*fov_node >> read;
+				uint8_t fov = static_cast<uint8_t>( read );
+
+				fov = std::min( MAX_FOV, std::max( MIN_FOV, static_cast<uint8_t>( fov ) ) );
+				new_settings.set_fov( fov );
 			}
 			catch( const YAML::Exception& ) {
 			}
@@ -163,6 +183,7 @@ bool UserSettings::save( const std::string& filename ) {
 			<< Key << "Video" << Value << BeginMap
 				<< Key << "VSync" << Value << is_vsync_enabled()
 				<< Key << "FPSLimit" << Value << get_fps_limit()
+				<< Key << "FOV" << Value << get_fov()
 			<< EndMap
 			<< Key << "Controls" << Value << BeginMap
 				<< Key << "Mouse" << Value << BeginMap
@@ -236,3 +257,10 @@ uint32_t UserSettings::get_fps_limit() const {
 	return m_fps_limit;
 }
 
+void UserSettings::set_fov( uint8_t fov ) {
+	m_fov = fov;
+}
+
+uint8_t UserSettings::get_fov() const {
+	return m_fov;
+}

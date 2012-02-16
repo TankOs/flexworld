@@ -66,7 +66,7 @@ void PlayState::init() {
 	m_sky->set_sun_texture( m_sun_texture );
 
 	// Setup camera.
-	m_camera.set_fov( 70.0f );
+	m_camera.set_fov( get_shared().user_settings.get_fov() );
 	m_camera.set_aspect_ratio(
 		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
 	);
