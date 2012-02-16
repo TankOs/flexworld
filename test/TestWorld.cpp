@@ -68,4 +68,51 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 		BOOST_CHECK( world.find_class( id ) != nullptr );
 		BOOST_CHECK( world.find_class( id ) != &cls );
 	}
+
+	// Create entities.
+	{
+		FlexID id = FlexID::make( "id.base/ball" );
+
+		Class cls( id );
+
+		World world;
+		world.add_class( cls );
+
+		{
+			Entity& ent = world.create_entity( id );
+			BOOST_CHECK( ent.get_id() == 0 );
+			BOOST_CHECK( world.get_num_entities() == 1 );
+			BOOST_CHECK( &ent.get_class() == world.find_class( id ) );
+			BOOST_CHECK( &ent == world.find_entity( 0 ) );
+		}
+
+		{
+			Entity& ent = world.create_entity( id );
+			BOOST_CHECK( &ent.get_class() == world.find_class( id ) );
+			BOOST_CHECK( world.get_num_entities() == 2 );
+			BOOST_CHECK( ent.get_id() == 1 );
+			BOOST_CHECK( &ent == world.find_entity( 1 ) );
+		}
+
+		BOOST_CHECK( world.find_entity( 0 ) != world.find_entity( 1 ) );
+		BOOST_CHECK( world.find_entity( 2 ) == nullptr );
+	}
+
+	// Delete entities.
+	{
+		FlexID id = FlexID::make( "id.base/ball" );
+
+		Class cls( id );
+
+		World world;
+		world.add_class( cls );
+
+		Entity& ent = world.create_entity( id );
+		BOOST_CHECK( world.get_num_entities() == 1 );
+		BOOST_REQUIRE( ent.get_id() == 0 );
+
+		world.delete_entity( 0 );
+		BOOST_CHECK( world.get_num_entities() == 0 );
+		BOOST_CHECK( world.find_entity( 0 ) == nullptr );
+	}
 }

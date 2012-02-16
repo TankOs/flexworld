@@ -13,6 +13,17 @@ Entity::Entity( const Class& cls ) :
 {
 }
 
+Entity::Entity( const Entity& other ) :
+	m_position( other.m_position ),
+	m_id( other.m_id ),
+	m_amount( other.m_amount ),
+	m_class( other.m_class )
+{
+	if( other.m_name ) {
+		m_name.reset( new std::string( *other.m_name ) );
+	}
+}
+
 Entity::ID Entity::get_id() const {
 	return m_id;
 }
@@ -52,6 +63,20 @@ const sf::Vector3f& Entity::get_position() const {
 
 void Entity::set_position( const sf::Vector3f& position ) {
 	m_position = position;
+}
+
+Entity& Entity::operator=( const Entity& other ) {
+	m_position = other.m_position;
+	m_id = other.m_id;
+	m_amount = other.m_amount;
+	m_class = other.m_class;
+
+	if( !other.m_name ) {
+		m_name.reset();
+	}
+	else {
+		m_name.reset( new std::string( *other.m_name ) );
+	}
 }
 
 }

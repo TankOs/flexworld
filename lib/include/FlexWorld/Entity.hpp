@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlexWorld/NonCopyable.hpp>
+
 #include <SFML/System/Vector3.hpp>
 #include <string>
 #include <memory>
@@ -21,6 +23,17 @@ class Entity {
 		 * @param cls Class.
 		 */
 		Entity( const Class& cls );
+
+		/** Copy ctor.
+		 * @param other Other entity.
+		 */
+		Entity( const Entity& other );
+
+		/** Assignment.
+		 * @param other Other entity.
+		 * @return *this.
+		 */
+		Entity& operator=( const Entity& other );
 
 		/** Get ID.
 		 * @return ID.

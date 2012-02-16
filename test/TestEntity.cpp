@@ -48,4 +48,40 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		ent.reset_name();
 		BOOST_CHECK( ent.get_name() == old_name );
 	}
+
+	// Copy ctor.
+	{
+		Entity ent0( sword_cls );
+
+		ent0.set_id( 123 );
+		ent0.set_amount( 333 );
+		ent0.set_position( sf::Vector3f( 4, 5, 6 ) );
+		ent0.set_name( "CustomName" );
+
+		Entity ent1( ent0 );
+		BOOST_CHECK( ent0.get_id() == ent1.get_id() );
+		BOOST_CHECK( &ent0.get_class() == &ent1.get_class() );
+		BOOST_CHECK( ent0.get_name() == ent1.get_name() );
+		BOOST_CHECK( ent0.get_amount() == ent1.get_amount() );
+		BOOST_CHECK( ent0.get_position() == ent1.get_position() );
+	}
+
+	// Assignment operator.
+	{
+		Entity ent0( sword_cls );
+
+		ent0.set_id( 123 );
+		ent0.set_amount( 333 );
+		ent0.set_position( sf::Vector3f( 4, 5, 6 ) );
+		ent0.set_name( "CustomName" );
+
+		Entity ent1( FlexID::make( "foo/bar" ) );
+		ent1 = ent0;
+
+		BOOST_CHECK( ent0.get_id() == ent1.get_id() );
+		BOOST_CHECK( &ent0.get_class() == &ent1.get_class() );
+		BOOST_CHECK( ent0.get_name() == ent1.get_name() );
+		BOOST_CHECK( ent0.get_amount() == ent1.get_amount() );
+		BOOST_CHECK( ent0.get_position() == ent1.get_position() );
+	}
 }

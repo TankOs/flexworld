@@ -4,7 +4,9 @@
 
 namespace flex {
 
-World::World() {
+World::World() :
+	m_next_entity_id( 0 )
+{
 }
 
 World::~World() {
@@ -62,6 +64,45 @@ void World::add_class( const Class& cls ) {
 	assert( m_classes.find( cls.get_id().get() ) == m_classes.end() );
 
 	m_classes.insert( std::pair<const std::string, Class>( cls.get_id().get(), cls ) );
+}
+
+Entity& World::create_entity( const FlexID& class_id ) {
+	assert( class_id.is_valid_resource() );
+
+	ClassMap::iterator cls_iter = m_classes.find( class_id.get() );
+	assert( cls_iter != m_classes.end() );
+
+	Entity ent( cls_iter->second );
+	ent.set_id( m_next_entity_id++ );
+
+	std::pair<EntityMap::iterator, bool> result = m_entities.insert(
+		std::pair<const Entity::ID, Entity>(
+			ent.get_id(),
+			ent
+		)
+	);
+
+	return result.first->second;
+}
+
+Entity* World::find_entity( Entity::ID id ) {
+	if( id >= m_next_entity_id ) {
+		return nullptr;
+	}
+
+	EntityMap::iterator ent_iter = m_entities.find( id );
+
+	if( ent_iter == m_entities.end() ) {
+		return nullptr;
+	}
+
+	return &ent_iter->second;
+}
+
+void World::delete_entity( Entity::ID id ) {
+	assert( find_entity( id ) != nullptr );
+
+	m_entities.erase( id );
 }
 
 }

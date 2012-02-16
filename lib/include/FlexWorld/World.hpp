@@ -64,9 +64,26 @@ class World {
 		 */
 		void add_class( const Class& cls );
 
+		/** Create entity.
+		 * @param class_id Class ID (must exist, otherwise undefined behaviour).
+		 * @return Newly created entity, will be managed by world.
+		 */
+		Entity& create_entity( const FlexID& class_id );
+
+		/** Find entity by ID.
+		 * @param id ID.
+		 * @return Entity or nullptr if not found.
+		 */
+		Entity* find_entity( Entity::ID id );
+
+		/** Delete entity.
+		 * @param id ID (must be valid).
+		 */
+		void delete_entity( Entity::ID id );
+
 	private:
 		typedef std::map<const std::string, Planet*> PlanetMap;
-		typedef std::map<const std::string, Entity> EntityMap;
+		typedef std::map<const Entity::ID, Entity> EntityMap;
 		typedef std::map<const std::string, Class> ClassMap;
 
 		void wipe();
@@ -74,6 +91,8 @@ class World {
 		PlanetMap m_planets;
 		EntityMap m_entities;
 		ClassMap m_classes;
+
+		Entity::ID m_next_entity_id;
 };
 
 }
