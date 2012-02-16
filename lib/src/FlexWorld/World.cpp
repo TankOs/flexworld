@@ -45,8 +45,17 @@ void World::wipe() {
 		delete planet_iter->second;
 	}
 
-	m_entities.clear();
+	EntityMap::iterator ent_iter( m_entities.begin() );
+	EntityMap::iterator ent_iter_end( m_entities.end() );
+	
+	for( ; ent_iter != ent_iter_end; ++ent_iter ) {
+		delete ent_iter->second;
+	}
+
 	m_planets.clear();
+	m_entities.clear();
+	m_links.clear();
+	m_classes.clear();
 }
 
 std::size_t World::get_num_classes() const {
@@ -72,17 +81,17 @@ Entity& World::create_entity( const FlexID& class_id ) {
 	ClassMap::iterator cls_iter = m_classes.find( class_id.get() );
 	assert( cls_iter != m_classes.end() );
 
-	Entity ent( cls_iter->second );
-	ent.set_id( m_next_entity_id++ );
+	Entity* ent = new Entity( cls_iter->second );
+	ent->set_id( m_next_entity_id++ );
 
 	std::pair<EntityMap::iterator, bool> result = m_entities.insert(
-		std::pair<const Entity::ID, Entity>(
-			ent.get_id(),
+		std::pair<const Entity::ID, Entity*>(
+			ent->get_id(),
 			ent
 		)
 	);
 
-	return result.first->second;
+	return *result.first->second;
 }
 
 Entity* World::find_entity( Entity::ID id ) {
@@ -96,13 +105,56 @@ Entity* World::find_entity( Entity::ID id ) {
 		return nullptr;
 	}
 
-	return &ent_iter->second;
+	return ent_iter->second;
 }
 
 void World::delete_entity( Entity::ID id ) {
 	assert( find_entity( id ) != nullptr );
 
 	m_entities.erase( id );
+}
+
+void World::link_entity_to_planet( Entity::ID entity_id, const std::string& planet_id ) {
+	Entity* ent = find_entity( entity_id );
+	Planet* planet = find_planet( planet_id );
+
+	assert( ent );
+	assert( planet );
+
+	// Get previous link (if any).
+	LinkMap::iterator link_iter = m_links.find( entity_id );
+
+	// Remove link from planet.
+	if( link_iter != m_links.end() ) {
+		assert( link_iter->second->has_entity( *ent ) );
+		link_iter->second->remove_entity( *ent );
+	}
+
+	m_links[entity_id] = planet;
+
+	// Add to planet.
+	planet->add_entity( *ent );
+}
+
+Planet* World::find_linked_planet( Entity::ID entity_id ) {
+	assert( find_entity( entity_id ) != nullptr );
+
+	LinkMap::iterator link_iter = m_links.find( entity_id );
+	return link_iter != m_links.end() ? link_iter->second : nullptr;
+}
+
+void World::unlink_entity_from_planet( Entity::ID entity_id ) {
+	assert( find_linked_planet( entity_id ) != nullptr );
+
+	Entity* ent = find_entity( entity_id );
+	assert( ent != nullptr );
+
+	LinkMap::iterator link_iter = m_links.find( entity_id );
+
+	if( link_iter != m_links.end() ) {
+		link_iter->second->remove_entity( *ent );
+		m_links.erase( entity_id );
+	}
 }
 
 }

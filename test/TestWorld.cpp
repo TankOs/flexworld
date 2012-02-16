@@ -115,4 +115,45 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 		BOOST_CHECK( world.get_num_entities() == 0 );
 		BOOST_CHECK( world.find_entity( 0 ) == nullptr );
 	}
+
+	// Edit entity->planet relations.
+	{
+		World world;
+		world.create_planet( "construct", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
+		BOOST_REQUIRE( world.find_planet( "construct" ) != nullptr );
+
+		Class cls( FlexID::make( "fw.base/ball" ) );
+		world.add_class( cls );
+
+		Entity& ent = world.create_entity( cls.get_id() );
+		BOOST_REQUIRE( ent.get_id() == 0 );
+
+		world.link_entity_to_planet( 0, "construct" );
+		BOOST_CHECK( world.find_planet( "construct" )->has_entity( ent ) );
+		BOOST_CHECK( world.find_linked_planet( 0 ) == world.find_planet( "construct" ) );
+
+		// Re-link.
+		world.link_entity_to_planet( 0, "construct" );
+		BOOST_CHECK( world.find_planet( "construct" )->has_entity( ent ) );
+		BOOST_CHECK( world.find_linked_planet( 0 ) == world.find_planet( "construct" ) );
+
+		// Unlink.
+		world.unlink_entity_from_planet( 0 );
+		BOOST_CHECK( world.find_planet( "construct" )->has_entity( ent ) == false );
+		BOOST_CHECK( world.find_linked_planet( 0 ) == nullptr );
+
+		// Link again.
+		world.link_entity_to_planet( 0, "construct" );
+		BOOST_CHECK( world.find_planet( "construct" )->has_entity( ent ) );
+		BOOST_CHECK( world.find_linked_planet( 0 ) == world.find_planet( "construct" ) );
+
+		// Link to another planet.
+		world.create_planet( "foobar", Planet::Vector( 2, 2, 2 ), Chunk::Vector( 16, 16, 16 ) );
+		BOOST_REQUIRE( world.find_planet( "foobar" ) != nullptr );
+
+		world.link_entity_to_planet( 0, "foobar" );
+		BOOST_CHECK( world.find_planet( "construct" )->has_entity( ent ) == false );
+		BOOST_CHECK( world.find_planet( "foobar" )->has_entity( ent ) == true );
+		BOOST_CHECK( world.find_linked_planet( 0 ) == world.find_planet( "foobar" ) );
+	}
 }
