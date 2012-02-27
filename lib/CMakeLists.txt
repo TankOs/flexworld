@@ -70,7 +70,6 @@ set(
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
 	${INC_DIR}/FlexWorld/Triangle.hpp
 	${INC_DIR}/FlexWorld/Version.hpp
-	${INC_DIR}/FlexWorld/Vertex.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
 	${SRC_DIR}/FlexWorld/AccountDriver.cpp
@@ -114,17 +113,18 @@ set(
 	${SRC_DIR}/FlexWorld/SessionHost.cpp
 	${SRC_DIR}/FlexWorld/Triangle.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
-	${SRC_DIR}/FlexWorld/Vertex.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${YAML_CPP_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
 
 add_library( flexworld ${SOURCES} )
 
+target_link_libraries( flexworld fwsg )
 target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
 target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )

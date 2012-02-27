@@ -1,11 +1,11 @@
 #include <FlexWorld/ModelDriver.hpp>
 #include <FlexWorld/Model.hpp>
 #include <FlexWorld/Mesh.hpp>
-#include <FlexWorld/Vertex.hpp>
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Face.hpp>
 
+#include <FWSG/Vertex.hpp>
 #include <assimp/assimp.hpp>
 #include <assimp/aiScene.h>
 #include <assimp/aiPostProcess.h>
@@ -287,7 +287,7 @@ int main( int argc, char** argv ) {
 
 		// Add vertices.
 		for( unsigned int vertex_index = 0; vertex_index < ai_mesh->mNumVertices; ++vertex_index ) {
-			flex::Vertex vertex(
+			sg::Vertex vertex(
 				sf::Vector3f(
 					ai_mesh->mVertices[vertex_index].x + shift.x,
 					ai_mesh->mVertices[vertex_index].y + shift.y,
@@ -337,9 +337,9 @@ int main( int argc, char** argv ) {
 			}
 
 			// Get scaled vertices to calculate coverage.
-			const sf::Vector3f& v0 = mesh.get_vertex( triangle.vertices[0] ).position / model.get_block_scale_divisor();
-			const sf::Vector3f& v1 = mesh.get_vertex( triangle.vertices[1] ).position / model.get_block_scale_divisor();
-			const sf::Vector3f& v2 = mesh.get_vertex( triangle.vertices[2] ).position / model.get_block_scale_divisor();
+			const sf::Vector3f& v0 = mesh.get_vertex( triangle.vertices[0] ).vector / model.get_block_scale_divisor();
+			const sf::Vector3f& v1 = mesh.get_vertex( triangle.vertices[1] ).vector / model.get_block_scale_divisor();
+			const sf::Vector3f& v2 = mesh.get_vertex( triangle.vertices[2] ).vector / model.get_block_scale_divisor();
 
 			const sf::Vector3f& n0 = mesh.get_vertex( triangle.vertices[0] ).normal;
 			const sf::Vector3f& n1 = mesh.get_vertex( triangle.vertices[1] ).normal;

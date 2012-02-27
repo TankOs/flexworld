@@ -1,8 +1,8 @@
 #pragma once
 
-#include <FlexWorld/Vertex.hpp>
 #include <FlexWorld/Triangle.hpp>
 
+#include <FWSG/Vertex.hpp>
 #include <vector>
 #include <cstdint>
 
@@ -44,14 +44,14 @@ class Mesh {
 		 * A maximum of max( VertexIndex ) vertices is allowed.
 		 * @param vertex Vertex.
 		 */
-		void add_vertex( const Vertex& vertex );
+		void add_vertex( const sg::Vertex& vertex );
 
 		/** Get vertex.
 		 * Undefined behaviour if index out of range.
 		 * @param index Index.
 		 * @return Vertex.
 		 */
-		const Vertex& get_vertex( VertexIndex index ) const;
+		const sg::Vertex& get_vertex( VertexIndex index ) const;
 
 		/** Define a new triangle.
 		 * Triangle indices must be valid and different from each other, otherwise
@@ -73,7 +73,7 @@ class Mesh {
 		void clear();
 
 	private:
-		typedef std::vector<Vertex> VertexVector;
+		typedef std::vector<sg::Vertex> VertexVector;
 		typedef std::vector<Triangle> TriangleVector;
 
 		VertexVector m_vertices;

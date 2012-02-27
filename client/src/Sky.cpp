@@ -12,7 +12,7 @@
 #include <cassert>
 
 Sky::Sky() :
-	m_sun_bo( BufferObject::TEX_COORDS ),
+	m_sun_bo( sg::BufferObject::TEX_COORDS ),
 	m_sun_texture( nullptr ),
 	m_camera( nullptr ),
 	m_radius( 100.0f ),
@@ -22,12 +22,12 @@ Sky::Sky() :
 	set_sky_color( sf::Color( 0x47, 0x74, 0xcf ) );
 
 	// Prepare sun buffer object.
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 1 ) ) );
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 25, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 1 ) ) );
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 25, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 0 ) ) );
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 1 ) ) );
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 25, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 0 ) ) );
-	m_sun_bo.add_vertex( flex::Vertex( sf::Vector3f( 0, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 0 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 1 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 25, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 1 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 25, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 0 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 1 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 25, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 1, 0 ) ) );
+	m_sun_bo.add_vertex( sg::Vertex( sf::Vector3f( 0, 25, 0 ), sf::Vector3f( 0, 0, 0 ), sf::Vector2f( 0, 0 ) ) );
 	m_sun_bo.upload();
 }
 

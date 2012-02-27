@@ -41,7 +41,6 @@ set(
 	TestSessionHost.cpp
 	TestTriangle.cpp
 	TestVersion.cpp
-	TestVertex.cpp
 	TestWorld.cpp
 )
 
@@ -49,7 +48,8 @@ if( NOT Boost_USE_STATIC_LIBS )
 	add_definitions( -DBOOST_TEST_DYN_LINK )
 endif()
 
-include_directories( "../lib/include/" )
+include_directories( ${PROJECT_SOURCE_DIR}/../lib/include/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
 include_directories( ${PROJECT_BINARY_DIR} )
@@ -57,6 +57,7 @@ include_directories( ${PROJECT_BINARY_DIR} )
 add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld )
+target_link_libraries( test fwsg )
 target_link_libraries( test ${Boost_THREAD_LIBRARY} )
 target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
 

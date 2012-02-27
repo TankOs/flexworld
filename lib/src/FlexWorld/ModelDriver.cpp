@@ -48,7 +48,7 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 
 		// Vertices.
 		for( Mesh::VertexIndex vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
-			const Vertex& vertex = mesh.get_vertex( vertex_idx );
+			const sg::Vertex& vertex = mesh.get_vertex( vertex_idx );
 
 			buffer.insert(
 				buffer.end(),
@@ -215,14 +215,14 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		mesh.set_texture_slot( texture_slot );
 
 		// Read vertices.
-		Vertex vertex;
+		sg::Vertex vertex;
 
 		if( buffer.size() - buf_ptr < num_vertices * sizeof( vertex ) ) {
 			throw DeserializationException( "Too less vertices." );
 		}
 
 		for( std::size_t vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
-			vertex = *reinterpret_cast<const Vertex*>( &buffer[buf_ptr] );
+			vertex = *reinterpret_cast<const sg::Vertex*>( &buffer[buf_ptr] );
 			buf_ptr += sizeof( vertex );
 
 			mesh.add_vertex( vertex );

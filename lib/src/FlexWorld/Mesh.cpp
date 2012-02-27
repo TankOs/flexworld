@@ -26,13 +26,13 @@ void Mesh::set_texture_slot( uint8_t slot ) {
 	m_texture_slot = slot;
 }
 
-void Mesh::add_vertex( const Vertex& vertex ) {
+void Mesh::add_vertex( const sg::Vertex& vertex ) {
 	assert( m_vertices.size() < std::numeric_limits<VertexIndex>::max() );
 
 	m_vertices.push_back( vertex );
 }
 
-const Vertex& Mesh::get_vertex( VertexIndex index ) const {
+const sg::Vertex& Mesh::get_vertex( VertexIndex index ) const {
 	assert( index < m_vertices.size() );
 
 	return m_vertices[index];

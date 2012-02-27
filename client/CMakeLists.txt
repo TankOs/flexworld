@@ -17,7 +17,6 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
-	${INC_DIR}/BufferObject.hpp
 	${INC_DIR}/Camera.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
@@ -36,7 +35,6 @@ set(
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/UserSettings.cpp
-	${SRC_DIR}/BufferObject.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
@@ -59,6 +57,7 @@ set(
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/SFML/extlibs/headers/ )
 include_directories( ${SFGUI_INCLUDE_DIR} )
 include_directories( ${OPENGL_INCLUDE_DIR} )
@@ -74,6 +73,7 @@ endif()
 add_executable( flexworld-client ${SOURCES} )
 
 target_link_libraries( flexworld-client flexworld )
+target_link_libraries( flexworld-client fwsg )
 target_link_libraries( flexworld-client ${SFGUI_LIBRARY} )
 target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )

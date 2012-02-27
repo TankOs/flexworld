@@ -52,7 +52,7 @@ PlanetRenderer::~PlanetRenderer() {
 }
 
 void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
-	typedef std::map<std::shared_ptr<const sf::Texture>, std::shared_ptr<BufferObject>> TextureVBOMap;
+	typedef std::map<std::shared_ptr<const sf::Texture>, std::shared_ptr<sg::BufferObject>> TextureVBOMap;
 
 	sf::Clock clock;
 
@@ -71,7 +71,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	std::shared_ptr<const flex::Model> nbor_model;
 	std::shared_ptr<const sf::Texture> texture;
 	TextureVBOMap new_vbos;
-	flex::Vertex vertex[3];
+	sg::Vertex vertex[3];
 	const sf::FloatRect* coverage_rects[flex::NUM_FACES];
 
 	flex::Chunk::Vector block_runner;
@@ -177,10 +177,10 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 						}
 
 						// Get VBO or generate a new one.
-						std::shared_ptr<BufferObject>& vbo = new_vbos[texture];
+						std::shared_ptr<sg::BufferObject>& vbo = new_vbos[texture];
 
 						if( vbo == nullptr ) {
-							vbo.reset( new BufferObject( BufferObject::TEX_COORDS | BufferObject::NORMALS ) );
+							vbo.reset( new sg::BufferObject( sg::BufferObject::TEX_COORDS | sg::BufferObject::NORMALS ) );
 						}
 
 						// Iterate over triangles.
@@ -193,25 +193,25 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							vertex[2] = mesh.get_vertex( tri.vertices[2] );
 
 							// Apply block scale divisor.
-							vertex[0].position /= model->get_block_scale_divisor();
-							vertex[1].position /= model->get_block_scale_divisor();
-							vertex[2].position /= model->get_block_scale_divisor();
+							vertex[0].vector /= model->get_block_scale_divisor();
+							vertex[1].vector /= model->get_block_scale_divisor();
+							vertex[2].vector /= model->get_block_scale_divisor();
 
 							/////// Hidden-face-removal.
 							if(
 								// Left face.
 								(
 									coverage_rects[flex::LEFT_FACE] &&
-									vertex[0].position.x <= BOUNDARY_TOLERANCE &&
-									vertex[1].position.x <= BOUNDARY_TOLERANCE &&
-									vertex[2].position.x <= BOUNDARY_TOLERANCE &&
+									vertex[0].vector.x <= BOUNDARY_TOLERANCE &&
+									vertex[1].vector.x <= BOUNDARY_TOLERANCE &&
+									vertex[2].vector.x <= BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.y,
-										vertex[0].position.z,
-										vertex[1].position.y,
-										vertex[1].position.z,
-										vertex[2].position.y,
-										vertex[2].position.z,
+										vertex[0].vector.y,
+										vertex[0].vector.z,
+										vertex[1].vector.y,
+										vertex[1].vector.z,
+										vertex[2].vector.y,
+										vertex[2].vector.z,
 										*coverage_rects[flex::LEFT_FACE]
 									)
 								)
@@ -219,16 +219,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 								// Right face.
 								(
 									coverage_rects[flex::RIGHT_FACE] &&
-									vertex[0].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[1].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[2].position.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[0].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.y,
-										vertex[0].position.z,
-										vertex[1].position.y,
-										vertex[1].position.z,
-										vertex[2].position.y,
-										vertex[2].position.z,
+										vertex[0].vector.y,
+										vertex[0].vector.z,
+										vertex[1].vector.y,
+										vertex[1].vector.z,
+										vertex[2].vector.y,
+										vertex[2].vector.z,
 										*coverage_rects[flex::RIGHT_FACE]
 									)
 								)
@@ -236,16 +236,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 								// Up face.
 								(
 									coverage_rects[flex::UP_FACE] &&
-									vertex[0].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[1].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[2].position.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[0].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.x,
-										vertex[0].position.z,
-										vertex[1].position.x,
-										vertex[1].position.z,
-										vertex[2].position.x,
-										vertex[2].position.z,
+										vertex[0].vector.x,
+										vertex[0].vector.z,
+										vertex[1].vector.x,
+										vertex[1].vector.z,
+										vertex[2].vector.x,
+										vertex[2].vector.z,
 										*coverage_rects[flex::UP_FACE]
 									)
 								)
@@ -253,16 +253,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 								// Down face.
 								(
 									coverage_rects[flex::DOWN_FACE] &&
-									vertex[0].position.y <= BOUNDARY_TOLERANCE &&
-									vertex[1].position.y <= BOUNDARY_TOLERANCE &&
-									vertex[2].position.y <= BOUNDARY_TOLERANCE &&
+									vertex[0].vector.y <= BOUNDARY_TOLERANCE &&
+									vertex[1].vector.y <= BOUNDARY_TOLERANCE &&
+									vertex[2].vector.y <= BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.x,
-										vertex[0].position.z,
-										vertex[1].position.x,
-										vertex[1].position.z,
-										vertex[2].position.x,
-										vertex[2].position.z,
+										vertex[0].vector.x,
+										vertex[0].vector.z,
+										vertex[1].vector.x,
+										vertex[1].vector.z,
+										vertex[2].vector.x,
+										vertex[2].vector.z,
 										*coverage_rects[flex::DOWN_FACE]
 									)
 								)
@@ -270,16 +270,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 								// Front face.
 								(
 									coverage_rects[flex::FRONT_FACE] &&
-									vertex[0].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[1].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
-									vertex[2].position.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[0].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[1].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
+									vertex[2].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.x,
-										vertex[0].position.y,
-										vertex[1].position.x,
-										vertex[1].position.y,
-										vertex[2].position.x,
-										vertex[2].position.y,
+										vertex[0].vector.x,
+										vertex[0].vector.y,
+										vertex[1].vector.x,
+										vertex[1].vector.y,
+										vertex[2].vector.x,
+										vertex[2].vector.y,
 										*coverage_rects[flex::FRONT_FACE]
 									)
 								)
@@ -287,16 +287,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 								// Back face.
 								(
 									coverage_rects[flex::BACK_FACE] &&
-									vertex[0].position.z <= BOUNDARY_TOLERANCE &&
-									vertex[1].position.z <= BOUNDARY_TOLERANCE &&
-									vertex[2].position.z <= BOUNDARY_TOLERANCE &&
+									vertex[0].vector.z <= BOUNDARY_TOLERANCE &&
+									vertex[1].vector.z <= BOUNDARY_TOLERANCE &&
+									vertex[2].vector.z <= BOUNDARY_TOLERANCE &&
 									is_triangle_covered(
-										vertex[0].position.x,
-										vertex[0].position.y,
-										vertex[1].position.x,
-										vertex[1].position.y,
-										vertex[2].position.x,
-										vertex[2].position.y,
+										vertex[0].vector.x,
+										vertex[0].vector.y,
+										vertex[1].vector.x,
+										vertex[1].vector.y,
+										vertex[2].vector.x,
+										vertex[2].vector.y,
 										*coverage_rects[flex::BACK_FACE]
 									)
 								)
@@ -306,9 +306,9 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							}
 
 							// Apply world position.
-							vertex[0].position += offset;
-							vertex[1].position += offset;
-							vertex[2].position += offset;
+							vertex[0].vector += offset;
+							vertex[1].vector += offset;
+							vertex[2].vector += offset;
 
 							vbo->add_vertex( vertex[0] );
 							vbo->add_vertex( vertex[1] );
@@ -411,7 +411,7 @@ void PlanetRenderer::render() const {
 	std::size_t vbo_idx = 0;
 	std::size_t num_vbos = 0;
 	const VBOVector* vbos;
-	std::shared_ptr<BufferObject> buffer;
+	std::shared_ptr<sg::BufferObject> buffer;
 
 	TextureVBOVectorMap::const_iterator tex_vbo_iter( m_vbos.begin() );
 	TextureVBOVectorMap::const_iterator tex_vbo_iter_end( m_vbos.end() );

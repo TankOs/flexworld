@@ -77,6 +77,8 @@ Entity& Entity::operator=( const Entity& other ) {
 	else {
 		m_name.reset( new std::string( *other.m_name ) );
 	}
+
+	return *this;
 }
 
 }

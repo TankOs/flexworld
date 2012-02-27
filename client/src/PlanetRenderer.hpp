@@ -1,6 +1,5 @@
 #pragma once
 
-#include "BufferObject.hpp"
 #include "Camera.hpp"
 
 #include <FlexWorld/Planet.hpp>
@@ -9,6 +8,7 @@
 #include <FlexWorld/Class.hpp>
 #include <FlexWorld/Model.hpp>
 
+#include <FWSG/BufferObject.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <boost/thread.hpp>
@@ -57,7 +57,7 @@ class PlanetRenderer {
 		void set_camera( const Camera& camera );
 
 	private:
-		typedef std::vector<std::shared_ptr<BufferObject>> VBOVector;
+		typedef std::vector<std::shared_ptr<sg::BufferObject>> VBOVector;
 		typedef std::map<std::shared_ptr<const sf::Texture>, VBOVector> TextureVBOVectorMap;
 
 		typedef uint32_t ChunkPosition;

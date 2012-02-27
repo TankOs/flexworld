@@ -1,7 +1,6 @@
 #pragma once
 
-#include "BufferObject.hpp"
-
+#include <FWSG/BufferObject.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <cstdint>
 
@@ -70,7 +69,7 @@ class Sky {
 		sf::Color get_local_sky_color() const;
 
 	private:
-		BufferObject m_sun_bo;
+		sg::BufferObject m_sun_bo;
 
 		sf::Color m_sky_color;
 		const sf::Texture* m_sun_texture;

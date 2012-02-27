@@ -10,8 +10,6 @@
 #include <FlexWorld/Config.hpp>
 #include <sstream>
 
-#include "BufferObject.hpp" // XXX 
-
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),

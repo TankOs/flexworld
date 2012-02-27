@@ -95,6 +95,9 @@ if( WINDOWS )
 	add_definitions( -D_WIN32_WINNT=0x0501 )
 endif()
 
+# Build FWSG.
+add_subdirectory( "extlibs/FWSG" )
+
 add_subdirectory( "lib" )
 
 if( FW_BUILD_DOC )

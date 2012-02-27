@@ -1,8 +1,8 @@
 #include <FlexWorld/Model.hpp>
 #include <FlexWorld/Mesh.hpp>
-#include <FlexWorld/Vertex.hpp>
 #include <FlexWorld/Face.hpp>
 
+#include <FWSG/Vertex.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestModel ) {
@@ -74,25 +74,25 @@ BOOST_AUTO_TEST_CASE( TestModel ) {
 		Model model;
 
 		Mesh mesh;
-		mesh.add_vertex( Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( 1, 1, 1 ), sf::Vector2f( 1, 1 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( 1, 1, 1 ), sf::Vector2f( 1, 1 ) ) );
 		model.add_mesh( mesh );
 
 		mesh.clear();
-		mesh.add_vertex( Vertex( sf::Vector3f( 2, 2, 2 ), sf::Vector3f( 2, 2, 2 ), sf::Vector2f( 2, 2 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 2, 2, 2 ), sf::Vector3f( 2, 2, 2 ), sf::Vector2f( 2, 2 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 2, 2, 2 ), sf::Vector3f( 2, 2, 2 ), sf::Vector2f( 2, 2 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 2, 2, 2 ), sf::Vector3f( 2, 2, 2 ), sf::Vector2f( 2, 2 ) ) );
 		model.add_mesh( mesh );
 
 		mesh.clear();
-		mesh.add_vertex( Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 3, 3, 3 ), sf::Vector3f( 3, 3, 3 ), sf::Vector2f( 3, 3 ) ) );
 		model.add_mesh( mesh );
 
 		mesh.clear();
-		mesh.add_vertex( Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
-		mesh.add_vertex( Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
+		mesh.add_vertex( sg::Vertex( sf::Vector3f( 4, 4, 4 ), sf::Vector3f( 4, 4, 4 ), sf::Vector2f( 4, 4 ) ) );
 		model.add_mesh( mesh );
 
 		BOOST_CHECK( model.get_num_meshes() == 4 );
