@@ -1,14 +1,14 @@
-#include <GL/glew.h>
-
-#include "PlanetRenderer.hpp"
+#include "PlanetDrawable.hpp"
 #include "ResourceManager.hpp"
 
 #include <FlexWorld/Model.hpp>
 #include <FlexWorld/Class.hpp>
 
+#include <FWSG/BufferObject.hpp>
+#include <FWSG/TriangleGeometry.hpp>
+#include <FWSG/Renderer.hpp>
 #include <SFML/System/Clock.hpp>
-#include <cassert>
-#include <iostream> // XXX 
+#include <iostream>
 
 static const float GRID_SIZE = 1.0f;
 static const float BOUNDARY_TOLERANCE = 0.001f;
@@ -41,22 +41,29 @@ inline bool is_triangle_covered(
 	;
 }
 
-PlanetRenderer::PlanetRenderer( const flex::Planet& planet, ResourceManager& resource_manager ) :
-	m_camera( nullptr ),
-	m_planet( planet ),
-	m_resource_manager( resource_manager )
+
+
+
+PlanetDrawable::Ptr PlanetDrawable::create( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) {
+	Ptr planet_drw( new PlanetDrawable( planet, resource_manager, renderer ) );
+	return planet_drw;
+}
+
+PlanetDrawable::PlanetDrawable( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) :
+	Drawable( renderer ),
+	m_planet( &planet ),
+	m_resource_manager( resource_manager ),
+	m_view_radius( 12 )
 {
 }
 
-PlanetRenderer::~PlanetRenderer() {
+void PlanetDrawable::set_view_radius( flex::Planet::ScalarType radius ) {
+	m_view_radius = radius;
 }
 
-void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
-	typedef std::map<std::shared_ptr<const sf::Texture>, std::shared_ptr<sg::BufferObject>> TextureVBOMap;
-
-	sf::Clock clock;
-
-	const flex::Chunk::Vector& chunk_size = m_planet.get_chunk_size();
+void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
+	typedef std::map<std::shared_ptr<const sf::Texture>, std::shared_ptr<sg::TriangleGeometry>> TextureGeometryMap;
+	const flex::Chunk::Vector& chunk_size = m_planet->get_chunk_size();
 
 	sf::Vector3f org_offset(
 		static_cast<float>( chunk_pos.x * chunk_size.x ) * GRID_SIZE,
@@ -70,16 +77,16 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	std::shared_ptr<const flex::Model> model;
 	std::shared_ptr<const flex::Model> nbor_model;
 	std::shared_ptr<const sf::Texture> texture;
-	TextureVBOMap new_vbos;
+	TextureGeometryMap new_geometries;
 	sg::Vertex vertex[3];
 	const sf::FloatRect* coverage_rects[flex::NUM_FACES];
-
 	flex::Chunk::Vector block_runner;
+
 	for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
 		for( block_runner.y = 0; block_runner.y < chunk_size.y; ++block_runner.y ) {
 			for( block_runner.x = 0; block_runner.x < chunk_size.x; ++block_runner.x ) {
 				// Skip empty blocks.
-				block_cls = m_planet.find_block( chunk_pos, block_runner );
+				block_cls = m_planet->find_block( chunk_pos, block_runner );
 
 				if( block_cls != nullptr ) {
 					// Get model.
@@ -99,8 +106,8 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 					coverage_rects[flex::UP_FACE] =
 						(
-							block_runner.y + 1 < m_planet.get_chunk_size().y &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							block_runner.y + 1 < m_planet->get_chunk_size().y &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 1, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::DOWN_FACE )
@@ -110,7 +117,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 					coverage_rects[flex::DOWN_FACE] =
 						(
 							block_runner.y > 0 &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 1, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::UP_FACE )
@@ -120,7 +127,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 					coverage_rects[flex::LEFT_FACE] =
 						(
 							block_runner.x > 0 &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 1, 0, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::RIGHT_FACE )
@@ -129,8 +136,8 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 					coverage_rects[flex::RIGHT_FACE] =
 						(
-							block_runner.x + 1 < m_planet.get_chunk_size().x &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							block_runner.x + 1 < m_planet->get_chunk_size().x &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 1, 0, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::LEFT_FACE )
@@ -139,8 +146,8 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 					coverage_rects[flex::FRONT_FACE] =
 						(
-							block_runner.z + 1 < m_planet.get_chunk_size().z &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							block_runner.z + 1 < m_planet->get_chunk_size().z &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 0, 1 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::BACK_FACE )
@@ -150,7 +157,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 					coverage_rects[flex::BACK_FACE] =
 						(
 							block_runner.z > 0 &&
-							(nbor_block_cls = m_planet.find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 0, 1 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
 						? &nbor_model->get_face_coverage( flex::FRONT_FACE )
@@ -176,11 +183,11 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							return;
 						}
 
-						// Get VBO or generate a new one.
-						std::shared_ptr<sg::BufferObject>& vbo = new_vbos[texture];
+						// Get geometry or generate a new one.
+						std::shared_ptr<sg::TriangleGeometry>& geometry = new_geometries[texture];
 
-						if( vbo == nullptr ) {
-							vbo.reset( new sg::BufferObject( sg::BufferObject::TEX_COORDS | sg::BufferObject::NORMALS ) );
+						if( geometry == nullptr ) {
+							geometry.reset( new sg::TriangleGeometry );
 						}
 
 						// Iterate over triangles.
@@ -310,9 +317,7 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							vertex[1].vector += offset;
 							vertex[2].vector += offset;
 
-							vbo->add_vertex( vertex[0] );
-							vbo->add_vertex( vertex[1] );
-							vbo->add_vertex( vertex[2] );
+							geometry->add_triangle( vertex[0], vertex[1], vertex[2], false );
 						}
 					}
 				}
@@ -328,133 +333,40 @@ void PlanetRenderer::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 		offset.y = org_offset.y;
 	}
 
-	// Calculate absolute chunk position.
-	uint32_t abs_chunk_pos = (
-		chunk_pos.z * (m_planet.get_size().x * m_planet.get_size().y) +
-		chunk_pos.y * (m_planet.get_size().x) +
+	// Prepare (delayed) renderer step.
+	DelayedStep delayed;
+	delayed.chunk_pos = (
+		chunk_pos.z * (m_planet->get_size().x * m_planet->get_size().y) +
+		chunk_pos.y * (m_planet->get_size().x) +
 		chunk_pos.x
 	);
 
-	// Pause rendering as we're modifying variables that are used by the render()
-	// func.
-	pause();
-
-	//
-	// Apply VBOs to main rendering pool.
-	//
-
-	// Remove all VBOs that were created for this chunk before.
-	ChunkTextureMap::iterator chunk_tex_iter = m_chunk_textures.find( abs_chunk_pos );
-
-	if( chunk_tex_iter != m_chunk_textures.end() ) {
-		TextureVBOIndexMap::iterator vbo_iter = chunk_tex_iter->second.begin();
-		TextureVBOIndexMap::iterator vbo_iter_end = chunk_tex_iter->second.end();
-
-		for( ; vbo_iter != vbo_iter_end; ++vbo_iter ) {
-			m_vbos[vbo_iter->first][vbo_iter->second].reset();
-		}
-
-		m_chunk_textures.erase( chunk_tex_iter );
-	}
+	TextureGeometryMap::iterator tex_geometry_iter( new_geometries.begin() );
+	TextureGeometryMap::iterator tex_geometry_iter_end( new_geometries.end() );
 	
-	// Add prepared VBOs to main pool.
-	TextureVBOMap::iterator new_vbo_iter = new_vbos.begin();
-	TextureVBOMap::iterator new_vbo_iter_end = new_vbos.end();
-	std::size_t vbo_idx = 0;
+	for( ; tex_geometry_iter != tex_geometry_iter_end; ++tex_geometry_iter ) {
+		// Create buffer object.
+		sg::BufferObject::Ptr buffer_object( new sg::BufferObject( sg::BufferObject::NORMALS | sg::BufferObject::TEX_COORDS ) );
 
-	for( ; new_vbo_iter != new_vbo_iter_end; ++new_vbo_iter ) {
-		// Get reference to VBO pool for a specific texture.
-		VBOVector& vbos = m_vbos[new_vbo_iter->first];
+		// Save buffer object, texture and geometry for delayed initialization.
+		DelayedStep::Entry entry;
 
-		// Search for free slot.
-		for( vbo_idx = 0; vbo_idx < vbos.size(); ++vbo_idx ) {
-			if( vbos[vbo_idx] == nullptr ) {
-				break;
-			}
-		}
+		entry.texture = tex_geometry_iter->first;
+		entry.geometry = tex_geometry_iter->second;
+		entry.buffer_object = buffer_object;
 
-		// Check if VBO pool needs to be enlarged.
-		if( vbo_idx >= vbos.size() ) {
-			vbos.resize( vbos.size() + 1 );
-		}
-
-		// Save VBO and create link between chunk/texture -> VBO.
-		vbos[vbo_idx] = new_vbo_iter->second;
-		m_chunk_textures[abs_chunk_pos][new_vbo_iter->first] = vbo_idx;
+		delayed.entries.push_back( entry );
 	}
 
-	resume();
-
-	//std::cout << clock.GetElapsedTime().AsMicroseconds() << " µs" << std::endl;
-}
-
-void PlanetRenderer::render() const {
-	boost::lock_guard<boost::mutex> lock( m_render_mutex );
-
-	glMatrixMode( GL_TEXTURE );
-	glLoadIdentity();
-
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-
-	glColor3f( 1, 1, 1 );
-
-	// Apply camera.
-	if( m_camera ) {
-		glRotatef( m_camera->get_rotation().x, 1.0f, 0.0f, 0.0f );
-		glRotatef( m_camera->get_rotation().y, 0.0f, 1.0f, 0.0f );
-		glTranslatef( -m_camera->get_position().x, -m_camera->get_position().y, -m_camera->get_position().z );
+	{
+		boost::lock_guard<boost::mutex> lock( m_delayed_steps_mutex );
+		m_delayed_steps.push_back( delayed );
 	}
 
-	glTranslatef( -50, -2.70f, -50 );
-
-	std::size_t vbo_idx = 0;
-	std::size_t num_vbos = 0;
-	const VBOVector* vbos;
-	std::shared_ptr<sg::BufferObject> buffer;
-
-	TextureVBOVectorMap::const_iterator tex_vbo_iter( m_vbos.begin() );
-	TextureVBOVectorMap::const_iterator tex_vbo_iter_end( m_vbos.end() );
-
-	for( ; tex_vbo_iter != tex_vbo_iter_end; ++tex_vbo_iter ) {
-		vbos = &tex_vbo_iter->second;
-		num_vbos = vbos->size();
-
-		// Bind texture.
-		tex_vbo_iter->first->Bind();
-
-		for( vbo_idx = 0; vbo_idx < num_vbos; ++vbo_idx ) {
-			buffer = (*vbos)[vbo_idx];
-
-			// Skip free VBO slots.
-			if( buffer == nullptr ) {
-				continue;
-			}
-
-			// Upload data to GPU if needed.
-			if( buffer->is_upload_needed() ) {
-				buffer->upload();
-			}
-
-			// Render VBO.
-			buffer->render();
-		}
-	}
+	queue_update();
 }
 
-void PlanetRenderer::pause() const {
-	m_render_mutex.lock();
-}
-
-void PlanetRenderer::resume() const {
-	m_render_mutex.unlock();
-}
-
-void PlanetRenderer::set_camera( const Camera& camera ) {
-	m_camera = &camera;
-}
-
-std::shared_ptr<const flex::Model> PlanetRenderer::get_model( const flex::FlexID& id ) const {
+std::shared_ptr<const flex::Model> PlanetDrawable::get_model( const flex::FlexID& id ) const {
 	std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( id );
 
 	if( model == nullptr ) {
@@ -478,7 +390,7 @@ std::shared_ptr<const flex::Model> PlanetRenderer::get_model( const flex::FlexID
 	return model;
 }
 
-std::shared_ptr<const sf::Texture> PlanetRenderer::get_texture( const flex::FlexID& id ) const {
+std::shared_ptr<const sf::Texture> PlanetDrawable::get_texture( const flex::FlexID& id ) const {
 	std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( id );
 
 	if( texture == nullptr ) {
@@ -502,4 +414,60 @@ std::shared_ptr<const sf::Texture> PlanetRenderer::get_texture( const flex::Flex
 	}
 
 	return texture;
+}
+
+void PlanetDrawable::handle_update() {
+	{
+		// Create pending delayed steps.
+		boost::lock_guard<boost::mutex> lock( m_delayed_steps_mutex );
+
+		for( std::size_t idx = 0; idx < m_delayed_steps.size(); ++idx ) {
+			const DelayedStep& delayed = m_delayed_steps[idx];
+
+			// Remove previous created steps of this chunk.
+			m_steps[delayed.chunk_pos].clear();
+
+			for( std::size_t entry_idx = 0; entry_idx < delayed.entries.size(); ++entry_idx ) {
+				const DelayedStep::Entry& entry = delayed.entries[entry_idx];
+
+				// Create the step.
+				sg::RenderState r_state( get_render_state() );
+				r_state.texture = entry.texture;
+
+				// Load buffer object.
+				entry.buffer_object->load( *entry.geometry );
+
+				// Create step at renderer and store it (will overwrite old steps for same chunk).
+				m_steps[delayed.chunk_pos].push_back( get_renderer().create_step( r_state, get_global_transform(), entry.buffer_object ) );
+			}
+		}
+
+		// Done, clear delayed steps.
+		m_delayed_steps.clear();
+	}
+}
+
+void PlanetDrawable::handle_recalculate_global_transform() {
+}
+
+void PlanetDrawable::handle_update_render_state() {
+	// When the render state is updated, we need to rebuild all steps. :-|
+	sg::RenderState r_state = get_render_state();
+
+	ChunkStepsMap::iterator cs_iter( m_steps.begin() );
+	ChunkStepsMap::iterator cs_iter_end( m_steps.end() );
+	
+	for( ; cs_iter != cs_iter_end; ++cs_iter ) {
+		for( std::size_t step_idx = 0; step_idx < cs_iter->second.size(); ++step_idx ) {
+			// Preserve step proxy so the step won't be removed now (could trigger
+			// garbage collectors).
+			sg::StepProxy::Ptr step = cs_iter->second[step_idx];
+
+			// Overwrite state's texture with step's texture.
+			r_state.texture = step->get_step()->get_render_state().texture;
+
+			// Reinitialize the step.
+			cs_iter->second[step_idx] = get_renderer().create_step( r_state, get_global_transform(), step->get_step()->get_buffer_object() );
+		}
+	}
 }

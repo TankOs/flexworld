@@ -4,13 +4,16 @@
 #include "Console.hpp"
 #include "Sky.hpp"
 #include "Camera.hpp"
-#include "PlanetRenderer.hpp"
+//#include "PlanetRenderer.hpp"
 #include "ResourceManager.hpp"
+#include "PlanetDrawable.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Cuboid.hpp>
 
+#include <FWSG/Node.hpp>
+#include <FWSG/Renderer.hpp>
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -53,10 +56,13 @@ class PlayState : public State, flex::Client::Handler {
 		ResourceManager m_resource_manager;
 
 		// Scene.
+		sg::Renderer m_renderer;
+		sg::Node::Ptr m_scene_graph;
+		PlanetDrawable::Ptr m_planet_drawable;
+
 		sf::Texture m_sun_texture;
 		std::unique_ptr<Sky> m_sky;
-		std::unique_ptr<PlanetRenderer> m_planet_renderer;
-		bool m_wireframe;
+		//std::unique_ptr<PlanetRenderer> m_planet_renderer;
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;

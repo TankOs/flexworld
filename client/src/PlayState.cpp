@@ -8,13 +8,16 @@
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
+
+#include <FWSG/WireframeState.hpp>
 #include <sstream>
+
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
 	m_console( Console::Create() ),
-	m_wireframe( false ),
+	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
@@ -69,6 +72,7 @@ void PlayState::init() {
 		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
 	);
 	m_camera.set_pitch_clamp( 90.f );
+	m_camera.set_position( sf::Vector3f( 0, 2.7f, 0 ) );
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -152,9 +156,9 @@ void PlayState::handle_event( const sf::Event& event ) {
 			m_console->Show( !m_console->IsVisible() );
 			give_gui = false;
 		}
-		else if( event.Key.Code == sf::Keyboard::F3 ) {
-			m_wireframe = !m_wireframe;
-			give_gui = false;
+		else if( event.Key.Code == sf::Keyboard::F3 ) { // Toggle wireframe.
+			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
+			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 	}
 
@@ -205,23 +209,29 @@ void PlayState::update( const sf::Time& delta ) {
 		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 )
 	);
 
-	// Rotate camera.
-	m_camera.turn(
-		sf::Vector3f(
-			(
-			 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
-			 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity()
-			),
-			static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity(),
-			0.0f
-		)
-	);
+	bool eyepoint_changed = false;
 
-	// Reset mouse.
-	sf::Mouse::SetPosition(
-		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
-		get_render_target()
-	);
+	if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+		// Rotate camera.
+		m_camera.turn(
+			sf::Vector3f(
+				(
+				 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
+				 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity()
+				),
+				static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity(),
+				0.0f
+			)
+		);
+
+		// Reset mouse.
+		sf::Mouse::SetPosition(
+			sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
+			get_render_target()
+		);
+
+		eyepoint_changed = true;
+	}
 
 	// Movement.
 	if( m_update_velocity ) {
@@ -233,8 +243,30 @@ void PlayState::update( const sf::Time& delta ) {
 		m_update_velocity = false;
 	}
 
-	m_camera.walk( (m_velocity.z * 2.0f) * delta.AsSeconds() );
-	m_camera.strafe( (m_velocity.x * 2.0f) * delta.AsSeconds() );
+	if( m_velocity.z != 0 ) {
+		m_camera.walk( (m_velocity.z * 2.0f) * delta.AsSeconds() );
+		eyepoint_changed = true;
+	}
+
+	if( m_velocity.x != 0 ) {
+		m_camera.strafe( (m_velocity.x * 2.0f) * delta.AsSeconds() );
+		eyepoint_changed = true;
+	}
+
+	// If eyepoint changed update transform of scene graph.
+	if( eyepoint_changed ) {
+		m_scene_graph->set_local_transform(
+			sg::Transform(
+				sf::Vector3f(
+					-m_camera.get_position().x,
+					-m_camera.get_position().y,
+					-m_camera.get_position().z
+				),
+				m_camera.get_rotation(),
+				sf::Vector3f( 1, 1, 1 )
+			)
+		);
+	}
 
 	// Update FPS string.
 	static sf::Time elapsed;
@@ -258,6 +290,11 @@ void PlayState::update( const sf::Time& delta ) {
 
 	// Finalize previously prepared textures.
 	m_resource_manager.finalize_prepared_textures();
+
+	// Update scene graph.
+	if( m_scene_graph ) {
+		m_scene_graph->update();
+	}
 }
 
 void PlayState::render() const {
@@ -279,30 +316,11 @@ void PlayState::render() const {
 	// Render sky.
 	m_sky->render();
 
-	// Render planet.
-	if( m_planet_renderer ) {
-		if( m_wireframe ) {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-		}
-
-		glCullFace( GL_BACK );
-
-		glEnable( GL_CULL_FACE );
-		m_planet_renderer->render();
-		glDisable( GL_CULL_FACE );
-
-		if( m_wireframe ) {
-			glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-		}
-	}
-
-	glMatrixMode( GL_MODELVIEW );
-	glLoadIdentity();
-
-	glTranslatef( 0, 2, -5 );
-	glColor3f( 1, 0, 0 );
+	// Render scene graph.
+	m_renderer.render();
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
+	glDisable( GL_CULL_FACE );
 	glDisable( GL_DEPTH_TEST );
 
 	target.PushGLStates();
@@ -394,8 +412,16 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
 
 	// Setup planet renderer.
-	m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );
-	m_planet_renderer->set_camera( m_camera );
+	//m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );
+	//m_planet_renderer->set_camera( m_camera );
+
+	// Detach old planet drawable.
+	if( m_planet_drawable ) {
+		m_scene_graph->detach( m_planet_drawable );
+	}
+
+	m_planet_drawable = PlanetDrawable::create( *planet, m_resource_manager, m_renderer );
+	m_scene_graph->attach( m_planet_drawable );
 
 	get_shared().lock_facility->lock_planet( *planet, false );
 
@@ -448,6 +474,7 @@ void PlayState::prepare_chunks() {
 	sf::Context context;
 
 	boost::unique_lock<boost::mutex> do_lock( m_prepare_chunks_mutex );
+	sf::Clock clock;
 
 	while( m_do_prepare_chunks ) {
 		// If there's no data, wait.
@@ -479,7 +506,8 @@ void PlayState::prepare_chunks() {
 			// Make sure chunk exists.
 			if( planet->has_chunk( chunk_pos ) ) {
 				// Prepare chunk in renderer.
-				m_planet_renderer->prepare_chunk( chunk_pos );
+				//m_planet_renderer->prepare_chunk( chunk_pos );
+				m_planet_drawable->prepare_chunk( chunk_pos );
 			}
 			else {
 #if !defined( NDEBUG )
