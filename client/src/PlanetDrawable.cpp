@@ -43,6 +43,8 @@ inline bool is_triangle_covered(
 
 
 
+PlanetDrawable::~PlanetDrawable() {
+}
 
 PlanetDrawable::Ptr PlanetDrawable::create( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) {
 	Ptr planet_drw( new PlanetDrawable( planet, resource_manager, renderer ) );

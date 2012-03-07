@@ -20,7 +20,7 @@ Client::Client() {
 
 void Client::run() {
 	// Setup window.
-	m_window.Create( sf::VideoMode::GetDesktopMode(), "", sf::Style::Fullscreen );
+	m_window.Create( sf::VideoMode::GetDesktopMode(), "", 0 );
 
 	{
 		std::stringstream sstr;
@@ -93,7 +93,7 @@ void Client::run() {
 	State* state( new IntroState( m_window ) );
 
 	while( state ) {
-		State* next_state( state->run() );
+		State* next_state = state->run();
 
 		delete state;
 		state = next_state;

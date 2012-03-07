@@ -141,6 +141,8 @@ void MenuState::init() {
 	get_shared().host.reset();
 	get_shared().lock_facility.reset();
 	get_shared().world.reset();
+
+	get_render_target().ResetGLStates();
 }
 
 void MenuState::cleanup() {
@@ -169,7 +171,6 @@ void MenuState::handle_event( const sf::Event& event ) {
 			leave();
 		}
 	}
-
 }
 
 void MenuState::update( const sf::Time& delta ) {

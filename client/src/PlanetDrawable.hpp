@@ -25,6 +25,8 @@ class PlanetDrawable : public sg::Drawable {
 		typedef std::shared_ptr<PlanetDrawable> Ptr; ///< Shared pointer.
 		typedef std::shared_ptr<const PlanetDrawable> PtrConst; ///< Shared pointer to const.
 
+		~PlanetDrawable();
+
 		/** Create.
 		 * @param planet Planet to render.
 		 * @param resource_manager Resource manager.

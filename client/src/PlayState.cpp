@@ -72,7 +72,7 @@ void PlayState::init() {
 		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
 	);
 	m_camera.set_pitch_clamp( 90.f );
-	m_camera.set_position( sf::Vector3f( 0, 2.7f, 0 ) );
+	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -92,6 +92,7 @@ void PlayState::init() {
 	glLoadIdentity();
 
 	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
 
 	// Misc.
 	get_render_target().ShowMouseCursor( false );
@@ -131,10 +132,10 @@ void PlayState::cleanup() {
 	get_shared().host_thread.reset();
 
 	// Restore old matrices.
-	glMatrixMode( GL_PROJECTION );
+	glMatrixMode( GL_TEXTURE );
 	glPopMatrix();
 
-	glMatrixMode( GL_TEXTURE );
+	glMatrixMode( GL_PROJECTION );
 	glPopMatrix();
 
 	get_render_target().ShowMouseCursor( true );
@@ -244,12 +245,12 @@ void PlayState::update( const sf::Time& delta ) {
 	}
 
 	if( m_velocity.z != 0 ) {
-		m_camera.walk( (m_velocity.z * 2.0f) * delta.AsSeconds() );
+		m_camera.walk( (m_velocity.z * 4.0f) * delta.AsSeconds() );
 		eyepoint_changed = true;
 	}
 
 	if( m_velocity.x != 0 ) {
-		m_camera.strafe( (m_velocity.x * 2.0f) * delta.AsSeconds() );
+		m_camera.strafe( (m_velocity.x * 4.0f) * delta.AsSeconds() );
 		eyepoint_changed = true;
 	}
 
@@ -323,11 +324,13 @@ void PlayState::render() const {
 	glDisable( GL_CULL_FACE );
 	glDisable( GL_DEPTH_TEST );
 
-	target.PushGLStates();
-
 	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
+	glEnableClientState( GL_COLOR_ARRAY ); // SFML needs this.
 	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
+
+	target.PushGLStates();
 
 	// FPS.
 	target.Draw( m_fps_text );
@@ -335,10 +338,11 @@ void PlayState::render() const {
 	// Render GUI.
 	sfg::Renderer::Get().Display( target );
 
+	target.Display();
+
 	// Restore SFML's states and render everything.
 	target.PopGLStates();
 
-	target.Display();
 }
 
 void PlayState::request_chunks( const ViewCuboid& cuboid ) {
