@@ -2,6 +2,8 @@
 
 #include "Controls.hpp"
 
+#include <SFML/Window/VideoMode.hpp>
+
 #include <cstdint>
 #include <string>
 
@@ -89,8 +91,30 @@ class UserSettings {
 		 */
 		uint8_t get_fov() const;
 
+		/** Set video mode.
+		 * @param mode Mode.
+		 */
+		void set_video_mode( const sf::VideoMode& mode );
+
+		/** Get video mode.
+		 * @return Mode.
+		 */
+		const sf::VideoMode& get_video_mode() const;
+
+		/** Enable fullscreen.
+		 * @param enable Enable?
+		 */
+		void enable_fullscreen( bool enable );
+
+		/** Check if fullscreen enabled.
+		 * @return true if enabled.
+		 */
+		bool is_fullscreen_enabled() const;
+
 	private:
 		Controls m_controls;
+
+		sf::VideoMode m_video_mode;
 
 		std::string m_username;
 		std::string m_serial;
@@ -99,4 +123,5 @@ class UserSettings {
 
 		uint8_t m_fov;
 		bool m_vsync;
+		bool m_fullscreen;
 };

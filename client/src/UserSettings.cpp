@@ -21,9 +21,11 @@ std::string UserSettings::get_profile_path() {
 }
 
 UserSettings::UserSettings() :
+	m_video_mode( sf::VideoMode::GetDesktopMode() ),
 	m_fps_limit( 60 ),
 	m_fov( 60 ),
-	m_vsync( false )
+	m_vsync( false ),
+	m_fullscreen( true )
 {
 }
 
@@ -66,6 +68,38 @@ bool UserSettings::load( const std::string& filename ) {
 	const YAML::Node* video_node = doc.FindValue( "Video" );
 
 	if( video_node ) {
+		const YAML::Node* resolution_node = video_node->FindValue( "Resolution" );
+
+		if( resolution_node && resolution_node->Type() == YAML::NodeType::Sequence && resolution_node->size() == 3 ) {
+			int width = 0;
+			int height = 0;
+			int bpp = 0;
+
+			try {
+				(*resolution_node)[0] >> width;
+				(*resolution_node)[1] >> height;
+				(*resolution_node)[2] >> bpp;
+
+				new_settings.set_video_mode( sf::VideoMode( width, height, bpp ) );
+			}
+			catch( const YAML::Exception& /*e*/ ) {
+			}
+		}
+
+		const YAML::Node* fullscreen_node = video_node->FindValue( "Fullscreen" );
+
+		if( fullscreen_node ) {
+			try {
+				bool enable = true;
+
+				*fullscreen_node >> enable;
+
+				new_settings.enable_fullscreen( enable );
+			}
+			catch( const YAML::Exception& /*e*/ ) {
+			}
+		}
+
 		const YAML::Node* vsync_node = video_node->FindValue( "VSync" );
 
 		if( vsync_node ) {
@@ -181,6 +215,12 @@ bool UserSettings::save( const std::string& filename ) {
 
 			emitter << EndMap
 			<< Key << "Video" << Value << BeginMap
+				<< Key << "Resolution" << Value << BeginSeq
+					<< static_cast<int>( get_video_mode().Width )
+					<< static_cast<int>( get_video_mode().Height )
+					<< static_cast<int>( get_video_mode().BitsPerPixel )
+				<< EndSeq
+				<< Key << "Fullscreen" << Value << is_fullscreen_enabled()
 				<< Key << "VSync" << Value << is_vsync_enabled()
 				<< Key << "FPSLimit" << Value << get_fps_limit()
 				<< Key << "FOV" << Value << get_fov()
@@ -263,4 +303,20 @@ void UserSettings::set_fov( uint8_t fov ) {
 
 uint8_t UserSettings::get_fov() const {
 	return m_fov;
+}
+
+void UserSettings::set_video_mode( const sf::VideoMode& mode ) {
+	m_video_mode = mode;
+}
+
+const sf::VideoMode& UserSettings::get_video_mode() const {
+	return m_video_mode;
+}
+
+void UserSettings::enable_fullscreen( bool enable ) {
+	m_fullscreen = enable;
+}
+
+bool UserSettings::is_fullscreen_enabled() const {
+	return m_fullscreen;
 }

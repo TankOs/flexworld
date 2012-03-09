@@ -19,21 +19,6 @@ Client::Client() {
 }
 
 void Client::run() {
-	// Setup window.
-	m_window.Create( sf::VideoMode::GetDesktopMode(), "", 0 );
-
-	{
-		std::stringstream sstr;
-		sstr << "FlexWorld "
-			<< static_cast<int>( flex::VERSION.get_major() ) << "."
-			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
-			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
-			<< flex::VERSION_SUFFIX
-		;
-
-		m_window.SetTitle( sstr.str() );
-	}
-
 	// Make sure user's profile directory exists.
 	if( !boost::filesystem::exists( UserSettings::get_profile_path() ) ) {
 		// Try to create the directory.
@@ -87,6 +72,24 @@ void Client::run() {
 	}
 
 	// Setup window.
+	m_window.Create(
+		Shared::get().user_settings.get_video_mode(),
+		"",
+		Shared::get().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
+	);
+
+	{
+		std::stringstream sstr;
+		sstr << "FlexWorld "
+			<< static_cast<int>( flex::VERSION.get_major() ) << "."
+			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
+			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
+			<< flex::VERSION_SUFFIX
+		;
+
+		m_window.SetTitle( sstr.str() );
+	}
+
 	m_window.EnableVerticalSync( Shared::get().user_settings.is_vsync_enabled() );
 
 	// Launch first state.

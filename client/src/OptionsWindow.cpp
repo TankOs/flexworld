@@ -67,6 +67,9 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_fov_scale = sfg::Scale::Create( UserSettings::MIN_FOV, UserSettings::MAX_FOV, 1.0f, sfg::Scale::HORIZONTAL );
 	window->m_fov_label = sfg::Label::Create( L"(--)" );
 
+	window->m_fullscreen_check = sfg::CheckButton::Create( L"Fullscreen" );
+	window->m_resolution_combo = sfg::ComboBox::Create();
+
 	// Layout //////////////////////////////////////////////////
 
 	// Account.
@@ -166,8 +169,21 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	sfg::Frame::Ptr general_frame( sfg::Frame::Create( L"General" ) );
 	general_frame->Add( general_table );
 
+	sfg::Table::Ptr resolution_table( sfg::Table::Create() );
+	resolution_table->SetRowSpacings( 10.0f );
+	resolution_table->SetColumnSpacings( 10.0f );
+
+	resolution_table->Attach( window->m_fullscreen_check, sf::Rect<sf::Uint32>( 1, 0, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	resolution_table->Attach( sfg::Label::Create( L"Resolution:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	resolution_table->Attach( window->m_resolution_combo, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	sfg::Frame::Ptr resolution_frame( sfg::Frame::Create( L"Resolution" ) );
+	resolution_frame->Add( resolution_table );
+
 	sfg::Box::Ptr video_page_box( sfg::Box::Create( sfg::Box::VERTICAL, 5.0f ) );
 	video_page_box->Pack( general_frame, false );
+	video_page_box->Pack( resolution_frame, false );
 
 	// Notebook.
 	sfg::Notebook::Ptr notebook( sfg::Notebook::Create() );
@@ -207,6 +223,35 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_fov_scale->SetValue( static_cast<float>( window->m_user_settings.get_fov() ) );
 	window->m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
 
+	window->m_fullscreen_check->SetActive( window->m_user_settings.is_fullscreen_enabled() );
+
+	// Add resolutions.
+	std::size_t combo_idx = 0;
+
+	for( std::size_t reso_idx = 0; reso_idx < sf::VideoMode::GetFullscreenModes().size(); ++reso_idx ) {
+		const sf::VideoMode& mode = sf::VideoMode::GetFullscreenModes()[reso_idx];
+
+		if(
+			mode.BitsPerPixel == sf::VideoMode::GetDesktopMode().BitsPerPixel &&
+			mode.Width >= 800 &&
+			mode.Height >= 600
+		) {
+			std::stringstream sstr;
+			sstr << mode.Width << " x " << mode.Height;
+
+			window->m_resolution_combo->AppendItem( sstr.str() );
+
+			if(
+				mode.Width == window->m_user_settings.get_video_mode().Width &&
+				mode.Height == window->m_user_settings.get_video_mode().Height
+			) {
+				window->m_resolution_combo->SelectItem( combo_idx );
+			}
+
+			++combo_idx;
+		}
+	}
+
 	window->refresh_action_button_labels();
 	window->on_sensitivity_change();
 
@@ -232,6 +277,19 @@ void OptionsWindow::on_ok_click() {
 	m_user_settings.set_fov( static_cast<uint8_t>( m_fov_scale->GetValue() ) );
 	m_user_settings.get_controls().set_mouse_inverted( m_mouse_inverted_check->IsActive() );
 	m_user_settings.get_controls().set_mouse_sensitivity( m_mouse_sensitivity_scale->GetValue() );
+	m_user_settings.enable_fullscreen( m_fullscreen_check->IsActive() );
+
+	// Resolution.
+	if( m_resolution_combo->GetSelectedItem() != sfg::ComboBox::NONE ) {
+		std::stringstream sstr( m_resolution_combo->GetSelectedText() );
+		int width = 0;
+		int height = 0;
+		std::string skip;
+
+		sstr >> width >> skip >> height;
+
+		m_user_settings.set_video_mode( sf::VideoMode( width, height, sf::VideoMode::GetDesktopMode().BitsPerPixel ) );
+	}
 
 	OnAccept();
 }

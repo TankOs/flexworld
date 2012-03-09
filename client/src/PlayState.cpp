@@ -218,9 +218,9 @@ void PlayState::update( const sf::Time& delta ) {
 			sf::Vector3f(
 				(
 				 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
-				 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity()
+				 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
 				),
-				static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity(),
+				static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
 				0.0f
 			)
 		);

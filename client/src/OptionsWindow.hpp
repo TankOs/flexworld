@@ -78,4 +78,7 @@ class OptionsWindow : public sfg::Window {
 		sfg::Label::Ptr m_fps_limit_label;
 		sfg::Scale::Ptr m_fov_scale;
 		sfg::Label::Ptr m_fov_label;
+
+		sfg::CheckButton::Ptr m_fullscreen_check;
+		sfg::ComboBox::Ptr m_resolution_combo;
 };

@@ -306,8 +306,18 @@ void MenuState::on_options_accept() {
 	m_window->Show( true );
 	check_required_settings();
 
+	// Apply resolution.
+	get_render_target().Create(
+		get_shared().user_settings.get_video_mode(),
+		"FlexWorld",
+		get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
+	);
+
 	// Apply vsync setting.
 	get_render_target().EnableVerticalSync( get_shared().user_settings.is_vsync_enabled() );
+
+	// Restart menu state.
+	leave( new MenuState( get_render_target() ) );
 }
 
 void MenuState::on_options_reject() {
