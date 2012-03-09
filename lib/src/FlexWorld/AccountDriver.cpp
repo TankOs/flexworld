@@ -18,6 +18,7 @@ std::string AccountDriver::serialize( const Account& account ) {
 		<< BeginMap
 			<< Key << "Username" << Value << account.get_username()
 			<< Key << "Password" << Value << account.get_password()
+			<< Key << "Entity" << Value << account.get_entity_id()
 		<< EndMap
 	;
 
@@ -77,6 +78,22 @@ Account AccountDriver::deserialize( const std::string& data ) {
 		}
 
 		new_account.set_password( password );
+	}
+
+	// Read entity ID.
+	{
+		const YAML::Node* entity_id_node = doc.FindValue( "Entity" );
+		if( !entity_id_node ) {
+			throw DeserializeException( "No entity ID specified." );
+		}
+		else if( entity_id_node->Type() != YAML::NodeType::Scalar ) {
+			throw DeserializeException( "Entity ID not a scalar." );
+		}
+
+		Entity::ID entity_id;
+		*entity_id_node >> entity_id;
+
+		new_account.set_entity_id( entity_id );
 	}
 
 	return new_account;

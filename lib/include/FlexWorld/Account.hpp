@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlexWorld/Entity.hpp>
+
 #include <string>
 
 namespace flex {
@@ -22,6 +24,11 @@ class Account {
 		 */
 		void set_password( const std::string& password );
 
+		/** Set entity ID.
+		 * @param id ID.
+		 */
+		void set_entity_id( Entity::ID id );
+
 		/** Get username.
 		 * @return Username.
 		 */
@@ -32,9 +39,16 @@ class Account {
 		 */
 		const std::string& get_password() const;
 
+		/** Get entity ID.
+		 * @return ID.
+		 */
+		Entity::ID get_entity_id() const;
+
 	private:
 		std::string m_username;
 		std::string m_password;
+
+		Entity::ID m_entity_id;
 };
 
 }

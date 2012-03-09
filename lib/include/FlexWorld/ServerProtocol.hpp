@@ -13,7 +13,7 @@
 
 namespace flex {
 
-typedef tpl::Typelist<msg::OpenLogin, tpl::Typelist<msg::ServerInfo, tpl::Typelist<msg::LoginOK, tpl::Typelist<msg::Ready, tpl::Typelist<msg::Beam, tpl::Typelist<msg::RequestChunk, tpl::Typelist<msg::ChunkUnchanged> > > > > > > ServerMessageList;
+typedef tpl::Typelist<msg::OpenLogin, tpl::Typelist<msg::ServerInfo, tpl::Typelist<msg::LoginOK, tpl::Typelist<msg::Ready, tpl::Typelist<msg::Beam, tpl::Typelist<msg::RequestChunk, tpl::Typelist<msg::ChunkUnchanged>>>>>>> ServerMessageList;
 typedef Protocol<ServerMessageList> ServerProtocol;
 
 }

@@ -25,6 +25,7 @@ BOOST_AUTO_TEST_CASE( TestAccountDriver ) {
 		// Verify data.
 		BOOST_CHECK( acc.get_username() == "Tank" );
 		BOOST_CHECK( acc.get_password() == "meowfoo" );
+		BOOST_CHECK( acc.get_entity_id() == 1337 );
 	}
 
 	// Serialize.
@@ -32,6 +33,7 @@ BOOST_AUTO_TEST_CASE( TestAccountDriver ) {
 		Account acc;
 		acc.set_username( "Tank" );
 		acc.set_password( "meowfoo" );
+		acc.set_entity_id( 1337 );
 
 		std::string output = AccountDriver::serialize( acc );
 		BOOST_CHECK( output == buffer.str() );
