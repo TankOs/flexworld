@@ -1,0 +1,7 @@
+ID: "fw.base.human/dwarf_male"
+Name: "Dwarf (male)"
+Origin: [0.0, 0.0, 0.0]
+Textures:
+  - "fw.base.human/dwarf_male.jpg"
+  - "fw.base.human/dwarf_axe.jpg"
+Model: "fw.base.human/dwarf_male.fwm"

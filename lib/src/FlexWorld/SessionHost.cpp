@@ -56,8 +56,7 @@ unsigned short SessionHost::get_port() const {
 bool SessionHost::run() {
 	// Make sure fw.base.nature/grass is present for construction the planet
 	// "construct".
-	FlexID id;
-	id.parse( "fw.base.nature/grass" );
+	FlexID id = FlexID::make( "fw.base.nature/grass" );
 
 	const Class* grass_cls = m_world.find_class( id );
 	if( !grass_cls ) {
@@ -214,13 +213,22 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 
 	// If it doesn't exist, create a new one. TODO: Make this configurable?
 	if( account == nullptr ) {
-		flex::Account new_account;
+		// Create entity.
+		m_lock_facility.lock_world( true );
+		const Entity& entity = m_world.create_entity( FlexID::make( "fw.base.human/dwarf_male" ) ); // TODO: Change!
+
+		Account new_account;
 		new_account.set_username( login_msg.get_username() );
 		new_account.set_password( login_msg.get_password() );
+		new_account.set_entity_id( entity.get_id() );
 		m_account_manager.add_account( new_account );
+
+		m_lock_facility.lock_world( false );
 
 		account = m_account_manager.find_account( login_msg.get_username() );
 		assert( account != nullptr );
+
+		Log::Logger( Log::INFO ) << "New account created: " << login_msg.get_username() << " (ent#" << account->get_entity_id() << ")" << Log::endl;
 	}
 	else {
 		// Check for correct password.
@@ -231,10 +239,17 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 		}
 	}
 
+	// Remember entity ID before lock is released.
+	Entity::ID entity_id = account->get_entity_id();
+
 	m_lock_facility.lock_account_manager( false );
+
+	// Remember username.
+	m_player_infos[conn_id].username = login_msg.get_username();
 
 	// Everything is good, log the player in!
 	msg::LoginOK ok_msg;
+	ok_msg.set_entity_id( entity_id );
 	m_server->send_message( ok_msg, conn_id );
 }
 

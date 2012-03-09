@@ -19,7 +19,7 @@ struct PlayerInfo {
 	PlayerInfo();
 
 	ViewCuboid view_cuboid; ///< View range.
-	Account* account; ///< Associated account.
+	std::string username; ///< Username.
 	Planet* planet; ///< Associated planet.
 	bool local; ///< Local connection?
 	bool connected; ///< Connected?

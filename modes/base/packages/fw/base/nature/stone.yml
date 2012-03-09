@@ -1,5 +1,5 @@
 ID: "fw.base.nature/stone"
 Name: "Stone"
 Textures:
-  - "fw.debug/test_tex.png"
+  - "fw.base.nature/stone.png"
 Model: "fw.base.prim/cube.fwm"

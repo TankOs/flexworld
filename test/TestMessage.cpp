@@ -9,6 +9,7 @@
 #include <FlexWorld/Messages/Chunk.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Messages/ChunkUnchanged.hpp>
+#include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
@@ -890,5 +891,82 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 
 		BOOST_CHECK( eaten == source_buffer.size() );
 		BOOST_CHECK( msg.get_position() == POSITION );
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
+	using namespace flex;
+
+	static const Planet::Coordinate POSITION( 1, 2, 3 );
+	static const std::string CLASS( "fw.base.human/dwarf_male" );
+	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
+	static const uint8_t HEADING( 215 );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source_buffer;
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
+	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+
+	// Initial state.
+	{
+		msg::CreateEntity msg;
+
+		BOOST_CHECK( msg.get_position() == Planet::Coordinate( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_heading() == 0 );
+		BOOST_CHECK( msg.get_class() == "" );
+	}
+
+	// Basic properties.
+	{
+		msg::CreateEntity msg;
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
+	}
+
+	// Serialize.
+	{
+		msg::CreateEntity msg;
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source_buffer );
+	}
+
+	// Serialize with invalid data.
+	{
+		msg::CreateEntity msg;
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( "" );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException );
+
+		msg.set_class( std::string( 256, 'x' ) );
+		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException );
+	}
+
+	// Deserialize.
+	{
+		msg::CreateEntity msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
+
+		BOOST_CHECK( eaten == source_buffer.size() );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
 	}
 }
