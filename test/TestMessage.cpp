@@ -226,23 +226,34 @@ BOOST_AUTO_TEST_CASE( TestServerInfoMessage ) {
 BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
 	using namespace flex;
 
-	const std::size_t SIZE = sizeof( uint8_t );
+	const std::size_t SIZE = sizeof( Entity::ID );
 
 	// Initial state.
 	{
 		msg::LoginOK msg;
+
+		BOOST_CHECK( msg.get_entity_id() == 0 );
 	}
 
 	// Basic properties.
 	{
 		msg::LoginOK msg;
+
+		msg.set_entity_id( 123 );
+
+		BOOST_CHECK( msg.get_entity_id() == 123 );
 	}
 
-	ServerProtocol::Buffer source( 1, 0 );
+	static const Entity::ID ENTITY_ID = 123;
+
+	ServerProtocol::Buffer source( SIZE, 0 );
+	source[0] = ENTITY_ID;
 
 	// Serialize.
 	{
 		msg::LoginOK msg;
+
+		msg.set_entity_id( ENTITY_ID );
 
 		ServerProtocol::Buffer buffer;
 		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
@@ -257,6 +268,8 @@ BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
 		std::size_t eaten = 0;
 		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
 		BOOST_CHECK( eaten == SIZE );
+
+		BOOST_CHECK( msg.get_entity_id() == ENTITY_ID );
 	}
 
 	// Deserialize with too less data.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FlexWorld/Message.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <string>
 
@@ -15,10 +16,21 @@ class LoginOK : public Message {
 		 */
 		LoginOK();
 
+		/** Set entity ID.
+		 * @param id ID.
+		 */
+		void set_entity_id( Entity::ID id );
+
+		/** Get entity ID.
+		 * @return ID.
+		 */
+		Entity::ID get_entity_id() const;
+
 		void serialize( Buffer& buffer ) const;
 		std::size_t deserialize( const char* buffer, std::size_t buffer_size );
 
 	private:
+		Entity::ID m_entity_id;
 };
 
 }
