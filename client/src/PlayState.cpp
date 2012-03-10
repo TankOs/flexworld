@@ -25,7 +25,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_walk_forward( false ),
 	m_walk_backward( false ),
 	m_strafe_left( false ),
-	m_strafe_right( false )
+	m_strafe_right( false ),
+	m_my_entity_received( false )
 {
 }
 
@@ -210,6 +211,12 @@ void PlayState::update( const sf::Time& delta ) {
 		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 )
 	);
 
+	// Reset mouse.
+	sf::Mouse::SetPosition(
+		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
+		get_render_target()
+	);
+
 	bool eyepoint_changed = false;
 
 	if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
@@ -225,21 +232,22 @@ void PlayState::update( const sf::Time& delta ) {
 			)
 		);
 
-		// Reset mouse.
-		sf::Mouse::SetPosition(
-			sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
-			get_render_target()
-		);
-
 		eyepoint_changed = true;
 	}
 
 	// Movement.
 	if( m_update_velocity ) {
-		m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
-		m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+		// If we didn't receive our own entity yet, do not move (what to move anyways?).
+		if( !m_my_entity_received ) {
+			m_velocity.z = 0;
+			m_velocity.x = 0;
+		}
+		else {
+			m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+			m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
 
-		flex::normalize( m_velocity );
+			flex::normalize( m_velocity );
+		}
 
 		m_update_velocity = false;
 	}
@@ -370,6 +378,9 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 
 void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 	m_console->add_message( sf::String( "Beamed to planet " ) + msg.get_planet_name() + sf::String( "." ) );
+
+	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
+	m_my_entity_received = false;
 
 	// Fetch planet.
 	get_shared().lock_facility->lock_world( true );

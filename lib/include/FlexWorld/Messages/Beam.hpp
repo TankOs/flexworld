@@ -33,10 +33,10 @@ class Beam : public Message {
 		 */
 		const sf::Vector3f& get_position() const;
 
-		/** Get angle.
-		 * @return Angle.
+		/** Get heading.
+		 * @return Heading.
 		 */
-		uint16_t get_angle() const;
+		float get_heading() const;
 
 		/** Get planet size.
 		 * @return Planet size.
@@ -58,10 +58,10 @@ class Beam : public Message {
 		 */
 		void set_position( const sf::Vector3f& position );
 
-		/** Set angle.
-		 * @param angle Angle.
+		/** Set heading.
+		 * @param heading Heading.
 		 */
-		void set_angle( uint16_t angle );
+		void set_heading( float heading );
 
 		/** Set planet size.
 		 * @param planet_size Planet size.
@@ -78,7 +78,7 @@ class Beam : public Message {
 		Planet::Vector m_planet_size;
 		Chunk::Vector m_chunk_size;
 		std::string m_planet_name;
-		uint16_t m_angle;
+		float m_heading;
 };
 
 }

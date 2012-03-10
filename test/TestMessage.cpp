@@ -336,7 +336,8 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 	const std::string PLANET_NAME = "construct";
 	const sf::Vector3f POSITION = sf::Vector3f( 1, 2, 3 );
-	const uint16_t ANGLE = 180;
+	const uint16_t C_HEADING = static_cast<uint16_t>( 180.f / 360.f * 65535.f );
+	const float HEADING = 180;
 	const Planet::Vector PLANET_SIZE = Planet::Vector( 10, 20, 30 );
 	const Chunk::Vector CHUNK_SIZE = Chunk::Vector( 32, 64, 128 );
 
@@ -344,7 +345,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		+ sizeof( uint8_t ) // Planet name length.
 		+ sizeof( char ) * PLANET_NAME.size()
 		+ sizeof( POSITION )
-		+ sizeof( ANGLE )
+		+ sizeof( C_HEADING )
 		+ sizeof( PLANET_SIZE )
 		+ sizeof( CHUNK_SIZE )
 	;
@@ -355,7 +356,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 		BOOST_CHECK( msg.get_planet_name() == "" );
 		BOOST_CHECK( msg.get_position() == sf::Vector3f( 0, 0, 0 ) );
-		BOOST_CHECK( msg.get_angle() == 0 );
+		BOOST_CHECK( msg.get_heading() == 0 );
 		BOOST_CHECK( msg.get_planet_size() == Planet::Vector( 0, 0, 0 ) );
 		BOOST_CHECK( msg.get_chunk_size() == Chunk::Vector( 0, 0, 0 ) );
 	}
@@ -366,13 +367,13 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 		msg.set_planet_name( PLANET_NAME );
 		msg.set_position( POSITION );
-		msg.set_angle( ANGLE );
+		msg.set_heading( HEADING );
 		msg.set_planet_size( PLANET_SIZE );
 		msg.set_chunk_size( CHUNK_SIZE );
 
 		BOOST_CHECK( msg.get_planet_name() == PLANET_NAME );
 		BOOST_CHECK( msg.get_position() == POSITION );
-		BOOST_CHECK( msg.get_angle() == ANGLE );
+		BOOST_CHECK( msg.get_heading() == HEADING );
 		BOOST_CHECK( msg.get_planet_size() == PLANET_SIZE );
 		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
 	}
@@ -381,7 +382,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 	source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 	source.insert( source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &C_HEADING ), reinterpret_cast<const char*>( &C_HEADING ) + sizeof( C_HEADING ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -391,7 +392,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 		msg.set_planet_name( PLANET_NAME );
 		msg.set_position( POSITION );
-		msg.set_angle( ANGLE );
+		msg.set_heading( HEADING );
 		msg.set_planet_size( PLANET_SIZE );
 		msg.set_chunk_size( CHUNK_SIZE );
 
@@ -406,7 +407,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		msg::Beam msg;
 		msg.set_planet_name( "" );
 		msg.set_position( POSITION );
-		msg.set_angle( ANGLE );
+		msg.set_heading( HEADING );
 		msg.set_planet_size( PLANET_SIZE );
 		msg.set_chunk_size( CHUNK_SIZE );
 
@@ -424,7 +425,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( sf::Vector3f( -1, 0, 0 ) );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -435,7 +436,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( sf::Vector3f( 0, -1, 0 ) );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -446,7 +447,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( sf::Vector3f( 0, 0, -1 ) );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -461,7 +462,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( Planet::Vector( 1, 1, 0 ) );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -472,7 +473,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( Planet::Vector( 1, 0, 1 ) );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -483,7 +484,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( Planet::Vector( 0, 1, 1 ) );
 			msg.set_chunk_size( CHUNK_SIZE );
 
@@ -498,7 +499,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( Chunk::Vector( 0, 1, 1 ) );
 
@@ -509,7 +510,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( Chunk::Vector( 1, 0, 1 ) );
 
@@ -520,7 +521,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			msg.set_planet_name( PLANET_NAME );
 			msg.set_position( POSITION );
-			msg.set_angle( ANGLE );
+			msg.set_heading( HEADING );
 			msg.set_planet_size( PLANET_SIZE );
 			msg.set_chunk_size( Chunk::Vector( 1, 1, 0 ) );
 
@@ -539,7 +540,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		BOOST_CHECK( eaten == SIZE );
 		BOOST_CHECK( msg.get_planet_name() == PLANET_NAME );
 		BOOST_CHECK( msg.get_position() == POSITION );
-		BOOST_CHECK( msg.get_angle() == ANGLE );
+		BOOST_CHECK( msg.get_heading() == HEADING );
 		BOOST_CHECK( msg.get_planet_size() == PLANET_SIZE );
 		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
 	}
@@ -564,7 +565,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -581,7 +582,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -598,7 +599,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_position ), reinterpret_cast<const char*>( &invalid_position ) + sizeof( invalid_position ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -619,7 +620,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -636,7 +637,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -653,7 +654,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -674,7 +675,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 
@@ -691,7 +692,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 
@@ -708,7 +709,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			invalid_source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 			invalid_source.insert( invalid_source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ANGLE ), reinterpret_cast<const char*>( &ANGLE ) + sizeof( ANGLE ) );
+			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 			invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &invalid_size ), reinterpret_cast<const char*>( &invalid_size ) + sizeof( invalid_size ) );
 
@@ -900,7 +901,7 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 	static const Planet::Coordinate POSITION( 1, 2, 3 );
 	static const std::string CLASS( "fw.base.human/dwarf_male" );
 	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
-	static const uint8_t HEADING( 215 );
+	static const uint16_t HEADING( 215 );
 
 	// Create source buffer.
 	ServerProtocol::Buffer source_buffer;

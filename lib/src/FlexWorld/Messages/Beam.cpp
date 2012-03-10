@@ -1,5 +1,6 @@
 #include <FlexWorld/Messages/Beam.hpp>
 
+#include <cmath>
 #include <cstring>
 
 namespace flex {
@@ -10,7 +11,7 @@ Beam::Beam() :
 	m_position( 0, 0, 0 ),
 	m_planet_size( 0, 0, 0 ),
 	m_chunk_size( 0, 0, 0 ),
-	m_angle( 0 )
+	m_heading( 0 )
 {
 }
 
@@ -39,7 +40,7 @@ void Beam::serialize( Buffer& buffer ) const {
 		+ sizeof( uint8_t ) // Planet name length.
 		+ sizeof( char ) * m_planet_name.size()
 		+ sizeof( m_position )
-		+ sizeof( m_angle )
+		+ sizeof( uint16_t ) // Converted heading.
 		+ sizeof( m_planet_size )
 		+ sizeof( m_chunk_size )
 	);
@@ -48,7 +49,11 @@ void Beam::serialize( Buffer& buffer ) const {
 	std::memcpy( &buffer[buf_ptr], m_planet_name.c_str(), m_planet_name.size() ); buf_ptr += m_planet_name.size();
 
 	std::memcpy( &buffer[buf_ptr], &m_position, sizeof( m_position ) ); buf_ptr += sizeof( m_position );
-	std::memcpy( &buffer[buf_ptr], &m_angle, sizeof( m_angle ) ); buf_ptr += sizeof( m_angle );
+
+	// Convert heading.
+	uint16_t c_heading = static_cast<uint16_t>( (std::fmod( m_heading, 360.f ) / 360.f) * 65535.f );
+	std::memcpy( &buffer[buf_ptr], &c_heading, sizeof( c_heading ) ); buf_ptr += sizeof( c_heading );
+
 	std::memcpy( &buffer[buf_ptr], &m_planet_size, sizeof( m_planet_size ) ); buf_ptr += sizeof( m_planet_size );
 	std::memcpy( &buffer[buf_ptr], &m_chunk_size, sizeof( m_chunk_size ) ); buf_ptr += sizeof( m_chunk_size );
 }
@@ -89,16 +94,19 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 		throw BogusDataException( "Invalid position." );
 	}
 
-	// Angle.
-	if( buffer_size - buf_ptr < sizeof( m_angle ) ) {
+	// Heading.
+	if( buffer_size - buf_ptr < sizeof( uint16_t ) ) {
 		return 0;
 	}
 
-	uint16_t angle = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
-	buf_ptr += sizeof( angle );
+	uint16_t org_heading = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( org_heading );
 
-	if( angle >= 360 ) {
-		throw BogusDataException( "Invalid angle." );
+	// Convert heading.
+	float heading = static_cast<float>( org_heading * 360 ) / 65535.f;
+
+	if( heading >= 360.f || heading < 0.f ) {
+		throw BogusDataException( "Invalid heading." );
 	}
 
 	// Planet size.
@@ -128,7 +136,7 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 	// Everything okay, set props.
 	m_planet_name = std::string( planet_name_ptr, planet_name_length );
 	m_position = position;
-	m_angle = angle;
+	m_heading = heading;
 	m_planet_size = planet_size;
 	m_chunk_size = chunk_size;
 
@@ -143,8 +151,8 @@ const sf::Vector3f& Beam::get_position() const {
 	return m_position;
 }
 
-uint16_t Beam::get_angle() const {
-	return m_angle;
+float Beam::get_heading() const {
+	return m_heading;
 }
 
 const Planet::Vector& Beam::get_planet_size() const {
@@ -163,8 +171,8 @@ void Beam::set_position( const sf::Vector3f& position ) {
 	m_position = position;
 }
 
-void Beam::set_angle( uint16_t angle ) {
-	m_angle = angle % 360;
+void Beam::set_heading( float heading ) {
+	m_heading = heading;
 }
 
 void Beam::set_planet_size( const Planet::Vector& planet_size ) {

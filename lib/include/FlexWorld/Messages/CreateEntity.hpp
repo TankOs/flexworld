@@ -31,12 +31,12 @@ class CreateEntity : public Message {
 		/** Set heading.
 		 * @param heading Heading.
 		 */
-		void set_heading( uint8_t heading );
+		void set_heading( uint16_t heading );
 
 		/** Get heading.
 		 * @return Heading.
 		 */
-		uint8_t get_heading() const;
+		uint16_t get_heading() const;
 
 		/** Set class.
 		 * @param cls Class.
@@ -54,7 +54,7 @@ class CreateEntity : public Message {
 	private:
 		std::string m_class;
 		Planet::Coordinate m_position;
-		uint8_t m_heading;
+		uint16_t m_heading;
 };
 
 }

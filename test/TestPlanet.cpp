@@ -206,12 +206,15 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		BOOST_CHECK( planet.get_num_entities() == 2 );
 		BOOST_CHECK( planet.has_entity( ent ) == true );
 		BOOST_CHECK( planet.has_entity( ent2 ) == true );
+		BOOST_CHECK( planet.get_entity_id( 0 ) == 0 );
+		BOOST_CHECK( planet.get_entity_id( 1 ) == 2 );
 
 		// Remove entity.
 		planet.remove_entity( ent );
 		BOOST_CHECK( planet.get_num_entities() == 1 );
 		BOOST_CHECK( planet.has_entity( ent ) == false );
 		BOOST_CHECK( planet.has_entity( ent2 ) == true );
+		BOOST_CHECK( planet.get_entity_id( 0 ) == 2 );
 
 		planet.remove_entity( ent2 );
 		BOOST_CHECK( planet.get_num_entities() == 0 );

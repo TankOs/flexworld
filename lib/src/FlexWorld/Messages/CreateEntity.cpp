@@ -28,7 +28,7 @@ void CreateEntity::serialize( Buffer& buffer ) const {
 	);
 
 	*reinterpret_cast<Planet::Coordinate*>( &buffer[buf_ptr] ) = m_position; buf_ptr += sizeof( m_position );
-	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = m_heading; buf_ptr += sizeof( m_heading );
+	*reinterpret_cast<uint16_t*>( &buffer[buf_ptr] ) = m_heading; buf_ptr += sizeof( m_heading );
 	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_class.size() ); buf_ptr += sizeof( uint8_t );
 	buffer.insert( buffer.end(), m_class.begin(), m_class.end() );
 }
@@ -49,7 +49,7 @@ std::size_t CreateEntity::deserialize( const char* buffer, std::size_t buffer_si
 		return 0;
 	}
 
-	uint8_t heading = *reinterpret_cast<const uint8_t*>( &buffer[buf_ptr] );
+	uint16_t heading = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( heading );
 
 	// Class length.
@@ -84,11 +84,11 @@ const Planet::Coordinate& CreateEntity::get_position() const {
 	return m_position;
 }
 
-void CreateEntity::set_heading( uint8_t heading ) {
+void CreateEntity::set_heading( uint16_t heading ) {
 	m_heading = heading;
 }
 
-uint8_t CreateEntity::get_heading() const {
+uint16_t CreateEntity::get_heading() const {
 	return m_heading;
 }
 

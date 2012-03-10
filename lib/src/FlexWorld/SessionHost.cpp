@@ -241,11 +241,20 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 
 	// Remember entity ID before lock is released.
 	Entity::ID entity_id = account->get_entity_id();
-
 	m_lock_facility.lock_account_manager( false );
 
 	// Remember username.
 	m_player_infos[conn_id].username = login_msg.get_username();
+
+	// Associate entity.
+	m_lock_facility.lock_world( true );
+
+	Entity* entity = m_world.find_entity( entity_id );
+	assert( entity != nullptr );
+
+	m_player_infos[conn_id].entity = entity;
+
+	m_lock_facility.lock_world( false );
 
 	// Everything is good, log the player in!
 	msg::LoginOK ok_msg;
@@ -299,23 +308,42 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	beam_player( conn_id, "construct", sf::Vector3f( 0, 0, 0 ), 0 );
 }
 
-void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, uint16_t angle ) {
+void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
 	assert( conn_id < m_player_infos.size() && m_player_infos[conn_id].connected == true );
 	assert( !planet_id.empty() );
 	assert( position.x >= 0 && position.y >= 0 && position.z >= 0 );
 
-	angle = angle % 360;
+	// Get player info.
 	PlayerInfo& info = m_player_infos[conn_id];
 
 	// Get planet.
 	m_lock_facility.lock_world( true );
 
 	Planet* planet = m_world.find_planet( planet_id );
+	assert( planet != nullptr );
 
 	m_lock_facility.lock_planet( *planet, true );
-	m_lock_facility.lock_world( false );
 
-	assert( planet != nullptr );
+	// Update entity.
+	info.entity->set_position( position );
+	// TODO Angle/heading
+	// TODO Notify players on old planet of entity teleport.
+
+	// Link entity to new planet.
+	m_world.link_entity_to_planet( info.entity->get_id(), planet_id );
+
+	// Save current planet.
+	info.planet = planet;
+
+	// Construct beam message.
+	msg::Beam beam_msg;
+	beam_msg.set_planet_name( planet->get_id() );
+	beam_msg.set_chunk_size( planet->get_chunk_size() );
+	beam_msg.set_planet_size( planet->get_size() );
+	beam_msg.set_position( position );
+	beam_msg.set_heading( heading );
+
+	m_lock_facility.lock_world( false );
 
 	// Transform coord.
 	Planet::Vector chunk_pos( 0, 0, 0 );
@@ -332,19 +360,9 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 	info.view_cuboid.height = std::min( static_cast<Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), m_max_view_radius );
 	info.view_cuboid.depth = std::min( static_cast<Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), m_max_view_radius );
 
-	// Save current planet.
-	info.planet = planet;
-
-	// Send message.
-	msg::Beam beam_msg;
-	beam_msg.set_planet_name( planet->get_id() );
-	beam_msg.set_chunk_size( planet->get_chunk_size() );
-	beam_msg.set_planet_size( planet->get_size() );
-	beam_msg.set_position( sf::Vector3f( 0, 0, 0 ) ); // TODO Set actual position.
-	beam_msg.set_angle( 0 ); // TODO Set actual angle.
-
 	m_lock_facility.lock_planet( *planet, false );
 
+	// Send message.
 	m_server->send_message( beam_msg, conn_id );
 }
 

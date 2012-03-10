@@ -1,6 +1,8 @@
 #include "Shared.hpp"
 
-Shared::Shared() {
+Shared::Shared() :
+	entity_id( 0 )
+{
 }
 
 Shared& Shared::get() {

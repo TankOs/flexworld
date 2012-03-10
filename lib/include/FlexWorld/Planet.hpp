@@ -6,13 +6,11 @@
 #include <FlexWorld/Entity.hpp>
 
 #include <SFML/System/Vector3.hpp>
-#include <map>
 #include <string>
-#include <set>
+#include <map>
+#include <vector>
 
 namespace flex {
-
-class Entity;
 
 /** Planet.
  * Contains chunks and class cache.
@@ -124,6 +122,13 @@ class Planet : public NonCopyable {
 		 */
 		void remove_entity( const Entity& entity );
 
+		/** Get nth entity ID.
+		 * Undefined behaviour if index invalid.
+		 * @param index Index.
+		 * @return Entity ID.
+		 */
+		Entity::ID get_entity_id( std::size_t index ) const;
+
 		/** Get number of entities.
 		 * @return Number of entities.
 		 */
@@ -137,14 +142,14 @@ class Planet : public NonCopyable {
 
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
-		typedef std::set<Entity::ID> EntityIDSet;
+		typedef std::vector<Entity::ID> EntityIDVector;
 
 		Vector m_size;
 		Chunk::Vector m_chunk_size;
 		std::string m_id;
 
 		ChunkMap m_chunks;
-		EntityIDSet m_entities;
+		EntityIDVector m_entities;
 		ClassCache m_class_cache;
 };
 

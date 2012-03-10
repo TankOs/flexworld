@@ -1,6 +1,6 @@
 #include <FlexWorld/Planet.hpp>
-#include <FlexWorld/Class.hpp>// XXX 
 
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -171,16 +171,27 @@ std::size_t Planet::get_num_entities() const {
 
 void Planet::add_entity( const Entity& entity ) {
 	assert( has_entity( entity ) == false );
-	m_entities.insert( entity.get_id() );
+
+	m_entities.push_back( entity.get_id() );
+
+	// Sort to make searched with lower_bound possible.
+	std::sort( m_entities.begin(), m_entities.end() );
 }
 
 bool Planet::has_entity( const Entity& entity ) const {
-	return m_entities.find( entity.get_id() ) != m_entities.end();
+	EntityIDVector::const_iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
+
+	return iter != m_entities.end() && *iter == entity.get_id();
 }
 
 void Planet::remove_entity( const Entity& entity ) {
-	assert( has_entity( entity ) );
-	m_entities.erase( entity.get_id() );
+	assert( has_entity( entity ) == true );
+
+	EntityIDVector::iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
+
+	if( iter != m_entities.end() && *iter == entity.get_id() ) {
+		m_entities.erase( iter );
+	}
 }
 
 const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position ) const {
@@ -191,6 +202,12 @@ const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position )
 
 	ChunkMap::const_iterator iter( m_chunks.find( position ) );
 	return iter->second->get_raw_data();
+}
+
+Entity::ID Planet::get_entity_id( std::size_t index ) const {
+	assert( index < m_entities.size() );
+
+	return m_entities[index];
 }
 
 }

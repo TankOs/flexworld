@@ -8,6 +8,7 @@
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/NonCopyable.hpp>
+#include <FlexWorld/Entity.hpp>
 #include <boost/thread.hpp>
 #include <memory>
 
@@ -31,6 +32,8 @@ class Shared : public flex::NonCopyable {
 		std::unique_ptr<flex::AccountManager> account_manager; ///< Account manager.
 		std::unique_ptr<flex::LockFacility> lock_facility; ///< Lock facility.
 		std::unique_ptr<flex::World> world; ///< World.
+
+		flex::Entity::ID entity_id; ///< The player's own entity ID.
 
 	private:
 		Shared();

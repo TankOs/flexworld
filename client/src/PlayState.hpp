@@ -62,7 +62,6 @@ class PlayState : public State, flex::Client::Handler {
 
 		sf::Texture m_sun_texture;
 		std::unique_ptr<Sky> m_sky;
-		//std::unique_ptr<PlanetRenderer> m_planet_renderer;
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;
@@ -90,4 +89,7 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_walk_backward;
 		bool m_strafe_left;
 		bool m_strafe_right;
+
+		// State.
+		bool m_my_entity_received;
 };
