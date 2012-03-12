@@ -49,6 +49,7 @@ class PlayState : public State, flex::Client::Handler {
 		// UI.
 		sfg::Desktop m_desktop;
 		Console::Ptr m_console;
+		bool m_has_focus;
 
 		sf::Text m_fps_text;
 

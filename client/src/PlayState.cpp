@@ -17,6 +17,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
 	m_console( Console::Create() ),
+	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
@@ -164,6 +165,14 @@ void PlayState::handle_event( const sf::Event& event ) {
 		}
 	}
 
+	// Check for LostFocus and GainedFocus
+	if( event.Type == sf::Event::LostFocus ) {
+		m_has_focus = false;
+	}
+	else if( event.Type == sf::Event::GainedFocus ) {
+		m_has_focus = true;
+	}
+
 	// Check for movement keys.
 	if( event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased ) {
 		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.key.code );
@@ -219,7 +228,7 @@ void PlayState::update( const sf::Time& delta ) {
 
 	bool eyepoint_changed = false;
 
-	if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+	if( m_has_focus && ( mouse_delta.x != 0 || mouse_delta.y != 0 ) ) {
 		// Rotate camera.
 		m_camera.turn(
 			sf::Vector3f(
