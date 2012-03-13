@@ -46,4 +46,17 @@ void Console::add_message( const sf::String& msg ) {
 	align->Add( new_line );
 
 	m_lines_box->Pack( align, false, false );
+
+	OnMessageAdd();
+}
+
+std::size_t Console::get_num_messages() const {
+	return m_lines_box->GetChildren().size();
+}
+
+const sf::String& Console::get_message( std::size_t index ) const {
+	sfg::Alignment::PtrConst align = sfg::DynamicPointerCast<sfg::Alignment>( m_lines_box->GetChildren()[index] );
+	sfg::Label::Ptr label = sfg::DynamicPointerCast<sfg::Label>( align->GetChildren()[0] );
+
+	return label->GetText();
 }

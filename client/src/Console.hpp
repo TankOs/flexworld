@@ -19,6 +19,19 @@ class Console : public sfg::Window {
 		 */
 		void add_message( const sf::String& msg );
 
+		/** Get number of messages.
+		 * @return Number of messages.
+		 */
+		std::size_t get_num_messages() const;
+
+		/** Get message.
+		 * @param index Index.
+		 * @return Message.
+		 */
+		const sf::String& get_message( std::size_t index ) const;
+
+		sfg::Signal OnMessageAdd; ///< Fired when message is added.
+
 	private:
 		Console();
 

@@ -41,6 +41,9 @@ class PlayState : public State, flex::Client::Handler {
 		void stop_and_wait_for_chunk_preparation_thread();
 		void prepare_chunks();
 
+		void on_console_message_add();
+		void update_latest_messages();
+
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
 
@@ -52,6 +55,9 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_has_focus;
 
 		sf::Text m_fps_text;
+
+		std::vector<sf::Text> m_latest_messages;
+		sf::Clock m_message_timer;
 
 		// Resources.
 		ResourceManager m_resource_manager;

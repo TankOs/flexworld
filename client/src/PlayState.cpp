@@ -12,6 +12,8 @@
 #include <FWSG/WireframeState.hpp>
 #include <sstream>
 
+static const sf::Time MESSAGE_DELAY = sf::milliseconds( 2000 );
+static const float MESSAGE_SPACING = 5.f;
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -53,6 +55,7 @@ void PlayState::init() {
 		)
 	);
 
+	m_console->OnMessageAdd.Connect( &PlayState::on_console_message_add, this );
 	m_console->add_message( "Press F11 to show/hide the console." );
 	m_console->Show( false );
 
@@ -162,6 +165,9 @@ void PlayState::handle_event( const sf::Event& event ) {
 		else if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
 			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
+		}
+		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
+			m_console->add_message( L"Screenshot saved." );
 		}
 	}
 
@@ -302,8 +308,22 @@ void PlayState::update( const sf::Time& delta ) {
 		;
 
 		m_fps_text.setString( sstr.str() );
+		m_fps_text.setPosition(
+			static_cast<float>( get_render_target().getSize().x ) - m_fps_text.getGlobalBounds().width,
+			static_cast<float>( get_render_target().getSize().y ) - m_fps_text.getGlobalBounds().height
+		);
 
 		elapsed = sf::Time::Zero;
+	}
+
+	// Remove latest messages.
+	if( m_message_timer.getElapsedTime() >= MESSAGE_DELAY ) {
+		m_message_timer.restart();
+
+		if( m_latest_messages.size() > 0 ) {
+			m_latest_messages.erase( m_latest_messages.begin() );
+			update_latest_messages();
+		}
 	}
 
 	// Finalize previously prepared textures.
@@ -349,10 +369,18 @@ void PlayState::render() const {
 
 	target.pushGLStates();
 
+	// Latest messages.
+	for( std::size_t msg_idx = 0; msg_idx < m_latest_messages.size(); ++msg_idx ) {
+		target.draw( m_latest_messages[msg_idx] );
+	}
+
 	// FPS.
 	target.draw( m_fps_text );
 
 	// Render GUI.
+	glMatrixMode( GL_MODELVIEW ); // Fix for SFGUI.
+	glLoadIdentity();
+
 	sfg::Renderer::Get().Display( target );
 
 	target.display();
@@ -571,4 +599,26 @@ void PlayState::stop_and_wait_for_chunk_preparation_thread() {
 	m_prepare_chunks_thread->join();
 
 	m_prepare_chunks_thread.reset();
+}
+
+void PlayState::update_latest_messages() {
+	float y = MESSAGE_SPACING;
+
+	for( std::size_t msg_idx = 0; msg_idx < m_latest_messages.size(); ++msg_idx ) {
+		if( msg_idx > 0 ) {
+			y += m_latest_messages[msg_idx - 1].getGlobalBounds().height + MESSAGE_SPACING;
+		}
+
+		m_latest_messages[msg_idx].setPosition( MESSAGE_SPACING, y );
+	}
+}
+
+void PlayState::on_console_message_add() {
+	m_message_timer.restart();
+
+	const sf::String& string = m_console->get_message( m_console->get_num_messages() - 1 );
+	sf::Text text( string, sf::Font::getDefaultFont(), 12 );
+
+	m_latest_messages.push_back( text );
+	update_latest_messages();
 }

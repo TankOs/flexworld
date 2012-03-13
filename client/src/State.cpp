@@ -84,9 +84,9 @@ State* State::run() {
 				sf::Image screenshot( get_render_target().capture() );
 				screenshot.saveToFile( filename );
 			}
-			else {
-				handle_event( event );
-			}
+
+			// Give event to state.
+			handle_event( event );
 		}
 
 		elapsed = clock.restart();
