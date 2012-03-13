@@ -166,10 +166,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 	}
 
 	// Check for LostFocus and GainedFocus
-	if( event.Type == sf::Event::LostFocus ) {
+	if( event.type == sf::Event::LostFocus ) {
 		m_has_focus = false;
 	}
-	else if( event.Type == sf::Event::GainedFocus ) {
+	else if( event.type == sf::Event::GainedFocus ) {
 		m_has_focus = true;
 	}
 
