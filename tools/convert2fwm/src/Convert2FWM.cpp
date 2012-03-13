@@ -31,29 +31,29 @@ void print_usage() {
 
 void update_coverage( sf::FloatRect& coverage_rect, const sf::Vector2f& min, const sf::Vector2f& max ) {
 	// Check if coverage rect hasn't been initialized yet.
-	if( coverage_rect.Width == 0 && coverage_rect.Height == 0 ) {
-		coverage_rect.Left = min.x;
-		coverage_rect.Top = min.y;
-		coverage_rect.Width = max.x - min.x;
-		coverage_rect.Height = max.y - min.y;
+	if( coverage_rect.width == 0 && coverage_rect.height == 0 ) {
+		coverage_rect.left = min.x;
+		coverage_rect.top = min.y;
+		coverage_rect.width = max.x - min.x;
+		coverage_rect.height = max.y - min.y;
 	}
 	else {
 		// Check if triangle is right of/at the coverage box.
-		if( min.x >= coverage_rect.Left ) {
-			coverage_rect.Width = std::max( coverage_rect.Width, max.x - coverage_rect.Left );
+		if( min.x >= coverage_rect.left ) {
+			coverage_rect.width = std::max( coverage_rect.width, max.x - coverage_rect.left );
 		}
 		else { // Move coverage box and enlarge to cover previous polygons.
-			coverage_rect.Width += coverage_rect.Left - min.x;
-			coverage_rect.Left -= coverage_rect.Left - min.x;
+			coverage_rect.width += coverage_rect.left - min.x;
+			coverage_rect.left -= coverage_rect.left - min.x;
 		}
 
 		// Check if triangle is below of/at the coverage box.
-		if( min.y >= coverage_rect.Top ) {
-			coverage_rect.Height = std::max( coverage_rect.Height, max.y - coverage_rect.Top );
+		if( min.y >= coverage_rect.top ) {
+			coverage_rect.height = std::max( coverage_rect.height, max.y - coverage_rect.top );
 		}
 		else { // Move coverage box and enlarge to cover previous polygons.
-			coverage_rect.Height += coverage_rect.Top - min.y;
-			coverage_rect.Top -= coverage_rect.Top - min.y;
+			coverage_rect.height += coverage_rect.top - min.y;
+			coverage_rect.top -= coverage_rect.top - min.y;
 		}
 	}
 }
@@ -412,9 +412,9 @@ int main( int argc, char** argv ) {
 	// Reset coverage rects that do not really cover the full rect.
 	for( int face_idx = 0; face_idx < flex::NUM_FACES; ++face_idx ) {
 		sf::FloatRect& rect = coverage_rects[face_idx];
-		float diff = flex::calc_rect_area( rect.Width, rect.Height ) - areas[face_idx];
+		float diff = flex::calc_rect_area( rect.width, rect.height ) - areas[face_idx];
 
-		if( rect.Width == 0.0f || diff > AREA_DIFFERENCE_TOLERANCE ) {
+		if( rect.width == 0.0f || diff > AREA_DIFFERENCE_TOLERANCE ) {
 			rect = sf::FloatRect( 0, 0, 0, 0 );
 		}
 
@@ -463,12 +463,12 @@ int main( int argc, char** argv ) {
 			<< ", " << num_total_triangles << " triangle" << (num_total_triangles > 1 ? "s" : "")
 			<< ", block scale divisor " << scale_divisor
 			<< ", coverage "
-			<< (coverage_rects[flex::UP_FACE].Width > 0.0f ? "U" : "")
-			<< (coverage_rects[flex::DOWN_FACE].Width > 0.0f ? "D" : "")
-			<< (coverage_rects[flex::BACK_FACE].Width > 0.0f ? "B" : "")
-			<< (coverage_rects[flex::RIGHT_FACE].Width > 0.0f ? "R" : "")
-			<< (coverage_rects[flex::FRONT_FACE].Width > 0.0f ? "F" : "")
-			<< (coverage_rects[flex::LEFT_FACE].Width > 0.0f ? "L" : "")
+			<< (coverage_rects[flex::UP_FACE].width > 0.0f ? "U" : "")
+			<< (coverage_rects[flex::DOWN_FACE].width > 0.0f ? "D" : "")
+			<< (coverage_rects[flex::BACK_FACE].width > 0.0f ? "B" : "")
+			<< (coverage_rects[flex::RIGHT_FACE].width > 0.0f ? "R" : "")
+			<< (coverage_rects[flex::FRONT_FACE].width > 0.0f ? "F" : "")
+			<< (coverage_rects[flex::LEFT_FACE].width > 0.0f ? "L" : "")
 			<< std::endl
 			<< "Bounding box: " << bounding_box.x << ", " << bounding_box.y << ", " << bounding_box.z
 			<< " / " << bounding_box.width << " * " << bounding_box.height << " * " << bounding_box.depth

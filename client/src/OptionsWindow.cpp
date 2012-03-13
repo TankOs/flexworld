@@ -228,22 +228,22 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Add resolutions.
 	std::size_t combo_idx = 0;
 
-	for( std::size_t reso_idx = 0; reso_idx < sf::VideoMode::GetFullscreenModes().size(); ++reso_idx ) {
-		const sf::VideoMode& mode = sf::VideoMode::GetFullscreenModes()[reso_idx];
+	for( std::size_t reso_idx = 0; reso_idx < sf::VideoMode::getFullscreenModes().size(); ++reso_idx ) {
+		const sf::VideoMode& mode = sf::VideoMode::getFullscreenModes()[reso_idx];
 
 		if(
-			mode.BitsPerPixel == sf::VideoMode::GetDesktopMode().BitsPerPixel &&
-			mode.Width >= 800 &&
-			mode.Height >= 600
+			mode.bitsPerPixel == sf::VideoMode::getDesktopMode().bitsPerPixel &&
+			mode.width >= 800 &&
+			mode.height >= 600
 		) {
 			std::stringstream sstr;
-			sstr << mode.Width << " x " << mode.Height;
+			sstr << mode.width << " x " << mode.height;
 
 			window->m_resolution_combo->AppendItem( sstr.str() );
 
 			if(
-				mode.Width == window->m_user_settings.get_video_mode().Width &&
-				mode.Height == window->m_user_settings.get_video_mode().Height
+				mode.width == window->m_user_settings.get_video_mode().width &&
+				mode.height == window->m_user_settings.get_video_mode().height
 			) {
 				window->m_resolution_combo->SelectItem( combo_idx );
 			}
@@ -288,7 +288,7 @@ void OptionsWindow::on_ok_click() {
 
 		sstr >> width >> skip >> height;
 
-		m_user_settings.set_video_mode( sf::VideoMode( width, height, sf::VideoMode::GetDesktopMode().BitsPerPixel ) );
+		m_user_settings.set_video_mode( sf::VideoMode( width, height, sf::VideoMode::getDesktopMode().bitsPerPixel ) );
 	}
 
 	OnAccept();
@@ -305,20 +305,20 @@ bool OptionsWindow::is_event_processed() const {
 void OptionsWindow::HandleEvent( const sf::Event& event ) {
 	m_event_processed = false;
 
-	if( m_next_action != Controls::UNMAPPED && (event.Type == sf::Event::MouseButtonPressed || event.Type == sf::Event::KeyPressed) ) {
+	if( m_next_action != Controls::UNMAPPED && (event.type == sf::Event::MouseButtonPressed || event.type == sf::Event::KeyPressed) ) {
 		// Mark every key press and mouse button event as processed if waiting for an
 		// action mapping.
 		m_event_processed = true;
 
 		// Map key/button.
-		if( event.Type == sf::Event::KeyPressed ) {
+		if( event.type == sf::Event::KeyPressed ) {
 			// Do not process ESC, as it cancels the binding.
-			if( event.Key.Code != sf::Keyboard::Escape ) {
-				m_user_settings.get_controls().map_key( event.Key.Code, m_next_action );
+			if( event.key.code != sf::Keyboard::Escape ) {
+				m_user_settings.get_controls().map_key( event.key.code, m_next_action );
 			}
 		}
 		else {
-			m_user_settings.get_controls().map_button( event.MouseButton.Button, m_next_action );
+			m_user_settings.get_controls().map_button( event.mouseButton.button, m_next_action );
 		}
 
 		// Update labels (need to update all because another mapping might got

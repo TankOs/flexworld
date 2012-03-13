@@ -47,8 +47,8 @@ void PlayState::init() {
 		sf::FloatRect(
 			0,
 			0,
-			static_cast<float>( get_render_target().GetWidth() ),
-			static_cast<float>( get_render_target().GetHeight() ) * .3f
+			static_cast<float>( get_render_target().getSize().x ),
+			static_cast<float>( get_render_target().getSize().y ) * .3f
 		)
 	);
 
@@ -56,21 +56,21 @@ void PlayState::init() {
 	m_console->Show( false );
 
 	// Setup UI.
-	m_fps_text.SetCharacterSize( 12 );
+	m_fps_text.setCharacterSize( 12 );
 
 	// Setup scene.
 	// Sky.
 	m_sky.reset( new Sky );
 	m_sky->set_camera( m_camera );
 
-	m_sun_texture.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
-	m_sun_texture.SetSmooth( true );
+	m_sun_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
+	m_sun_texture.setSmooth( true );
 	m_sky->set_sun_texture( m_sun_texture );
 
 	// Setup camera.
 	m_camera.set_fov( get_shared().user_settings.get_fov() );
 	m_camera.set_aspect_ratio(
-		static_cast<float>( get_render_target().GetWidth() ) / static_cast<float>( get_render_target().GetHeight() )
+		static_cast<float>( get_render_target().getSize().x ) / static_cast<float>( get_render_target().getSize().y )
 	);
 	m_camera.set_pitch_clamp( 90.f );
 	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
@@ -96,7 +96,7 @@ void PlayState::init() {
 	glLoadIdentity();
 
 	// Misc.
-	get_render_target().ShowMouseCursor( false );
+	get_render_target().setMouseCursorVisible( false );
 
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
@@ -139,37 +139,37 @@ void PlayState::cleanup() {
 	glMatrixMode( GL_PROJECTION );
 	glPopMatrix();
 
-	get_render_target().ShowMouseCursor( true );
+	get_render_target().setMouseCursorVisible( true );
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
 	bool give_gui = true;
 
 	if(
-		event.Type == sf::Event::Closed ||
-		(event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape)
+		event.type == sf::Event::Closed ||
+		(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 	) {
 		leave( new MenuState( get_render_target() ) );
 		give_gui = false;
 	}
 
-	if( event.Type == sf::Event::KeyPressed ) {
-		if( event.Key.Code == sf::Keyboard::F11 ) {
+	if( event.type == sf::Event::KeyPressed ) {
+		if( event.key.code == sf::Keyboard::F11 ) {
 			m_console->Show( !m_console->IsVisible() );
 			give_gui = false;
 		}
-		else if( event.Key.Code == sf::Keyboard::F3 ) { // Toggle wireframe.
+		else if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
 			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 	}
 
 	// Check for movement keys.
-	if( event.Type == sf::Event::KeyPressed || event.Type == sf::Event::KeyReleased ) {
-		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.Key.Code );
+	if( event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased ) {
+		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.key.code );
 
 		if( action != Controls::UNMAPPED ) {
-			bool pressed = (event.Type == sf::Event::KeyPressed) ? true : false;
+			bool pressed = (event.type == sf::Event::KeyPressed) ? true : false;
 			give_gui = false;
 
 			if( action == Controls::WALK_FORWARD ) {
@@ -203,17 +203,17 @@ void PlayState::update( const sf::Time& delta ) {
 	m_sky->set_time_of_day( 0.1f );
 
 	// Update GUI.
-	m_desktop.Update( delta.AsSeconds() );
+	m_desktop.Update( delta.asSeconds() );
 
 	// Get mouse movement.
 	sf::Vector2i mouse_delta(
-		sf::Mouse::GetPosition( get_render_target() ) -
-		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 )
+		sf::Mouse::getPosition( get_render_target() ) -
+		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
 	);
 
 	// Reset mouse.
-	sf::Mouse::SetPosition(
-		sf::Vector2i( get_render_target().GetWidth() / 2, get_render_target().GetHeight() / 2 ),
+	sf::Mouse::setPosition(
+		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
 		get_render_target()
 	);
 
@@ -253,12 +253,12 @@ void PlayState::update( const sf::Time& delta ) {
 	}
 
 	if( m_velocity.z != 0 ) {
-		m_camera.walk( (m_velocity.z * 4.0f) * delta.AsSeconds() );
+		m_camera.walk( (m_velocity.z * 4.0f) * delta.asSeconds() );
 		eyepoint_changed = true;
 	}
 
 	if( m_velocity.x != 0 ) {
-		m_camera.strafe( (m_velocity.x * 4.0f) * delta.AsSeconds() );
+		m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
 		eyepoint_changed = true;
 	}
 
@@ -282,7 +282,7 @@ void PlayState::update( const sf::Time& delta ) {
 	
 	elapsed += delta;
 
-	if( elapsed >= sf::Microseconds( 1000000 / 2 ) ) {
+	if( elapsed >= sf::microseconds( 1000000 / 2 ) ) {
 		std::stringstream sstr;
 		sstr
 			<< "FPS renderer/logic: "
@@ -292,7 +292,7 @@ void PlayState::update( const sf::Time& delta ) {
 			<< get_logic_fps()
 		;
 
-		m_fps_text.SetString( sstr.str() );
+		m_fps_text.setString( sstr.str() );
 
 		elapsed = sf::Time::Zero;
 	}
@@ -338,18 +338,18 @@ void PlayState::render() const {
 	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 
-	target.PushGLStates();
+	target.pushGLStates();
 
 	// FPS.
-	target.Draw( m_fps_text );
+	target.draw( m_fps_text );
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( target );
 
-	target.Display();
+	target.display();
 
 	// Restore SFML's states and render everything.
-	target.PopGLStates();
+	target.popGLStates();
 
 }
 

@@ -54,10 +54,10 @@ const sf::FloatRect& Model::get_face_coverage( Face face ) const {
 
 void Model::set_face_coverage( Face face, const sf::FloatRect& coverage ) {
 	assert( face < NUM_FACES && face >= 0 );
-	assert( coverage.Left >= 0.0f );
-	assert( coverage.Top >= 0.0f );
-	assert( coverage.Width >= 0.0f );
-	assert( coverage.Height >= 0.0f );
+	assert( coverage.left >= 0.0f );
+	assert( coverage.top >= 0.0f );
+	assert( coverage.width >= 0.0f );
+	assert( coverage.height >= 0.0f );
 
 	m_coverages[face] = coverage;
 }

@@ -135,10 +135,10 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 
 		// Check.
 		if(
-			coverage_rects[face].Left < 0.0f ||
-			coverage_rects[face].Top < 0.0f ||
-			coverage_rects[face].Width < 0.0f ||
-			coverage_rects[face].Height < 0.0f
+			coverage_rects[face].left < 0.0f ||
+			coverage_rects[face].top < 0.0f ||
+			coverage_rects[face].width < 0.0f ||
+			coverage_rects[face].height < 0.0f
 		) {
 			throw DeserializationException( "Wrong face coverage rect." );
 		}

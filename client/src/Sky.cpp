@@ -70,7 +70,7 @@ void Sky::render() const {
 
 	// Render sun.
 	if( m_sun_texture ) {
-		m_sun_texture->Bind();
+		m_sun_texture->bind();
 	}
 
 	glColor3f( 1, 1, 1 );

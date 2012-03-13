@@ -24,11 +24,11 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 	// Create texture and load image into it.
 	TexturePtr texture( new sf::Texture );
 
-	if( !texture->LoadFromFile( m_base_path + id.as_path() ) ) {
+	if( !texture->loadFromFile( m_base_path + id.as_path() ) ) {
 		return false;
 	}
 
-	texture->SetSmooth( true );
+	texture->setSmooth( true );
 
 	{
 		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
@@ -152,7 +152,7 @@ bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
 	// Create new image and try to load.
 	ImagePtr image( new sf::Image );
 
-	if( !image->LoadFromFile( m_base_path + id.as_path() ) ) {
+	if( !image->loadFromFile( m_base_path + id.as_path() ) ) {
 		return false;
 	}
 
@@ -177,8 +177,8 @@ void ResourceManager::finalize_prepared_textures() {
 	PreparedTextureMap::iterator tex_iter_end( m_prepared_textures.end() );
 	
 	for( ; tex_iter != tex_iter_end; ++tex_iter ) {
-		m_textures[tex_iter->first]->LoadFromImage( *tex_iter->second );
-		m_textures[tex_iter->first]->SetSmooth( true );
+		m_textures[tex_iter->first]->loadFromImage( *tex_iter->second );
+		m_textures[tex_iter->first]->setSmooth( true );
 	}
 
 	m_prepared_textures.clear();

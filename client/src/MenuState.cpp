@@ -100,21 +100,21 @@ void MenuState::init() {
 	m_window->SetRequisition( sf::Vector2f( 400.f, 0.f ) );
 	m_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_window->GetAllocation().width / 2.f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_window->GetAllocation().height / 2.f
 		)
 	);
 
 	// Init clouds.
 	sf::Image image;
-	image.LoadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
-	m_cloud_texture.LoadFromImage( image );
+	image.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
+	m_cloud_texture.loadFromImage( image );
 
 	for( uint8_t cloud_index = 0; cloud_index < 25; ++cloud_index ) {
 		uint8_t num_parts( static_cast<uint8_t>( std::rand() % (10 - 4) + 5 ) );
 		sf::Vector2f cloud_position(
-			static_cast<float>( std::rand() % get_render_target().GetWidth() ),
-			static_cast<float>( std::rand() % get_render_target().GetHeight() )
+			static_cast<float>( std::rand() % get_render_target().getSize().x ),
+			static_cast<float>( std::rand() % get_render_target().getSize().y )
 		);
 
 		for( uint8_t part_index = 0; part_index < num_parts; ++part_index ) {
@@ -126,11 +126,11 @@ void MenuState::init() {
 			);
 
 			sf::Sprite cloud_sprite( m_cloud_texture );
-			cloud_sprite.SetOrigin( static_cast<float>( m_cloud_texture.GetWidth() / 2 ), static_cast<float>( m_cloud_texture.GetHeight() / 2 ) );
-			cloud_sprite.SetPosition( cloud_position.x + offset.x, cloud_position.y + offset.y );
-			cloud_sprite.SetScale( scale, scale );
-			cloud_sprite.SetRotation( angle );
-			cloud_sprite.SetColor( sf::Color( 255, 255, 255, 40 ) );
+			cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getWidth() / 2 ), static_cast<float>( m_cloud_texture.getHeight() / 2 ) );
+			cloud_sprite.setPosition( cloud_position.x + offset.x, cloud_position.y + offset.y );
+			cloud_sprite.setScale( scale, scale );
+			cloud_sprite.setRotation( angle );
+			cloud_sprite.setColor( sf::Color( 255, 255, 255, 40 ) );
 
 			m_cloud_sprites.push_back( cloud_sprite );
 		}
@@ -142,7 +142,7 @@ void MenuState::init() {
 	get_shared().lock_facility.reset();
 	get_shared().world.reset();
 
-	get_render_target().ResetGLStates();
+	get_render_target().resetGLStates();
 }
 
 void MenuState::cleanup() {
@@ -156,11 +156,11 @@ void MenuState::handle_event( const sf::Event& event ) {
 		return;
 	}
 
-	if( event.Type == sf::Event::Closed ) {
+	if( event.type == sf::Event::Closed ) {
 		leave();
 	}
 
-	if( (event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape) ) {
+	if( (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) ) {
 		if( m_options_window ) {
 			on_options_reject();
 		}
@@ -174,21 +174,21 @@ void MenuState::handle_event( const sf::Event& event ) {
 }
 
 void MenuState::update( const sf::Time& delta ) {
-	float seconds( delta.AsSeconds() );
+	float seconds( delta.asSeconds() );
 
 	// Move clouds.
 	SpriteList::iterator cloud_iter( m_cloud_sprites.begin() );
 	SpriteList::iterator cloud_iter_end( m_cloud_sprites.end() );
 
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		cloud_iter->Move( seconds * 10.f, seconds * -5.f );
+		cloud_iter->move( seconds * 10.f, seconds * -5.f );
 
-		if( cloud_iter->GetGlobalBounds().Left >= static_cast<float>( get_render_target().GetWidth() ) ) {
-			cloud_iter->Move( -static_cast<float>( get_render_target().GetWidth() ) - cloud_iter->GetGlobalBounds().Width, 0.f );
+		if( cloud_iter->getGlobalBounds().left >= static_cast<float>( get_render_target().getSize().x ) ) {
+			cloud_iter->move( -static_cast<float>( get_render_target().getSize().x ) - cloud_iter->getGlobalBounds().width, 0.f );
 		}
 
-		if( cloud_iter->GetGlobalBounds().Top + cloud_iter->GetGlobalBounds().Height <= 0.f ) {
-			cloud_iter->Move( 0.f, static_cast<float>( get_render_target().GetHeight() ) + cloud_iter->GetGlobalBounds().Height );
+		if( cloud_iter->getGlobalBounds().top + cloud_iter->getGlobalBounds().height <= 0.f ) {
+			cloud_iter->move( 0.f, static_cast<float>( get_render_target().getSize().y ) + cloud_iter->getGlobalBounds().height );
 		}
 	}
 
@@ -199,20 +199,20 @@ void MenuState::update( const sf::Time& delta ) {
 void MenuState::render() const {
 	sf::RenderWindow& window( get_render_target() );
 
-	window.Clear( sf::Color( 0x12, 0x34, 0x56 ) );
+	window.clear( sf::Color( 0x12, 0x34, 0x56 ) );
 
 	// Clouds.
 	SpriteList::const_iterator cloud_iter( m_cloud_sprites.begin() );
 	SpriteList::const_iterator cloud_iter_end( m_cloud_sprites.end() );
 
 	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		window.Draw( *cloud_iter );
+		window.draw( *cloud_iter );
 	}
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( window );
 
-	window.Display();
+	window.display();
 }
 
 void MenuState::on_options_click() {
@@ -226,8 +226,8 @@ void MenuState::on_options_click() {
 
 	m_options_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_options_window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_options_window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_options_window->GetAllocation().width / 2.f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_options_window->GetAllocation().height / 2.f
 		)
 	);
 
@@ -247,8 +247,8 @@ void MenuState::on_start_game_click() {
 
 	m_start_game_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_start_game_window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_start_game_window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_start_game_window->GetAllocation().width / 2.f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_start_game_window->GetAllocation().height / 2.f
 		)
 	);
 
@@ -307,14 +307,14 @@ void MenuState::on_options_accept() {
 	check_required_settings();
 
 	// Apply resolution.
-	get_render_target().Create(
+	get_render_target().create(
 		get_shared().user_settings.get_video_mode(),
 		"FlexWorld",
 		get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
 	);
 
 	// Apply vsync setting.
-	get_render_target().EnableVerticalSync( get_shared().user_settings.is_vsync_enabled() );
+	get_render_target().setVerticalSyncEnabled( get_shared().user_settings.is_vsync_enabled() );
 
 	// Restart menu state.
 	leave( new MenuState( get_render_target() ) );

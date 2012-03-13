@@ -30,8 +30,8 @@ void ConnectState::init() {
 	m_info_window->SetRequisition( sf::Vector2f( 400.f, 200.f ) );
 	m_info_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().GetWidth() ) / 2.f - m_info_window->GetAllocation().Width / 2.f,
-			static_cast<float>( get_render_target().GetHeight() ) / 2.f - m_info_window->GetAllocation().Height / 2.f
+			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_info_window->GetAllocation().width / 2.f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_info_window->GetAllocation().height / 2.f
 		)
 	);
 
@@ -86,7 +86,7 @@ void ConnectState::cleanup() {
 }
 
 void ConnectState::handle_event( const sf::Event& event ) {
-	if( event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape ) {
+	if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape ) {
 		m_canceled = true;
 		leave( new MenuState( get_render_target() ) );
 	}
@@ -108,18 +108,18 @@ void ConnectState::update( const sf::Time& delta ) {
 		m_next_info_text.clear();
 	}
 
-	m_desktop.Update( delta.AsSeconds() );
+	m_desktop.Update( delta.asSeconds() );
 }
 
 void ConnectState::render() const {
 	sf::RenderWindow& window( get_render_target() );
 
-	window.Clear();
+	window.clear();
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( window );
 
-	window.Display();
+	window.display();
 }
 
 void ConnectState::connect_func() {

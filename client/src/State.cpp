@@ -45,9 +45,9 @@ State* State::run() {
 
 	while( m_run ) {
 		// Process events.
-		while( m_render_target.PollEvent( event ) ) {
+		while( m_render_target.pollEvent( event ) ) {
 			// Check for F12 (screenshot).
-			if( event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::F12 ) {
+			if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F12 ) {
 				// Construct base filename with date and time.
 				boost::posix_time::ptime now( boost::posix_time::second_clock::local_time() );
 
@@ -81,15 +81,15 @@ State* State::run() {
 				} while( in.is_open() );
 
 				// Save.
-				sf::Image screenshot( get_render_target().Capture() );
-				screenshot.SaveToFile( filename );
+				sf::Image screenshot( get_render_target().capture() );
+				screenshot.saveToFile( filename );
 			}
 			else {
 				handle_event( event );
 			}
 		}
 
-		elapsed = clock.Restart();
+		elapsed = clock.restart();
 
 		logic_elapsed += elapsed;
 		render_elapsed += elapsed;
@@ -99,14 +99,14 @@ State* State::run() {
 		if( logic_elapsed < m_logic_interval && render_elapsed < m_render_interval ) {
 			sf::Time wait_time( std::min( m_logic_interval - logic_elapsed, m_render_interval - render_elapsed ) );
 
-			sf::Sleep( wait_time );
+			sf::sleep( wait_time );
 
 			logic_elapsed += wait_time;
 			render_elapsed += wait_time;
 			fps_elapsed += wait_time;
 
 			// We don't want the wait time to be added to the elapsed time again later.
-			clock.Restart();
+			clock.restart();
 		}
 
 		// Logics. Run until all remaining slices have been updated. In case longer
@@ -129,7 +129,7 @@ State* State::run() {
 		}
 
 		// Update FPS.
-		if( fps_elapsed >= sf::Microseconds( 1000000 ) ) {
+		if( fps_elapsed >= sf::microseconds( 1000000 ) ) {
 			m_render_fps = current_render_fps;
 			m_logic_fps = current_logic_fps;
 
@@ -147,12 +147,12 @@ State* State::run() {
 
 void State::set_logic_fps( uint16_t fps ) {
 	assert( fps > 0 );
-	m_logic_interval = sf::Microseconds( 1000000 / fps );
+	m_logic_interval = sf::microseconds( 1000000 / fps );
 }
 
 void State::set_render_fps( uint16_t fps ) {
 	assert( fps > 0 );
-	m_render_interval = sf::Microseconds( 1000000 / fps );
+	m_render_interval = sf::microseconds( 1000000 / fps );
 }
 
 void State::leave( State* state ) {

@@ -21,7 +21,7 @@ std::string UserSettings::get_profile_path() {
 }
 
 UserSettings::UserSettings() :
-	m_video_mode( sf::VideoMode::GetDesktopMode() ),
+	m_video_mode( sf::VideoMode::getDesktopMode() ),
 	m_fps_limit( 60 ),
 	m_fov( 60 ),
 	m_vsync( false ),
@@ -216,9 +216,9 @@ bool UserSettings::save( const std::string& filename ) {
 			emitter << EndMap
 			<< Key << "Video" << Value << BeginMap
 				<< Key << "Resolution" << Value << BeginSeq
-					<< static_cast<int>( get_video_mode().Width )
-					<< static_cast<int>( get_video_mode().Height )
-					<< static_cast<int>( get_video_mode().BitsPerPixel )
+					<< static_cast<int>( get_video_mode().width )
+					<< static_cast<int>( get_video_mode().height )
+					<< static_cast<int>( get_video_mode().bitsPerPixel )
 				<< EndSeq
 				<< Key << "Fullscreen" << Value << is_fullscreen_enabled()
 				<< Key << "VSync" << Value << is_vsync_enabled()

@@ -17,8 +17,8 @@ void IntroState::cleanup() {
 
 void IntroState::handle_event( const sf::Event& event ) {
 	if(
-		event.Type == sf::Event::Closed ||
-		(event.Type == sf::Event::KeyPressed && event.Key.Code == sf::Keyboard::Escape)
+		event.type == sf::Event::Closed ||
+		(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 	) {
 		leave( new MenuState( get_render_target() ) );
 	}
@@ -27,7 +27,7 @@ void IntroState::handle_event( const sf::Event& event ) {
 void IntroState::update( const sf::Time& delta ) {
 	m_elapsed += delta;
 
-	if( m_elapsed.AsMilliseconds() >= 100 ) {
+	if( m_elapsed.asMilliseconds() >= 100 ) {
 		leave( new MenuState( get_render_target() ) );
 	}
 }
@@ -35,10 +35,10 @@ void IntroState::update( const sf::Time& delta ) {
 void IntroState::render() const {
 	sf::RenderWindow& window( get_render_target() );
 
-	window.Clear();
+	window.clear();
 
 	sf::Text text( "FlexWorld" );
-	window.Draw( text );
+	window.draw( text );
 
-	window.Display();
+	window.display();
 }

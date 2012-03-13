@@ -72,7 +72,7 @@ void Client::run() {
 	}
 
 	// Setup window.
-	m_window.Create(
+	m_window.create(
 		Shared::get().user_settings.get_video_mode(),
 		"",
 		Shared::get().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
@@ -87,10 +87,10 @@ void Client::run() {
 			<< flex::VERSION_SUFFIX
 		;
 
-		m_window.SetTitle( sstr.str() );
+		m_window.setTitle( sstr.str() );
 	}
 
-	m_window.EnableVerticalSync( Shared::get().user_settings.is_vsync_enabled() );
+	m_window.setVerticalSyncEnabled( Shared::get().user_settings.is_vsync_enabled() );
 
 	// Launch first state.
 	State* state( new IntroState( m_window ) );

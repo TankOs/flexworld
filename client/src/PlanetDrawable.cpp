@@ -21,22 +21,22 @@ inline bool is_triangle_covered(
 ) {
 	return
 		(
-			v0x + BOUNDARY_TOLERANCE >= rect.Left &&
-			v0y + BOUNDARY_TOLERANCE >= rect.Top &&
-			v0x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
-			v0y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+			v0x + BOUNDARY_TOLERANCE >= rect.left &&
+			v0y + BOUNDARY_TOLERANCE >= rect.top &&
+			v0x - BOUNDARY_TOLERANCE <= rect.left + rect.width &&
+			v0y - BOUNDARY_TOLERANCE <= rect.top + rect.height
 		) &&
 		(
-			v1x + BOUNDARY_TOLERANCE >= rect.Left &&
-			v1y + BOUNDARY_TOLERANCE >= rect.Top &&
-			v1x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
-			v1y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+			v1x + BOUNDARY_TOLERANCE >= rect.left &&
+			v1y + BOUNDARY_TOLERANCE >= rect.top &&
+			v1x - BOUNDARY_TOLERANCE <= rect.left + rect.width &&
+			v1y - BOUNDARY_TOLERANCE <= rect.top + rect.height
 		) &&
 		(
-			v2x + BOUNDARY_TOLERANCE >= rect.Left &&
-			v2y + BOUNDARY_TOLERANCE >= rect.Top &&
-			v2x - BOUNDARY_TOLERANCE <= rect.Left + rect.Width &&
-			v2y - BOUNDARY_TOLERANCE <= rect.Top + rect.Height
+			v2x + BOUNDARY_TOLERANCE >= rect.left &&
+			v2y + BOUNDARY_TOLERANCE >= rect.top &&
+			v2x - BOUNDARY_TOLERANCE <= rect.left + rect.width &&
+			v2y - BOUNDARY_TOLERANCE <= rect.top + rect.height
 		)
 	;
 }
@@ -208,7 +208,7 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 							/////// Hidden-face-removal.
 							if(
-								// Left face.
+								// left face.
 								(
 									coverage_rects[flex::LEFT_FACE] &&
 									vertex[0].vector.x <= BOUNDARY_TOLERANCE &&
