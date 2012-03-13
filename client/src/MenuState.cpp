@@ -69,7 +69,7 @@ void MenuState::init() {
 	vbox->Pack( version_label, false );
 	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
 	vbox->Pack( m_start_game_button, false );
-	vbox->Pack( m_join_game_button, false );
+	//vbox->Pack( m_join_game_button, false );
 	vbox->Pack( options_button, false );
 	vbox->Pack( quit_button, false );
 	vbox->Pack( m_settings_hint_label, false );
@@ -296,6 +296,14 @@ void MenuState::on_start_game_click() {
 }
 
 void MenuState::on_options_accept() {
+	// Do we need to reinitialize the window?
+	bool reinit_window =
+		get_shared().user_settings.get_video_mode().width != m_options_window->get_user_settings().get_video_mode().width ||
+		get_shared().user_settings.get_video_mode().height != m_options_window->get_user_settings().get_video_mode().height ||
+		get_shared().user_settings.get_video_mode().bitsPerPixel != m_options_window->get_user_settings().get_video_mode().bitsPerPixel ||
+		get_shared().user_settings.is_fullscreen_enabled() != m_options_window->get_user_settings().is_fullscreen_enabled()
+	;
+
 	// Apply user settings.
 	get_shared().user_settings = m_options_window->get_user_settings();
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
@@ -306,18 +314,20 @@ void MenuState::on_options_accept() {
 	m_window->Show( true );
 	check_required_settings();
 
-	// Apply resolution.
-	get_render_target().create(
-		get_shared().user_settings.get_video_mode(),
-		"FlexWorld",
-		get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
-	);
-
 	// Apply vsync setting.
 	get_render_target().setVerticalSyncEnabled( get_shared().user_settings.is_vsync_enabled() );
 
-	// Restart menu state.
-	leave( new MenuState( get_render_target() ) );
+	// Apply resolution.
+	if( reinit_window ) {
+		get_render_target().create(
+			get_shared().user_settings.get_video_mode(),
+			"FlexWorld",
+			get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
+		);
+
+		// Restart menu state.
+		leave( new MenuState( get_render_target() ) );
+	}
 }
 
 void MenuState::on_options_reject() {

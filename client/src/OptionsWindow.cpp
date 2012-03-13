@@ -17,7 +17,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Widgets.
 	window->SetTitle( L"Options" );
 
-	sfg::Button::Ptr ok_button( sfg::Button::Create( L"Apply changes" ) );
+	sfg::Button::Ptr ok_button( sfg::Button::Create( L"OK" ) );
 	sfg::Button::Ptr cancel_button( sfg::Button::Create( L"Cancel" ) );
 
 	// Account.
