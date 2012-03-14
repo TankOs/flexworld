@@ -378,9 +378,6 @@ void PlayState::render() const {
 	target.draw( m_fps_text );
 
 	// Render GUI.
-	glMatrixMode( GL_MODELVIEW ); // Fix for SFGUI.
-	glLoadIdentity();
-
 	sfg::Renderer::Get().Display( target );
 
 	target.display();

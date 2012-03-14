@@ -83,7 +83,7 @@ void MenuState::init() {
 	m_window = sfg::Window::Create();
 	m_window->SetId( "menu" );
 	m_window->SetTitle( L"FlexWorld" );
-	m_window->SetStyle( sfg::Window::Background );
+	m_window->SetStyle( sfg::Window::BACKGROUND );
 	m_window->Add( vbox );
 
 	m_desktop.Add( m_window );

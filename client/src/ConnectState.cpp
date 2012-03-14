@@ -15,7 +15,7 @@ ConnectState::ConnectState( sf::RenderWindow& target ) :
 void ConnectState::init() {
 	// GUI.
 	// Widgets.
-	m_info_window = sfg::Window::Create( sfg::Window::Background );
+	m_info_window = sfg::Window::Create( sfg::Window::BACKGROUND );
 	m_info_window->SetTitle( L"Connecting..." );
 
 	m_info_label = sfg::Label::Create( L"" );

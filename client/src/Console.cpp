@@ -29,7 +29,7 @@ Console::Ptr Console::Create() {
 
 
 Console::Console() :
-	sfg::Window( sfg::Window::Toplevel ),
+	sfg::Window( sfg::Window::TOPLEVEL ),
 	m_scrolled_window( sfg::ScrolledWindow::Create() ),
 	m_lines_box( sfg::Box::Create( sfg::Box::VERTICAL, 5.f ) ),
 	m_command_entry( sfg::Entry::Create() ),
