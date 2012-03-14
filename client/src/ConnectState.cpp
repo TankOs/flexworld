@@ -8,7 +8,8 @@
 ConnectState::ConnectState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
-	m_canceled( false )
+	m_canceled( false ),
+	m_go_on( false )
 {
 }
 
@@ -109,6 +110,10 @@ void ConnectState::update( const sf::Time& delta ) {
 	}
 
 	m_desktop.Update( delta.asSeconds() );
+
+	if( m_go_on ) {
+		leave( new PlayState( get_render_target() ) );
+	}
 }
 
 void ConnectState::render() const {
@@ -164,5 +169,5 @@ void ConnectState::handle_message( const flex::msg::LoginOK& msg, flex::Client::
 
 	get_shared().entity_id = msg.get_entity_id();
 
-	leave( new PlayState( get_render_target() ) );
+	m_go_on = true;
 }

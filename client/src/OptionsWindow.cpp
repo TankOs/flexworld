@@ -62,8 +62,9 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 	// Video.
 	window->m_enable_vsync_check = sfg::CheckButton::Create( L"Vertical sync (avoids tearing)" );
+	window->m_fps_limit_label = sfg::Label::Create( L"FPS limit:" );
 	window->m_fps_limit_scale = sfg::Scale::Create( 1.0f, 200.0f, 1.0f, sfg::Scale::HORIZONTAL );
-	window->m_fps_limit_label = sfg::Label::Create( L"(--)" );
+	window->m_fps_limit_value_label = sfg::Label::Create( L"(--)" );
 	window->m_fov_scale = sfg::Scale::Create( UserSettings::MIN_FOV, UserSettings::MAX_FOV, 1.0f, sfg::Scale::HORIZONTAL );
 	window->m_fov_label = sfg::Label::Create( L"(--)" );
 
@@ -148,7 +149,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Video.
 	sfg::Box::Ptr fps_limit_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f ) );
 	fps_limit_box->Pack( window->m_fps_limit_scale, true );
-	fps_limit_box->Pack( window->m_fps_limit_label, false );
+	fps_limit_box->Pack( window->m_fps_limit_value_label, false );
 
 	sfg::Box::Ptr fov_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f ) );
 	fov_box->Pack( window->m_fov_scale, true );
@@ -160,11 +161,11 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 	general_table->Attach( window->m_enable_vsync_check, sf::Rect<sf::Uint32>( 1, 0, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
 
-	general_table->Attach( sfg::Label::Create( L"FPS limit:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
-	general_table->Attach( fps_limit_box, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( sfg::Label::Create( L"Field Of View:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( fov_box, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
 
-	general_table->Attach( sfg::Label::Create( L"Field Of View:" ), sf::Rect<sf::Uint32>( 0, 2, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
-	general_table->Attach( fov_box, sf::Rect<sf::Uint32>( 1, 2, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( window->m_fps_limit_label, sf::Rect<sf::Uint32>( 0, 2, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	general_table->Attach( fps_limit_box, sf::Rect<sf::Uint32>( 1, 2, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
 
 	sfg::Frame::Ptr general_frame( sfg::Frame::Create( L"General" ) );
 	general_frame->Add( general_table );
@@ -216,14 +217,18 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_fps_limit_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fps_limit_change, &*window );
 	window->m_fov_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fov_change, &*window );
 
+	window->m_enable_vsync_check->OnToggle.Connect( &OptionsWindow::on_vsync_toggle, &*window );
+
 	// Init.
 	window->m_enable_vsync_check->SetActive( window->m_user_settings.is_vsync_enabled() );
 	window->m_fps_limit_scale->SetValue( static_cast<float>( window->m_user_settings.get_fps_limit() ) );
-	window->m_fps_limit_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+	window->m_fps_limit_value_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
 	window->m_fov_scale->SetValue( static_cast<float>( window->m_user_settings.get_fov() ) );
 	window->m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
 
 	window->m_fullscreen_check->SetActive( window->m_user_settings.is_fullscreen_enabled() );
+
+	window->on_vsync_toggle();
 
 	// Add resolutions.
 	std::size_t combo_idx = 0;
@@ -391,7 +396,7 @@ void OptionsWindow::on_fps_limit_change() {
 	std::stringstream sstr;
 
 	sstr << static_cast<int>( m_fps_limit_scale->GetValue() );
-	m_fps_limit_label->SetText( sstr.str() );
+	m_fps_limit_value_label->SetText( sstr.str() );
 }
 
 void OptionsWindow::on_fov_change() {
@@ -399,4 +404,10 @@ void OptionsWindow::on_fov_change() {
 
 	sstr << static_cast<int>( m_fov_scale->GetValue() ) << " deg";
 	m_fov_label->SetText( sstr.str() );
+}
+
+void OptionsWindow::on_vsync_toggle() {
+	m_fps_limit_label->Show( !m_enable_vsync_check->IsActive() );
+	m_fps_limit_scale->Show( !m_enable_vsync_check->IsActive() );
+	m_fps_limit_value_label->Show( !m_enable_vsync_check->IsActive() );
 }

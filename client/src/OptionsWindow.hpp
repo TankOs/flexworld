@@ -55,6 +55,8 @@ class OptionsWindow : public sfg::Window {
 		void on_fps_limit_change();
 		void on_fov_change();
 
+		void on_vsync_toggle();
+
 		UserSettings m_user_settings;
 
 		bool m_event_processed;
@@ -74,8 +76,9 @@ class OptionsWindow : public sfg::Window {
 		sfg::Label::Ptr m_waiting_for_input_label;
 
 		sfg::CheckButton::Ptr m_enable_vsync_check;
-		sfg::Scale::Ptr m_fps_limit_scale;
 		sfg::Label::Ptr m_fps_limit_label;
+		sfg::Scale::Ptr m_fps_limit_scale;
+		sfg::Label::Ptr m_fps_limit_value_label;
 		sfg::Scale::Ptr m_fov_scale;
 		sfg::Label::Ptr m_fov_label;
 

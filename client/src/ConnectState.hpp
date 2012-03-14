@@ -37,6 +37,7 @@ class ConnectState : public State, public flex::Client::Handler {
 		std::string m_next_info_text;
 
 		bool m_canceled;
+		bool m_go_on;
 
 		sfg::Window::Ptr m_info_window;
 		sfg::Label::Ptr m_info_label;

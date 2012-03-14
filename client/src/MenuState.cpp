@@ -27,7 +27,6 @@ void MenuState::init() {
 	srand( static_cast<unsigned int>( time( nullptr ) ) );
 
 	set_render_fps( 60 );
-	set_logic_fps( 60 );
 
 	// Widgets.
 	sfg::Label::Ptr title_label( sfg::Label::Create( L"FlexWorld" ) );

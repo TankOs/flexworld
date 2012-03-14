@@ -37,8 +37,13 @@ void PlayState::init() {
 	// Init GLEW.
 	//glewInit();
 
-	set_logic_fps( 120 );
-	set_render_fps( static_cast<uint16_t>( get_shared().user_settings.get_fps_limit() ) );
+	// If vsync is enabled, due to set an FPS limit.
+	if( get_shared().user_settings.is_vsync_enabled() ) {
+		set_render_fps( 0 );
+	}
+	else {
+		set_render_fps( static_cast<uint16_t>( get_shared().user_settings.get_fps_limit() ) );
+	}
 
 	// Reset handler.
 	get_shared().client->set_handler( *this );
@@ -253,16 +258,16 @@ void PlayState::update( const sf::Time& delta ) {
 	// Movement.
 	if( m_update_velocity ) {
 		// If we didn't receive our own entity yet, do not move (what to move anyways?).
-		if( !m_my_entity_received ) {
+		/*if( !m_my_entity_received ) {
 			m_velocity.z = 0;
 			m_velocity.x = 0;
 		}
-		else {
+		else {*/
 			m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 			m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
 
 			flex::normalize( m_velocity );
-		}
+		//}
 
 		m_update_velocity = false;
 	}
@@ -300,11 +305,9 @@ void PlayState::update( const sf::Time& delta ) {
 	if( elapsed >= sf::microseconds( 1000000 / 2 ) ) {
 		std::stringstream sstr;
 		sstr
-			<< "FPS renderer/logic: "
+			<< "FPS: "
 			<< get_render_fps()
 			<< (get_shared().user_settings.is_vsync_enabled() ? " (sync)" : "")
-			<< "/"
-			<< get_logic_fps()
 		;
 
 		m_fps_text.setString( sstr.str() );

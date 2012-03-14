@@ -12,11 +12,9 @@
 State::State( sf::RenderWindow& target ) :
 	m_render_target( target ),
 	m_render_fps( 0 ),
-	m_logic_fps( 0 ),
 	m_run( false ),
 	m_next_state( nullptr )
 {
-	set_logic_fps( 200 );
 	set_render_fps( 60 );
 }
 
@@ -30,20 +28,20 @@ State* State::run() {
 	}
 
 	m_run = true;
-	sf::Clock clock;
+	sf::Clock fps_timer;
+	sf::Clock update_timer;
+	sf::Clock frame_timer;
 
-	sf::Time logic_elapsed;
-	sf::Time render_elapsed;
-	sf::Time fps_elapsed;
-	sf::Time elapsed;
 	sf::Event event;
 
 	unsigned int current_render_fps = 0;
-	unsigned int current_logic_fps = 0;
 
 	init();
 
 	while( m_run ) {
+		// Count frame time.
+		frame_timer.restart();
+
 		// Process events.
 		while( m_render_target.pollEvent( event ) ) {
 			// Check for F12 (screenshot).
@@ -89,54 +87,27 @@ State* State::run() {
 			handle_event( event );
 		}
 
-		elapsed = clock.restart();
-
-		logic_elapsed += elapsed;
-		render_elapsed += elapsed;
-		fps_elapsed += elapsed;
-
-		// If interval for logic AND rendering not expired, save the CPU the trouble.
-		if( logic_elapsed < m_logic_interval && render_elapsed < m_render_interval ) {
-			sf::Time wait_time( std::min( m_logic_interval - logic_elapsed, m_render_interval - render_elapsed ) );
-
-			sf::sleep( wait_time );
-
-			logic_elapsed += wait_time;
-			render_elapsed += wait_time;
-			fps_elapsed += wait_time;
-
-			// We don't want the wait time to be added to the elapsed time again later.
-			clock.restart();
-		}
-
-		// Logics. Run until all remaining slices have been updated. In case longer
-		// breaks happen, this loop will try to close up.
-		while( logic_elapsed >= m_logic_interval ) {
-			update( m_logic_interval );
-			logic_elapsed -= m_logic_interval;
-			++current_logic_fps;
-
-			if( !m_run ) {
-				break;
-			}
-		}
+		// Logic.
+		update( update_timer.restart() );
 
 		// Rendering.
-		if( render_elapsed >= m_render_interval ) {
-			render();
-			render_elapsed = sf::Time::Zero;
-			++current_render_fps;
-		}
+		render();
+		++current_render_fps;
 
 		// Update FPS.
-		if( fps_elapsed >= sf::microseconds( 1000000 ) ) {
+		if( fps_timer.getElapsedTime() >= sf::microseconds( 1000000 ) ) {
 			m_render_fps = current_render_fps;
-			m_logic_fps = current_logic_fps;
-
 			current_render_fps = 0;
-			current_logic_fps = 0;
+			fps_timer.restart();
+		}
 
-			fps_elapsed = sf::Time::Zero;
+		// Wait if FPS is locked.
+		if( m_render_interval != sf::Time::Zero ) {
+			sf::Time wait_time = m_render_interval - frame_timer.getElapsedTime();
+
+			if( wait_time > sf::Time::Zero ) {
+				sf::sleep( wait_time );
+			}
 		}
 	}
 
@@ -145,14 +116,13 @@ State* State::run() {
 	return m_next_state;
 }
 
-void State::set_logic_fps( uint16_t fps ) {
-	assert( fps > 0 );
-	m_logic_interval = sf::microseconds( 1000000 / fps );
-}
-
 void State::set_render_fps( uint16_t fps ) {
-	assert( fps > 0 );
-	m_render_interval = sf::microseconds( 1000000 / fps );
+	if( fps == 0 ) {
+		m_render_interval = sf::Time::Zero;
+	}
+	else {
+		m_render_interval = sf::microseconds( 1000000 / fps );
+	}
 }
 
 void State::leave( State* state ) {
@@ -170,8 +140,4 @@ sf::RenderWindow& State::get_render_target() const {
 
 unsigned int State::get_render_fps() const {
 	return m_render_fps;
-}
-
-unsigned int State::get_logic_fps() const {
-	return m_logic_fps;
 }
