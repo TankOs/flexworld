@@ -3,6 +3,7 @@
 #include <FlexWorld/Server.hpp>
 #include <FlexWorld/PlayerInfo.hpp>
 
+#include <boost/asio.hpp>
 #include <memory>
 
 namespace flex {
@@ -26,15 +27,21 @@ class SessionHost : private Server::Handler {
 
 		/** Ctor.
 		 * References to the objects are stored, therefore they must be kept alive!
+		 * @param io_service IO service.
 		 * @param lock_facility Lock facility.
 		 * @param account_manager Account manager.
 		 * @param world World.
 		 */
 		SessionHost(
+			boost::asio::io_service& io_service,
 			LockFacility& lock_facility,
 			AccountManager& account_manager,
 			World& world
 		);
+
+		/** Dtor.
+		 */
+		~SessionHost();
 
 		/** Get lock facility.
 		 * @return Lock facility.
@@ -71,13 +78,13 @@ class SessionHost : private Server::Handler {
 		 */
 		unsigned short get_port() const;
 
-		/** Run!
+		/** Start.
 		 * @return true on success.
 		 */
-		bool run();
+		bool start();
 
-		/** Stop host.
-		 * Make sure to wait for run() to return.
+		/** Stop.
+		 * Close all connections.
 		 */
 		void stop();
 
@@ -119,6 +126,7 @@ class SessionHost : private Server::Handler {
 
 		PlayerInfoVector m_player_infos;
 
+		boost::asio::io_service& m_io_service;
 		LockFacility& m_lock_facility;
 		AccountManager& m_account_manager;
 		World& m_world;

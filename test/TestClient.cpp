@@ -1,19 +1,10 @@
 #include <FlexWorld/Client.hpp>
 
+#include <SFML/System/Clock.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 
-#define WAIT_WHILE( cond, var, interval, timeout ) {\
-		unsigned int time_passed = 0; \
-		while( time_passed < timeout && cond == var ) {\
-			boost::this_thread::sleep( boost::posix_time::milliseconds( interval ) );\
-			time_passed += interval;\
-		}\
-		BOOST_REQUIRE( time_passed < timeout );\
-	}
-
-struct ClientHandler : flex::Client::Handler {
+struct ClientHandler : public flex::Client::Handler {
 	ClientHandler() :
 		connected( false ),
 		num_logins_handled( 0 )
@@ -41,10 +32,6 @@ struct ClientHandler : flex::Client::Handler {
 	std::size_t num_logins_handled;
 };
 
-void start_client( flex::Client* client ) {
-	BOOST_REQUIRE( client->run( "127.0.0.1", 2593 ) );
-}
-
 void start_listener( boost::asio::ip::tcp::acceptor& listener ) {
 	BOOST_CHECK_NO_THROW( listener.open( boost::asio::ip::tcp::v4() ) );
 	BOOST_CHECK_NO_THROW( listener.set_option( boost::asio::socket_base::reuse_address( true ) ) );
@@ -56,80 +43,102 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 	using namespace flex;
 	using namespace boost::asio;
 
-	enum {
-		WAIT_INTERVAL = 5,
-		TIMEOUT = 3000
-	};
+	static const std::string IP = "127.0.0.1";
+	static const unsigned short PORT = 2593;
+	static const sf::Time TIMEOUT = sf::seconds( 3 );
 
 	// Initial state.
 	{
+		io_service service;
 		ClientHandler handler;
-		Client client( handler );
+		Client client( service, handler );
 
-		BOOST_CHECK( client.is_connected() == false );
+		BOOST_CHECK( client.is_started() == false );
 	}
 
 	// Basic properties.
 	{
+		io_service service;
 		ClientHandler handler0;
 		ClientHandler handler1;
 
-		Client client( handler0 );
+		Client client( service, handler0 );
 		BOOST_CHECK( &client.get_handler() == &handler0 );
 
 		client.set_handler( handler1 );
 		BOOST_CHECK( &client.get_handler() == &handler1 );
 	}
 
+	// Start.
+	{
+		io_service service;
+		ClientHandler handler;
+		Client client( service, handler );
+
+		BOOST_CHECK( client.start( IP, PORT ) == true );
+		BOOST_CHECK( client.is_started() == true );
+	}
+
 	// Connect to server.
 	{
 		io_service service;
+
+		// Setup listener.
 		ip::tcp::acceptor listener( service );
 		start_listener( listener );
 
 		// Connect.
 		ClientHandler handler;
-		Client client( handler );
+		Client client( service, handler );
 
-		boost::thread thread( std::bind( &start_client, &client ) );
+		client.start( IP, PORT );
 
 		// Accept client.
 		ip::tcp::socket peer( service );
 		listener.accept( peer );
 
-		WAIT_WHILE( handler.connected, false, WAIT_INTERVAL, TIMEOUT );
+		// Wait for connection.
+		{
+			sf::Clock timer;
 
-		BOOST_REQUIRE( handler.connected == true );
-		BOOST_REQUIRE( client.is_connected() );
+			while( timer.getElapsedTime() < TIMEOUT && handler.connected == false ) {
+				service.poll();
+			}
 
-		client.stop();
-		thread.join();
-
-		BOOST_REQUIRE( client.is_connected() == false );
+			BOOST_REQUIRE( timer.getElapsedTime() < TIMEOUT );
+		}
 	}
 
 	// Send messages (server->client).
 	{
-		enum { NUM_MESSAGES = 100 };
+		enum { NUM_MESSAGES = 300 };
 
 		io_service service;
+
+		// Setup listener.
 		ip::tcp::acceptor listener( service );
 		start_listener( listener );
 
 		// Connect.
 		ClientHandler handler;
-		Client client( handler );
+		Client client( service, handler );
 
-		boost::thread thread( std::bind( &start_client, &client ) );
+		client.start( IP, PORT );
 
 		// Accept client.
 		ip::tcp::socket peer( service );
 		listener.accept( peer );
 
-		WAIT_WHILE( handler.connected, false, WAIT_INTERVAL, TIMEOUT );
+		// Wait for connection.
+		{
+			sf::Clock timer;
 
-		BOOST_REQUIRE( handler.connected == true );
-		BOOST_REQUIRE( client.is_connected() );
+			while( timer.getElapsedTime() < TIMEOUT && handler.connected == false ) {
+				service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < TIMEOUT );
+		}
 
 		// Prepare message.
 		msg::OpenLogin msg;
@@ -140,42 +149,49 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 		ServerProtocol::Buffer buf;
 		ServerProtocol::serialize_message( msg, buf );
 
-		// Spam the client a little bit.
-		for( std::size_t msg_id = 0; msg_id < NUM_MESSAGES; ++msg_id ) {
+		// Spam the client.
+		for( std::size_t msg_idx = 0; msg_idx < NUM_MESSAGES; ++msg_idx ) {
 			peer.send( buffer( &buf[0], buf.size() ) );
 
-			// Wait for msg to arrive.
-			WAIT_WHILE( handler.num_logins_handled, msg_id, WAIT_INTERVAL, TIMEOUT );
-			BOOST_REQUIRE( handler.num_logins_handled == msg_id + 1 );
-		}
+			// Wait for message to arrive.
+			sf::Clock timer;
 
-		listener.close();
-		client.stop();
-		thread.join();
+			while( timer.getElapsedTime() < TIMEOUT && handler.num_logins_handled != msg_idx + 1 ) {
+				service.poll();
+			}
+		}
 	}
 
-	// Send messages (client->server).
+	// Send messages (server -> client).
 	{
-		enum { NUM_MESSAGES = 100 };
+		enum { NUM_MESSAGES = 300 };
 
 		io_service service;
+
+		// Setup listener.
 		ip::tcp::acceptor listener( service );
 		start_listener( listener );
 
 		// Connect.
 		ClientHandler handler;
-		Client client( handler );
+		Client client( service, handler );
 
-		boost::thread thread( std::bind( &start_client, &client ) );
+		client.start( IP, PORT );
 
 		// Accept client.
 		ip::tcp::socket peer( service );
 		listener.accept( peer );
 
-		WAIT_WHILE( handler.connected, false, WAIT_INTERVAL, TIMEOUT );
+		// Wait for connection.
+		{
+			sf::Clock timer;
 
-		BOOST_REQUIRE( handler.connected == true );
-		BOOST_REQUIRE( client.is_connected() );
+			while( timer.getElapsedTime() < TIMEOUT && handler.connected == false ) {
+				service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < TIMEOUT );
+		}
 
 		// Prepare message.
 		msg::OpenLogin msg;
@@ -185,22 +201,24 @@ BOOST_AUTO_TEST_CASE( TestClient ) {
 
 		// Send to server.
 		client.send_message( msg );
+		service.poll();
 
 		// Receive message at server.
-		char buf[12];
+		char buf[17];
 
-		std::size_t num_received = peer.receive( buffer( buf, 12 ) );
+		std::size_t num_received = peer.receive( buffer( buf, 17 ) );
 
-		BOOST_REQUIRE( num_received == 12 );
-		BOOST_REQUIRE( buf[0] == 0 ); // Msg ID.
+		BOOST_REQUIRE( num_received == 17 );
+		BOOST_REQUIRE( buf[0] == 0 ); // Message ID.
 
-		// Deserialize again to check more easily. ;-)
-		msg.deserialize( buf + 1, 11 );
+		// Deserialize.
+		msg.set_username( "foo" );
+		msg.set_password( "foo" );
+		msg.set_server_password( "foo" );
+		msg.deserialize( buf + 1, 16 );
+
 		BOOST_CHECK( msg.get_username() == "Tank" );
 		BOOST_CHECK( msg.get_password() == "h4x0r" );
-
-		listener.close();
-		client.stop();
-		thread.join();
+		BOOST_CHECK( msg.get_server_password() == "me0w" );
 	}
 }

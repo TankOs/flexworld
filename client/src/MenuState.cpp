@@ -344,6 +344,9 @@ void MenuState::on_start_game_accept() {
 	m_desktop.Remove( m_start_game_window );
 
 	if( m_start_game_window->is_game_mode_selected() ) {
+		// Create IO service.
+		get_shared().io_service.reset( new boost::asio::io_service );
+
 		// Prepare backend and session host.
 		get_shared().account_manager.reset( new flex::AccountManager );
 		get_shared().lock_facility.reset( new flex::LockFacility );
@@ -351,6 +354,7 @@ void MenuState::on_start_game_accept() {
 
 		get_shared().host.reset(
 			new flex::SessionHost(
+				*get_shared().io_service,
 				*get_shared().lock_facility,
 				*get_shared().account_manager,
 				*get_shared().world

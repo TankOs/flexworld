@@ -44,13 +44,12 @@ class Server : public NonCopyable {
 		};
 
 		/** Ctor.
+		 * @param io_service IO service.
 		 * @param handler Handler.
 		 */
-		Server( Handler& handler );
+		Server( boost::asio::io_service& io_service, Handler& handler );
 
 		/** Dtor.
-		 * Make sure to shut the server down gracefully with stop() before.
-		 * Read the notes there!
 		 */
 		~Server();
 
@@ -74,26 +73,27 @@ class Server : public NonCopyable {
 		 */
 		uint16_t get_port() const;
 
-		/** Get number of connected peers (thread-safe).
+		/** Get number of connected peers.
 		 * @return Number of connected peers.
 		 */
 		std::size_t get_num_peers() const;
 
-		/** Check if server is running (thread-safe).
+		/** Check if server is running.
 		 * @return true if running.
 		 */
 		bool is_running() const;
 
-		/** Stop server.
-		 * This will gracefully disconnect all peers and shutdown the listener.
-		 * Make sure to still wait for run() to return.
-		 */
-		void stop();
-
-		/** Run (thread-safe).
+		/** Start server.
+		 * You still need to run the associated IO service so that actions are
+		 * performed.
 		 * @return true if everything went right.
 		 */
-		bool run();
+		bool start();
+
+		/** Stop server.
+		 * Close all connections.
+		 */
+		void stop();
 
 		/** Get IP of client.
 		 * @param conn_id Connection ID.
@@ -123,12 +123,13 @@ class Server : public NonCopyable {
 		void handle_read( std::shared_ptr<Peer> peer, const boost::system::error_code& error, std::size_t num_bytes_read );
 		void handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> buffer, ConnectionID conn_id );
 
-		boost::asio::io_service m_io_service;
 		PeerPtrVector m_peers;
 
 		std::string m_ip;
 
 		std::unique_ptr<boost::asio::ip::tcp::acceptor> m_acceptor;
+
+		boost::asio::io_service& m_io_service;
 		Handler& m_handler;
 
 		uint32_t m_num_peers;

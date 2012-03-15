@@ -4,7 +4,6 @@
 #include "Console.hpp"
 #include "Sky.hpp"
 #include "Camera.hpp"
-//#include "PlanetRenderer.hpp"
 #include "ResourceManager.hpp"
 #include "PlanetDrawable.hpp"
 

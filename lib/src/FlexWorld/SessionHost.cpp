@@ -15,10 +15,12 @@ static const Chunk::Vector DEFAULT_CHUNK_SIZE = Chunk::Vector( 16, 16, 16 );
 static const Planet::Vector DEFAULT_CONSTRUCT_SIZE = Planet::Vector( 16, 16, 16 );
 
 SessionHost::SessionHost(
+	boost::asio::io_service& io_service,
 	LockFacility& lock_facility,
 	AccountManager& account_manager,
 	World& world
 ) :
+	m_io_service( io_service ),
 	m_lock_facility( lock_facility ),
 	m_account_manager( account_manager ),
 	m_world( world ),
@@ -26,7 +28,11 @@ SessionHost::SessionHost(
 	m_player_limit( 1 ),
 	m_max_view_radius( 10 )
 {
-	m_server.reset( new Server( *this ) );
+	m_server.reset( new Server( m_io_service, *this ) );
+}
+
+SessionHost::~SessionHost() {
+	stop();
 }
 
 const LockFacility& SessionHost::get_lock_facility() const {
@@ -53,7 +59,7 @@ unsigned short SessionHost::get_port() const {
 	return m_server->get_port();
 }
 
-bool SessionHost::run() {
+bool SessionHost::start() {
 	// Make sure fw.base.nature/grass is present for construction the planet
 	// "construct".
 	FlexID id = FlexID::make( "fw.base.nature/grass" );
@@ -133,11 +139,7 @@ bool SessionHost::run() {
 		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 3, 2 ), *stone_cls );
 	}
 
-	return m_server->run();
-}
-
-void SessionHost::stop() {
-	m_server->stop();
+	return m_server->start();
 }
 
 bool SessionHost::is_running() const {
@@ -401,6 +403,10 @@ void SessionHost::handle_message( const msg::RequestChunk& req_chunk_msg, Server
 			m_server->send_message( unch_msg, conn_id );
 		}
 	}
+}
+
+void SessionHost::stop() {
+	m_server->stop();
 }
 
 }

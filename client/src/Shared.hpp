@@ -9,8 +9,15 @@
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/Entity.hpp>
-#include <boost/thread.hpp>
 #include <memory>
+
+namespace boost {
+namespace asio {
+
+class io_service;
+
+}
+}
 
 /** Shared singleton.
  */
@@ -23,11 +30,9 @@ class Shared : public flex::NonCopyable {
 
 		UserSettings user_settings; ///< User settings.
 
+		std::unique_ptr<boost::asio::io_service> io_service; ///< IO service.
 		std::unique_ptr<flex::Client> client; ///< Client.
-		std::unique_ptr<boost::thread> client_thread; ///< Client thread.
-
 		std::unique_ptr<flex::SessionHost> host; ///< Session host.
-		std::unique_ptr<boost::thread> host_thread; ///< Session host thread.
 
 		std::unique_ptr<flex::AccountManager> account_manager; ///< Account manager.
 		std::unique_ptr<flex::LockFacility> lock_facility; ///< Lock facility.

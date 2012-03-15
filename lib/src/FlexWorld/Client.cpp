@@ -14,27 +14,29 @@ void Client::Handler::handle_disconnect( ConnectionID id ) {
 	std::cerr << "WARNING: Disconnection of #" << id << " not handled!" << std::endl;
 }
 
-Client::Client( Handler& handler ) :
+Client::Client( boost::asio::io_service& io_service, Handler& handler ) :
+	m_io_service( io_service ),
 	m_handler( &handler ),
-	m_connected( false )
+	m_started( false )
 {
 }
 
 Client::~Client() {
+	stop();
 }
 
-bool Client::is_connected() const {
-	return m_connected;
+bool Client::is_started() const {
+	return m_started;
 }
 
-bool Client::run( const std::string& ip, unsigned short port ) {
+bool Client::start( const std::string& ip, unsigned short port ) {
 	using namespace boost::asio;
 
-	if( m_connected ) {
+	if( m_started ) {
 		return false;
 	}
 
-	m_connected = true;
+	m_started = true;
 
 	// Make the connection.
 	m_socket.reset( new ip::tcp::socket( m_io_service ) );
@@ -47,20 +49,12 @@ bool Client::run( const std::string& ip, unsigned short port ) {
 		boost::bind( &Client::handle_connect, this, placeholders::error )
 	);
 
-	// Run I/O service.
-	m_io_service.run();
-
-	// Cleanup.
-	m_socket.reset();
-	m_connected = false;
-
 	return true;
 }
 
 void Client::handle_connect( const boost::system::error_code& error ) {
 	// If connecting fails notify observer.
 	if( error ) {
-		m_connected = false;
 		m_handler->handle_disconnect( 0 );
 		return;
 	}
@@ -113,15 +107,10 @@ void Client::handle_read( const boost::system::error_code& error, std::size_t nu
 	start_read();
 }
 
-void Client::stop() {
-	assert( m_connected );
-	m_io_service.stop();
-}
-
 void Client::handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> /*buffer*/ ) {
 	if( error ) {
 		// Sending failed, stop client.
-		stop();
+		assert( 0 && "Sending failed?!" );
 		return;
 	}
 }
@@ -132,6 +121,14 @@ void Client::set_handler( Handler& handler ) {
 
 Client::Handler& Client::get_handler() {
 	return *m_handler;
+}
+
+void Client::stop() {
+	if( m_socket ) {
+		m_socket->close();
+	}
+
+	m_started = false;
 }
 
 }

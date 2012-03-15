@@ -61,7 +61,7 @@ void PlayState::init() {
 	);
 
 	m_console->OnMessageAdd.Connect( &PlayState::on_console_message_add, this );
-	m_console->add_message( "Press F11 to show/hide the console." );
+	//m_console->add_message( "Press F11 to show/hide the console." );
 	m_console->Show( false );
 
 	// Setup UI.
@@ -116,30 +116,20 @@ void PlayState::cleanup() {
 	// Terminate chunk preparation thread.
 	stop_and_wait_for_chunk_preparation_thread();
 
-	// Close connections and wait for threads to complete.
-	if( get_shared().client->is_connected() ) {
-		get_shared().client->stop();
-	}
-
-	if( get_shared().client_thread ) {
-		get_shared().client_thread->join();
-	}
+	// Close connections.
+	get_shared().client->stop();
 
 	if( get_shared().host ) {
-		if( get_shared().host->is_running() ) {
-			get_shared().host->stop();
-		}
-
-		if( get_shared().host_thread ) {
-			get_shared().host_thread->join();
-		}
+		get_shared().host->stop();
 	}
 
+	// Run the IO service to wait until all connections have been closed.
+	get_shared().io_service->run();
+
 	// Free all backend stuff.
-	get_shared().client.reset();
 	get_shared().lock_facility.reset();
-	get_shared().client_thread.reset();
-	get_shared().host_thread.reset();
+	get_shared().client.reset();
+	get_shared().host.reset();
 
 	// Restore old matrices.
 	glMatrixMode( GL_TEXTURE );
@@ -149,6 +139,14 @@ void PlayState::cleanup() {
 	glPopMatrix();
 
 	get_render_target().setMouseCursorVisible( true );
+
+	// Restore states for SFML.
+	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
+	glEnableClientState( GL_COLOR_ARRAY ); // SFML needs this.
+	glDisableClientState( GL_NORMAL_ARRAY ); // SFML needs this.
+	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
+	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
@@ -218,6 +216,9 @@ void PlayState::handle_event( const sf::Event& event ) {
 }
 
 void PlayState::update( const sf::Time& delta ) {
+	// Ask IO service.
+	get_shared().io_service->poll();
+
 	// Update sky.
 	//m_sky->set_time_of_day( m_sky->get_time_of_day() + (delta.AsSeconds() * (0.041f / 30.0f)) );
 	m_sky->set_time_of_day( 0.1f );
@@ -225,76 +226,79 @@ void PlayState::update( const sf::Time& delta ) {
 	// Update GUI.
 	m_desktop.Update( delta.asSeconds() );
 
-	// Get mouse movement.
-	sf::Vector2i mouse_delta(
-		sf::Mouse::getPosition( get_render_target() ) -
-		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
-	);
-
-	// Reset mouse.
-	sf::Mouse::setPosition(
-		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
-		get_render_target()
-	);
-
-	bool eyepoint_changed = false;
-
-	if( m_has_focus && ( mouse_delta.x != 0 || mouse_delta.y != 0 ) ) {
-		// Rotate camera.
-		m_camera.turn(
-			sf::Vector3f(
-				(
-				 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
-				 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
-				),
-				static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
-				0.0f
-			)
+	// Process mouse/keyboard input only if window has the focus.
+	if( m_has_focus ) {
+		// Get mouse movement.
+		sf::Vector2i mouse_delta(
+			sf::Mouse::getPosition( get_render_target() ) -
+			sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
 		);
 
-		eyepoint_changed = true;
-	}
+		// Reset mouse.
+		sf::Mouse::setPosition(
+			sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
+			get_render_target()
+		);
 
-	// Movement.
-	if( m_update_velocity ) {
-		// If we didn't receive our own entity yet, do not move (what to move anyways?).
-		/*if( !m_my_entity_received ) {
-			m_velocity.z = 0;
-			m_velocity.x = 0;
-		}
-		else {*/
-			m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
-			m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+		bool eyepoint_changed = false;
 
-			flex::normalize( m_velocity );
-		//}
-
-		m_update_velocity = false;
-	}
-
-	if( m_velocity.z != 0 ) {
-		m_camera.walk( (m_velocity.z * 4.0f) * delta.asSeconds() );
-		eyepoint_changed = true;
-	}
-
-	if( m_velocity.x != 0 ) {
-		m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
-		eyepoint_changed = true;
-	}
-
-	// If eyepoint changed update transform of scene graph.
-	if( eyepoint_changed ) {
-		m_scene_graph->set_local_transform(
-			sg::Transform(
+		if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+			// Rotate camera.
+			m_camera.turn(
 				sf::Vector3f(
-					-m_camera.get_position().x,
-					-m_camera.get_position().y,
-					-m_camera.get_position().z
-				),
-				m_camera.get_rotation(),
-				sf::Vector3f( 1, 1, 1 )
-			)
-		);
+					(
+					 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
+					 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
+					),
+					static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
+					0.0f
+				)
+			);
+
+			eyepoint_changed = true;
+		}
+
+		// Movement.
+		if( m_update_velocity ) {
+			// If we didn't receive our own entity yet, do not move (what to move anyways?).
+			/*if( !m_my_entity_received ) {
+				m_velocity.z = 0;
+				m_velocity.x = 0;
+			}
+			else {*/
+				m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+				m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+
+				flex::normalize( m_velocity );
+			//}
+
+			m_update_velocity = false;
+		}
+
+		if( m_velocity.z != 0 ) {
+			m_camera.walk( (m_velocity.z * 4.0f) * delta.asSeconds() );
+			eyepoint_changed = true;
+		}
+
+		if( m_velocity.x != 0 ) {
+			m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
+			eyepoint_changed = true;
+		}
+
+		// If eyepoint changed update transform of scene graph.
+		if( eyepoint_changed ) {
+			m_scene_graph->set_local_transform(
+				sg::Transform(
+					sf::Vector3f(
+						-m_camera.get_position().x,
+						-m_camera.get_position().y,
+						-m_camera.get_position().z
+					),
+					m_camera.get_rotation(),
+					sf::Vector3f( 1, 1, 1 )
+				)
+			);
+		}
 	}
 
 	// Update FPS string.
@@ -367,6 +371,7 @@ void PlayState::render() const {
 	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
 	glEnableClientState( GL_COLOR_ARRAY ); // SFML needs this.
+	glDisableClientState( GL_NORMAL_ARRAY ); // SFML needs this.
 	glBindBuffer( GL_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 	glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 ); // Otherwise SFML will f*ck the driver.
 
@@ -410,11 +415,11 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 
 	std::stringstream sstr;
 	sstr << "Requested " << num_requests << " chunks.";
-	m_console->add_message( sstr.str() );
+	//m_console->add_message( sstr.str() );
 }
 
 void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID /*conn_id*/ ) {
-	m_console->add_message( sf::String( "Beamed to planet " ) + msg.get_planet_name() + sf::String( "." ) );
+	//m_console->add_message( sf::String( "Beamed to planet " ) + msg.get_planet_name() + sf::String( "." ) );
 
 	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
 	m_my_entity_received = false;
@@ -430,7 +435,7 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	get_shared().lock_facility->lock_world( false );
 
 	if( !planet ) {
-		m_console->add_message( "Host beamed us to an invalid planet." );
+		//m_console->add_message( "Host beamed us to an invalid planet." );
 		return;
 	}
 
@@ -448,7 +453,7 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	flex::Chunk::Vector block_pos;
 
 	if( !planet->transform( msg.get_position(), chunk_pos, block_pos ) ) {
-		m_console->add_message( "Host gave invalid beam position." );
+		//m_console->add_message( "Host gave invalid beam position." );
 		get_shared().lock_facility->lock_planet( *planet, false );
 		return;
 	}
@@ -485,7 +490,7 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 		<< " "
 		<< m_view_cuboid.width << " * " << m_view_cuboid.height << " * " << m_view_cuboid.depth
 	;
-	m_console->add_message( debug_msg.str() );
+	//m_console->add_message( debug_msg.str() );
 
 	// Request chunks.
 	request_chunks( m_view_cuboid );

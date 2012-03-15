@@ -13,6 +13,9 @@ namespace flex {
  */
 class Peer : public NonCopyable {
 	public:
+		// XXX
+		Peer();
+
 		enum {
 			READ_BUFFER_SIZE = 1024
 		};

@@ -5,10 +5,10 @@ namespace flex {
 
 template <class MsgType>
 void Client::send_message( const MsgType& message ) {
-	assert( m_connected );
+	assert( m_started );
 	assert( m_socket );
 
-	if( !m_connected || !m_socket ) {
+	if( !m_started || !m_socket ) {
 		return;
 	}
 

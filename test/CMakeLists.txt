@@ -60,6 +60,7 @@ target_link_libraries( test flexworld )
 target_link_libraries( test fwsg )
 target_link_libraries( test ${Boost_THREAD_LIBRARY} )
 target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
+target_link_libraries( test boost_unit_test_framework )
 
 if( WINDOWS )
 	target_link_libraries( test wsock32.lib )

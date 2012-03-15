@@ -39,17 +39,17 @@ void ConnectState::init() {
 	m_desktop.Add( m_info_window );
 
 	// Prepare backend.
-	assert( get_shared().host_thread == nullptr );
-	assert( get_shared().client_thread == nullptr );
-	assert( get_shared().client == nullptr );
 
-	get_shared().client.reset( new flex::Client( *this ) );
+	// Make sure IO service exists and is stopped.
+	get_shared().io_service->stop();
+	get_shared().io_service->reset();
+
+	get_shared().client.reset( new flex::Client( *get_shared().io_service, *this ) );
 
 	// If a session host exists, we want to launch a local server. If not, just
 	// connect.
 	if( get_shared().host ) {
-		get_shared().host_thread.reset( new boost::thread( std::bind( &ConnectState::session_host_func, this ) ) );
-		m_next_info_text = "Preparing game...";
+		get_shared().host->start();
 	}
 	else {
 		assert( 0 && "IMPLEMENT REMOTE CONNECTIONS" );
@@ -58,32 +58,14 @@ void ConnectState::init() {
 
 void ConnectState::cleanup() {
 	if( m_canceled ) {
-		// Close connections and wait for threads to complete.
-		if( get_shared().client->is_connected() ) {
-			get_shared().client->stop();
-		}
-
-		if( get_shared().client_thread ) {
-			get_shared().client_thread->join();
-		}
-
-		if( get_shared().host ) {
-			if( get_shared().host->is_running() ) {
-				get_shared().host->stop();
-			}
-
-			if( get_shared().host_thread ) {
-				get_shared().host_thread->join();
-			}
-		}
-
 		// Free all backend stuff.
 		get_shared().client.reset();
 		get_shared().lock_facility.reset();
-		get_shared().client_thread.reset();
-		get_shared().host_thread.reset();
-	}
 
+		// Stop IO service.
+		get_shared().io_service->stop();
+		get_shared().io_service->reset();
+	}
 }
 
 void ConnectState::handle_event( const sf::Event& event ) {
@@ -97,10 +79,17 @@ void ConnectState::handle_event( const sf::Event& event ) {
 }
 
 void ConnectState::update( const sf::Time& delta ) {
+	// Poll the IO service.
+	get_shared().io_service->poll();
+
 	// Make connection when session host is running.
-	if( get_shared().client_thread == nullptr && get_shared().host != nullptr && get_shared().host->is_running() ) {
-		get_shared().client_thread.reset( new boost::thread( std::bind( &ConnectState::connect_func, this ) ) );
-		m_next_info_text = "Game ready, connecting...";
+	if(
+		get_shared().host != nullptr &&
+		get_shared().client->is_started() == false
+	) {
+		m_next_info_text = sf::String( L"Making connection..." );
+
+		get_shared().client->start( "127.0.0.1", 2593 ); // TODO IP+port
 	}
 
 	// Update GUI.
@@ -127,10 +116,6 @@ void ConnectState::render() const {
 	window.display();
 }
 
-void ConnectState::connect_func() {
-	get_shared().client->run( "127.0.0.1", 2593 );
-}
-
 void ConnectState::handle_connect( flex::Client::ConnectionID ) {
 	m_next_info_text = "Connection established.";
 }
@@ -138,13 +123,6 @@ void ConnectState::handle_connect( flex::Client::ConnectionID ) {
 void ConnectState::handle_disconnect( flex::Client::ConnectionID ) {
 	m_next_info_text = "Connection failed.";
 	m_canceled = true;
-}
-
-void ConnectState::session_host_func() {
-	// Run session host.
-	if( !get_shared().host->run() ) {
-		m_next_info_text = "Host failed to start. Press ESC.";
-	}
 }
 
 void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID /*conn_id*/ ) {

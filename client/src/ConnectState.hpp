@@ -24,9 +24,6 @@ class ConnectState : public State, public flex::Client::Handler {
 		void update( const sf::Time& delta );
 		void render() const;
 
-		void session_host_func();
-
-		void connect_func();
 		void handle_connect( flex::Client::ConnectionID );
 		void handle_disconnect( flex::Client::ConnectionID );
 

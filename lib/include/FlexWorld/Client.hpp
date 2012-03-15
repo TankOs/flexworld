@@ -33,27 +33,30 @@ class Client {
 		};
 
 		/** Ctor.
+		 * @param io_service IO service.
 		 * @param handler Handler.
 		 */
-		Client( Handler& handler );
+		Client( boost::asio::io_service& io_service, Handler& handler );
 
 		/** Dtor.
 		 */
 		~Client();
 
-		/** Check if connected.
-		 * @return true if connected.
+		/** Check if connection started.
+		 * @return true if started.
 		 */
-		bool is_connected() const;
+		bool is_started() const;
 
-		/** Run client.
+		/** Start.
+		 * Initiates the connection.
 		 * @param ip IP.
 		 * @param port Port.
 		 * @return true on success.
 		 */
-		bool run( const std::string& ip, unsigned short port );
+		bool start( const std::string& ip, unsigned short port );
 
-		/** Stop client.
+		/** Stop.
+		 * Drop connection.
 		 */
 		void stop();
 
@@ -81,14 +84,14 @@ class Client {
 		void handle_read( const boost::system::error_code& error, std::size_t num_bytes_read );
 		void handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> buffer );
 
-		boost::asio::io_service m_io_service;
+		boost::asio::io_service& m_io_service;
 		std::unique_ptr<boost::asio::ip::tcp::socket> m_socket;
 
 		char m_receive_buffer[READ_BUFFER_SIZE];
 		ServerProtocol::Buffer m_buffer;
 
 		Handler* m_handler;
-		bool m_connected;
+		bool m_started;
 };
 
 }

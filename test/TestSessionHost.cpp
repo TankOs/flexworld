@@ -4,25 +4,17 @@
 #include <FlexWorld/World.hpp>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/thread.hpp>
-
-bool g_sh_thread_running = false;
-
-void run_host( flex::SessionHost* host ) {
-	g_sh_thread_running = true;
-	BOOST_REQUIRE( host->run() );
-	g_sh_thread_running = false;
-}
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	using namespace flex;
 
 	// Initial state.
 	{
+		boost::asio::io_service service;
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
 		World world;
-		SessionHost host( lock_facility, acc_mgr, world );
+		SessionHost host( service, lock_facility, acc_mgr, world );
 
 		BOOST_CHECK( &host.get_lock_facility() == &lock_facility );
 		BOOST_CHECK( &host.get_account_manager() == &acc_mgr );
@@ -35,10 +27,11 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 	// Basic properties.
 	{
+		boost::asio::io_service service;
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
 		World world;
-		SessionHost host( lock_facility, acc_mgr, world );
+		SessionHost host( service, lock_facility, acc_mgr, world );
 
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
@@ -56,11 +49,12 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 	// Run and stop.
 	{
+		boost::asio::io_service service;
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
 		World world;
-		SessionHost host( lock_facility, acc_mgr, world );
 
+		SessionHost host( service, lock_facility, acc_mgr, world );
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
 
@@ -69,23 +63,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		world.add_class( Class( FlexID::make( "fw.base.nature/grass" ) ) );
 		world.add_class( Class( FlexID::make( "fw.base.nature/stone" ) ) ); // XXX 
 
-		g_sh_thread_running = true;
-		boost::thread host_thread( std::bind( &run_host, &host ) );
-
-		{
-			unsigned int time_passed = 0;
-			while( time_passed < TIMEOUT && !host.is_running() && g_sh_thread_running ) {
-				boost::this_thread::sleep( boost::posix_time::milliseconds( WAIT_INTERVAL ) );
-				time_passed += WAIT_INTERVAL;
-			}
-
-			BOOST_REQUIRE( time_passed < TIMEOUT );
-		}
-
-		BOOST_REQUIRE( host.is_running() );
-
-		// Stop and wait.
-		host.stop();
-		host_thread.join();
+		// Start host.
+		BOOST_REQUIRE( host.start() );
 	}
 }

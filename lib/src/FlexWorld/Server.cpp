@@ -21,8 +21,9 @@ void Server::Handler::handle_disconnect( ConnectionID id ) {
 
 // SERVER
 
-Server::Server( Handler& handler ) :
+Server::Server( boost::asio::io_service& io_service, Handler& handler ) :
 	m_ip( "0.0.0.0" ),
+	m_io_service( io_service ),
 	m_handler( handler ),
 	m_num_peers( 0 ),
 	m_port( 2593 ),
@@ -31,6 +32,9 @@ Server::Server( Handler& handler ) :
 }
 
 Server::~Server() {
+	if( m_running ) {
+		stop();
+	}
 }
 
 void Server::set_ip( const std::string& ip ) {
@@ -61,11 +65,9 @@ bool Server::is_running() const {
 	return m_running;
 }
 
-bool Server::run() {
+bool Server::start() {
 	namespace ip = boost::asio::ip;
 	namespace asio = boost::asio;
-
-	assert( !m_running );
 
 	// Make sure server isn't already running.
 	if( m_running ) {
@@ -100,6 +102,7 @@ bool Server::run() {
 	// Accept connection.
 	start_accept();
 
+	/*
 	// Run the service. This will block until all connections have been closed
 	// and the listener died.
 	m_io_service.run();
@@ -109,7 +112,7 @@ bool Server::run() {
 	m_acceptor.reset();
 	m_num_peers = 0;
 
-	m_running = false;
+	m_running = false;*/
 	return true;
 }
 
@@ -212,11 +215,6 @@ void Server::handle_read( std::shared_ptr<Peer> peer, const boost::system::error
 	start_read( peer );
 }
 
-void Server::stop() {
-	assert( m_running );
-	m_io_service.stop();
-}
-
 void Server::handle_write( const boost::system::error_code& error, std::shared_ptr<ServerProtocol::Buffer> /*buffer*/, ConnectionID conn_id ) {
 	// If failed to write, disconnect peer.
 	if( error ) {
@@ -242,6 +240,23 @@ void Server::disconnect_client( ConnectionID conn_id ) {
 	assert( m_peers[conn_id] != nullptr );
 
 	m_peers[conn_id]->socket->close();
+}
+
+void Server::stop() {
+	// Close listener.
+	if( m_acceptor && m_acceptor->is_open() ) {
+		m_acceptor->close();
+	}
+
+	// Close peer connections.
+	for( std::size_t peer_idx = 0; peer_idx < m_peers.size(); ++peer_idx ) {
+		if( m_peers[peer_idx] && m_peers[peer_idx]->socket && m_peers[peer_idx]->socket->is_open() ) {
+			m_peers[peer_idx]->socket->close();
+		}
+	}
+
+	// Cleanup.
+	m_acceptor.reset();
 }
 
 }
