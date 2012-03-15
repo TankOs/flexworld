@@ -2,8 +2,6 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldServer )
 
-find_package( SFML 2.0 REQUIRED SYSTEM )
-
 set( INC_DIR "src" )
 set( SRC_DIR "src" )
 

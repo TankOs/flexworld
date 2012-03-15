@@ -2,10 +2,6 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldLibrary )
 
-find_package( SFML 2.0 REQUIRED SYSTEM )
-find_package( yaml-cpp )
-find_package( Boost 1.46 REQUIRED thread filesystem system )
-
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
 

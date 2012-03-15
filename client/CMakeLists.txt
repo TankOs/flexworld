@@ -2,16 +2,6 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldClient )
 
-find_package( Boost 1.46 REQUIRED date_time filesystem system )
-find_package( OpenGL REQUIRED )
-find_package( SFGUI REQUIRED )
-find_package( SFML 2.0 REQUIRED GRAPHICS WINDOW AUDIO SYSTEM )
-find_package( yaml-cpp )
-
-if( NOT WINDOWS )
-	find_package( X11 REQUIRED )
-endif()
-
 set( INC_DIR "src" )
 set( SRC_DIR "src" )
 
@@ -83,6 +73,12 @@ target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
 
 if( NOT WINDOWS )
 	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
+
+	if( SFML_STATIC_LIBRARIES AND SFGUI_STATIC_LIBRARIES )
+		target_link_libraries( flexworld-client jpeg )
+		target_link_libraries( flexworld-client GLEW )
+		target_link_libraries( flexworld-client freetype )
+	endif()
 endif()
 
 if( FW_PORTABLE_INSTALL OR WINDOWS )

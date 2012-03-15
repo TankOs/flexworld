@@ -1,10 +1,9 @@
 cmake_minimum_required( VERSION 2.8 )
+project( FlexWorld )
 
 if( NOT CMAKE_BUILD_TYPE )
 	set( CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build (Debug or Release)" FORCE )
 endif()
-
-project( FlexWorld )
 
 #
 # Detections.
@@ -90,9 +89,39 @@ endif()
 #
 add_definitions( -DBOOST_DATE_TIME_NO_LIB )
 add_definitions( -DBOOST_REGEX_NO_LIB )
+set( Boost_ADDITIONAL_VERSIONS "1.49" "1.49.0" )
 
 if( WINDOWS )
 	add_definitions( -D_WIN32_WINNT=0x0501 )
+endif()
+
+#
+# Find packages.
+#
+set( BOOST_COMPONENTS thread filesystem system )
+set( SFML_COMPONENTS SYSTEM )
+
+if( FW_BUILD_CLIENT )
+	set( BOOST_COMPONENTS ${BOOST_COMPONENTS} date_time )
+	set( SFML_COMPONENTS ${SFML_COMPONENTS} GRAPHICS AUDIO WINDOW )
+endif()
+
+if( FW_BUILD_TEST )
+	set( BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework )
+endif()
+
+find_package( Boost 1.47 COMPONENTS ${BOOST_COMPONENTS} REQUIRED )
+find_package( SFML 2.0 COMPONENTS ${SFML_COMPONENTS} REQUIRED )
+find_package( yaml-cpp REQUIRED )
+find_package( Threads REQUIRED )
+
+if( NOT WINDOWS )
+	find_package( X11 REQUIRED )
+endif()
+
+if( FW_BUILD_CLIENT )
+	find_package( OpenGL REQUIRED )
+	find_package( SFGUI REQUIRED )
 endif()
 
 # Build FWSG.

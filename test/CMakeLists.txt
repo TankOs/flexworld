@@ -1,9 +1,5 @@
 project( FlexWorldTest )
 
-#set(Boost_USE_STATIC_LIBS ON)
-find_package( Boost 1.47 REQUIRED thread unit_test_framework )
-find_package( SFML 2.0 )
-
 set( DATA_DIRECTORY ${PROJECT_SOURCE_DIR}/data )
 configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config.hpp @ONLY )
 
@@ -58,12 +54,15 @@ add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld )
 target_link_libraries( test fwsg )
+target_link_libraries( test ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( test ${Boost_THREAD_LIBRARY} )
 target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )
-target_link_libraries( test boost_unit_test_framework )
 
 if( WINDOWS )
 	target_link_libraries( test wsock32.lib )
+else()
+	target_link_libraries( test ${CMAKE_THREAD_LIBS_INIT} )
+	target_link_libraries( test rt )
 endif()
 
 add_custom_command(
