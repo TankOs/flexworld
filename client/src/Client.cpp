@@ -5,6 +5,7 @@
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/Log.hpp>
 
+#include <SFGUI/SFGUI.hpp>
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
@@ -19,6 +20,9 @@ Client::Client() {
 }
 
 void Client::run() {
+	// SFGUI guard.
+	sfg::SFGUI sfgui_guard;
+
 	// Make sure user's profile directory exists.
 	if( !boost::filesystem::exists( UserSettings::get_profile_path() ) ) {
 		// Try to create the directory.
