@@ -1,2 +1,3 @@
 /doc/html/*
 /lib/include/FlexWorld/Config.hpp
+/dist/debian/control

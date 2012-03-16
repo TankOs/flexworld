@@ -27,28 +27,29 @@ set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake;${PROJE
 #
 # Global project settings.
 #
-set( FW_VERSION_SUFFIX "DEV" CACHE STRING "Version suffix." )
+set( FW_VERSION_MAJOR "0" )
+set( FW_VERSION_MINOR "0" )
+set( FW_VERSION_REVISION "0" )
+set( FW_VERSION_SUFFIX "12-11-0" )
+
 set( FW_PORTABLE_INSTALL TRUE CACHE BOOL "Install portable (especially useful for distributing Linux test releases(!), so that both client and server don't use absolute system paths)." )
 
 # Configure data root directory.
-if( WINDOWS )
+if( FW_PORTABLE_INSTALL OR WINDOWS )
 	set( FW_ROOT_DATA_DIRECTORY "./" )
 else()
-	if( FW_PORTABLE_INSTALL )
-		set( FW_ROOT_DATA_DIRECTORY "./" )
-	else()
-		set( FW_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/games/flexworld/" )
-	endif()
+	set( FW_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/games/flexworld/" )
 endif()
 
 #
-# Targets.
+# Properties.
 #
 set( FW_BUILD_CLIENT true CACHE BOOL "Build client." )
 set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
 set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
 set( FW_BUILD_DOC false CACHE BOOL "Build API docs (requires Doxygen)." )
 set( FW_BUILD_CONVERT2FWM false CACHE BOOL "Build convert2fwm tool." )
+set( FW_BUILD_DEB false CACHE BOOL "Make Debian package." )
 
 #
 # Platform-specific.
@@ -110,8 +111,8 @@ if( FW_BUILD_TEST )
 	set( BOOST_COMPONENTS ${BOOST_COMPONENTS} unit_test_framework )
 endif()
 
-find_package( Boost 1.47 COMPONENTS ${BOOST_COMPONENTS} REQUIRED )
-find_package( SFML 2.0 COMPONENTS ${SFML_COMPONENTS} REQUIRED )
+find_package( Boost 1.47 REQUIRED COMPONENTS ${BOOST_COMPONENTS} )
+find_package( SFML 2.0 REQUIRED COMPONENTS ${SFML_COMPONENTS} )
 find_package( yaml-cpp REQUIRED )
 find_package( Threads REQUIRED )
 
@@ -124,29 +125,45 @@ if( FW_BUILD_CLIENT )
 	find_package( SFGUI REQUIRED )
 endif()
 
-# Build FWSG.
+#
+# BUILD.
+#
+
+# FWSG.
 add_subdirectory( "extlibs/FWSG" )
 
+# FlexWorld common library.
 add_subdirectory( "lib" )
 
+# Doxygen.
 if( FW_BUILD_DOC )
 	add_subdirectory( "doc" )
 endif()
 
+# Dedicated server.
 if( FW_BUILD_SERVER )
 	add_subdirectory( "server" )
 endif()
 
+# Client.
 if( FW_BUILD_CLIENT )
 	add_subdirectory( "client" )
 endif()
 
+# Unittests.
 if( FW_BUILD_TEST )
 	add_subdirectory( "test" )
 endif()
 
+# Convert2FWM tool.
 if( FW_BUILD_CONVERT2FWM )
 	add_subdirectory( "tools/convert2fwm" )
 endif()
 
+# Process/install game modes.
 add_subdirectory( "modes" )
+
+# Build Debian package.
+if( FW_BUILD_DEB )
+	add_subdirectory( dist/debian )
+endif()

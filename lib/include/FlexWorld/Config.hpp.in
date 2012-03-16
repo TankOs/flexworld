@@ -4,7 +4,7 @@
 
 namespace flex {
 
-static const Version VERSION( 0, 0, 0 );
+static const Version VERSION( @FW_VERSION_MAJOR@, @FW_VERSION_MINOR@, @FW_VERSION_REVISION@ );
 static const char* VERSION_SUFFIX = "@FW_VERSION_SUFFIX@";
 
 static const char* ROOT_DATA_DIRECTORY = "@FW_ROOT_DATA_DIRECTORY@";

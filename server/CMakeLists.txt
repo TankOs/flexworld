@@ -25,7 +25,7 @@ if( FW_PORTABLE_INSTALL OR WINDOWS )
 elseif( LINUX )
 	install(
 		TARGETS flexworld-server
-		DESTINATION bin
+		DESTINATION games
 	)
 else()
 	message( FATAL_ERROR "Install?!?!?!" )
