@@ -11,13 +11,6 @@ namespace flex {
 namespace msg {
 
 /** Chunk network message.
- * The message includes two groups of data:
- *
- * -# Used class IDs (may be plain IDs or SHA-1 hashes, max. 255 chars per
- *  class ID, max. 0x0fff class IDs).
- * -# Block data (one WORD each), where the first 4 most-significant bits
- *  represent flags and the remaining 12 bits define the class ID index of the
- *  class IDs specified in group 1. Max. blocks: 0xffff.
  */
 class Chunk : public Message {
 	public:

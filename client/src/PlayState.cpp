@@ -627,3 +627,11 @@ void PlayState::on_console_message_add() {
 	m_latest_messages.push_back( text );
 	update_latest_messages();
 }
+
+void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID conn_id ) {
+	std::cout
+		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
+		<< msg.get_position().x << ", " << msg.get_position().y << ", " << msg.get_position().z
+		<< " " << msg.get_heading() << "°" << std::endl
+	;
+}

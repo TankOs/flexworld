@@ -12,6 +12,27 @@
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 
+template <class T>
+struct ExceptionChecker {
+	ExceptionChecker( const std::string& msg_ ) :
+		msg( msg_ )
+	{
+	}
+
+	bool operator()( const T& e ) {
+		bool result = (e.what() == msg);
+
+		if( !result ) {
+			std::cout << "Expected: " << msg << std::endl;
+			std::cout << "Thrown:   " << e.what() << std::endl;
+		}
+
+		return result;
+	}
+
+	std::string msg;
+};
+
 BOOST_AUTO_TEST_CASE( TestMessage ) {
 	using namespace flex;
 
@@ -336,8 +357,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 	const std::string PLANET_NAME = "construct";
 	const sf::Vector3f POSITION = sf::Vector3f( 1, 2, 3 );
-	const uint16_t C_HEADING = static_cast<uint16_t>( 180.f / 360.f * 65535.f );
-	const float HEADING = 180;
+	const float HEADING = 233.124f;
 	const Planet::Vector PLANET_SIZE = Planet::Vector( 10, 20, 30 );
 	const Chunk::Vector CHUNK_SIZE = Chunk::Vector( 32, 64, 128 );
 
@@ -345,7 +365,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		+ sizeof( uint8_t ) // Planet name length.
 		+ sizeof( char ) * PLANET_NAME.size()
 		+ sizeof( POSITION )
-		+ sizeof( C_HEADING )
+		+ sizeof( HEADING )
 		+ sizeof( PLANET_SIZE )
 		+ sizeof( CHUNK_SIZE )
 	;
@@ -382,7 +402,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 	source.push_back( static_cast<unsigned char>( PLANET_NAME.size() ) );
 	source.insert( source.end(), PLANET_NAME.begin(), PLANET_NAME.end() );
 	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( &C_HEADING ), reinterpret_cast<const char*>( &C_HEADING ) + sizeof( C_HEADING ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &PLANET_SIZE ), reinterpret_cast<const char*>( &PLANET_SIZE ) + sizeof( PLANET_SIZE ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &CHUNK_SIZE ), reinterpret_cast<const char*>( &CHUNK_SIZE ) + sizeof( CHUNK_SIZE ) );
 
@@ -416,7 +436,8 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 
 		std::vector<char> invalid_name( msg::Beam::MAX_PLANET_NAME_LENGTH + 1, 'a' );
 		msg.set_planet_name( std::string( &invalid_name.front(), invalid_name.size() ) );
-		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid planet name." ) );
 	}
 
 	// Serialize with invalid position.
@@ -430,7 +451,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid position." ) );
 		}
 		{
 			msg::Beam msg;
@@ -441,7 +462,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid position." ) );
 		}
 		{
 			msg::Beam msg;
@@ -452,7 +473,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid position." ) );
 		}
 	}
 
@@ -467,7 +488,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid planet size." ) );
 		}
 		{
 			msg::Beam msg;
@@ -478,7 +499,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid planet size." ) );
 		}
 		{
 			msg::Beam msg;
@@ -489,7 +510,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( CHUNK_SIZE );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid planet size." ) );
 		}
 	}
 
@@ -504,7 +525,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( Chunk::Vector( 0, 1, 1 ) );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid chunk size." ) );
 		}
 		{
 			msg::Beam msg;
@@ -515,7 +536,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( Chunk::Vector( 1, 0, 1 ) );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid chunk size." ) );
 		}
 		{
 			msg::Beam msg;
@@ -526,7 +547,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg.set_chunk_size( Chunk::Vector( 1, 1, 0 ) );
 
 			ServerProtocol::Buffer buffer;
-			BOOST_CHECK_THROW( msg.serialize( buffer ), msg::Beam::InvalidDataException );
+			BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Beam::InvalidDataException, ExceptionChecker<msg::Beam::InvalidDataException>( "Invalid chunk size." ) );
 		}
 	}
 
@@ -540,7 +561,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		BOOST_CHECK( eaten == SIZE );
 		BOOST_CHECK( msg.get_planet_name() == PLANET_NAME );
 		BOOST_CHECK( msg.get_position() == POSITION );
-		//BOOST_CHECK( msg.get_heading() == HEADING ); TODO REENABLE
+		BOOST_CHECK( msg.get_heading() == HEADING );
 		BOOST_CHECK( msg.get_planet_size() == PLANET_SIZE );
 		BOOST_CHECK( msg.get_chunk_size() == CHUNK_SIZE );
 	}
@@ -552,7 +573,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 		msg::Beam msg;
 		std::size_t eaten = 0;
 
-		BOOST_CHECK_THROW( eaten = msg.deserialize( &i_buffer.front(), i_buffer.size() ), msg::Beam::BogusDataException );
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &i_buffer.front(), i_buffer.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid planet name." ) );
 		BOOST_CHECK( eaten == 0 );
 	}
 
@@ -572,7 +593,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid position." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -589,7 +610,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid position." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -606,7 +627,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid position." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 	}
@@ -627,7 +648,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid planet size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -644,7 +665,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid planet size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -661,7 +682,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid planet size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 	}
@@ -682,7 +703,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid chunk size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -699,7 +720,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid chunk size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 		{
@@ -716,7 +737,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 			msg::Beam msg;
 			std::size_t eaten = 0;
 
-			BOOST_CHECK_THROW( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException );
+			BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid chunk size." ) );
 			BOOST_CHECK( eaten == 0 );
 		}
 	}
@@ -734,6 +755,9 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 	using namespace flex;
 
+	enum { CHUNK_SIZE = 16 };
+	static const Planet::Vector POSITION( 22, 33, 44 );
+
 	// Initial state.
 	{
 		msg::Chunk msg;
@@ -746,12 +770,10 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 	{
 		msg::Chunk msg;
 
-		msg.set_position( Planet::Vector( 1, 2, 3 ) );
+		msg.set_position( POSITION );
 
-		BOOST_CHECK( msg.get_position() == Planet::Vector( 1, 2, 3 ) );
+		BOOST_CHECK( msg.get_position() == POSITION );
 	}
-
-	enum { CHUNK_SIZE = 16 };
 
 	// Create chunk for testing.
 	Chunk source_chunk( Chunk::Vector( CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE ) );
@@ -792,6 +814,55 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 
 		BOOST_CHECK( all_sane == true );
 	}
+
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+
+	uint16_t num_blocks = CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE;
+	source.insert( source.end(), reinterpret_cast<const char*>( &num_blocks ), reinterpret_cast<const char*>( &num_blocks ) + sizeof( num_blocks ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( source_chunk.get_raw_data() ), reinterpret_cast<const char*>( source_chunk.get_raw_data() ) + sizeof( Chunk::Block ) * num_blocks );
+
+	// Serialize.
+	{
+		msg::Chunk msg;
+
+		msg.set_position( POSITION );
+		msg.set_blocks( source_chunk );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( source == buffer );
+	}
+
+	// Serialize with zero block count.
+	{
+		msg::Chunk msg;
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chunk::InvalidDataException, ExceptionChecker<msg::Chunk::InvalidDataException>( "Missing block data." ) );
+	}
+
+	// Serialize with too many blocks.
+	{
+		Chunk big_chunk( Chunk::Vector( 64, 64, 64 ) );
+
+		msg::Chunk msg;
+
+		msg.set_blocks( big_chunk );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chunk::InvalidDataException, ExceptionChecker<msg::Chunk::InvalidDataException>( "Too many blocks." ) );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::Chunk msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
 }
 
 BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
@@ -801,9 +872,9 @@ BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
 	static const msg::RequestChunk::Timestamp TIMESTAMP( 12345 );
 
 	// Create source buffer.
-	ServerProtocol::Buffer source_buffer;
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &TIMESTAMP ), reinterpret_cast<const char*>( &TIMESTAMP ) + sizeof( TIMESTAMP ) );
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &TIMESTAMP ), reinterpret_cast<const char*>( &TIMESTAMP ) + sizeof( TIMESTAMP ) );
 
 	// Initial state.
 	{
@@ -832,7 +903,7 @@ BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
 		ServerProtocol::Buffer buffer;
 		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
 
-		BOOST_CHECK( buffer == source_buffer );
+		BOOST_CHECK( buffer == source );
 	}
 
 	// Deserialize.
@@ -840,11 +911,20 @@ BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
 		msg::RequestChunk msg;
 
 		std::size_t eaten = 0;
-		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
 
-		BOOST_CHECK( eaten == source_buffer.size() );
+		BOOST_CHECK( eaten == source.size() );
 		BOOST_CHECK( msg.get_position() == POSITION );
 		BOOST_CHECK( msg.get_timestamp() == TIMESTAMP );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::RequestChunk msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
 	}
 }
 
@@ -854,8 +934,8 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 	static const Planet::Vector POSITION( 1, 2, 3 );
 
 	// Create source buffer.
-	ServerProtocol::Buffer source_buffer;
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
 
 	// Initial state.
 	{
@@ -880,7 +960,7 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 		ServerProtocol::Buffer buffer;
 		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
 
-		BOOST_CHECK( buffer == source_buffer );
+		BOOST_CHECK( buffer == source );
 	}
 
 	// Deserialize.
@@ -888,32 +968,44 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 		msg::ChunkUnchanged msg;
 
 		std::size_t eaten = 0;
-		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
 
-		BOOST_CHECK( eaten == source_buffer.size() );
+		BOOST_CHECK( eaten == source.size() );
 		BOOST_CHECK( msg.get_position() == POSITION );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::ChunkUnchanged msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
 	}
 }
 
 BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 	using namespace flex;
 
+	static const Entity::ID ID = 1337;
 	static const Planet::Coordinate POSITION( 1, 2, 3 );
 	static const std::string CLASS( "fw.base.human/dwarf_male" );
 	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
-	static const uint16_t HEADING( 215 );
+	static const float HEADING( 213.44f );
 
 	// Create source buffer.
-	ServerProtocol::Buffer source_buffer;
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
-	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
 
 	// Initial state.
 	{
 		msg::CreateEntity msg;
 
+		BOOST_CHECK( msg.get_id() == 0 );
 		BOOST_CHECK( msg.get_position() == Planet::Coordinate( 0, 0, 0 ) );
 		BOOST_CHECK( msg.get_heading() == 0 );
 		BOOST_CHECK( msg.get_class() == "" );
@@ -922,10 +1014,12 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 	// Basic properties.
 	{
 		msg::CreateEntity msg;
+		msg.set_id( ID );
 		msg.set_position( POSITION );
 		msg.set_heading( HEADING );
 		msg.set_class( CLASS );
 
+		BOOST_CHECK( msg.get_id() == ID );
 		BOOST_CHECK( msg.get_position() == POSITION );
 		BOOST_CHECK( msg.get_heading() == HEADING );
 		BOOST_CHECK( msg.get_class() == CLASS );
@@ -934,6 +1028,7 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 	// Serialize.
 	{
 		msg::CreateEntity msg;
+		msg.set_id( ID );
 		msg.set_position( POSITION );
 		msg.set_heading( HEADING );
 		msg.set_class( CLASS );
@@ -941,21 +1036,22 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 		ServerProtocol::Buffer buffer;
 		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
 
-		BOOST_CHECK( buffer == source_buffer );
+		BOOST_CHECK( buffer == source );
 	}
 
-	// Serialize with invalid data.
+	// Serialize with invalid class ID.
 	{
 		msg::CreateEntity msg;
+		msg.set_id( ID );
 		msg.set_position( POSITION );
 		msg.set_heading( HEADING );
 		msg.set_class( "" );
 
 		ServerProtocol::Buffer buffer;
-		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
 
 		msg.set_class( std::string( 256, 'x' ) );
-		BOOST_CHECK_THROW( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
 	}
 
 	// Deserialize.
@@ -963,11 +1059,39 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 		msg::CreateEntity msg;
 
 		std::size_t eaten = 0;
-		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source_buffer[0], source_buffer.size() ) );
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
 
-		BOOST_CHECK( eaten == source_buffer.size() );
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_id() == ID );
 		BOOST_CHECK( msg.get_position() == POSITION );
 		BOOST_CHECK( msg.get_heading() == HEADING );
 		BOOST_CHECK( msg.get_class() == CLASS );
+	}
+
+	// Deserialize with bogus class length.
+	{
+		uint8_t zero = 0;
+
+		ServerProtocol::Buffer invalid_source;
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+		invalid_source.push_back( zero );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+
+		msg::CreateEntity msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid class length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::CreateEntity msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
 	}
 }

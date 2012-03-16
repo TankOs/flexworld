@@ -3,6 +3,7 @@
 #include <FlexWorld/Messages/LoginOK.hpp>
 #include <FlexWorld/Messages/Beam.hpp>
 #include <FlexWorld/Messages/Chunk.hpp>
+#include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
@@ -345,8 +346,6 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 	beam_msg.set_position( position );
 	beam_msg.set_heading( heading );
 
-	m_lock_facility.lock_world( false );
-
 	// Transform coord.
 	Planet::Vector chunk_pos( 0, 0, 0 );
 	Chunk::Vector block_pos( 0, 0, 0 );
@@ -362,10 +361,35 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 	info.view_cuboid.height = std::min( static_cast<Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), m_max_view_radius );
 	info.view_cuboid.depth = std::min( static_cast<Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), m_max_view_radius );
 
-	m_lock_facility.lock_planet( *planet, false );
-
 	// Send message.
 	m_server->send_message( beam_msg, conn_id );
+
+	// Send entities.
+	// TODO Send only entities in vicinity.
+	std::size_t num_entities = planet->get_num_entities();
+	Entity* entity = nullptr;
+
+	for( std::size_t entity_idx = 0 ; entity_idx < num_entities; ++entity_idx ) {
+		entity = m_world.find_entity( planet->get_entity_id( entity_idx ) );
+
+		if( !entity ) {
+			Log::Logger( Log::ERR )
+				<< "Planet " << planet->get_id() << " references non-existant entity #"
+				<< planet->get_entity_id( entity_idx ) << "." << Log::endl
+			;
+			continue;
+		}
+
+		msg::CreateEntity create_msg;
+		create_msg.set_position( entity->get_position() );
+		create_msg.set_heading( 123.0f ); // TODO
+		create_msg.set_class( entity->get_class().get_id().get() );
+
+		m_server->send_message( create_msg, conn_id );
+	}
+
+	m_lock_facility.lock_world( false );
+	m_lock_facility.lock_planet( *planet, false );
 }
 
 void SessionHost::handle_message( const msg::RequestChunk& req_chunk_msg, Server::ConnectionID conn_id ) {

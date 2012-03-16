@@ -40,20 +40,15 @@ void Beam::serialize( Buffer& buffer ) const {
 		+ sizeof( uint8_t ) // Planet name length.
 		+ sizeof( char ) * m_planet_name.size()
 		+ sizeof( m_position )
-		+ sizeof( uint16_t ) // Converted heading.
+		+ sizeof( m_heading )
 		+ sizeof( m_planet_size )
 		+ sizeof( m_chunk_size )
 	);
 
 	buffer[buf_ptr] = static_cast<uint8_t>( m_planet_name.size() ); ++buf_ptr;
 	std::memcpy( &buffer[buf_ptr], m_planet_name.c_str(), m_planet_name.size() ); buf_ptr += m_planet_name.size();
-
 	std::memcpy( &buffer[buf_ptr], &m_position, sizeof( m_position ) ); buf_ptr += sizeof( m_position );
-
-	// Convert heading.
-	uint16_t c_heading = static_cast<uint16_t>( (std::fmod( m_heading, 360.f ) / 360.f) * 65535.f );
-	std::memcpy( &buffer[buf_ptr], &c_heading, sizeof( c_heading ) ); buf_ptr += sizeof( c_heading );
-
+	std::memcpy( &buffer[buf_ptr], &m_heading, sizeof( m_heading ) ); buf_ptr += sizeof( m_heading );
 	std::memcpy( &buffer[buf_ptr], &m_planet_size, sizeof( m_planet_size ) ); buf_ptr += sizeof( m_planet_size );
 	std::memcpy( &buffer[buf_ptr], &m_chunk_size, sizeof( m_chunk_size ) ); buf_ptr += sizeof( m_chunk_size );
 }
@@ -95,15 +90,12 @@ std::size_t Beam::deserialize( const char* buffer, std::size_t buffer_size ) {
 	}
 
 	// Heading.
-	if( buffer_size - buf_ptr < sizeof( uint16_t ) ) {
+	if( buffer_size - buf_ptr < sizeof( m_heading ) ) {
 		return 0;
 	}
 
-	uint16_t org_heading = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
-	buf_ptr += sizeof( org_heading );
-
-	// Convert heading.
-	float heading = static_cast<float>( org_heading * 360 ) / 65535.f;
+	float heading = *reinterpret_cast<const float*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( heading );
 
 	if( heading >= 360.f || heading < 0.f ) {
 		throw BogusDataException( "Invalid heading." );

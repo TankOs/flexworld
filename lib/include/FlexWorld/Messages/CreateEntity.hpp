@@ -2,6 +2,7 @@
 
 #include <FlexWorld/Message.hpp>
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <string>
 
@@ -12,11 +13,19 @@ namespace msg {
  */
 class CreateEntity : public Message {
 	public:
-		typedef uint32_t Timestamp; ///< Timestamp.
-
 		/** Ctor.
 		 */
 		CreateEntity();
+
+		/** Set ID.
+		 * @param id ID.
+		 */
+		void set_id( Entity::ID id );
+
+		/** Get ID.
+		 * @return ID.
+		 */
+		Entity::ID get_id() const;
 
 		/** Set position.
 		 * @param pos Position.
@@ -31,12 +40,12 @@ class CreateEntity : public Message {
 		/** Set heading.
 		 * @param heading Heading.
 		 */
-		void set_heading( uint16_t heading );
+		void set_heading( float heading );
 
 		/** Get heading.
 		 * @return Heading.
 		 */
-		uint16_t get_heading() const;
+		float get_heading() const;
 
 		/** Set class.
 		 * @param cls Class.
@@ -54,7 +63,8 @@ class CreateEntity : public Message {
 	private:
 		std::string m_class;
 		Planet::Coordinate m_position;
-		uint16_t m_heading;
+		Entity::ID m_id;
+		float m_heading;
 };
 
 }
