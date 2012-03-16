@@ -3,7 +3,7 @@ Version: @DEB_VERSION@
 Section: non-free/games
 Priority: extra
 Architecture: amd64
-Depends: libjpeg8, libxrandr2, libglew1.7, libopenal1, libsndfile1, libpng12-0, zlib1g, libsoil1, libfreetype6
+Depends: libjpeg8, libxrandr2, libglew1.6, libopenal1, libsndfile1, libpng12-0, zlib1g, libsoil1, libfreetype6
 Maintainer: Stefan Schindler <debian@flexworld-game.com>
 Homepage: http://flexworld-game.com/
 Description: Flexible multiplayer sandbox game.
