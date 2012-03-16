@@ -130,6 +130,7 @@ endif()
 #
 
 # FWSG.
+set( FWSG_SKIP_INSTALL TRUE )
 add_subdirectory( "extlibs/FWSG" )
 
 # FlexWorld common library.
@@ -163,7 +164,48 @@ endif()
 # Process/install game modes.
 add_subdirectory( "modes" )
 
+#
+# Setup CPack.
+#
+set( CPACK_PACKAGE_NAME "flexworld" )
+set( CPACK_PACKAGE_VENDOR "BoxBox.org" )
+set( CPACK_PACKAGE_VERSION_MAJOR "${FW_VERSION_MAJOR}" )
+set( CPACK_PACKAGE_VERSION_MINOR "${FW_VERSION_MINOR}" )
+set( CPACK_PACKAGE_VERSION_PATCH "${FW_VERSION_REVISION}" )
+set( CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}" )
+
+if( FW_VERSION_SUFFIX )
+	set( CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}-${FW_VERSION_SUFFIX}" )
+endif()
+
+set( CPACK_PACKAGE_DESCRIPTION "Flexible 3D multiplayer sandbox game." )
+
+if( WINDOWS )
+else()
+endif()
+
+if( CMAKE_SIZEOF_VOID_P MATCHES "8" )
+	set( CPACK_SYSTEM_NAME "amd64" )
+else()
+	set( CPACK_SYSTEM_NAME "i386" )
+endif()
+
+set( CPACK_TOPLEVEL_TAG "${CPACK_SYSTEM_NAME}" )
+
 # Build Debian package.
 if( FW_BUILD_DEB )
-	add_subdirectory( dist/debian )
+	set( CPACK_GENERATOR "DEB" )
+	set( CPACK_DEBIAN_PACKAGE_MAINTAINER "Stefan Schindler <support@flexworld-game.com>" )
+	set( CPACK_DEBIAN_PACKAGE_NAME "non-free/${CPACK_PACKAGE_NAME}" )
+	set( CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}" )
+	set( CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CPACK_SYSTEM_NAME}" )
+	set( CPACK_DEBIAN_PACKAGE_DEPENDS "libjpeg8, libxrandr2, libglew1.6, libopenal1, libsndfile1, libpng12-0, zlib1g, libsoil1, libfreetype6" )
+	set( CPACK_DEBIAN_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}" )
+	set( CPACK_DEBIAN_PACKAGE_SECTION "games" )
+	set( CPACK_DEBIAN_PACKAGE_PRIORITY "extra" )
+
+	# Fix CPack's wrong filename.
+	set( CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}_${CPACK_SYSTEM_NAME}" )
+
+	include( CPack )
 endif()

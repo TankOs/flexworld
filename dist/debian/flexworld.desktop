@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=FlexWorld
-Comment=FlexWorld
-Exec=/usr/games/flexworld-client
-Terminal=false
-Type=Application
-Categories=Game;
-StartupNotify=false
