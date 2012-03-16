@@ -11,6 +11,7 @@
 #include <FlexWorld/Messages/ChunkUnchanged.hpp>
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
+#include <iostream>
 
 template <class T>
 struct ExceptionChecker {
