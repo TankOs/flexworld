@@ -629,9 +629,11 @@ void PlayState::on_console_message_add() {
 }
 
 void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID conn_id ) {
+#if !defined( NDEBUG )
 	std::cout
 		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
 		<< msg.get_position().x << ", " << msg.get_position().y << ", " << msg.get_position().z
 		<< " " << msg.get_heading() << "°" << std::endl
 	;
+#endif
 }
