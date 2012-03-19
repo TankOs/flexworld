@@ -72,7 +72,7 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 
 	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
 	content_box->Pack( general_frame, false );
-	content_box->Pack( multiplayer_frame, false );
+	//content_box->Pack( multiplayer_frame, false );
 	content_box->Pack( alignment, true );
 
 	window->Add( content_box );

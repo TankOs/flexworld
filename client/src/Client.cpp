@@ -20,9 +20,6 @@ Client::Client() {
 }
 
 void Client::run() {
-	// SFGUI guard.
-	sfg::SFGUI sfgui_guard;
-
 	// Make sure user's profile directory exists.
 	if( !boost::filesystem::exists( UserSettings::get_profile_path() ) ) {
 		// Try to create the directory.
@@ -95,6 +92,9 @@ void Client::run() {
 	}
 
 	m_window.setVerticalSyncEnabled( Shared::get().user_settings.is_vsync_enabled() );
+
+	// SFGUI guard.
+	sfg::SFGUI sfgui_guard;
 
 	// Launch first state.
 	State* state( new IntroState( m_window ) );

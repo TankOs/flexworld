@@ -34,6 +34,11 @@ class OptionsWindow : public sfg::Window {
 		 */
 		const UserSettings& get_user_settings() const;
 
+		/** Refresh user settings.
+		 * @param user_settings User settings.
+		 */
+		void refresh_user_settings( const UserSettings& user_settings );
+
 		sfg::Signal OnAccept; ///< Fired when OK clicked.
 		sfg::Signal OnReject; ///< Fired when cancel clicked.
 
@@ -45,6 +50,7 @@ class OptionsWindow : public sfg::Window {
 
 		void show_page( sfg::Widget::Ptr page );
 		void refresh_action_button_labels();
+		void load_values();
 
 		void on_ok_click();
 		void on_cancel_click();
@@ -66,6 +72,8 @@ class OptionsWindow : public sfg::Window {
 
 		ButtonActionMap m_button_actions;
 		ActionButtonMap m_action_buttons;
+
+		sfg::Notebook::Ptr m_notebook;
 
 		sfg::Entry::Ptr m_username_entry;
 		sfg::Entry::Ptr m_serial_entry;

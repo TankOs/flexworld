@@ -1,4 +1,87 @@
 * {
+	BackgroundColor: #ffffff00;
+	BorderColor: #ffffff00;
+	Color: #ffffffff;
+}
+
+Window {
+	ShadowDistance: 9999999999;
+	BorderColor: #ffffff00;
+	TitleBackgroundColor: #ffffff00;
+}
+
+Frame {
+	BorderColor: #ffffff55;
+}
+
+Button {
+	BackgroundColor: #ffffff22;
+	BorderColor: #ffffff00;
+	Padding: 8;
+	FontName: local/gui/orbitron_bold.ttf;
+	FontSize: 18;
+}
+
+Button:PRELIGHT {
+	BackgroundColor: #ffffff55;
+}
+
+Window#menu Label {
+	FontSize: 9;
+	Color: #ffffffaa;
+}
+
+Label#title {
+	FontName: local/gui/orbitron_bold.ttf;
+	FontSize: 30;
+	Color:#ffffffff;
+}
+
+Notebook {
+	BackgroundColor: #ffffff00;
+	BackgroundColorPrelight: #ffffff55;
+	BackgroundColorPrelightDark: #ffffff22;
+	BorderColor: #ffffff00;
+}
+
+Entry {
+	BorderColor: #ffffff00;
+	BackgroundColor: #ffffff22;
+}
+
+Entry:PRELIGHT,
+Entry:ACTIVE {
+	BackgroundColor: #ffffff55;
+}
+
+CheckButton {
+	BackgroundColor: #ffffff22;
+	BorderColor: #ffffff00;
+	CheckColor:#ffffffff;
+}
+
+CheckButton:PRELIGHT {
+	BackgroundColor: #ffffff55;
+}
+
+Scale {
+	TroughColor: #ffffff22;
+	SliderColor: #ffffffff;
+	SliderBorderColor: #ffffff00;
+}
+
+ComboBox {
+	BackgroundColor: #ffffff22;
+	BorderColor: #ffffff00;
+	HighlightedColor: #ffffff55;
+	Padding: 10;
+}
+
+ComboBox:PRELIGHT {
+	BackgroundColor: #ffffff55;
+}
+
+/** {
 	FontSize: 12;
 	Color: #ffffffff;
 }
@@ -9,14 +92,18 @@ Label#title {
 }
 
 Window {
-	BackgroundColor: #2e4872ee;
-	BorderColor: #000000ff;
-	TitleBackgroundColor: #58729cff;
+	BackgroundColor:#ffffff00;
+	BorderColor: #ffffff00;
+	ShadowDistance: 9999999999;
+	TitleBackgroundColor: #ffffff00;
+}
+
+Window#menu {
 }
 
 Window#menu * {
-	FontSize: 14;
-	/*FontName: local/gui/orbitron_bold.ttf;*/
+	FontSize: 12;
+	FontName: local/gui/orbitron_bold.ttf;
 }
 
 Button {
@@ -26,7 +113,7 @@ Button {
 }
 
 Window#menu Button {
-	BorderWidth: 2;
+	BorderWidth: 1;
 	Padding: 10;
 }
 
@@ -100,4 +187,4 @@ ComboBox:PRELIGHT {
 
 ComboBox:ACTIVE {
 	Color: #ffffffff;
-}
+}*/

@@ -15,11 +15,14 @@
 #include <ctime>
 #include <cstdlib>
 
-const bool SHOW_NOTICES = false;
+static const bool SHOW_NOTICES = false;
+static const float FADE_SPEED = 1300.0f;
 
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
-	m_desktop( target )
+	m_desktop( target ),
+	m_fade_main_menu_out( false ),
+	m_background_varray( sf::Quads, 4 )
 {
 }
 
@@ -96,165 +99,27 @@ void MenuState::init() {
 	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
 	check_required_settings();
 
-	m_window->SetRequisition( sf::Vector2f( 400.f, 0.f ) );
 	m_window->SetPosition(
 		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_window->GetAllocation().width / 2.f,
-			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_window->GetAllocation().height / 2.f
+			-m_window->GetAllocation().width,
+			static_cast<float>( get_render_target().getSize().y ) * 0.25f - m_window->GetAllocation().height * 0.5f
 		)
 	);
 
-	// Init clouds.
-	sf::Image image;
-	image.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
-	m_cloud_texture.loadFromImage( image );
-
-	for( uint8_t cloud_index = 0; cloud_index < 25; ++cloud_index ) {
-		uint8_t num_parts( static_cast<uint8_t>( std::rand() % (10 - 4) + 5 ) );
-		sf::Vector2f cloud_position(
-			static_cast<float>( std::rand() % get_render_target().getSize().x ),
-			static_cast<float>( std::rand() % get_render_target().getSize().y )
-		);
-
-		for( uint8_t part_index = 0; part_index < num_parts; ++part_index ) {
-			float angle( static_cast<float>( std::rand() % 3600) / 10.f );
-			float scale( static_cast<float>( std::rand() % (100 - 49) + 50 ) / 100.f );
-			sf::Vector2f offset(
-				static_cast<float>( std::rand() % 50 ),
-				static_cast<float>( std::rand() % 20 )
-			);
-
-			sf::Sprite cloud_sprite( m_cloud_texture );
-			cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getWidth() / 2 ), static_cast<float>( m_cloud_texture.getHeight() / 2 ) );
-			cloud_sprite.setPosition( cloud_position.x + offset.x, cloud_position.y + offset.y );
-			cloud_sprite.setScale( scale, scale );
-			cloud_sprite.setRotation( angle );
-			cloud_sprite.setColor( sf::Color( 255, 255, 255, 40 ) );
-
-			m_cloud_sprites.push_back( cloud_sprite );
-		}
-	}
-
-	// Cleanup the backend.
-	get_shared().account_manager.reset();
-	get_shared().host.reset();
-	get_shared().lock_facility.reset();
-	get_shared().world.reset();
-
-	get_render_target().resetGLStates();
-}
-
-void MenuState::cleanup() {
-}
-
-void MenuState::handle_event( const sf::Event& event ) {
-	m_desktop.HandleEvent( event );
-
-	// Check if options window ate the event.
-	if( m_options_window && m_options_window->is_event_processed() ) {
-		return;
-	}
-
-	if( event.type == sf::Event::Closed ) {
-		leave();
-	}
-
-	if( (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) ) {
-		if( m_options_window ) {
-			on_options_reject();
-		}
-		else if( m_start_game_window ) {
-			on_start_game_reject();
-		}
-		else {
-			leave();
-		}
-	}
-}
-
-void MenuState::update( const sf::Time& delta ) {
-	float seconds( delta.asSeconds() );
-
-	// Move clouds.
-	SpriteList::iterator cloud_iter( m_cloud_sprites.begin() );
-	SpriteList::iterator cloud_iter_end( m_cloud_sprites.end() );
-
-	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		cloud_iter->move( seconds * 10.f, seconds * -5.f );
-
-		if( cloud_iter->getGlobalBounds().left >= static_cast<float>( get_render_target().getSize().x ) ) {
-			cloud_iter->move( -static_cast<float>( get_render_target().getSize().x ) - cloud_iter->getGlobalBounds().width, 0.f );
-		}
-
-		if( cloud_iter->getGlobalBounds().top + cloud_iter->getGlobalBounds().height <= 0.f ) {
-			cloud_iter->move( 0.f, static_cast<float>( get_render_target().getSize().y ) + cloud_iter->getGlobalBounds().height );
-		}
-	}
-
-	// Update desktop.
-	m_desktop.Update( seconds );
-}
-
-void MenuState::render() const {
-	sf::RenderWindow& window( get_render_target() );
-
-	window.clear( sf::Color( 0x12, 0x34, 0x56 ) );
-
-	// Clouds.
-	SpriteList::const_iterator cloud_iter( m_cloud_sprites.begin() );
-	SpriteList::const_iterator cloud_iter_end( m_cloud_sprites.end() );
-
-	for( ; cloud_iter != cloud_iter_end; ++cloud_iter ) {
-		window.draw( *cloud_iter );
-	}
-
-	// Render GUI.
-	sfg::Renderer::Get().Display( window );
-
-	window.display();
-}
-
-void MenuState::on_options_click() {
-	if( m_options_window ) {
-		return;
-	}
-
+	// Create options and start game windows.
 	m_options_window = OptionsWindow::Create( get_shared().user_settings );
-	m_options_window->SetRequisition( sf::Vector2f( 500.f, 0.f ) );
-	m_desktop.Add( m_options_window );
-
-	m_options_window->SetPosition(
-		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_options_window->GetAllocation().width / 2.f,
-			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_options_window->GetAllocation().height / 2.f
-		)
-	);
-
 	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
 	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
 
-	m_window->Show( false );
-}
-
-void MenuState::on_start_game_click() {
-	if( m_start_game_window ) {
-		return;
-	}
-
 	m_start_game_window = StartGameWindow::Create();
-	m_desktop.Add( m_start_game_window );
-
-	m_start_game_window->SetPosition(
-		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_start_game_window->GetAllocation().width / 2.f,
-			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_start_game_window->GetAllocation().height / 2.f
-		)
-	);
-
 	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnAccept.Connect( &MenuState::on_start_game_accept, this );
 	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
 
-	m_window->Show( false );
+	m_desktop.Add( m_options_window );
+	m_desktop.Add( m_start_game_window );
+
+	m_options_window->Show( false );
+	m_start_game_window->Show( false );
 
 	// Load and add game modes to dialog.
 	using namespace boost::filesystem;
@@ -292,6 +157,183 @@ void MenuState::on_start_game_click() {
 			continue;
 		}
 	}
+
+	// Init clouds.
+	sf::Image image;
+	image.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
+	m_cloud_texture.loadFromImage( image );
+
+	for( uint8_t cloud_index = 0; cloud_index < 25; ++cloud_index ) {
+		sf::Vector2f cloud_position(
+			static_cast<float>( std::rand() % get_render_target().getSize().x ),
+			static_cast<float>( std::rand() % get_render_target().getSize().y )
+		);
+
+		float scale( static_cast<float>( std::rand() % (100 - 9) + 10 ) / 100.f );
+
+		sf::Sprite cloud_sprite( m_cloud_texture );
+		cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getWidth() / 2 ), static_cast<float>( m_cloud_texture.getHeight() / 2 ) );
+		cloud_sprite.setPosition( cloud_position.x, cloud_position.y );
+		cloud_sprite.setScale( scale, scale );
+		cloud_sprite.setColor( sf::Color( 255, 255, 255, 160 ) );
+
+		// Bigger clouds get added to the buffer behind smaller ones to prevent
+		// being overdrawn by farer objects.
+		std::size_t insert_idx = 0;
+
+		for( insert_idx = 0; insert_idx < m_cloud_sprites.size(); ++insert_idx ) {
+			if( cloud_sprite.getScale().x <= m_cloud_sprites[insert_idx].getScale().x ) {
+				break;
+			}
+		}
+
+		m_cloud_sprites.insert( m_cloud_sprites.begin() + insert_idx, cloud_sprite );
+	}
+
+	// Prepare background.
+	float width = static_cast<float>( get_render_target().getSize().x );
+	float height = static_cast<float>( get_render_target().getSize().y );
+	sf::Uint8 alpha = 100;
+
+	m_background_varray[0] = sf::Vertex( sf::Vector2f( 0, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
+	m_background_varray[1] = sf::Vertex( sf::Vector2f( 0, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
+	m_background_varray[2] = sf::Vertex( sf::Vector2f( width, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
+	m_background_varray[3] = sf::Vertex( sf::Vector2f( width, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
+
+	// Cleanup the backend.
+	get_shared().account_manager.reset();
+	get_shared().host.reset();
+	get_shared().lock_facility.reset();
+	get_shared().world.reset();
+
+	get_render_target().resetGLStates();
+}
+
+void MenuState::cleanup() {
+}
+
+void MenuState::handle_event( const sf::Event& event ) {
+	m_desktop.HandleEvent( event );
+
+	// Check if options window ate the event.
+	if( m_options_window && m_options_window->is_event_processed() ) {
+		return;
+	}
+
+	if( event.type == sf::Event::Closed ) {
+		leave();
+	}
+
+	if( (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) ) {
+		if( m_options_window->IsVisible() ) {
+			on_options_reject();
+		}
+		else if( m_start_game_window->IsVisible() ) {
+			on_start_game_reject();
+		}
+		else {
+			leave();
+		}
+	}
+}
+
+void MenuState::update( const sf::Time& delta ) {
+	float seconds = delta.asSeconds();
+
+	// Move clouds.
+	for( std::size_t cloud_idx = 0; cloud_idx < m_cloud_sprites.size(); ++cloud_idx ) {
+		sf::Sprite& cloud = m_cloud_sprites[cloud_idx];
+
+		cloud.move( seconds * (20.f * cloud.getScale().x), 0.f /*seconds * -5.f*/ );
+
+		if( cloud.getGlobalBounds().left >= static_cast<float>( get_render_target().getSize().x ) ) {
+			cloud.move( -static_cast<float>( get_render_target().getSize().x ) - cloud.getGlobalBounds().width, 0.f );
+		}
+
+		if( cloud.getGlobalBounds().top + cloud.getGlobalBounds().height <= 0.f ) {
+			cloud.move( 0.f, static_cast<float>( get_render_target().getSize().y ) + cloud.getGlobalBounds().height );
+		}
+	}
+
+	// Update desktop.
+	m_desktop.Update( seconds );
+
+	// Fade in/out main menu window.
+	if( m_fade_main_menu_out ) {
+		m_window->SetPosition(
+			sf::Vector2f(
+				std::max(
+					-m_window->GetAllocation().width,
+					m_window->GetAllocation().left - (seconds * FADE_SPEED)
+				),
+				m_window->GetAllocation().top
+			)
+		);
+	}
+	else {
+		m_window->SetPosition(
+			sf::Vector2f(
+				std::min(
+					static_cast<float>( get_render_target().getSize().x ) * 0.2f,
+					m_window->GetAllocation().left + (seconds * FADE_SPEED)
+				),
+				m_window->GetAllocation().top
+			)
+		);
+	}
+
+}
+
+void MenuState::render() const {
+	sf::RenderWindow& window( get_render_target() );
+
+	window.clear( sf::Color( 0x66, 0x9c, 0xff ) );
+
+	window.draw( m_background_varray, sf::BlendMultiply );
+
+	// Clouds.
+	for( std::size_t cloud_idx = 0; cloud_idx < m_cloud_sprites.size(); ++cloud_idx ) {
+		window.draw( m_cloud_sprites[cloud_idx], sf::BlendAlpha );
+	}
+
+	// Render GUI.
+	sfg::Renderer::Get().Display( window );
+
+	window.display();
+}
+
+void MenuState::on_options_click() {
+	if( m_options_window->IsVisible() ) {
+		return;
+	}
+
+	m_options_window->SetPosition(
+		sf::Vector2f(
+			m_window->GetAllocation().left + m_window->GetAllocation().width,
+			m_window->GetAllocation().top
+		)
+	);
+
+	m_options_window->refresh_user_settings( get_shared().user_settings );
+
+	m_fade_main_menu_out = true;
+	m_options_window->Show( true );
+}
+
+void MenuState::on_start_game_click() {
+	if( m_start_game_window->IsVisible() ) {
+		return;
+	}
+
+	m_start_game_window->SetPosition(
+		sf::Vector2f(
+			m_window->GetAllocation().left + m_window->GetAllocation().width,
+			m_window->GetAllocation().top
+		)
+	);
+
+	m_fade_main_menu_out = true;
+	m_start_game_window->Show( true );
 }
 
 void MenuState::on_options_accept() {
@@ -307,10 +349,9 @@ void MenuState::on_options_accept() {
 	get_shared().user_settings = m_options_window->get_user_settings();
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
-	m_desktop.Remove( m_options_window );
-	m_options_window.reset();
+	m_fade_main_menu_out = false;
+	m_options_window->Show( false );
 
-	m_window->Show( true );
 	check_required_settings();
 
 	// Apply vsync setting.
@@ -330,10 +371,8 @@ void MenuState::on_options_accept() {
 }
 
 void MenuState::on_options_reject() {
-	m_desktop.Remove( m_options_window );
-	m_options_window.reset();
-
-	m_window->Show( true );
+	m_options_window->Show( false );
+	m_fade_main_menu_out = false;
 }
 
 void MenuState::on_quit_click() {
@@ -341,8 +380,6 @@ void MenuState::on_quit_click() {
 }
 
 void MenuState::on_start_game_accept() {
-	m_desktop.Remove( m_start_game_window );
-
 	if( m_start_game_window->is_game_mode_selected() ) {
 		// Create IO service.
 		get_shared().io_service.reset( new boost::asio::io_service );
@@ -438,18 +475,16 @@ void MenuState::on_start_game_accept() {
 			leave( new ConnectState( get_render_target() ) );
 		}
 		else {
-			m_window->Show( true );
+			m_fade_main_menu_out = false;
+			m_start_game_window->Show( false );
 		}
 	}
 
-	m_start_game_window.reset();
 }
 
 void MenuState::on_start_game_reject() {
-	m_desktop.Remove( m_start_game_window );
-	m_start_game_window.reset();
-
-	m_window->Show( true );
+	m_fade_main_menu_out = false;
+	m_start_game_window->Show( false );
 }
 
 void MenuState::check_required_settings() {

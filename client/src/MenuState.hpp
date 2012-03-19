@@ -6,6 +6,7 @@
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <vector>
 
 /** Menu state.
  */
@@ -17,7 +18,7 @@ class MenuState : public State {
 		MenuState( sf::RenderWindow& target );
 
 	private:
-		typedef std::list<sf::Sprite> SpriteList;
+		typedef std::vector<sf::Sprite> SpriteVector;
 
 		void init();
 		void cleanup();
@@ -44,6 +45,10 @@ class MenuState : public State {
 		OptionsWindow::Ptr m_options_window;
 		StartGameWindow::Ptr m_start_game_window;
 
+		bool m_fade_main_menu_out;
+
 		sf::Texture m_cloud_texture;
-		SpriteList m_cloud_sprites;
+		SpriteVector m_cloud_sprites;
+
+		sf::VertexArray m_background_varray;
 };

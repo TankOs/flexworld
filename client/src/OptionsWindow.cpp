@@ -4,7 +4,7 @@
 #include "KeyNames.hpp"
 
 OptionsWindow::OptionsWindow( const UserSettings& user_settings ) :
-	Window( Window::TOPLEVEL ),
+	Window( Window::NO_STYLE ),
 	m_user_settings( user_settings ),
 	m_event_processed( false ),
 	m_next_action( Controls::UNMAPPED )
@@ -21,14 +21,12 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	sfg::Button::Ptr cancel_button( sfg::Button::Create( L"Cancel" ) );
 
 	// Account.
-	window->m_username_entry = sfg::Entry::Create( window->m_user_settings.get_username() );
-	window->m_serial_entry = sfg::Entry::Create( window->m_user_settings.get_serial() );
+	window->m_username_entry = sfg::Entry::Create();
+	window->m_serial_entry = sfg::Entry::Create();
 
 	// Controls.
-	window->m_mouse_inverted_check = sfg::CheckButton::Create( L"Inverted" );
-	window->m_mouse_inverted_check->SetActive( window->m_user_settings.get_controls().is_mouse_inverted() );
+	window->m_mouse_inverted_check = sfg::CheckButton::Create( L"Invert Y axis" );
 	window->m_mouse_sensitivity_scale = sfg::Scale::Create( .01f, 2.f, .01f );
-	window->m_mouse_sensitivity_scale->SetValue( window->m_user_settings.get_controls().get_mouse_sensitivity() );
 	window->m_mouse_sensitivity_label = sfg::Label::Create( L"--" );
 
 	window->m_mouse_sensitivity_label->SetRequisition( sf::Vector2f( 25.f, 0 ) );
@@ -187,10 +185,10 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	video_page_box->Pack( resolution_frame, false );
 
 	// Notebook.
-	sfg::Notebook::Ptr notebook( sfg::Notebook::Create() );
-	notebook->AppendPage( account_page_box, sfg::Label::Create( L"Account" ) );
-	notebook->AppendPage( controls_page_box, sfg::Label::Create( L"Controls" ) );
-	notebook->AppendPage( video_page_box, sfg::Label::Create( L"Video" ) );
+	window->m_notebook = sfg::Notebook::Create();
+	window->m_notebook->AppendPage( account_page_box, sfg::Label::Create( L"Account" ) );
+	window->m_notebook->AppendPage( controls_page_box, sfg::Label::Create( L"Controls" ) );
+	window->m_notebook->AppendPage( video_page_box, sfg::Label::Create( L"Video" ) );
 
 	// ---
 	sfg::Box::Ptr bottom_button_box( sfg::Box::Create( sfg::Box::HORIZONTAL, 5.f ) );
@@ -203,7 +201,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	alignment->SetScale( sf::Vector2f( 0.0f, 0.0f ) );
 
 	sfg::Box::Ptr content_box( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
-	content_box->Pack( notebook, true );
+	content_box->Pack( window->m_notebook, true );
 	content_box->Pack( alignment, false );
 
 	window->Add( content_box );
@@ -220,16 +218,6 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_enable_vsync_check->OnToggle.Connect( &OptionsWindow::on_vsync_toggle, &*window );
 
 	// Init.
-	window->m_enable_vsync_check->SetActive( window->m_user_settings.is_vsync_enabled() );
-	window->m_fps_limit_scale->SetValue( static_cast<float>( window->m_user_settings.get_fps_limit() ) );
-	window->m_fps_limit_value_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
-	window->m_fov_scale->SetValue( static_cast<float>( window->m_user_settings.get_fov() ) );
-	window->m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
-
-	window->m_fullscreen_check->SetActive( window->m_user_settings.is_fullscreen_enabled() );
-
-	window->on_vsync_toggle();
-
 	// Add resolutions.
 	std::size_t combo_idx = 0;
 
@@ -246,29 +234,11 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 			window->m_resolution_combo->AppendItem( sstr.str() );
 
-			if(
-				mode.width == window->m_user_settings.get_video_mode().width &&
-				mode.height == window->m_user_settings.get_video_mode().height
-			) {
-				window->m_resolution_combo->SelectItem( combo_idx );
-			}
-
 			++combo_idx;
 		}
 	}
 
-	window->refresh_action_button_labels();
-	window->on_sensitivity_change();
-
-	window->on_fps_limit_change();
-	window->on_fov_change();
-
-	// Cycle through all notebook pages so that the size is maximized.
-	while( notebook->GetCurrentPage() + 1 < notebook->GetPageCount() ) {
-		notebook->NextPage();
-	}
-
-	notebook->SetCurrentPage( 0 );
+	window->load_values();
 
 	return window;
 }
@@ -386,6 +356,12 @@ const UserSettings& OptionsWindow::get_user_settings() const {
 	return m_user_settings;
 }
 
+void OptionsWindow::refresh_user_settings( const UserSettings& user_settings ) {
+	m_user_settings = user_settings;
+
+	load_values();
+}
+
 void OptionsWindow::on_sensitivity_change() {
 	std::stringstream sstr;
 	sstr << std::fixed << std::setprecision( 2 ) << m_mouse_sensitivity_scale->GetValue();
@@ -410,4 +386,52 @@ void OptionsWindow::on_vsync_toggle() {
 	m_fps_limit_label->Show( !m_enable_vsync_check->IsActive() );
 	m_fps_limit_scale->Show( !m_enable_vsync_check->IsActive() );
 	m_fps_limit_value_label->Show( !m_enable_vsync_check->IsActive() );
+}
+
+void OptionsWindow::load_values() {
+	m_username_entry->SetText( m_user_settings.get_username() );
+	m_serial_entry->SetText( m_user_settings.get_serial() );
+
+	m_mouse_sensitivity_scale->SetValue( m_user_settings.get_controls().get_mouse_sensitivity() );
+	m_mouse_inverted_check->SetActive( m_user_settings.get_controls().is_mouse_inverted() );
+
+	m_enable_vsync_check->SetActive( m_user_settings.is_vsync_enabled() );
+	m_fps_limit_scale->SetValue( static_cast<float>( m_user_settings.get_fps_limit() ) );
+	m_fps_limit_value_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+	m_fov_scale->SetValue( static_cast<float>( m_user_settings.get_fov() ) );
+	m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+
+	m_fullscreen_check->SetActive( m_user_settings.is_fullscreen_enabled() );
+
+	// Select resolution.
+	for( std::size_t item_idx = 0; item_idx < m_resolution_combo->GetItemCount(); ++item_idx ) {
+		std::stringstream sstr( m_resolution_combo->GetItem( item_idx ) );
+		unsigned int width = 0;
+		unsigned int height = 0;
+		std::string skip;
+
+		sstr >> width >> skip >> height;
+
+		if(
+			width == m_user_settings.get_video_mode().width &&
+			height == m_user_settings.get_video_mode().height
+		) {
+			m_resolution_combo->SelectItem( item_idx );
+			break;
+		}
+	}
+
+	on_vsync_toggle();
+	refresh_action_button_labels();
+	on_sensitivity_change();
+	on_fps_limit_change();
+	on_fov_change();
+
+	// Cycle through all notebook pages so that the size is maximized.
+	while( m_notebook->GetCurrentPage() + 1 < m_notebook->GetPageCount() ) {
+		m_notebook->NextPage();
+	}
+
+
+	m_notebook->SetCurrentPage( 0 );
 }
