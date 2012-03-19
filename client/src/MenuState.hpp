@@ -45,6 +45,8 @@ class MenuState : public State {
 		OptionsWindow::Ptr m_options_window;
 		StartGameWindow::Ptr m_start_game_window;
 
+		sfg::Widget::Ptr m_sliding_widget;
+
 		bool m_fade_main_menu_out;
 
 		sf::Texture m_cloud_texture;

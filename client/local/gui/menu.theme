@@ -8,6 +8,8 @@ Window {
 	ShadowDistance: 9999999999;
 	BorderColor: #ffffff00;
 	TitleBackgroundColor: #ffffff00;
+	BackgroundColor: #00000055;
+	Gap: 15;
 }
 
 Frame {

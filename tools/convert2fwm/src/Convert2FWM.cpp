@@ -304,7 +304,7 @@ int main( int argc, char** argv ) {
 				)
 			);
 
-			mesh.add_vertex( vertex );
+			mesh.get_geometry().add_vertex( vertex );
 		}
 
 		// Add triangles.
@@ -318,32 +318,32 @@ int main( int argc, char** argv ) {
 			}
 
 			// Check for valid triangle.
-			flex::Triangle triangle(
-				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[0] ),
-				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[1] ),
-				static_cast<flex::Mesh::TriangleIndex>( ai_face.mIndices[2] )
-			);
+			uint32_t indices[3];
+
+			indices[0] = ai_face.mIndices[0];
+			indices[1] = ai_face.mIndices[1];
+			indices[2] = ai_face.mIndices[2];
 
 			if(
-				triangle.vertices[0] >= mesh.get_num_vertices() ||
-				triangle.vertices[1] >= mesh.get_num_vertices() ||
-				triangle.vertices[2] >= mesh.get_num_vertices() ||
-				triangle.vertices[0] == triangle.vertices[1] ||
-				triangle.vertices[0] == triangle.vertices[2] ||
-				triangle.vertices[1] == triangle.vertices[2]
+				indices[0] >= mesh.get_geometry().get_num_vertices() ||
+				indices[1] >= mesh.get_geometry().get_num_vertices() ||
+				indices[2] >= mesh.get_geometry().get_num_vertices() ||
+				indices[0] == indices[1] ||
+				indices[0] == indices[2] ||
+				indices[1] == indices[2]
 			) {
 				std::cerr << "Invalid vertex index in mesh " << mesh_index << ", face " << triangle_index << ": Index too high or indices equal." << std::endl;
 				return -1;
 			}
 
 			// Get scaled vertices to calculate coverage.
-			const sf::Vector3f& v0 = mesh.get_vertex( triangle.vertices[0] ).vector / model.get_block_scale_divisor();
-			const sf::Vector3f& v1 = mesh.get_vertex( triangle.vertices[1] ).vector / model.get_block_scale_divisor();
-			const sf::Vector3f& v2 = mesh.get_vertex( triangle.vertices[2] ).vector / model.get_block_scale_divisor();
+			const sf::Vector3f& v0 = mesh.get_geometry().get_vertex( indices[0] ).vector / model.get_block_scale_divisor();
+			const sf::Vector3f& v1 = mesh.get_geometry().get_vertex( indices[1] ).vector / model.get_block_scale_divisor();
+			const sf::Vector3f& v2 = mesh.get_geometry().get_vertex( indices[2] ).vector / model.get_block_scale_divisor();
 
-			const sf::Vector3f& n0 = mesh.get_vertex( triangle.vertices[0] ).normal;
-			const sf::Vector3f& n1 = mesh.get_vertex( triangle.vertices[1] ).normal;
-			const sf::Vector3f& n2 = mesh.get_vertex( triangle.vertices[2] ).normal;
+			const sf::Vector3f& n0 = mesh.get_geometry().get_vertex( indices[0] ).normal;
+			const sf::Vector3f& n1 = mesh.get_geometry().get_vertex( indices[1] ).normal;
+			const sf::Vector3f& n2 = mesh.get_geometry().get_vertex( indices[2] ).normal;
 
 			// Get low values for each axis.
 			sf::Vector3f min(
@@ -403,7 +403,9 @@ int main( int argc, char** argv ) {
 				update_coverage( coverage_rects[flex::LEFT_FACE], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
 			}
 
-			mesh.define_triangle( triangle );
+			mesh.get_geometry().add_index( indices[0] );
+			mesh.get_geometry().add_index( indices[1] );
+			mesh.get_geometry().add_index( indices[2] );
 		}
 
 		model.add_mesh( mesh );

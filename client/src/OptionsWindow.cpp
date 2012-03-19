@@ -4,7 +4,7 @@
 #include "KeyNames.hpp"
 
 OptionsWindow::OptionsWindow( const UserSettings& user_settings ) :
-	Window( Window::NO_STYLE ),
+	Window( Window::BACKGROUND ),
 	m_user_settings( user_settings ),
 	m_event_processed( false ),
 	m_next_action( Controls::UNMAPPED )

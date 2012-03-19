@@ -193,13 +193,17 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 						}
 
 						// Iterate over triangles.
-						for( flex::Mesh::TriangleIndex tri_idx = 0; tri_idx < mesh.get_num_triangles(); ++tri_idx ) {
-							const flex::Triangle& tri = mesh.get_triangle( tri_idx );
+						for( uint32_t tri_idx = 0; tri_idx < mesh.get_geometry().get_num_triangles(); ++tri_idx ) {
+							uint16_t indices[3];
+
+							indices[0] = static_cast<uint16_t>( mesh.get_geometry().get_index( (tri_idx * 3) + 0 ) );
+							indices[1] = static_cast<uint16_t>( mesh.get_geometry().get_index( (tri_idx * 3) + 1 ) );
+							indices[2] = static_cast<uint16_t>( mesh.get_geometry().get_index( (tri_idx * 3) + 2 ) );
 
 							// Get triangle's vertices.
-							vertex[0] = mesh.get_vertex( tri.vertices[0] );
-							vertex[1] = mesh.get_vertex( tri.vertices[1] );
-							vertex[2] = mesh.get_vertex( tri.vertices[2] );
+							vertex[0] = mesh.get_geometry().get_vertex( indices[0] );
+							vertex[1] = mesh.get_geometry().get_vertex( indices[1] );
+							vertex[2] = mesh.get_geometry().get_vertex( indices[2] );
 
 							// Apply block scale divisor.
 							vertex[0].vector /= model->get_block_scale_divisor();

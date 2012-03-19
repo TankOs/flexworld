@@ -37,18 +37,21 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	// Serialize meshes.
 	for( std::size_t mesh_idx = 0; mesh_idx < model.get_num_meshes(); ++mesh_idx ) {
 		const Mesh& mesh = model.get_mesh( mesh_idx );
-		assert( mesh.get_num_vertices() <= std::numeric_limits<Mesh::VertexIndex>::max() );
 
-		Mesh::VertexIndex num_vertices = static_cast<Mesh::VertexIndex>( mesh.get_num_vertices() );
-		Mesh::TriangleIndex num_triangles = static_cast<Mesh::TriangleIndex>( mesh.get_num_triangles() );
+		assert( mesh.get_geometry().get_num_vertices() <= std::numeric_limits<uint16_t>::max() );
+		assert( mesh.get_geometry().get_num_indices() <= std::numeric_limits<uint16_t>::max() );
+
+		uint16_t num_vertices = static_cast<uint16_t>( mesh.get_geometry().get_num_vertices() );
+		uint16_t num_triangles = static_cast<uint16_t>( mesh.get_geometry().get_num_triangles() );
 
 		buffer.insert( buffer.end(), reinterpret_cast<const char*>( &num_vertices ), reinterpret_cast<const char*>( &num_vertices ) + sizeof( num_vertices ) );
 		buffer.insert( buffer.end(), reinterpret_cast<const char*>( &num_triangles ), reinterpret_cast<const char*>( &num_triangles ) + sizeof( num_triangles ) );
+
 		buffer.push_back( mesh.get_texture_slot() );
 
 		// Vertices.
-		for( Mesh::VertexIndex vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
-			const sg::Vertex& vertex = mesh.get_vertex( vertex_idx );
+		for( uint16_t vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
+			const sg::Vertex& vertex = mesh.get_geometry().get_vertex( vertex_idx );
 
 			buffer.insert(
 				buffer.end(),
@@ -57,14 +60,14 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 			);
 		}
 
-		// Triangles.
-		for( Mesh::TriangleIndex tri_idx = 0; tri_idx < num_triangles; ++tri_idx ) {
-			const Triangle& triangle = mesh.get_triangle( tri_idx );
+		// Triangles/indices.
+		for( std::size_t index_idx = 0; index_idx < num_triangles * 3; ++index_idx ) {
+			uint16_t index = static_cast<uint16_t>( mesh.get_geometry().get_index( index_idx ) );
 
 			buffer.insert(
 				buffer.end(),
-				reinterpret_cast<const char*>( &triangle ),
-				reinterpret_cast<const char*>( &triangle ) + sizeof( triangle )
+				reinterpret_cast<const char*>( &index ),
+				reinterpret_cast<const char*>( &index ) + sizeof( index )
 			);
 		}
 	}
@@ -176,26 +179,26 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 
 	// Load meshes.
 	for( std::size_t mesh_idx = 0; mesh_idx < num_meshes; ++mesh_idx ) {
-		Mesh::VertexIndex num_vertices;
+		uint16_t num_vertices = 0;
 
 		if( buffer.size() - buf_ptr < sizeof( num_vertices ) ) {
 			throw DeserializationException( "Vertex count missing." );
 		}
 
-		num_vertices = *reinterpret_cast<const Mesh::VertexIndex*>( &buffer[buf_ptr] );
+		num_vertices = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
 		buf_ptr += sizeof( num_vertices );
 
 		if( num_vertices < 3 ) {
 			throw DeserializationException( "Vertices missing." );
 		}
 
-		Mesh::TriangleIndex num_triangles;
+		uint16_t num_triangles = 0;
 
 		if( buffer.size() - buf_ptr < sizeof( num_triangles ) ) {
 			throw DeserializationException( "Triangle count missing." );
 		}
 
-		num_triangles = *reinterpret_cast<const Mesh::TriangleIndex*>( &buffer[buf_ptr] );
+		num_triangles = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] );
 		buf_ptr += sizeof( num_triangles );
 
 		if( num_triangles < 1 ) {
@@ -221,37 +224,40 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 			throw DeserializationException( "Too less vertices." );
 		}
 
-		for( std::size_t vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
+		for( uint16_t vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
 			vertex = *reinterpret_cast<const sg::Vertex*>( &buffer[buf_ptr] );
 			buf_ptr += sizeof( vertex );
 
-			mesh.add_vertex( vertex );
+			mesh.get_geometry().add_vertex( vertex );
 		}
 
-		// Read triangles.
-		Triangle triangle;
-
-		if( buffer.size() - buf_ptr < num_triangles * sizeof( triangle ) ) {
+		// Read triangle indices.
+		if( buffer.size() - buf_ptr < num_triangles * sizeof( uint16_t ) * 3 ) {
 			throw DeserializationException( "Too less triangles." );
 		}
 
-		for( std::size_t triangle_idx = 0; triangle_idx < num_triangles; ++triangle_idx ) {
-			triangle = *reinterpret_cast<const Triangle*>( &buffer[buf_ptr] );
-			buf_ptr += sizeof( triangle );
+		uint16_t indices[3];
+
+		for( uint16_t triangle_idx = 0; triangle_idx < num_triangles; ++triangle_idx ) {
+			indices[0] = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] ); buf_ptr += sizeof( uint16_t );
+			indices[1] = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] ); buf_ptr += sizeof( uint16_t );
+			indices[2] = *reinterpret_cast<const uint16_t*>( &buffer[buf_ptr] ); buf_ptr += sizeof( uint16_t );
 
 			// Check for valid triangle.
 			if(
-				triangle.vertices[0] >= num_vertices ||
-				triangle.vertices[1] >= num_vertices ||
-				triangle.vertices[2] >= num_vertices ||
-				triangle.vertices[0] == triangle.vertices[1] ||
-				triangle.vertices[0] == triangle.vertices[2] ||
-				triangle.vertices[1] == triangle.vertices[2]
+				indices[0] >= num_vertices ||
+				indices[1] >= num_vertices ||
+				indices[2] >= num_vertices ||
+				indices[0] == indices[1] ||
+				indices[0] == indices[2] ||
+				indices[1] == indices[2]
 			) {
 				throw DeserializationException( "Invalid triangle." );
 			}
 
-			mesh.define_triangle( triangle );
+			mesh.get_geometry().add_index( indices[0] );
+			mesh.get_geometry().add_index( indices[1] );
+			mesh.get_geometry().add_index( indices[2] );
 		}
 
 		model.add_mesh( mesh );

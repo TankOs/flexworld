@@ -35,7 +35,6 @@ set(
 	TestServer.cpp
 	TestServerProtocol.cpp
 	TestSessionHost.cpp
-	TestTriangle.cpp
 	TestVersion.cpp
 	TestWorld.cpp
 )

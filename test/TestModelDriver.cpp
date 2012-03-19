@@ -1,7 +1,6 @@
 #include <FlexWorld/ModelDriver.hpp>
 #include <FlexWorld/Model.hpp>
 #include <FlexWorld/Mesh.hpp>
-#include <FlexWorld/Triangle.hpp>
 
 #include <FWSG/Vertex.hpp>
 #include <boost/test/unit_test.hpp>
@@ -62,6 +61,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	source_buffer.push_back( 0x00 );
 	source_buffer.push_back( 0x00 ); // Texture slot.
 
+
 	// Vertices.
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	value = +1.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 	value = +0.0f; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &value ), reinterpret_cast<const char*>( &value ) + sizeof( value ) );
 
-	Mesh::TriangleIndex index_value = 0;
+	uint16_t index_value = 0;
 
 	// Triangles.
 	index_value = 0; source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &index_value ), reinterpret_cast<const char*>( &index_value ) + sizeof( index_value ) );
@@ -249,13 +249,20 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 
 		mesh.set_texture_slot( 0 );
 
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bac left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Fwd left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Fwd right.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bac right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bac left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Fwd left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Fwd right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bac right.
 
-		mesh.define_triangle( Triangle( 0, 1, 2 ) );
-		mesh.define_triangle( Triangle( 1, 2, 3 ) );
+		mesh.get_geometry().add_index( 0 );
+		mesh.get_geometry().add_index( 1 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 1 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 3 );
+
+		BOOST_REQUIRE( mesh.get_geometry().get_num_vertices() == 4 );
+		BOOST_REQUIRE( mesh.get_geometry().get_num_triangles() == 2 );
 
 		model.add_mesh( mesh );
 
@@ -264,30 +271,53 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 
 		mesh.set_texture_slot( 1 );
 
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Top bac left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Top fwd left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Top fwd right.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Top bac right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Top bac left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Top fwd left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Top fwd right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Top bac right.
 
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bot bac left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Bot fwd left.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Bot fwd right.
-		mesh.add_vertex( sg::Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bot bac right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) ); // Bot bac left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) ); // Bot fwd left.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) ); // Bot fwd right.
+		mesh.get_geometry().add_vertex( sg::Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) ); // Bot bac right.
 
-		mesh.define_triangle( Triangle( 0, 4, 1 ) );
-		mesh.define_triangle( Triangle( 4, 5, 1 ) );
-		mesh.define_triangle( Triangle( 1, 5, 2 ) );
-		mesh.define_triangle( Triangle( 5, 6, 2 ) );
-		mesh.define_triangle( Triangle( 2, 6, 7 ) );
-		mesh.define_triangle( Triangle( 2, 7, 3 ) );
-		mesh.define_triangle( Triangle( 4, 3, 7 ) );
-		mesh.define_triangle( Triangle( 4, 0, 3 ) );
-		mesh.define_triangle( Triangle( 5, 4, 6 ) );
-		mesh.define_triangle( Triangle( 6, 4, 7 ) );
+		mesh.get_geometry().add_index( 0 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 1 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 5 );
+		mesh.get_geometry().add_index( 1 );
+		mesh.get_geometry().add_index( 1 );
+		mesh.get_geometry().add_index( 5 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 5 );
+		mesh.get_geometry().add_index( 6 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 6 );
+		mesh.get_geometry().add_index( 7 );
+		mesh.get_geometry().add_index( 2 );
+		mesh.get_geometry().add_index( 7 );
+		mesh.get_geometry().add_index( 3 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 3 );
+		mesh.get_geometry().add_index( 7 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 0 );
+		mesh.get_geometry().add_index( 3 );
+		mesh.get_geometry().add_index( 5 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 6 );
+		mesh.get_geometry().add_index( 6 );
+		mesh.get_geometry().add_index( 4 );
+		mesh.get_geometry().add_index( 7 );
+
+		BOOST_REQUIRE( mesh.get_geometry().get_num_vertices() == 8 );
+		BOOST_REQUIRE( mesh.get_geometry().get_num_triangles() == 10 );
 
 		model.add_mesh( mesh );
 
-		BOOST_CHECK( model.get_num_meshes() == 2 );
+		BOOST_REQUIRE( model.get_num_meshes() == 2 );
 
 		ModelDriver::Buffer buffer = ModelDriver::serialize( model );
 		BOOST_CHECK( buffer == source_buffer );
@@ -315,16 +345,20 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 			const Mesh& mesh = model.get_mesh( 0 );
 
 			BOOST_CHECK( mesh.get_texture_slot() == 0 );
-			BOOST_CHECK( mesh.get_num_vertices() == 4 );
-			BOOST_CHECK( mesh.get_num_triangles() == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_num_vertices() == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_num_triangles() == 2 );
 
-			BOOST_CHECK( mesh.get_vertex( 0 ) == sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 1 ) == sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 2 ) == sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 3 ) == sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 0 ) == sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 1 ) == sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 2 ) == sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 3 ) == sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
 
-			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 1, 2 ) );
-			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 1, 2, 3 ) );
+			BOOST_CHECK( mesh.get_geometry().get_index( 0 ) == 0 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 1 ) == 1 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 2 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 3 ) == 1 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 4 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 5 ) == 3 );
 		}
 
 		// Mesh 1.
@@ -332,28 +366,48 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 			const Mesh& mesh = model.get_mesh( 1 );
 
 			BOOST_CHECK( mesh.get_texture_slot() == 1 );
-			BOOST_CHECK( mesh.get_num_vertices() == 8 );
-			BOOST_CHECK( mesh.get_num_triangles() == 10 );
+			BOOST_CHECK( mesh.get_geometry().get_num_vertices() == 8 );
+			BOOST_CHECK( mesh.get_geometry().get_num_triangles() == 10 );
 
-			BOOST_CHECK( mesh.get_vertex( 0 ) == sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 1 ) == sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 2 ) == sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 3 ) == sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 4 ) == sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 5 ) == sg::Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 6 ) == sg::Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) );
-			BOOST_CHECK( mesh.get_vertex( 7 ) == sg::Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 0 ) == sg::Vertex( sf::Vector3f( 0, 1, 0 ), sf::Vector3f( -1, +1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 1 ) == sg::Vertex( sf::Vector3f( 0, 1, 1 ), sf::Vector3f( -1, +1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 2 ) == sg::Vertex( sf::Vector3f( 1, 1, 1 ), sf::Vector3f( +1, +1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 3 ) == sg::Vertex( sf::Vector3f( 1, 1, 0 ), sf::Vector3f( +1, +1, -1 ), sf::Vector2f( 1, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 4 ) == sg::Vertex( sf::Vector3f( 0, 0, 0 ), sf::Vector3f( -1, -1, -1 ), sf::Vector2f( 0, 0 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 5 ) == sg::Vertex( sf::Vector3f( 0, 0, 1 ), sf::Vector3f( -1, -1, +1 ), sf::Vector2f( 0, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 6 ) == sg::Vertex( sf::Vector3f( 1, 0, 1 ), sf::Vector3f( +1, -1, +1 ), sf::Vector2f( 1, 1 ) ) );
+			BOOST_CHECK( mesh.get_geometry().get_vertex( 7 ) == sg::Vertex( sf::Vector3f( 1, 0, 0 ), sf::Vector3f( +1, -1, -1 ), sf::Vector2f( 1, 0 ) ) );
 
-			BOOST_CHECK( mesh.get_triangle( 0 ) == Triangle( 0, 4, 1 ) );
-			BOOST_CHECK( mesh.get_triangle( 1 ) == Triangle( 4, 5, 1 ) );
-			BOOST_CHECK( mesh.get_triangle( 2 ) == Triangle( 1, 5, 2 ) );
-			BOOST_CHECK( mesh.get_triangle( 3 ) == Triangle( 5, 6, 2 ) );
-			BOOST_CHECK( mesh.get_triangle( 4 ) == Triangle( 2, 6, 7 ) );
-			BOOST_CHECK( mesh.get_triangle( 5 ) == Triangle( 2, 7, 3 ) );
-			BOOST_CHECK( mesh.get_triangle( 6 ) == Triangle( 4, 3, 7 ) );
-			BOOST_CHECK( mesh.get_triangle( 7 ) == Triangle( 4, 0, 3 ) );
-			BOOST_CHECK( mesh.get_triangle( 8 ) == Triangle( 5, 4, 6 ) );
-			BOOST_CHECK( mesh.get_triangle( 9 ) == Triangle( 6, 4, 7 ) );
+			BOOST_CHECK( mesh.get_geometry().get_index( 0 ) == 0 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 1 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 2 ) == 1 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 3 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 4 ) == 5 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 5 ) == 1 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 6 ) == 1 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 7 ) == 5 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 8 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 9 ) == 5 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 10 ) == 6 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 11 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 12 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 13 ) == 6 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 14 ) == 7 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 15 ) == 2 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 16 ) == 7 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 17 ) == 3 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 18 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 19 ) == 3 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 20 ) == 7 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 21 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 22 ) == 0 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 23 ) == 3 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 24 ) == 5 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 25 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 26 ) == 6 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 27 ) == 6 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 28 ) == 4 );
+			BOOST_CHECK( mesh.get_geometry().get_index( 29 ) == 7 );
 		}
 	}
 
@@ -511,7 +565,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Too less triangles." ) );
 
 		// Invalid triangles.
-		buffer.insert( buffer.end(), sizeof( Triangle ), 0 );
+		buffer.insert( buffer.end(), sizeof( uint16_t ) * 3, 0 );
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Invalid triangle." ) );
 
 		buffer[buffer.size() - 6] = 0x01;

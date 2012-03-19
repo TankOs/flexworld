@@ -16,7 +16,8 @@
 #include <cstdlib>
 
 static const bool SHOW_NOTICES = false;
-static const float FADE_SPEED = 1300.0f;
+static const float FADE_SPEED = 2000.0f;
+static const float SLIDE_TARGET_X = 50.f;
 
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
@@ -101,8 +102,8 @@ void MenuState::init() {
 
 	m_window->SetPosition(
 		sf::Vector2f(
-			-m_window->GetAllocation().width,
-			static_cast<float>( get_render_target().getSize().y ) * 0.25f - m_window->GetAllocation().height * 0.5f
+			SLIDE_TARGET_X,
+			SLIDE_TARGET_X
 		)
 	);
 
@@ -225,11 +226,8 @@ void MenuState::handle_event( const sf::Event& event ) {
 	}
 
 	if( (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) ) {
-		if( m_options_window->IsVisible() ) {
-			on_options_reject();
-		}
-		else if( m_start_game_window->IsVisible() ) {
-			on_start_game_reject();
+		if( m_fade_main_menu_out ) {
+			m_fade_main_menu_out = false;
 		}
 		else {
 			leave();
@@ -258,7 +256,7 @@ void MenuState::update( const sf::Time& delta ) {
 	// Update desktop.
 	m_desktop.Update( seconds );
 
-	// Fade in/out main menu window.
+	// Slide windows.
 	if( m_fade_main_menu_out ) {
 		m_window->SetPosition(
 			sf::Vector2f(
@@ -269,19 +267,51 @@ void MenuState::update( const sf::Time& delta ) {
 				m_window->GetAllocation().top
 			)
 		);
+
+		if( m_sliding_widget ) {
+			if( m_sliding_widget->GetAllocation().left > SLIDE_TARGET_X ) {
+				m_sliding_widget->SetPosition(
+					sf::Vector2f(
+						std::max(
+							SLIDE_TARGET_X,
+							m_sliding_widget->GetAllocation().left - (FADE_SPEED * seconds)
+						),
+						m_sliding_widget->GetAllocation().top
+					)
+				);
+			}
+		}
 	}
 	else {
 		m_window->SetPosition(
 			sf::Vector2f(
 				std::min(
-					static_cast<float>( get_render_target().getSize().x ) * 0.2f,
+					50.f,
 					m_window->GetAllocation().left + (seconds * FADE_SPEED)
 				),
 				m_window->GetAllocation().top
 			)
 		);
-	}
 
+		if( m_sliding_widget ) {
+			if( m_sliding_widget->GetAllocation().left < static_cast<float>( get_render_target().getSize().x ) ) {
+				m_sliding_widget->SetPosition(
+					sf::Vector2f(
+						std::min(
+							static_cast<float>( get_render_target().getSize().x ),
+							m_sliding_widget->GetAllocation().left + (FADE_SPEED * seconds)
+						),
+						m_sliding_widget->GetAllocation().top
+					)
+				);
+			}
+
+			if( m_sliding_widget->GetAllocation().left >= static_cast<float>( get_render_target().getSize().x ) ) {
+				m_sliding_widget->Show( false );
+				m_sliding_widget.reset();
+			}
+		}
+	}
 }
 
 void MenuState::render() const {
@@ -303,36 +333,38 @@ void MenuState::render() const {
 }
 
 void MenuState::on_options_click() {
-	if( m_options_window->IsVisible() ) {
+	if( m_sliding_widget ) {
 		return;
 	}
 
 	m_options_window->SetPosition(
 		sf::Vector2f(
-			m_window->GetAllocation().left + m_window->GetAllocation().width,
+			static_cast<float>( get_render_target().getSize().x ),
 			m_window->GetAllocation().top
 		)
 	);
 
 	m_options_window->refresh_user_settings( get_shared().user_settings );
+	m_options_window->Show( true );
 
 	m_fade_main_menu_out = true;
-	m_options_window->Show( true );
+	m_sliding_widget = m_options_window;
 }
 
 void MenuState::on_start_game_click() {
-	if( m_start_game_window->IsVisible() ) {
+	if( m_sliding_widget ) {
 		return;
 	}
 
 	m_start_game_window->SetPosition(
 		sf::Vector2f(
-			m_window->GetAllocation().left + m_window->GetAllocation().width,
+			static_cast<float>( get_render_target().getSize().x ),
 			m_window->GetAllocation().top
 		)
 	);
 
 	m_fade_main_menu_out = true;
+	m_sliding_widget = m_start_game_window;
 	m_start_game_window->Show( true );
 }
 
@@ -350,7 +382,6 @@ void MenuState::on_options_accept() {
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	m_fade_main_menu_out = false;
-	m_options_window->Show( false );
 
 	check_required_settings();
 
@@ -371,7 +402,6 @@ void MenuState::on_options_accept() {
 }
 
 void MenuState::on_options_reject() {
-	m_options_window->Show( false );
 	m_fade_main_menu_out = false;
 }
 
@@ -476,7 +506,6 @@ void MenuState::on_start_game_accept() {
 		}
 		else {
 			m_fade_main_menu_out = false;
-			m_start_game_window->Show( false );
 		}
 	}
 
@@ -484,7 +513,6 @@ void MenuState::on_start_game_accept() {
 
 void MenuState::on_start_game_reject() {
 	m_fade_main_menu_out = false;
-	m_start_game_window->Show( false );
 }
 
 void MenuState::check_required_settings() {

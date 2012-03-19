@@ -2,6 +2,7 @@
 
 #include <FlexWorld/ModelDriver.hpp>
 
+#include <FWSG/BufferObject.hpp>
 #include <fstream>
 #include <iterator>
 
@@ -182,4 +183,57 @@ void ResourceManager::finalize_prepared_textures() {
 	}
 
 	m_prepared_textures.clear();
+}
+
+bool ResourceManager::prepare_buffer_object_group( const flex::FlexID& model_id ) {
+	assert( model_id.is_valid_resource() );
+	assert( find_buffer_object_group( model_id ) == nullptr );
+
+	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
+
+	// Get model.
+	std::shared_ptr<const flex::Model> model = find_model( model_id );
+
+	// If not found, try to load it.
+	if( model == nullptr ) {
+		if( !load_model( model_id ) ) {
+			return false;
+		}
+
+		model = find_model( model_id );
+		assert( model != nullptr );
+	}
+
+	// Create the buffer object group and associate it.
+	BufferObjectGroup::Ptr group(
+		new BufferObjectGroup(
+			model->get_num_meshes(),
+			sg::BufferObject::NORMALS | sg::BufferObject::TEX_COORDS
+		)
+	);
+
+	m_buffer_object_groups[model_id.get()] = group;
+	m_prepared_buffer_object_groups[model_id.get()] = model;
+
+	return true;
+}
+
+BufferObjectGroup::PtrConst ResourceManager::find_buffer_object_group( const flex::FlexID& model_id ) const {
+	assert( model_id.is_valid_resource() );
+	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
+
+	BufferObjectGroupMap::const_iterator iter = m_buffer_object_groups.find( model_id.get() );
+
+	return iter == m_buffer_object_groups.end() ? nullptr : iter->second;
+}
+
+void ResourceManager::finalize_prepared_buffer_objects() {
+	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
+
+	PreparedBufferObjectGroupMap::iterator bo_iter( m_prepared_buffer_object_groups.begin() );
+	PreparedBufferObjectGroupMap::iterator bo_iter_end( m_prepared_buffer_object_groups.end() );
+	
+	for( ; bo_iter != bo_iter_end; ++bo_iter ) {
+		//m_buffer_objects[bo_iter->first]->load( bo_iter->second->get_geometry() );
+	}
 }
