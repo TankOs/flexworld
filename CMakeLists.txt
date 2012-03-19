@@ -194,14 +194,24 @@ set( CPACK_TOPLEVEL_TAG "${CPACK_SYSTEM_NAME}" )
 
 # Build Debian package.
 if( FW_BUILD_DEB )
+	if( FW_PORTABLE_INSTALL )
+		message( FATAL_ERROR "Can't make a Debian package with portable install." )
+	endif()
+
+	# Include menu shortcut.
+	INSTALL(
+		FILES ${PROJECT_SOURCE_DIR}/dist/linux/flexworld.desktop
+		DESTINATION share/applications/
+	)
+
 	set( CPACK_GENERATOR "DEB" )
 	set( CPACK_DEBIAN_PACKAGE_MAINTAINER "Stefan Schindler <support@flexworld-game.com>" )
-	set( CPACK_DEBIAN_PACKAGE_NAME "non-free/${CPACK_PACKAGE_NAME}" )
+	set( CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}" )
 	set( CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}" )
 	set( CPACK_DEBIAN_PACKAGE_ARCHITECTURE "${CPACK_SYSTEM_NAME}" )
 	set( CPACK_DEBIAN_PACKAGE_DEPENDS "libjpeg8, libxrandr2, libglew1.6, libopenal1, libsndfile1, libpng12-0, zlib1g, libsoil1, libfreetype6" )
 	set( CPACK_DEBIAN_PACKAGE_DESCRIPTION "${CPACK_PACKAGE_DESCRIPTION}" )
-	set( CPACK_DEBIAN_PACKAGE_SECTION "games" )
+	set( CPACK_DEBIAN_PACKAGE_SECTION "non-free/games" )
 	set( CPACK_DEBIAN_PACKAGE_PRIORITY "extra" )
 
 	# Fix CPack's wrong filename.
