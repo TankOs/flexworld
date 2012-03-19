@@ -20,7 +20,7 @@ Sky::Sky() :
 	m_time_of_day( 0.0f ),
 	m_max_sun_height( 5.0f )
 {
-	set_sky_color( sf::Color( 0x47, 0x74, 0xcf ) );
+	set_sky_color( sf::Color( 0x66, 0x9c, 0xff ) );
 
 	// Prepare sun buffer object.
 	sg::TriangleGeometry geo;
