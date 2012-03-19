@@ -26,6 +26,7 @@ class MenuState : public State {
 		void update( const sf::Time& delta );
 		void render() const;
 
+		void on_insta_click();
 		void on_start_game_click();
 		void on_start_game_accept();
 		void on_start_game_reject();
@@ -38,6 +39,7 @@ class MenuState : public State {
 
 		sfg::Desktop m_desktop;
 		sfg::Window::Ptr m_window;
+		sfg::Button::Ptr m_insta_button;
 		sfg::Button::Ptr m_start_game_button;
 		sfg::Button::Ptr m_join_game_button;
 		sfg::Label::Ptr m_settings_hint_label;

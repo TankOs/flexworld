@@ -50,6 +50,7 @@ void MenuState::init() {
 		version_label->SetText( sstr.str() );
 	}
 
+	m_insta_button = sfg::Button::Create( L"INSTA!!!" );
 	m_start_game_button = sfg::Button::Create( L"Start game" );
 	m_join_game_button = sfg::Button::Create( L"Join game" );
 	sfg::Button::Ptr options_button( sfg::Button::Create( L"Options" ) );
@@ -71,6 +72,7 @@ void MenuState::init() {
 	vbox->Pack( title_label, false );
 	vbox->Pack( version_label, false );
 	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
+	vbox->Pack( m_insta_button, false );
 	vbox->Pack( m_start_game_button, false );
 	//vbox->Pack( m_join_game_button, false );
 	vbox->Pack( options_button, false );
@@ -92,6 +94,7 @@ void MenuState::init() {
 	m_desktop.Add( m_window );
 
 	// Signals.
+	m_insta_button->OnClick.Connect( &MenuState::on_insta_click, this );
 	m_start_game_button->OnClick.Connect( &MenuState::on_start_game_click, this );
 	options_button->OnClick.Connect( &MenuState::on_options_click, this );
 	quit_button->OnClick.Connect( &MenuState::on_quit_click, this );
@@ -528,4 +531,8 @@ void MenuState::check_required_settings() {
 	m_start_game_button->Show( valid );
 	m_join_game_button->Show( valid );
 	m_settings_hint_label->Show( !valid );
+}
+
+void MenuState::on_insta_click() {
+	on_start_game_accept();
 }
