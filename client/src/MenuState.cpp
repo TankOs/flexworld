@@ -16,7 +16,7 @@
 #include <cstdlib>
 
 static const bool SHOW_NOTICES = false;
-static const float FADE_SPEED = 2000.0f;
+static const float FADE_SPEED = 3000.0f;
 static const float SLIDE_TARGET_X = 50.f;
 
 MenuState::MenuState( sf::RenderWindow& target ) :
@@ -393,11 +393,17 @@ void MenuState::on_options_accept() {
 
 	// Apply resolution.
 	if( reinit_window ) {
+		// Remember position.
+		sf::Vector2i window_position = get_render_target().getPosition();
+
 		get_render_target().create(
 			get_shared().user_settings.get_video_mode(),
 			"FlexWorld",
 			get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
 		);
+
+		// Restore old position.
+		get_render_target().setPosition( window_position );
 
 		// Restart menu state.
 		leave( new MenuState( get_render_target() ) );
