@@ -26,6 +26,9 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 	TexturePtr texture( new sf::Texture );
 
 	if( !texture->loadFromFile( m_base_path + id.as_path() ) ) {
+#if !defined( NDEBUG )
+		std::cerr << "ERROR: Failed to load texture " << id.get() << "." << std::endl;
+#endif
 		return false;
 	}
 
@@ -35,6 +38,10 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
 		m_textures[id.get()] = texture;
 	}
+
+#if !defined( NDEBUG )
+	std::cout << "Texture loaded: " << id.get() << std::endl;
+#endif
 
 	return true;
 }
@@ -91,6 +98,9 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	std::ifstream in_file( path.c_str(), std::ios::in | std::ios::binary );
 
 	if( !in_file.is_open() ) {
+#if !defined( NDEBUG )
+		std::cerr << "ERROR: Failed to read model " << id.get() << "." << std::endl;
+#endif
 		return false;
 	}
 
@@ -123,6 +133,10 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 		boost::lock_guard<boost::mutex> lock( m_models_mutex );
 		m_models[id.get()] = model;
 	}
+
+#if !defined( NDEBUG )
+	std::cout << "Model loaded: " << id.get() << std::endl;
+#endif
 
 	return true;
 }
@@ -163,6 +177,8 @@ bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
 	// Insert the prepared texture.
 	m_textures[id.get()] = texture;
 	m_prepared_textures[id.get()] = image;
+
+	std::cout << "Loaded texture " << id.get() << "." << std::endl;
 
 	return true;
 }
@@ -227,13 +243,18 @@ BufferObjectGroup::PtrConst ResourceManager::find_buffer_object_group( const fle
 	return iter == m_buffer_object_groups.end() ? nullptr : iter->second;
 }
 
-void ResourceManager::finalize_prepared_buffer_objects() {
+void ResourceManager::finalize_prepared_buffer_object_groups() {
 	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
 
 	PreparedBufferObjectGroupMap::iterator bo_iter( m_prepared_buffer_object_groups.begin() );
 	PreparedBufferObjectGroupMap::iterator bo_iter_end( m_prepared_buffer_object_groups.end() );
 	
 	for( ; bo_iter != bo_iter_end; ++bo_iter ) {
-		//m_buffer_objects[bo_iter->first]->load( bo_iter->second->get_geometry() );
+		ModelPtrConst model = bo_iter->second;
+		BufferObjectGroup::Ptr group = m_buffer_object_groups[bo_iter->first];
+
+		for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
+			group->get_buffer_object( mesh_idx )->load( model->get_mesh( mesh_idx ).get_geometry() );
+		}
 	}
 }

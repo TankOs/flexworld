@@ -17,3 +17,7 @@ sg::BufferObject::Ptr BufferObjectGroup::get_buffer_object( std::size_t index ) 
 
 	return m_buffer_objects[index];
 }
+
+std::size_t BufferObjectGroup::get_num_buffer_objects() const {
+	return m_buffer_objects.size();
+}

@@ -3,6 +3,8 @@
 #include "PlayState.hpp"
 #include "MenuState.hpp"
 #include "Shared.hpp"
+#include "ClassDrawable.hpp" // XXX 
+#include <FlexWorld/ClassDriver.hpp> // XXX 
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -110,6 +112,20 @@ void PlayState::init() {
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
 	get_shared().client->send_message( ready_msg );
+
+	// Setup resource manager.
+	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+
+	///////// XXX TEST XXX ////////////
+	m_resource_manager.prepare_buffer_object_group( flex::FlexID::make( "fw.base.human/dwarf_male.fwm" ) );
+	BufferObjectGroup::PtrConst group = m_resource_manager.find_buffer_object_group( flex::FlexID::make( "fw.base.human/dwarf_male.fwm" ) );
+
+	flex::Class* cls = new flex::Class( flex::ClassDriver::load( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/fw/base/human/dwarf_male.yml" ) ) );
+
+	ClassDrawable::Ptr draw = ClassDrawable::create( m_renderer, m_resource_manager );
+	draw->set_class( *cls );
+
+	m_scene_graph->attach( draw );
 }
 
 void PlayState::cleanup() {
@@ -333,8 +349,9 @@ void PlayState::update( const sf::Time& delta ) {
 		}
 	}
 
-	// Finalize previously prepared textures.
+	// Finalize resources.
 	m_resource_manager.finalize_prepared_textures();
+	m_resource_manager.finalize_prepared_buffer_object_groups();
 
 	// Update scene graph.
 	if( m_scene_graph ) {
@@ -464,9 +481,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_view_cuboid.width = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), flex::Planet::ScalarType( 10 ) );
 	m_view_cuboid.height = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), flex::Planet::ScalarType( 10 ) );
 	m_view_cuboid.depth = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), flex::Planet::ScalarType( 10 ) );
-
-	// Setup resource manager.
-	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
 
 	// Setup planet renderer.
 	//m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );

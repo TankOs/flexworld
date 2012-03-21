@@ -88,9 +88,9 @@ class ResourceManager {
 		 */
 		void finalize_prepared_textures();
 
-		/** Finalize prepared buffer objects.
+		/** Finalize prepared buffer object groups.
 		 */
-		void finalize_prepared_buffer_objects();
+		void finalize_prepared_buffer_object_groups();
 
 	private:
 		typedef std::shared_ptr<sf::Texture> TexturePtr;

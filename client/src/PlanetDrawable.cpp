@@ -378,16 +378,8 @@ std::shared_ptr<const flex::Model> PlanetDrawable::get_model( const flex::FlexID
 	if( model == nullptr ) {
 		// Try to load.
 		if( !m_resource_manager.load_model( id ) ) {
-#if !defined( NDEBUG )
-			std::cerr << "Failed to load model: " << id.get() << std::endl;
-#endif
 			return model;
 		}
-#if !defined( NDEBUG )
-		else {
-			std::cout << "Model loaded: " << id.get() << std::endl;
-		}
-#endif
 
 		model = m_resource_manager.find_model( id );
 		assert( model );
@@ -404,16 +396,8 @@ std::shared_ptr<const sf::Texture> PlanetDrawable::get_texture( const flex::Flex
 		bool result = m_resource_manager.prepare_texture( id );
 
 		if( !result ) {
-#if !defined( NDEBUG )
-			std::cerr << "Failed to load texture: " << id.get() << std::endl;
-#endif
 			return texture;
 		}
-#if !defined( NDEBUG )
-		else {
-			std::cout << "Texture loaded: " << id.get() << std::endl;
-		}
-#endif
 
 		texture = m_resource_manager.find_texture( id );
 		assert( texture );
