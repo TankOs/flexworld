@@ -5,7 +5,11 @@
 namespace flex {
 
 Class::Class( const FlexID& id ) :
-	m_id( id )
+	m_id( id ),
+	m_model( nullptr ),
+	m_name( "" ),
+	m_origin( 0, 0, 0 ),
+	m_scale( 1, 1, 1 )
 {
 	assert( m_id.is_valid_resource() );
 }
@@ -20,6 +24,7 @@ const Class& Class::operator=( const Class& other ) {
 	m_id = other.m_id;
 	m_name = other.m_name;
 	m_origin = other.m_origin;
+	m_scale = other.m_scale;
 
 	if( other.m_model ) {
 		m_model.reset( new Resource( *other.m_model ) );
@@ -92,6 +97,14 @@ const Resource& Class::get_model() const {
 
 void Class::set_model( const Resource& model ) {
 	m_model.reset( new Resource( model ) );
+}
+
+void Class::set_scale( const sf::Vector3f& scale ) {
+	m_scale = scale;
+}
+
+const sf::Vector3f& Class::get_scale() const {
+	return m_scale;
 }
 
 }

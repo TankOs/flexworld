@@ -15,6 +15,7 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 		BOOST_CHECK( cls.get_id().get() == "test/grass" );
 		BOOST_CHECK( cls.get_name() == "Grass" );
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 0.1f, 0.2f, 0.3f ) );
+		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 0.11f, 0.22f, 0.33f ) );
 
 		BOOST_CHECK( cls.get_num_hooks() == 2 );
 

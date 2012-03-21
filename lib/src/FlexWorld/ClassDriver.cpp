@@ -110,6 +110,30 @@ Class ClassDriver::load( const std::string& path ) {
 		cls->set_origin( origin );
 	}
 
+	// Read scale.
+	const YAML::Node* scale_node = doc.FindValue( "Scale" );
+	if( scale_node ) {
+		if( scale_node->Type() != YAML::NodeType::Sequence ) {
+			throw LoadException( "Scale not a sequence." );
+		}
+		else if( scale_node->size() != 3 ) {
+			throw LoadException( "Invalid scale." );
+		}
+
+		sf::Vector3f scale( 1, 1, 1 );
+
+		try {
+			(*scale_node)[0] >> scale.x;
+			(*scale_node)[1] >> scale.y;
+			(*scale_node)[2] >> scale.z;
+		}
+		catch( const YAML::Exception& /*e*/ ) {
+			throw LoadException( "Invalid scale value(s)." );
+		}
+
+		cls->set_scale( scale );
+	}
+
 	// Read hooks.
 	{
 		const YAML::Node* hooks_node = doc.FindValue( "Hooks" );

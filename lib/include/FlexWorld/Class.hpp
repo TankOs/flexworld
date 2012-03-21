@@ -113,6 +113,16 @@ class Class {
 		 */
 		void set_model( const Resource& model );
 
+		/** Set scale.
+		 * @param scale Scale.
+		 */
+		void set_scale( const sf::Vector3f& scale );
+
+		/** Get scale.
+		 * @return Scale.
+		 */
+		const sf::Vector3f& get_scale() const;
+
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
@@ -120,9 +130,10 @@ class Class {
 		HookMap m_hooks;
 		ResourceVector m_textures;
 		FlexID m_id;
+		std::unique_ptr<Resource> m_model;
 		std::string m_name;
 		sf::Vector3f m_origin;
-		std::unique_ptr<Resource> m_model;
+		sf::Vector3f m_scale;
 };
 
 }

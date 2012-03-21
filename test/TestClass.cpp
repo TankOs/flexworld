@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 
 		BOOST_CHECK( cls.get_name() == "" );
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 0, 0, 0 ) );
+		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 1, 1, 1 ) );
 		BOOST_CHECK( cls.get_num_textures() == 0 );
 		BOOST_CHECK( cls.get_num_hooks() == 0 );
 		BOOST_CHECK( cls.has_model() == false );
@@ -29,13 +30,14 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		Class cls( id );
 
 		cls.set_name( "Sword" );
-		BOOST_CHECK( cls.get_name() == "Sword" );
-
 		cls.set_origin( sf::Vector3f( 1, 2, 3 ) );
-		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 1, 2, 3 ) );
-
 		cls.set_model( Resource( id ) );
+		cls.set_scale( sf::Vector3f( 5, 6, 7 ) );
+
+		BOOST_CHECK( cls.get_name() == "Sword" );
+		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 1, 2, 3 ) );
 		BOOST_CHECK( cls.get_model().get_id() == id );
+		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 5, 6, 7 ) );
 	}
 
 	// Check adding textures.
@@ -75,5 +77,51 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		const sf::Vector3f* hook( cls.find_hook( "default" ) );
 		BOOST_CHECK( *hook == sf::Vector3f( 1, 2, 3 ) );
 		BOOST_CHECK( hook != &vector );
+	}
+
+	// Assignment and copy ctor.
+	{
+		Class cls( FlexID::make( "fw.weapons/sword.yml" ) );
+
+		cls.set_name( "Sword" );
+		cls.set_origin( sf::Vector3f( 1, 2, 3 ) );
+		cls.set_model( Resource( FlexID::make( "a/model" ) ) );
+		cls.set_scale( sf::Vector3f( 5, 6, 7 ) );
+
+		cls.add_texture( FlexID::make( "texture/0" ) );
+		cls.add_texture( FlexID::make( "texture/1" ) );
+		cls.set_hook( "default", sf::Vector3f( 1, 2, 3 ) );
+		cls.set_hook( "second", sf::Vector3f( 10, 20, 30 ) );
+
+		struct Checker {
+			static void check( const Class& first, const Class& second ) {
+				BOOST_CHECK( second.get_id() == first.get_id() );
+				BOOST_CHECK( second.get_name() == first.get_name() );
+				BOOST_CHECK( second.get_origin() == first.get_origin() );
+				BOOST_CHECK( second.get_model().get_id() == first.get_model().get_id() );
+				BOOST_CHECK( second.get_scale() == first.get_scale() );
+
+				BOOST_CHECK( second.get_num_textures() == first.get_num_textures() );
+				BOOST_CHECK( second.get_texture( 0 ).get_id() == first.get_texture( 0 ).get_id() );
+				BOOST_CHECK( second.get_texture( 1 ).get_id() == first.get_texture( 1 ).get_id() );
+
+				BOOST_CHECK( second.get_num_hooks() == first.get_num_hooks() );
+				BOOST_CHECK( *second.find_hook( "default" ) == *first.find_hook( "default" ) );
+				BOOST_CHECK( *second.find_hook( "second" ) == *first.find_hook( "second" ) );
+			}
+		};
+
+		// Assignment.
+		{
+			Class other( FlexID::make( "other/class" ) );
+			other = cls;
+			Checker::check( other, cls );
+		}
+
+		// Copy.
+		{
+			Class other( cls );
+			Checker::check( other, cls );
+		}
 	}
 }
