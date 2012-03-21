@@ -22,8 +22,6 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_console( Console::Create() ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
-	m_camera_node( sg::Node::create() ),
-	m_world_node( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
@@ -70,6 +68,13 @@ void PlayState::init() {
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
 
+	m_crosshair_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/crosshair.png" ) );
+	m_crosshair_sprite = sf::Sprite( m_crosshair_texture );
+	m_crosshair_sprite.setPosition(
+		static_cast<float>( get_render_target().getSize().x ) / 2.0f - m_crosshair_sprite.getLocalBounds().width / 2.0f,
+		static_cast<float>( get_render_target().getSize().y ) / 2.0f - m_crosshair_sprite.getLocalBounds().height / 2.0f
+	);
+
 	// Setup scene.
 	// Sky.
 	m_sky.reset( new Sky );
@@ -86,10 +91,6 @@ void PlayState::init() {
 	);
 	m_camera.set_pitch_clamp( 90.f );
 	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
-
-	// Setup scene graph.
-	//m_scene_graph->attach( m_camera_node );
-	//m_scene_graph->attach( m_world_node );
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -431,6 +432,9 @@ void PlayState::render() const {
 	for( std::size_t msg_idx = 0; msg_idx < m_latest_messages.size(); ++msg_idx ) {
 		target.draw( m_latest_messages[msg_idx] );
 	}
+
+	// Crosshair.
+	target.draw( m_crosshair_sprite );
 
 	// FPS.
 	target.draw( m_fps_text );

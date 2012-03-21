@@ -61,6 +61,9 @@ class PlayState : public State, flex::Client::Handler {
 		std::vector<sf::Text> m_latest_messages;
 		sf::Clock m_message_timer;
 
+		sf::Texture m_crosshair_texture;
+		sf::Sprite m_crosshair_sprite;
+
 		// Resources.
 		ResourceManager m_resource_manager;
 
@@ -68,8 +71,6 @@ class PlayState : public State, flex::Client::Handler {
 		sg::Renderer m_renderer;
 
 		sg::Node::Ptr m_scene_graph;
-		sg::Node::Ptr m_camera_node; // Not translated, rotated.
-		sg::Node::Ptr m_world_node; // Translated, rotated.
 		PlanetDrawable::Ptr m_planet_drawable;
 
 		sf::Texture m_sun_texture;
