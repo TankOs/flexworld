@@ -97,7 +97,7 @@ void ClassDrawable::invalidate_steps() {
 		state.texture = texture;
 
 		// Create step.
-		m_steps.push_back( get_renderer().create_step( state, get_global_transform(), group->get_buffer_object( bo_idx ) ) );
+		m_steps.push_back( get_renderer().create_step( state, get_global_transform(), get_local_transform(), group->get_buffer_object( bo_idx ) ) );
 	}
 }
 

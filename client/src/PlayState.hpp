@@ -18,6 +18,8 @@
 #include <SFML/Graphics/Text.hpp>
 #include <boost/thread.hpp>
 
+#include "ClassDrawable.hpp" // XXX 
+
 /** Play state.
  */
 class PlayState : public State, flex::Client::Handler {
@@ -64,7 +66,10 @@ class PlayState : public State, flex::Client::Handler {
 
 		// Scene.
 		sg::Renderer m_renderer;
+
 		sg::Node::Ptr m_scene_graph;
+		sg::Node::Ptr m_camera_node; // Not translated, rotated.
+		sg::Node::Ptr m_world_node; // Translated, rotated.
 		PlanetDrawable::Ptr m_planet_drawable;
 
 		sf::Texture m_sun_texture;
@@ -99,4 +104,7 @@ class PlayState : public State, flex::Client::Handler {
 
 		// State.
 		bool m_my_entity_received;
+
+		// XXX TEST
+		ClassDrawable::Ptr m_foobar;
 };

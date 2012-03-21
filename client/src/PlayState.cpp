@@ -3,7 +3,6 @@
 #include "PlayState.hpp"
 #include "MenuState.hpp"
 #include "Shared.hpp"
-#include "ClassDrawable.hpp" // XXX 
 #include <FlexWorld/ClassDriver.hpp> // XXX 
 
 #include <FlexWorld/Messages/Ready.hpp>
@@ -23,6 +22,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_console( Console::Create() ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
+	m_camera_node( sg::Node::create() ),
+	m_world_node( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
@@ -86,6 +87,10 @@ void PlayState::init() {
 	m_camera.set_pitch_clamp( 90.f );
 	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
 
+	// Setup scene graph.
+	//m_scene_graph->attach( m_camera_node );
+	//m_scene_graph->attach( m_world_node );
+
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
 	glPushMatrix();
@@ -122,11 +127,11 @@ void PlayState::init() {
 
 	flex::Class* cls = new flex::Class( flex::ClassDriver::load( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/fw/base/human/dwarf_male.yml" ) ) );
 
-	ClassDrawable::Ptr draw = ClassDrawable::create( m_renderer, m_resource_manager );
-	draw->set_local_transform( sg::Transform( sf::Vector3f( 40, 1, 40 ) ) );
-	draw->set_class( *cls );
+	m_foobar = ClassDrawable::create( m_renderer, m_resource_manager );
+	m_foobar->set_local_transform( sg::Transform( sf::Vector3f( 40, 1, 40 ) ) );
+	m_foobar->set_class( *cls );
 
-	m_scene_graph->attach( draw );
+	m_scene_graph->attach( m_foobar );
 }
 
 void PlayState::cleanup() {
@@ -304,6 +309,25 @@ void PlayState::update( const sf::Time& delta ) {
 
 		// If eyepoint changed update transform of scene graph.
 		if( eyepoint_changed ) {
+			/*m_camera_node->set_local_transform(
+				sg::Transform(
+					sf::Vector3f( 0, 0, 0 ),
+					m_camera.get_rotation(),
+					sf::Vector3f( 1, 1, 1 )
+				)
+			);
+
+			if( m_planet_drawable ) {
+				m_planet_drawable->set_local_transform(
+					sg::Transform(
+						sf::Vector3f( 0, 0, 0 ),
+						sf::Vector3f( 0, 0, 0 ),
+						sf::Vector3f( 1, 1, 1 ),
+						m_camera.get_position()
+					)
+				);
+			}*/
+
 			m_scene_graph->set_local_transform(
 				sg::Transform(
 					sf::Vector3f(
@@ -353,6 +377,14 @@ void PlayState::update( const sf::Time& delta ) {
 	// Finalize resources.
 	m_resource_manager.finalize_prepared_textures();
 	m_resource_manager.finalize_prepared_buffer_object_groups();
+
+	// TEST.
+	static float angle = 0;
+	angle += 45.0f * delta.asSeconds();
+
+	sg::Transform trans = m_foobar->get_local_transform();
+	trans.set_rotation( sf::Vector3f( 0, angle, 0 ) );
+	m_foobar->set_local_transform( trans );
 
 	// Update scene graph.
 	if( m_scene_graph ) {
