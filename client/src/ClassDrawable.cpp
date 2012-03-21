@@ -23,6 +23,12 @@ ClassDrawable::ClassDrawable( sg::Renderer& renderer, ResourceManager& resource_
 void ClassDrawable::set_class( const flex::Class& cls ) {
 	m_class = &cls;
 
+	// Apply scale.
+	sg::Transform trans = get_local_transform();
+	trans.set_scale( m_class->get_scale() );
+
+	set_local_transform( trans );
+
 	queue_update();
 }
 

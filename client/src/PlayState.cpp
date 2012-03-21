@@ -123,6 +123,7 @@ void PlayState::init() {
 	flex::Class* cls = new flex::Class( flex::ClassDriver::load( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/fw/base/human/dwarf_male.yml" ) ) );
 
 	ClassDrawable::Ptr draw = ClassDrawable::create( m_renderer, m_resource_manager );
+	draw->set_local_transform( sg::Transform( sf::Vector3f( 40, 1, 40 ) ) );
 	draw->set_class( *cls );
 
 	m_scene_graph->attach( draw );
