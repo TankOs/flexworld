@@ -178,7 +178,9 @@ bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
 	m_textures[id.get()] = texture;
 	m_prepared_textures[id.get()] = image;
 
+#if !defined( NDEBUG )
 	std::cout << "Loaded texture " << id.get() << "." << std::endl;
+#endif
 
 	return true;
 }
