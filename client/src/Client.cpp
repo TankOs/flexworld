@@ -79,6 +79,15 @@ void Client::run() {
 		Shared::get().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
 	);
 
+	// Restore window position if not in fullscreen.
+	if( !Shared::get().user_settings.is_fullscreen_enabled() ) {
+		const sf::Vector2i& pos = Shared::get().user_settings.get_window_position();
+
+		if( pos.x != 0 && pos.y != 0 ) {
+			m_window.setPosition( pos );
+		}
+	}
+
 	{
 		std::stringstream sstr;
 		sstr << "FlexWorld "

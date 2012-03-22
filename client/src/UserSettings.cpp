@@ -144,6 +144,23 @@ bool UserSettings::load( const std::string& filename ) {
 			catch( const YAML::Exception& ) {
 			}
 		}
+
+		const YAML::Node* window_position_node = video_node->FindValue( "WindowPosition" );
+
+		if( window_position_node ) {
+			try {
+				sf::Vector2i position;
+
+				(*window_position_node)[0] >> position.x;
+				(*window_position_node)[1] >> position.y;
+
+				if( position.x >= 0 && position.y >= 0 ) {
+					new_settings.set_window_position( position );
+				}
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
 	}
 
 	// Load key bindings.
@@ -201,6 +218,7 @@ bool UserSettings::save( const std::string& filename ) {
 	}
 
 	Emitter emitter;
+	emitter.SetSeqFormat( Flow );
 	emitter
 		<< BeginMap
 			<< Key << "Account" << Value << BeginMap;
@@ -224,6 +242,9 @@ bool UserSettings::save( const std::string& filename ) {
 				<< Key << "VSync" << Value << is_vsync_enabled()
 				<< Key << "FPSLimit" << Value << get_fps_limit()
 				<< Key << "FOV" << Value << get_fov()
+				<< Key << "WindowPosition" << Value << BeginSeq
+					<< get_window_position().x << get_window_position().y
+				<< EndSeq
 			<< EndMap
 			<< Key << "Controls" << Value << BeginMap
 				<< Key << "Mouse" << Value << BeginMap
@@ -319,4 +340,12 @@ void UserSettings::enable_fullscreen( bool enable ) {
 
 bool UserSettings::is_fullscreen_enabled() const {
 	return m_fullscreen;
+}
+
+void UserSettings::set_window_position( const sf::Vector2i& pos ) {
+	m_window_position = pos;
+}
+
+const sf::Vector2i& UserSettings::get_window_position() const {
+	return m_window_position;
 }

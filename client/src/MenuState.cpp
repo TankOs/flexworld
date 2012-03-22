@@ -214,6 +214,9 @@ void MenuState::init() {
 }
 
 void MenuState::cleanup() {
+	// Save window position.
+	get_shared().user_settings.set_window_position( get_render_target().getPosition() );
+	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
@@ -380,9 +383,11 @@ void MenuState::on_options_accept() {
 		get_shared().user_settings.is_fullscreen_enabled() != m_options_window->get_user_settings().is_fullscreen_enabled()
 	;
 
+	// Remember old fullscreen state.
+	bool was_fullscreen = get_shared().user_settings.is_fullscreen_enabled();
+
 	// Apply user settings.
 	get_shared().user_settings = m_options_window->get_user_settings();
-	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	m_fade_main_menu_out = false;
 
@@ -393,7 +398,7 @@ void MenuState::on_options_accept() {
 
 	// Apply resolution.
 	if( reinit_window ) {
-		// Remember position.
+		// Remember position and fullscreen state.
 		sf::Vector2i window_position = get_render_target().getPosition();
 
 		get_render_target().create(
@@ -402,12 +407,34 @@ void MenuState::on_options_accept() {
 			get_shared().user_settings.is_fullscreen_enabled() ? sf::Style::Fullscreen : (sf::Style::Titlebar | sf::Style::Close)
 		);
 
-		// Restore old position.
-		get_render_target().setPosition( window_position );
+		// Restore old position when new video settings don't want fullscreen. If
+		// fullscreen do nothing, the OS will handle it.
+		if( get_shared().user_settings.is_fullscreen_enabled() == false ) {
+			// If fullscreen was enabled before, move window to screen center.
+			if( was_fullscreen == true ) {
+				get_render_target().setPosition(
+					sf::Vector2i(
+						(sf::VideoMode::getDesktopMode().width - get_shared().user_settings.get_video_mode().width) / 2,
+						(sf::VideoMode::getDesktopMode().height - get_shared().user_settings.get_video_mode().height) / 2
+					)
+				);
+			}
+			else {
+				// If not fullscreen before, restore old position.
+				get_render_target().setPosition( window_position );
+			}
+
+		}
+
+		// Save position.
+		get_shared().user_settings.set_window_position( get_render_target().getPosition() );
 
 		// Restart menu state.
 		leave( new MenuState( get_render_target() ) );
 	}
+
+	// Save settings.
+	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 }
 
 void MenuState::on_options_reject() {

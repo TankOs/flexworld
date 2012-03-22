@@ -3,6 +3,7 @@
 #include "Controls.hpp"
 
 #include <SFML/Window/VideoMode.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <cstdint>
 #include <string>
@@ -111,6 +112,16 @@ class UserSettings {
 		 */
 		bool is_fullscreen_enabled() const;
 
+		/** Set window position.
+		 * @param pos Position.
+		 */
+		void set_window_position( const sf::Vector2i& pos );
+
+		/** Get window position.
+		 * @return Position.
+		 */
+		const sf::Vector2i& get_window_position() const;
+
 	private:
 		Controls m_controls;
 
@@ -118,6 +129,8 @@ class UserSettings {
 
 		std::string m_username;
 		std::string m_serial;
+
+		sf::Vector2i m_window_position;
 
 		uint32_t m_fps_limit;
 
