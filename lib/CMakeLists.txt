@@ -59,6 +59,7 @@ set(
 	${INC_DIR}/FlexWorld/Resource.hpp
 	${INC_DIR}/FlexWorld/SaveInfo.hpp
 	${INC_DIR}/FlexWorld/SaveInfoDriver.hpp
+	${INC_DIR}/FlexWorld/ScriptManager.hpp
 	${INC_DIR}/FlexWorld/Server.hpp
 	${INC_DIR}/FlexWorld/Server.inl
 	${INC_DIR}/FlexWorld/ServerProtocol.hpp
@@ -106,6 +107,7 @@ set(
 	${SRC_DIR}/FlexWorld/Resource.cpp
 	${SRC_DIR}/FlexWorld/SaveInfo.cpp
 	${SRC_DIR}/FlexWorld/SaveInfoDriver.cpp
+	${SRC_DIR}/FlexWorld/ScriptManager.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 	${SRC_DIR}/FlexWorld/SessionHost.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
@@ -114,6 +116,8 @@ set(
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/Diluculum/include/ )
+include_directories( ${LUA_INCLUDE_DIR} )
 include_directories( ${YAML_CPP_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
@@ -121,6 +125,8 @@ include_directories( ${Boost_INCLUDE_DIR} )
 add_library( flexworld ${SOURCES} )
 
 target_link_libraries( flexworld fwsg )
+target_link_libraries( flexworld Diluculum )
+target_link_libraries( flexworld ${LUA_LIBRARIES} )
 target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
 target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )

@@ -7,3 +7,6 @@
 [submodule "extlibs/FWSG"]
 	path = extlibs/FWSG
 	url = git://github.com/TankOs/FWSG.git
+[submodule "extlibs/Diluculum"]
+	path = extlibs/Diluculum
+	url = git://github.com/lmbarros/Diluculum.git

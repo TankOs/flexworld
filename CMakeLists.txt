@@ -22,7 +22,10 @@ elseif( MSVC_VERSION )
 	set( COMPILER_MSVC 1 )
 endif()
 
-set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlibs/SFML/cmake/Modules;${PROJECT_SOURCE_DIR}/extlibs/SFGUI/cmake" )
+#
+# Override CMake module path to use custom/modified Find scripts.
+#
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlibs/SFML/cmake/Modules;${PROJECT_SOURCE_DIR}/extlibs/SFGUI/cmake;${CMAKE_MODULE_PATH}" )
 
 #
 # Global project settings.
@@ -67,6 +70,7 @@ endif()
 # Linker options.
 #
 set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
+set( LUA_STATIC_LIBRARIES true CACHE BOOL "Use Lua's static libraries." )
 set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
 set( SFGUI_STATIC_LIBRARIES false CACHE BOOL "Was SFGUI built as a static library?" )
 
@@ -115,6 +119,7 @@ find_package( Boost 1.47 REQUIRED COMPONENTS ${BOOST_COMPONENTS} )
 find_package( SFML 2.0 REQUIRED COMPONENTS ${SFML_COMPONENTS} )
 find_package( yaml-cpp REQUIRED )
 find_package( Threads REQUIRED )
+find_package( Lua51 REQUIRED )
 
 if( NOT WINDOWS )
 	find_package( X11 REQUIRED )
@@ -132,6 +137,9 @@ endif()
 # FWSG.
 set( FWSG_SKIP_INSTALL TRUE )
 add_subdirectory( "extlibs/FWSG" )
+
+# Diluculum.
+add_subdirectory( "extlibs/Diluculum" )
 
 # FlexWorld common library.
 add_subdirectory( "lib" )

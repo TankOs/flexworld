@@ -32,6 +32,7 @@ set(
 	TestResource.cpp
 	TestSaveInfo.cpp
 	TestSaveInfoDriver.cpp
+	TestScriptManager.cpp
 	TestServer.cpp
 	TestServerProtocol.cpp
 	TestSessionHost.cpp
