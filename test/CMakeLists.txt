@@ -6,6 +6,8 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 set(
 	SOURCES
 	${PROJECT_BINARY_DIR}/Config.hpp
+	LuaUtils.cpp
+	LuaUtils.hpp
 	Test.cpp
 	TestAccount.cpp
 	TestAccountDriver.cpp
@@ -17,6 +19,7 @@ set(
 	TestClient.cpp
 	TestCuboid.cpp
 	TestEntity.cpp
+	TestEventLuaModule.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp
 	TestGameModeDriver.cpp

@@ -18,7 +18,7 @@ void Test::register_class( const Diluculum::LuaVariable& variable ) {
 }
 
 Test::Test( const Diluculum::LuaValueList& /*args*/ ) {
-	throw Diluculum::LuaError( "Not allowed to instanciate Test." );
+	throw Diluculum::LuaError( "Not allowed to instantiate Test." );
 }
 
 Test::Test() {

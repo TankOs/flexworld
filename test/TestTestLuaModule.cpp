@@ -1,3 +1,5 @@
+#include "LuaUtils.hpp"
+
 #include <FlexWorld/LuaModules/Test.hpp>
 
 #include <Diluculum/LuaState.hpp>
@@ -7,30 +9,6 @@ void setup_state( Diluculum::LuaState& state ) {
 	state["flex"] = Diluculum::EmptyTable;
 
 	flex::lua::Test::register_class( state["flex"]["Test"] );
-}
-
-bool check_error( const std::string& error, const std::string& code, Diluculum::LuaState& state ) {
-	try {
-		state.doString( code );
-
-		return false;
-	}
-	catch( const Diluculum::LuaError& e ) {
-		std::string str = e.what();
-		std::string message = str.substr( str.find( ":" ) + 2 );
-
-		if( error != message ) {
-			std::cout
-				<< "*** Expected: " << error << std::endl
-				<< "*** Got:      " << message << std::endl
-			;
-			return false;
-		}
-
-		return true;
-	}
-	
-	return false;
 }
 
 BOOST_AUTO_TEST_CASE( TestTestLuaModule ) {

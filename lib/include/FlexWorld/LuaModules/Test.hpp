@@ -26,6 +26,7 @@ class Test {
 		/** Ctor.
 		 * This ctor is called from Lua. It throws an error because constructing
 		 * the module is prohibited there.
+		 * @param args Arguments (ignored).
 		 */
 		Test( const Diluculum::LuaValueList& args );
 
