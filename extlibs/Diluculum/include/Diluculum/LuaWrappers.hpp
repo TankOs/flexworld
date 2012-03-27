@@ -272,7 +272,7 @@ int DILUCULUM_METHOD_WRAPPER(CLASS, METHOD) (lua_State* ls)                   \
       /* Push the return values and return */                                 \
       for_each (ret.begin(), ret.end(), bind (PushLuaValue, ls, _1));         \
                                                                               \
-      return ret.size();                                                      \
+      return static_cast<int>( ret.size() );                                  \
    }                                                                          \
    catch (Diluculum::LuaError& e)                                             \
    {                                                                          \

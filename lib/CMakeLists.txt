@@ -34,6 +34,7 @@ set(
 	${INC_DIR}/FlexWorld/LockFacility.hpp
 	${INC_DIR}/FlexWorld/Log.hpp
 	${INC_DIR}/FlexWorld/Log.inl
+	${INC_DIR}/FlexWorld/LuaModules/Test.hpp
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
@@ -83,6 +84,7 @@ set(
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Log.cpp
+	${SRC_DIR}/FlexWorld/LuaModules/Test.cpp
 	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp

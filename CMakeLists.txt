@@ -70,7 +70,7 @@ endif()
 # Linker options.
 #
 set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
-set( LUA_STATIC_LIBRARIES true CACHE BOOL "Use Lua's static libraries." )
+set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
 set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
 set( SFGUI_STATIC_LIBRARIES false CACHE BOOL "Was SFGUI built as a static library?" )
 

@@ -46,7 +46,7 @@ namespace Diluculum
          for (iter_t p = params.begin(); p != params.end(); ++p)
             PushLuaValue (ls, *p);
 
-         int status = lua_pcall (ls, params.size(), LUA_MULTRET, 0);
+         int status = lua_pcall (ls, static_cast<int>( params.size() ), LUA_MULTRET, 0);
 
          ThrowOnLuaError (ls, status);
 
@@ -103,7 +103,7 @@ namespace Diluculum
 
 
       // - LuaFunctionWriter ---------------------------------------------------
-      int LuaFunctionWriter(lua_State* luaState, const void* data, size_t size,
+      int LuaFunctionWriter(lua_State* /*luaState*/, const void* data, size_t size,
                             void* func)
       {
          Diluculum::LuaFunction* f =
@@ -124,7 +124,7 @@ namespace Diluculum
 
 
       // - LuaFunctionReader ---------------------------------------------------
-      const char* LuaFunctionReader(lua_State* luaState, void* func,
+      const char* LuaFunctionReader(lua_State* /*luaState*/, void* func,
                                     size_t* size)
       {
          Diluculum::LuaFunction* f =

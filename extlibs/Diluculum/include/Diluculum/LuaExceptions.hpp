@@ -41,8 +41,8 @@ namespace Diluculum
          /** Constructs a \c LuaError object.
           *  @param what The message associated with the error.
           */
-         LuaError (const char* what)
-            : std::runtime_error (what)
+         LuaError (const char* what_)
+            : std::runtime_error (what_)
          { }
    };
 
@@ -56,8 +56,8 @@ namespace Diluculum
           *  @param what The message associated with the error. Typically will
           *              be the error message issued by the Lua interpreter.
           */
-         LuaRunTimeError (const char* what)
-            : LuaError (what)
+         LuaRunTimeError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
@@ -70,8 +70,8 @@ namespace Diluculum
          /** Constructs a \c LuaFileError object.
           *  @param what The message associated with the error.
           */
-         LuaFileError (const char* what)
-            : LuaError (what)
+         LuaFileError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
@@ -85,8 +85,8 @@ namespace Diluculum
           *  @param what The message associated with the error. Typically will be
           *              the error message issued by the Lua interpreter.
           */
-         LuaSyntaxError (const char* what)
-            : LuaError (what)
+         LuaSyntaxError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
@@ -99,8 +99,8 @@ namespace Diluculum
          /** Constructs a \c LuaMemoryError object.
           *  @param what The message associated with the error.
           */
-         LuaMemoryError (const char* what)
-            : LuaError (what)
+         LuaMemoryError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
@@ -113,8 +113,8 @@ namespace Diluculum
          /** Constructs a \c LuaErrorError object.
           *  @param what The message associated with the error.
           */
-         LuaErrorError (const char* what)
-            : LuaError (what)
+         LuaErrorError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
@@ -127,8 +127,8 @@ namespace Diluculum
          /** Constructs a \c LuaTypeError object.
           *  @param what The message associated with the error.
           */
-         LuaTypeError (const char* what)
-            : LuaError (what)
+         LuaTypeError (const char* what_)
+            : LuaError (what_)
          { }
    };
 
