@@ -2,6 +2,7 @@
 
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaExceptions.hpp>
+#include <iostream>
 
 bool check_error( const std::string& error, const std::string& code, Diluculum::LuaState& state ) {
 	try {
