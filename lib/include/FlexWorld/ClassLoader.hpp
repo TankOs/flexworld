@@ -10,6 +10,9 @@ namespace flex {
 class FlexID;
 
 /** Loader for loading classes from multiple path sources.
+ *
+ * Take care of when you add what search path. Search paths added earlier get
+ * higher priority!
  */
 class ClassLoader {
 	public:
@@ -40,6 +43,8 @@ class ClassLoader {
 		const std::string& get_search_path( std::size_t index ) const;
 
 		/** Load class.
+		 * Not only the class is loaded, it'll also be checked if the referenced
+		 * assets are valid, i.e. exist in the filesystem.
 		 * Make sure to add search paths before.
 		 * @param id Class ID (must be a valid resource).
 		 * @return Loaded class.
@@ -49,6 +54,8 @@ class ClassLoader {
 
 	private:
 		typedef std::vector<std::string> StringArray;
+
+		std::string find_file( const std::string& filename ) const;
 
 		StringArray m_search_paths;
 };

@@ -55,4 +55,15 @@ BOOST_AUTO_TEST_CASE( TestClassLoader ) {
 		Class cls( FlexID::make( "no/class" ) );
 		BOOST_CHECK_THROW( cls = loader.load( FlexID::make( "test/green" ) ), ClassLoader::LoadException );
 	}
+
+	// Load classes that reference invalid assets.
+	{
+		ClassLoader loader;
+		loader.add_search_path( DATA_DIRECTORY + "/more_packages" );
+
+		Class cls( FlexID::make( "no/class" ) );
+
+		BOOST_CHECK_THROW( cls = loader.load( FlexID::make( "test/invalid_texture" ) ), ClassLoader::LoadException );
+		BOOST_CHECK_THROW( cls = loader.load( FlexID::make( "test/invalid_model" ) ), ClassLoader::LoadException );
+	}
 }

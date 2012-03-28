@@ -1,10 +1,10 @@
-ID: "test/grass"
-Name: "Grass"
+ID: "test/green"
+Name: "Green"
 Origin: [0.1, 0.2, 0.3]
 Scale: [0.11, 0.22, 0.33]
 Hooks:
   top: [0.1, 0.2, 0.3]
   bottom: [1.0, 0.9, 0.8]
 Textures:
-  - "test/grass.png"
-Model: "test/cube.fwm"
+  - "test/invalid.png"
+Model: "test/cube2.fwm"
