@@ -61,14 +61,13 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		test.register_object( state["flex"]["test"] );
 		event.register_object( state["flex"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "function callback( client_id ) flex.test:set_value( \"result\", \"called\" .. tostring( client_id ) ) end" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"result\" ) == nil )" ) );
+		// Connect event.
+		BOOST_CHECK_NO_THROW( state.doString( "function on_connect( client_id ) flex.test:set_value( \"connect\", \"called\" .. tostring( client_id ) ) end" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == nil )" ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, callback )" ) );
-
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, on_connect )" ) );
 		event.trigger_connect_system_event( 1337, state );
-
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"result\" ) == \"called1337\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == \"called1337\" )" ) );
 	}
 
 	// Hook class events.
