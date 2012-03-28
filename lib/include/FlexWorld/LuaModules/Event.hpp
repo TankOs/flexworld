@@ -5,6 +5,7 @@
 
 #include <map>
 #include <vector>
+#include <cstdint>
 
 namespace Diluculum {
 class LuaState;
