@@ -561,6 +561,7 @@ void MenuState::check_required_settings() {
 		valid = false;
 	}
 
+	m_insta_button->Show( valid );
 	m_start_game_button->Show( valid );
 	m_join_game_button->Show( valid );
 	m_settings_hint_label->Show( !valid );
