@@ -8,6 +8,7 @@ bool PackageEnumerator::enumerate( const std::string& path ) {
 	m_class_files.clear();
 	m_image_files.clear();
 	m_model_files.clear();
+	m_script_files.clear();
 
 	fs::path b_path( path );
 
@@ -49,6 +50,9 @@ bool PackageEnumerator::enumerate( const boost::filesystem::path& path ) {
 		else if( filename.substr( filename.size() - 4 ) == ".fwm" ) {
 			m_model_files.push_back( filename );
 		}
+		else if( filename.substr( filename.size() - 4 ) == ".lua" ) {
+			m_script_files.push_back( filename );
+		}
 	}
 
 	return true;
@@ -64,6 +68,10 @@ std::size_t PackageEnumerator::get_num_image_files() const {
 
 std::size_t PackageEnumerator::get_num_model_files() const {
 	return m_model_files.size();
+}
+
+std::size_t PackageEnumerator::get_num_script_files() const {
+	return m_script_files.size();
 }
 
 const std::string& PackageEnumerator::get_class_file( std::size_t index ) const {
@@ -82,6 +90,12 @@ const std::string& PackageEnumerator::get_model_file( std::size_t index ) const 
 	assert( index < m_model_files.size() );
 
 	return m_model_files[index];
+}
+
+const std::string& PackageEnumerator::get_script_file( std::size_t index ) const {
+	assert( index < m_script_files.size() );
+
+	return m_script_files[index];
 }
 
 }
