@@ -13,6 +13,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 	GameMode game_mode;
 	game_mode.set_default_entity_class_id( FlexID::make( "test/grass" ) );
+	game_mode.add_package( FlexID::make( "test" ) );
 
 	// Initial state.
 	{
@@ -69,5 +70,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 		// Start host.
 		BOOST_REQUIRE( host.start() );
+
+		// Verify scripts got loaded.
+		BOOST_CHECK( host.get_num_loaded_scripts() == 2 );
 	}
 }

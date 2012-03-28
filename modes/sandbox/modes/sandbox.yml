@@ -8,4 +8,4 @@ Meta:
   Thumbnail: fw.gm.sandbox/thumbnail.png
   DefaultEntityClassId: fw.base.human/dwarf_male
 Packages:
-  - fw.base
+  - fw.admin

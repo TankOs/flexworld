@@ -5,6 +5,7 @@
 #include <FlexWorld/ClassLoader.hpp>
 #include <FlexWorld/GameMode.hpp>
 #include <FlexWorld/NonCopyable.hpp>
+#include <FlexWorld/ScriptManager.hpp>
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -124,10 +125,17 @@ class SessionHost : private Server::Handler, public NonCopyable {
 		 */
 		void add_search_path( const std::string& path );
 
+		/** Get number of loaded scripts.
+		 * @return Number of loaded scripts.
+		 */
+		std::size_t get_num_loaded_scripts() const;
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 
 		const Class* get_or_load_class( const FlexID& id );
+
+		void rehash_scripts();
 
 		void handle_connect( Server::ConnectionID conn_id );
 		void handle_disconnect( Server::ConnectionID conn_id );
@@ -139,6 +147,9 @@ class SessionHost : private Server::Handler, public NonCopyable {
 
 		GameMode m_game_mode;
 		ClassLoader m_class_loader;
+
+		ScriptManager m_script_manager;
+		std::size_t m_num_loaded_scripts;
 
 		PlayerInfoVector m_player_infos;
 

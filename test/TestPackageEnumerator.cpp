@@ -34,10 +34,11 @@ BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 		BOOST_CHECK( enumerator.enumerate( base_dir.string() ) );
 		BOOST_CHECK( enumerator.enumerate( base_dir.string() ) );
 
-		BOOST_CHECK( enumerator.get_num_script_files() == 2 );
+		BOOST_CHECK( enumerator.get_num_script_files() == 3 );
 
 		bool commands_script = false;
 		bool another_script = false;
+		bool invalid_script = false;
 
 		for( std::size_t script_idx = 0; script_idx < enumerator.get_num_script_files(); ++script_idx ) {
 			if( enumerator.get_script_file( script_idx ) == (base_dir / "test" / "commands.lua").string() ) {
@@ -46,10 +47,14 @@ BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
 			else if( enumerator.get_script_file( script_idx ) == (base_dir / "test" / "another.lua").string() ) {
 				another_script = true;
 			}
+			else if( enumerator.get_script_file( script_idx ) == (base_dir / "test" / "faulty.lua").string() ) {
+				invalid_script = true;
+			}
 		}
 
 		BOOST_CHECK( commands_script == true );
 		BOOST_CHECK( another_script == true );
+		BOOST_CHECK( invalid_script == true );
 	}
 
 }

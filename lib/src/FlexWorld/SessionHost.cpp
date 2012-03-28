@@ -10,8 +10,10 @@
 #include <FlexWorld/Account.hpp>
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/GameMode.hpp>
+#include <FlexWorld/PackageEnumerator.hpp>
 
 #include <boost/filesystem.hpp>
+#include <set>
 
 namespace flex {
 
@@ -26,6 +28,7 @@ SessionHost::SessionHost(
 	const GameMode& game_mode
 ) :
 	m_game_mode( game_mode ),
+	m_num_loaded_scripts( 0 ),
 	m_io_service( io_service ),
 	m_lock_facility( lock_facility ),
 	m_account_manager( account_manager ),
@@ -131,6 +134,9 @@ bool SessionHost::start() {
 
 	// Release lock again.
 	m_lock_facility.lock_world( false );
+
+	// Load scripts.
+	rehash_scripts();
 
 	return m_server->start();
 }
@@ -464,6 +470,71 @@ void SessionHost::add_search_path( const std::string& path ) {
 	}
 	else {
 		m_class_loader.add_search_path( path );
+	}
+}
+
+std::size_t SessionHost::get_num_loaded_scripts() const {
+	return m_num_loaded_scripts;
+}
+
+void SessionHost::rehash_scripts() {
+	Log::Logger( Log::INFO ) << "Searching for scripts in " << m_game_mode.get_num_packages() << " package(s)." << Log::endl;
+
+	// Clear current script manager. TODO Trigger UNLOAD_EVENT.
+	m_script_manager.clear();
+	m_num_loaded_scripts = 0;
+
+	// Enumerate scripts of game mode.
+	PackageEnumerator enumerator;
+	std::set<std::string> found_scripts;
+
+	for( std::size_t package_idx = 0; package_idx < m_game_mode.get_num_packages(); ++package_idx ) {
+		const FlexID& package = m_game_mode.get_package( package_idx );
+		std::string package_path = package.as_path();
+
+		//Log::Logger( Log::INFO ) << "-> " << package.get() << Log::endl;
+
+		// Search package in all search paths, also process all paths, i.e. load
+		// scripts from ALL packages in ALL search paths.
+		for( std::size_t path_idx = 0; path_idx < m_class_loader.get_num_search_paths(); ++path_idx ) {
+			std::string full_package_path = m_class_loader.get_search_path( path_idx ) + package_path;
+
+			// Enumerate.
+			if( enumerator.enumerate( full_package_path ) ) {
+				Log::Logger( Log::INFO ) << "-> " << full_package_path << " (" << enumerator.get_num_script_files() << " script(s))" << Log::endl;
+
+				// Select scripts.
+				for( std::size_t script_idx = 0; script_idx < enumerator.get_num_script_files(); ++script_idx ) {
+					// Add to set so the same scripts won't be loaded twice. This may
+					// happen if the user did a mistake and specified both a package and
+					// one or more of its sub-package (e.g. "foo.bar" and "foo").
+					found_scripts.insert( enumerator.get_script_file( script_idx ) );
+				}
+			}
+		}
+	}
+
+	// Load scripts.
+	if( found_scripts.size() == 0 ) {
+		Log::Logger( Log::WARNING ) << "No scripts loaded." << Log::endl;
+	}
+	else {
+		Log::Logger( Log::INFO ) << "Loading scripts..." << Log::endl;
+
+		std::set<std::string>::iterator script_path_iter( found_scripts.begin() );
+		std::set<std::string>::iterator script_path_iter_end( found_scripts.end() );
+		
+		for( ; script_path_iter != script_path_iter_end; ++script_path_iter ) {
+			if( m_script_manager.execute_file( *script_path_iter ) ) {
+				// Output filename only.
+				Log::Logger( Log::INFO ) << "-> " << *script_path_iter << Log::endl;
+				++m_num_loaded_scripts;
+			}
+			else {
+				Log::Logger( Log::ERR ) << "Failed executing script: " << *script_path_iter << Log::endl;
+				Log::Logger( Log::ERR ) << m_script_manager.get_last_error() << Log::endl;
+			}
+		}
 	}
 }
 
