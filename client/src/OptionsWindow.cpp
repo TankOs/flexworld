@@ -220,14 +220,19 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Init.
 	// Add resolutions.
 	std::size_t combo_idx = 0;
+	const sf::VideoMode& desktop_mode = sf::VideoMode::getDesktopMode();
 
 	for( std::size_t reso_idx = 0; reso_idx < sf::VideoMode::getFullscreenModes().size(); ++reso_idx ) {
 		const sf::VideoMode& mode = sf::VideoMode::getFullscreenModes()[reso_idx];
 
+		// BPP must match desktop's resolution. Width and height must be at minimum
+		// 800*600 and must be lower/equal desktop's resolution.
 		if(
-			mode.bitsPerPixel == sf::VideoMode::getDesktopMode().bitsPerPixel &&
+			mode.bitsPerPixel == desktop_mode.bitsPerPixel &&
 			mode.width >= 800 &&
-			mode.height >= 600
+			mode.height >= 600 &&
+			mode.width <= desktop_mode.width &&
+			mode.height <= desktop_mode.height
 		) {
 			std::stringstream sstr;
 			sstr << mode.width << " x " << mode.height;
