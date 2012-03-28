@@ -1,6 +1,7 @@
 #include "LuaUtils.hpp"
 
 #include <FlexWorld/LuaModules/Event.hpp>
+#include <FlexWorld/LuaModules/Test.hpp>
 
 #include <Diluculum/LuaState.hpp>
 #include <boost/test/unit_test.hpp>
@@ -9,6 +10,7 @@ void setup_state_for_event( Diluculum::LuaState& state ) {
 	state["flex"] = Diluculum::EmptyTable;
 
 	flex::lua::Event::register_class( state["flex"]["Event"] );
+	flex::lua::Test::register_class( state["flex"]["Test"] );
 }
 
 BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
@@ -46,6 +48,27 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.UNLOAD, function() end )" ) );
 
 		BOOST_CHECK( event.get_num_system_hooks() == 3 );
+	}
+
+	// Trigger system events.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_event( state );
+
+		lua::Test test;
+		lua::Event event;
+
+		test.register_object( state["flex"]["test"] );
+		event.register_object( state["flex"]["event"] );
+
+		BOOST_CHECK_NO_THROW( state.doString( "function callback( client_id ) flex.test:set_value( \"result\", \"called\" .. tostring( client_id ) ) end" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"result\" ) == nil )" ) );
+
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, callback )" ) );
+
+		event.trigger_connect_system_event( 1337, state );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"result\" ) == \"called1337\" )" ) );
 	}
 
 	// Hook class events.

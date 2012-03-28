@@ -6,6 +6,10 @@
 #include <map>
 #include <vector>
 
+namespace Diluculum {
+class LuaState;
+}
+
 namespace flex {
 namespace lua {
 
@@ -84,15 +88,24 @@ class Event {
 		 */
 		Diluculum::LuaValueList hook_class_event( const Diluculum::LuaValueList& args );
 
+		/** Trigger connect system event.
+		 * @param client_id Client ID.
+		 * @param state Lua state to use for calling functions.
+		 */
+		void trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state );
+
 	private:
-		typedef std::map<const int, Diluculum::LuaFunction> SystemFunctionMap;
+		typedef std::vector<Diluculum::LuaFunction> SystemFunctionArray;
+		typedef std::vector<SystemFunctionArray> SystemEventFunctionArray;
 
 		typedef std::pair<std::string, Diluculum::LuaFunction> ClassFunctionPair;
-		typedef std::vector<ClassFunctionPair> ClassFunctionArray;
-		typedef std::map<const int, ClassFunctionArray> ClassFunctionMap;
+		typedef std::vector<ClassFunctionPair> ClassFunctionPairArray;
+		typedef std::vector<ClassFunctionPairArray> ClassEventFunctionArray;
 
-		SystemFunctionMap m_system_functions;
-		ClassFunctionMap m_class_functions;
+		void call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
+
+		SystemEventFunctionArray m_system_functions;
+		ClassEventFunctionArray m_class_functions;
 };
 
 }

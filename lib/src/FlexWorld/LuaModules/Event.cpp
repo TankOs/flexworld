@@ -1,6 +1,7 @@
 #include <FlexWorld/LuaModules/Event.hpp>
 #include <FlexWorld/FlexID.hpp>
 
+#include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
 #include <iostream> // XXX TODO
 
@@ -39,7 +40,10 @@ Event::Event( const Diluculum::LuaValueList& /*args*/ ) {
 	throw Diluculum::LuaError( "Not allowed to instantiate Event." );
 }
 
-Event::Event() {
+Event::Event() :
+	m_system_functions( NUM_SYSTEM_EVENTS ),
+	m_class_functions( NUM_CLASS_EVENTS )
+{
 }
 
 void Event::register_object( Diluculum::LuaVariable target ) {
@@ -47,17 +51,20 @@ void Event::register_object( Diluculum::LuaVariable target ) {
 }
 
 std::size_t Event::get_num_system_hooks() const {
-	return m_system_functions.size();
+	std::size_t num = 0;
+
+	for( std::size_t idx = 0; idx < m_system_functions.size(); ++idx ) {
+		num += m_system_functions[idx].size();
+	}
+
+	return num;
 }
 
 std::size_t Event::get_num_class_hooks() const {
 	std::size_t num = 0;
 
-	ClassFunctionMap::const_iterator cf_iter( m_class_functions.begin() );
-	ClassFunctionMap::const_iterator cf_iter_end( m_class_functions.end() );
-	
-	for( ; cf_iter != cf_iter_end; ++cf_iter ) {
-		num += cf_iter->second.size();
+	for( std::size_t idx = 0; idx < m_class_functions.size(); ++idx ) {
+		num += m_class_functions[idx].size();
 	}
 
 	return num;
@@ -82,7 +89,7 @@ Diluculum::LuaValueList Event::hook_system_event( const Diluculum::LuaValueList&
 		throw Diluculum::LuaError( "Invalid system event ID." );
 	}
 
-	m_system_functions[event_id] = args[1].asFunction();
+	m_system_functions[event_id].push_back( args[1].asFunction() );
 
 	return Diluculum::LuaValueList();
 }
@@ -123,6 +130,25 @@ Diluculum::LuaValueList Event::hook_class_event( const Diluculum::LuaValueList& 
 	m_class_functions[event_id].push_back( ClassFunctionPair( class_id, args[2].asFunction() ) );
 
 	return Diluculum::LuaValueList();
+}
+
+void Event::trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state ) {
+	Diluculum::LuaValueList args;
+	args.push_back( client_id );
+
+	call_system_event_callbacks( CONNECT_EVENT, args, state );
+}
+
+void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
+	// Cache.
+	SystemFunctionArray& funcs = m_system_functions[event];
+	std::size_t num = funcs.size();
+	static const std::string CHUNK_NAME = "FW System Event";
+
+	// Call Lua functions.
+	for( std::size_t idx = 0; idx < num; ++idx ) {
+		state.call( funcs[idx], args, CHUNK_NAME );
+	}
 }
 
 }
