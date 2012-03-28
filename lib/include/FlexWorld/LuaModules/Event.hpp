@@ -12,6 +12,10 @@ class LuaState;
 }
 
 namespace flex {
+
+class Class;
+class Entity;
+
 namespace lua {
 
 /** Event Lua module.
@@ -95,18 +99,27 @@ class Event {
 		 */
 		void trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state );
 
-	private:
-		typedef std::vector<Diluculum::LuaFunction> SystemFunctionArray;
-		typedef std::vector<SystemFunctionArray> SystemEventFunctionArray;
+		/** Trigger use class event.
+		 * @param cls Class.
+		 * @param entity Entity being used.
+		 * @param actor Actor entity.
+		 * @param state Lua state.
+		 */
+		void trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state );
 
-		typedef std::pair<std::string, Diluculum::LuaFunction> ClassFunctionPair;
-		typedef std::vector<ClassFunctionPair> ClassFunctionPairArray;
-		typedef std::vector<ClassFunctionPairArray> ClassEventFunctionArray;
+	private:
+		typedef std::vector<Diluculum::LuaFunction> FunctionArray;
+
+		typedef std::vector<FunctionArray> SystemEventFunctionArray;
+
+		typedef std::map<const std::string, FunctionArray> ClassFunctionsMap;
+		typedef std::vector<ClassFunctionsMap> ClassEventFunctionsArray;
 
 		void call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
+		void call_class_event_callbacks( ClassEvent event, const std::string& cls_id, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
 
 		SystemEventFunctionArray m_system_functions;
-		ClassEventFunctionArray m_class_functions;
+		ClassEventFunctionsArray m_class_functions;
 };
 
 }

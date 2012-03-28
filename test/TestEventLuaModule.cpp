@@ -1,7 +1,10 @@
+#include "Config.hpp"
 #include "LuaUtils.hpp"
 
 #include <FlexWorld/LuaModules/Event.hpp>
 #include <FlexWorld/LuaModules/Test.hpp>
+#include <FlexWorld/Class.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <Diluculum/LuaState.hpp>
 #include <boost/test/unit_test.hpp>
@@ -68,6 +71,45 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, on_connect )" ) );
 		event.trigger_connect_system_event( 1337, state );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == \"called1337\" )" ) );
+	}
+
+	// Trigger class events.
+	{
+		// Create test data.
+		Class cls_a( FlexID::make( "class/a" ) );
+		Class cls_b( FlexID::make( "class/b" ) );
+
+		Entity ent_a( cls_a );
+		Entity ent_b( cls_b );
+
+		ent_a.set_id( 100 );
+		ent_b.set_id( 200 );
+
+		Diluculum::LuaState state;
+		setup_state_for_event( state );
+
+		lua::Test test;
+		lua::Event event;
+
+		test.register_object( state["flex"]["test"] );
+		event.register_object( state["flex"]["event"] );
+
+		// Load test environment.
+		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/class_events.lua" ) ) );
+
+		// Trigger use event.
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == nil )" ) );
+
+		event.trigger_use_class_event( cls_a, ent_a, ent_b, state );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == \"100,200\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == nil )" ) );
+
+		event.trigger_use_class_event( cls_b, ent_b, ent_a, state );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == \"100,200\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == \"200,100\" )" ) );
 	}
 
 	// Hook class events.

@@ -1,5 +1,7 @@
 #include <FlexWorld/LuaModules/Event.hpp>
 #include <FlexWorld/FlexID.hpp>
+#include <FlexWorld/Entity.hpp>
+#include <FlexWorld/Class.hpp>
 
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
@@ -127,7 +129,7 @@ Diluculum::LuaValueList Event::hook_class_event( const Diluculum::LuaValueList& 
 
 	std::cout << "TODO: Check that a class with the proper ID exists." << std::endl;
 
-	m_class_functions[event_id].push_back( ClassFunctionPair( class_id, args[2].asFunction() ) );
+	m_class_functions[event_id][class_id].push_back( args[2].asFunction() );
 
 	return Diluculum::LuaValueList();
 }
@@ -141,7 +143,7 @@ void Event::trigger_connect_system_event( uint16_t client_id, Diluculum::LuaStat
 
 void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
 	// Cache.
-	SystemFunctionArray& funcs = m_system_functions[event];
+	FunctionArray& funcs = m_system_functions[event];
 	std::size_t num = funcs.size();
 	static const std::string CHUNK_NAME = "FW System Event";
 
@@ -149,6 +151,26 @@ void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::Lua
 	for( std::size_t idx = 0; idx < num; ++idx ) {
 		state.call( funcs[idx], args, CHUNK_NAME );
 	}
+}
+
+void Event::call_class_event_callbacks( ClassEvent event, const std::string& cls_id, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
+	// Cache.
+	FunctionArray& funcs = m_class_functions[event][cls_id];
+	std::size_t num = funcs.size();
+	static const std::string CHUNK_NAME = "FW Class Event";
+
+	// Call Lua functions.
+	for( std::size_t idx = 0; idx < num; ++idx ) {
+		state.call( funcs[idx], args, CHUNK_NAME );
+	}
+}
+
+void Event::trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state ) {
+	Diluculum::LuaValueList args;
+	args.push_back( entity.get_id() );
+	args.push_back( actor.get_id() );
+
+	call_class_event_callbacks( USE_EVENT, cls.get_id().get(), args, state );
 }
 
 }
