@@ -21,6 +21,7 @@ set(
 	${INC_DIR}/FlexWorld/Class.hpp
 	${INC_DIR}/FlexWorld/ClassCache.hpp
 	${INC_DIR}/FlexWorld/ClassDriver.hpp
+	${INC_DIR}/FlexWorld/ClassLoader.hpp
 	${INC_DIR}/FlexWorld/Client.hpp
 	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
@@ -77,6 +78,7 @@ set(
 	${SRC_DIR}/FlexWorld/Class.cpp
 	${SRC_DIR}/FlexWorld/ClassCache.cpp
 	${SRC_DIR}/FlexWorld/ClassDriver.cpp
+	${SRC_DIR}/FlexWorld/ClassLoader.cpp
 	${SRC_DIR}/FlexWorld/Client.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
 	${SRC_DIR}/FlexWorld/Entity.cpp

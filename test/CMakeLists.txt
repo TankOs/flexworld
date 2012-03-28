@@ -16,6 +16,7 @@ set(
 	TestClass.cpp
 	TestClassCache.cpp
 	TestClassDriver.cpp
+	TestClassLoader.cpp
 	TestClient.cpp
 	TestCuboid.cpp
 	TestEntity.cpp
