@@ -79,6 +79,11 @@ class Event {
 		 */
 		std::size_t get_num_class_hooks() const;
 
+		/** Get number of command hooks.
+		 * @return Number of command hooks.
+		 */
+		std::size_t get_num_command_hooks() const;
+
 		/** Hook system event (Lua function).
 		 * @param args event:number, callback:function
 		 * @return nil
@@ -92,6 +97,13 @@ class Event {
 		 * @throws Diluculum::LuaError if invalid event, class or function given.
 		 */
 		Diluculum::LuaValueList hook_class_event( const Diluculum::LuaValueList& args );
+
+		/** Hook command (Lua function).
+		 * @param args command:string, callback:function.
+		 * @return nil
+		 * @throws Diluculum::LuaError if invalid command or callback given.
+		 */
+		Diluculum::LuaValueList hook_command( const Diluculum::LuaValueList& args );
 
 		/** Trigger connect system event.
 		 * @param client_id Client ID.
@@ -107,6 +119,13 @@ class Event {
 		 */
 		void trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state );
 
+		/** Trigger command.
+		 * @param command Command.
+		 * @param args Arguments.
+		 * @param state Lua state.
+		 */
+		void trigger_command( const std::string& command, const std::vector<std::string>& args, Diluculum::LuaState& state );
+
 	private:
 		typedef std::vector<Diluculum::LuaFunction> FunctionArray;
 
@@ -115,11 +134,14 @@ class Event {
 		typedef std::map<const std::string, FunctionArray> ClassFunctionsMap;
 		typedef std::vector<ClassFunctionsMap> ClassEventFunctionsArray;
 
+		typedef std::map<const std::string, Diluculum::LuaFunction> CommandFunctionMap;
+
 		void call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
 		void call_class_event_callbacks( ClassEvent event, const std::string& cls_id, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
 
 		SystemEventFunctionArray m_system_functions;
 		ClassEventFunctionsArray m_class_functions;
+		CommandFunctionMap m_command_functions;
 };
 
 }

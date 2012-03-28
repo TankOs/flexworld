@@ -53,6 +53,36 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK( event.get_num_system_hooks() == 3 );
 	}
 
+	// Hook class events.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_event( state );
+
+		lua::Event event;
+		event.register_object( state["flex"]["event"] );
+
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.PRIMARY_ACTION, \"some/class\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.SECONDARY_ACTION, \"some/class\", function() end )" ) );
+
+		BOOST_CHECK( event.get_num_class_hooks() == 3 );
+	}
+
+	// Hook commands.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_event( state );
+
+		lua::Event event;
+		event.register_object( state["flex"]["event"] );
+
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_world\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_flex\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_myself\", function() end )" ) );
+
+		BOOST_CHECK( event.get_num_command_hooks() == 3 );
+	}
+
 	// Trigger system events.
 	{
 		Diluculum::LuaState state;
@@ -112,19 +142,28 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == \"200,100\" )" ) );
 	}
 
-	// Hook class events.
+	// Trigger commands.
 	{
 		Diluculum::LuaState state;
 		setup_state_for_event( state );
 
+		lua::Test test;
 		lua::Event event;
+
+		test.register_object( state["flex"]["test"] );
 		event.register_object( state["flex"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.PRIMARY_ACTION, \"some/class\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.SECONDARY_ACTION, \"some/class\", function() end )" ) );
+		// Load test environment.
+		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + "/scripts/commands.lua" ) );
 
-		BOOST_CHECK( event.get_num_class_hooks() == 3 );
+		// hello_world command.
+		std::vector<std::string> args;
+		args.push_back( "hello" );
+		args.push_back( "world" );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == nil )" ) );
+		event.trigger_command( "hello_world", args, state );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == \"hello world\" )" ) );
 	}
 
 	// Call functions with invalid arguments.
@@ -173,5 +212,15 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 
 		BOOST_CHECK( check_error( "Invalid class ID.", "flex.event:hook_class_event( flex.Event.Class.USE, \"meh\", function() end )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class ID.", "flex.event:hook_class_event( flex.Event.Class.USE, \"\", function() end )", state ) == true );
+
+		// hook_command
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command( \"meh\" )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected string for command.", "flex.event:hook_command( 123, function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_command( \"meh\", 123 )", state ) == true );
+
+		BOOST_CHECK( check_error( "Invalid command.", "flex.event:hook_command( \"\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid command.", "flex.event:hook_command( \"$§%%$&=\", function() end )", state ) == true );
 	}
 }

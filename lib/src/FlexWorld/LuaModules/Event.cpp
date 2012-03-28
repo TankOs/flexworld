@@ -10,9 +10,31 @@
 namespace flex {
 namespace lua {
 
+bool is_valid_command( const std::string& command ) {
+	if( command.empty() ) {
+		return false;
+	}
+
+	for( std::size_t ch_idx = 0; ch_idx < command.size(); ++ch_idx ) {
+		char ch = command[ch_idx];
+
+		if(
+			(ch < 'a' || ch > 'z') &&
+			(ch < 'A' || ch > 'Z') &&
+			(ch < '0' || ch > '9') &&
+			ch != '_'
+		) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 DILUCULUM_BEGIN_CLASS( Event )
 	DILUCULUM_CLASS_METHOD( Event, hook_system_event )
 	DILUCULUM_CLASS_METHOD( Event, hook_class_event )
+	DILUCULUM_CLASS_METHOD( Event, hook_command )
 DILUCULUM_END_CLASS( Event )
 
 void Event::register_class( Diluculum::LuaVariable target ) {
@@ -70,6 +92,10 @@ std::size_t Event::get_num_class_hooks() const {
 	}
 
 	return num;
+}
+
+std::size_t Event::get_num_command_hooks() const {
+	return m_command_functions.size();
 }
 
 Diluculum::LuaValueList Event::hook_system_event( const Diluculum::LuaValueList& args ) {
@@ -134,6 +160,31 @@ Diluculum::LuaValueList Event::hook_class_event( const Diluculum::LuaValueList& 
 	return Diluculum::LuaValueList();
 }
 
+Diluculum::LuaValueList Event::hook_command( const Diluculum::LuaValueList& args ) {
+	if( args.size() != 2 ) {
+		throw Diluculum::LuaError( "Wrong number of arguments." );
+	}
+
+	if( args[0].type() != LUA_TSTRING ) {
+		throw Diluculum::LuaError( "Expected string for command." );
+	}
+
+	if( args[1].type() != LUA_TFUNCTION ) {
+		throw Diluculum::LuaError( "Expected function for callback." );
+	}
+
+	// Check for valid command.
+	std::string command = args[0].asString();
+
+	if( !is_valid_command( command ) ) {
+		throw Diluculum::LuaError( "Invalid command." );
+	}
+
+	m_command_functions[command] = args[1].asFunction();
+
+	return Diluculum::LuaValueList();
+}
+
 void Event::trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state ) {
 	Diluculum::LuaValueList args;
 	args.push_back( client_id );
@@ -167,10 +218,37 @@ void Event::call_class_event_callbacks( ClassEvent event, const std::string& cls
 
 void Event::trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state ) {
 	Diluculum::LuaValueList args;
+
 	args.push_back( entity.get_id() );
 	args.push_back( actor.get_id() );
 
 	call_class_event_callbacks( USE_EVENT, cls.get_id().get(), args, state );
+}
+
+void Event::trigger_command( const std::string& command, const std::vector<std::string>& args, Diluculum::LuaState& state ) {
+	assert( is_valid_command( command ) == true );
+
+	// Look for functions.
+	CommandFunctionMap::iterator cmd_iter = m_command_functions.find( command );
+
+	if( cmd_iter == m_command_functions.end() ) { // None found, cancel.
+		return;
+	}
+
+	// Build token list.
+	Diluculum::LuaValue tokens = Diluculum::EmptyTable;
+
+	for( std::size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx ) {
+		tokens[arg_idx + 1] = args[arg_idx];
+	}
+
+	// Build arguments for call.
+	Diluculum::LuaValueList call_args;
+
+	call_args.push_back( tokens );
+
+	// Call command callback.
+	state.call( cmd_iter->second, call_args, command );
 }
 
 }
