@@ -450,6 +450,9 @@ void MenuState::on_start_game_accept() {
 		// Create IO service.
 		get_shared().io_service.reset( new boost::asio::io_service );
 
+		// Get selected game mode.
+		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
+
 		// Prepare backend and session host.
 		get_shared().account_manager.reset( new flex::AccountManager );
 		get_shared().lock_facility.reset( new flex::LockFacility );
@@ -460,89 +463,18 @@ void MenuState::on_start_game_accept() {
 				*get_shared().io_service,
 				*get_shared().lock_facility,
 				*get_shared().account_manager,
-				*get_shared().world
+				*get_shared().world,
+				game_mode
 			)
 		);
 
+		// Add search path.
+		get_shared().host->add_search_path( flex::ROOT_DATA_DIRECTORY + std::string( "packages" ) );
+
+		// Set auth mode.
 		get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
 
-		// Load classes specified by selected game mode.
-		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
-		bool load_ok = true;
-
-		for( std::size_t package_idx = 0 ; package_idx < game_mode.get_num_packages(); ++package_idx ) {
-			// Enumerate package.
-			flex::PackageEnumerator enumerator;
-
-			const flex::FlexID& package_id = game_mode.get_package( package_idx );
-			std::string package_path = flex::ROOT_DATA_DIRECTORY + std::string( "packages/" ) + package_id.as_path();
-
-			if( !enumerator.enumerate( package_path ) ) {
-				flex::Log::Logger( flex::Log::WARNING ) << "Failed to load package from " << package_id.get() << "." << flex::Log::endl;
-				continue;
-			}
-
-			// Load classes.
-			flex::Log::Logger( flex::Log::DEBUG ) << "Loading " << enumerator.get_num_class_files() << " class(es) from " << package_id.get() << ":" << flex::Log::endl;
-
-			for( std::size_t class_idx = 0; class_idx < enumerator.get_num_class_files(); ++class_idx ) {
-				const std::string& filename = enumerator.get_class_file( class_idx );
-
-				flex::Log::Logger( flex::Log::DEBUG ) << "-> " << filename << flex::Log::endl;
-
-				try {
-					flex::Class loaded_cls = flex::ClassDriver::load( filename );
-
-					// Make sure same class wasn't added before.
-					if( get_shared().world->find_class( loaded_cls.get_id() ) != nullptr ) {
-						flex::Log::Logger( flex::Log::WARNING ) << "Duplicate class " << loaded_cls.get_id().get() << " loaded from package " << package_id.get() << ", skipping." << flex::Log::endl;
-					}
-					else {
-						// Check that all referenced textures exist.
-						for( std::size_t tex_idx = 0; tex_idx < loaded_cls.get_num_textures(); ++tex_idx ) {
-							std::string file_path = flex::ROOT_DATA_DIRECTORY + std::string( "packages/" ) + loaded_cls.get_texture( tex_idx ).get_id().as_path();
-
-							if( !boost::filesystem::exists( file_path ) ) {
-								load_ok = false;
-
-#if !defined( NDEBUG )
-								std::cerr << "Texture not found: " << file_path << std::endl;
-#endif
-							}
-						}
-
-						// Check that model exists.
-						{
-							std::string model_path = flex::ROOT_DATA_DIRECTORY + std::string( "packages/" ) + loaded_cls.get_model().get_id().as_path();
-
-							if( !boost::filesystem::exists( model_path ) ) {
-								load_ok = false;
-
-#if !defined( NDEBUG )
-								std::cerr << "Model not found: " << model_path << std::endl;
-#endif
-							}
-						}
-
-						get_shared().world->add_class( loaded_cls );
-						flex::Log::Logger( flex::Log::DEBUG ) << "--> " << loaded_cls.get_id().get() << flex::Log::endl;
-					}
-				}
-				catch( const flex::ClassDriver::LoadException& /*e*/ ) {
-					flex::Log::Logger( flex::Log::WARNING ) << "Failed to load class from " << filename << "." << flex::Log::endl;
-					load_ok = false;
-				}
-			}
-		}
-
-		// If loading wasn't successful, cancel. TODO Show message.
-		if( load_ok ) {
-			// Head over to connect state.
-			leave( new ConnectState( get_render_target() ) );
-		}
-		else {
-			m_fade_main_menu_out = false;
-		}
+		leave( new ConnectState( get_render_target() ) );
 	}
 
 }

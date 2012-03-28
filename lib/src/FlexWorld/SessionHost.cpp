@@ -9,6 +9,9 @@
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/Account.hpp>
 #include <FlexWorld/World.hpp>
+#include <FlexWorld/GameMode.hpp>
+
+#include <boost/filesystem.hpp>
 
 namespace flex {
 
@@ -19,8 +22,10 @@ SessionHost::SessionHost(
 	boost::asio::io_service& io_service,
 	LockFacility& lock_facility,
 	AccountManager& account_manager,
-	World& world
+	World& world,
+	const GameMode& game_mode
 ) :
+	m_game_mode( game_mode ),
 	m_io_service( io_service ),
 	m_lock_facility( lock_facility ),
 	m_account_manager( account_manager ),
@@ -61,19 +66,36 @@ unsigned short SessionHost::get_port() const {
 }
 
 bool SessionHost::start() {
-	// Make sure fw.base.nature/grass is present for construction the planet
-	// "construct".
-	FlexID id = FlexID::make( "fw.base.nature/grass" );
+	// Check that we have search paths.
+	if( m_class_loader.get_num_search_paths() < 1 ) {
+		Log::Logger( Log::FATAL ) << "No search paths." << Log::endl;
+		return false;
+	}
 
-	const Class* grass_cls = m_world.find_class( id );
-	if( !grass_cls ) {
-		Log::Logger( Log::FATAL ) << id.get() << " doesn't exist but needed for planet \"construct\"." << Log::endl;
+	// Lock world for whole boot-up process, as we're creating a planet and
+	// loading classes.
+	m_lock_facility.lock_world( true );
+
+	// Load required grass class.
+	const Class* grass_cls = get_or_load_class( FlexID::make( "fw.base.nature/grass" ) );
+
+	if( grass_cls == nullptr ) {
+		Log::Logger( Log::FATAL ) << "Failed to load grass class." << Log::endl;
+		m_lock_facility.lock_world( false );
+		return false;
+	}
+
+	// Load required default entity class.
+	if( get_or_load_class( m_game_mode.get_default_entity_class_id() ) == nullptr ) {
+		Log::Logger( Log::FATAL ) << "Failed to load default entity class." << Log::endl;
+		m_lock_facility.lock_world( false );
 		return false;
 	}
 
 	// Construct planet.
 	if( m_world.find_planet( "construct" ) != nullptr ) {
 		Log::Logger( Log::FATAL ) << "Planet \"construct\" does already exist." << Log::endl;
+		m_lock_facility.lock_world( false );
 		return false;
 	}
 
@@ -82,10 +104,11 @@ bool SessionHost::start() {
 	Planet* planet = m_world.find_planet( "construct" );
 	if( !planet ) {
 		Log::Logger( Log::FATAL ) << "Failed to create \"construct\"." << Log::endl;
+		m_lock_facility.lock_world( false );
 		return false;
 	}
 
-	// Create grass plane.
+	// Build grass plane.
 	{
 		Planet::Vector chunk_pos( 0, 0, 0 );
 		Chunk::Vector block_pos( 0, 0, 0 );
@@ -104,41 +127,10 @@ bool SessionHost::start() {
 				}
 			}
 		}
-
-		// Some test blocks. XXX
-		FlexID stone_id = FlexID::make( "fw.base.nature/stone" );
-		const Class* stone_cls = m_world.find_class( stone_id );
-
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 0 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 1, 0 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 1, 0 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 1, 0 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 0 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 4 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 1, 4 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 1, 4 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 1, 4 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 4 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 2 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 0, 1, 3 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 2 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 4, 1, 3 ), *stone_cls );
-
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 2, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 3 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 2, 3 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 3 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 1, 2, 2 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 1 ), *stone_cls );
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 3, 2, 2 ), *stone_cls );
-
-		planet->set_block( Planet::Vector( 3, 0, 2 ), Chunk::Vector( 2, 3, 2 ), *stone_cls );
 	}
+
+	// Release lock again.
+	m_lock_facility.lock_world( false );
 
 	return m_server->start();
 }
@@ -214,11 +206,14 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 	// Check if an account for that username exists.
 	const flex::Account* account = m_account_manager.find_account( login_msg.get_username() );
 
-	// If it doesn't exist, create a new one. TODO: Make this configurable?
+	// If it doesn't exist, create a new one.
 	if( account == nullptr ) {
 		// Create entity.
 		m_lock_facility.lock_world( true );
-		const Entity& entity = m_world.create_entity( FlexID::make( "fw.base.human/dwarf_male" ) ); // TODO: Change!
+
+		assert( m_world.find_class( m_game_mode.get_default_entity_class_id() ) != nullptr );
+
+		const Entity& entity = m_world.create_entity( m_game_mode.get_default_entity_class_id() );
 
 		Account new_account;
 		new_account.set_username( login_msg.get_username() );
@@ -431,6 +426,45 @@ void SessionHost::handle_message( const msg::RequestChunk& req_chunk_msg, Server
 
 void SessionHost::stop() {
 	m_server->stop();
+}
+
+const Class* SessionHost::get_or_load_class( const FlexID& id ) {
+	m_lock_facility.lock_world( true );
+
+	// At first check if the class is already present.
+	const Class* cls = m_world.find_class( id );
+
+	// If not, try to load it using the class loader.
+	if( cls == nullptr ) {
+		try {
+			Class new_cls = m_class_loader.load( id );
+
+			// Loaded, add to world and store reference.
+			m_world.add_class( new_cls );
+
+			cls = m_world.find_class( id );
+			assert( cls != nullptr );
+		}
+		catch( const ClassLoader::LoadException& e ) {
+			Log::Logger( Log::ERR ) << "Failed to load class " << id.get() << ". Reason: " << e.what() << Log::endl;
+			return nullptr;
+		}
+	}
+
+	m_lock_facility.lock_world( false );
+
+	return cls;
+}
+
+void SessionHost::add_search_path( const std::string& path ) {
+	assert( boost::filesystem::exists( path ) );
+
+	if( !boost::filesystem::exists( path ) ) {
+		Log::Logger( Log::ERR ) << "Search path doesn't exist: " << path << Log::endl;
+	}
+	else {
+		m_class_loader.add_search_path( path );
+	}
 }
 
 }

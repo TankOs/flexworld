@@ -5,9 +5,6 @@ namespace fs = boost::filesystem;
 namespace flex {
 
 bool PackageEnumerator::enumerate( const std::string& path ) {
-	m_class_files.clear();
-	m_image_files.clear();
-	m_model_files.clear();
 	m_script_files.clear();
 
 	fs::path b_path( path );
@@ -40,17 +37,7 @@ bool PackageEnumerator::enumerate( const boost::filesystem::path& path ) {
 			continue;
 		}
 
-		// Check for class.
-		if( filename.substr( filename.size() - 4 ) == ".yml" ) {
-			m_class_files.push_back( filename );
-		}
-		else if( filename.substr( filename.size() - 4 ) == ".png" ) {
-			m_image_files.push_back( filename );
-		}
-		else if( filename.substr( filename.size() - 4 ) == ".fwm" ) {
-			m_model_files.push_back( filename );
-		}
-		else if( filename.substr( filename.size() - 4 ) == ".lua" ) {
+		if( filename.substr( filename.size() - 4 ) == ".lua" ) {
 			m_script_files.push_back( filename );
 		}
 	}
@@ -58,38 +45,8 @@ bool PackageEnumerator::enumerate( const boost::filesystem::path& path ) {
 	return true;
 }
 
-std::size_t PackageEnumerator::get_num_class_files() const {
-	return m_class_files.size();
-}
-
-std::size_t PackageEnumerator::get_num_image_files() const {
-	return m_image_files.size();
-}
-
-std::size_t PackageEnumerator::get_num_model_files() const {
-	return m_model_files.size();
-}
-
 std::size_t PackageEnumerator::get_num_script_files() const {
 	return m_script_files.size();
-}
-
-const std::string& PackageEnumerator::get_class_file( std::size_t index ) const {
-	assert( index < m_class_files.size() );
-
-	return m_class_files[index];
-}
-
-const std::string& PackageEnumerator::get_image_file( std::size_t index ) const {
-	assert( index < m_image_files.size() );
-
-	return m_image_files[index];
-}
-
-const std::string& PackageEnumerator::get_model_file( std::size_t index ) const {
-	assert( index < m_model_files.size() );
-
-	return m_model_files[index];
 }
 
 const std::string& PackageEnumerator::get_script_file( std::size_t index ) const {

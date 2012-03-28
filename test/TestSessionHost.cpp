@@ -1,12 +1,18 @@
+#include "Config.hpp"
+
 #include <FlexWorld/SessionHost.hpp>
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/World.hpp>
+#include <FlexWorld/GameMode.hpp>
 
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	using namespace flex;
+
+	GameMode game_mode;
+	game_mode.set_default_entity_class_id( FlexID::make( "test/grass" ) );
 
 	// Initial state.
 	{
@@ -14,7 +20,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
 		World world;
-		SessionHost host( service, lock_facility, acc_mgr, world );
+		SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
 
 		BOOST_CHECK( &host.get_lock_facility() == &lock_facility );
 		BOOST_CHECK( &host.get_account_manager() == &acc_mgr );
@@ -31,7 +37,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		LockFacility lock_facility;
 		AccountManager acc_mgr;
 		World world;
-		SessionHost host( service, lock_facility, acc_mgr, world );
+		SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
 
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
@@ -54,14 +60,12 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		AccountManager acc_mgr;
 		World world;
 
-		SessionHost host( service, lock_facility, acc_mgr, world );
+		SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
 		host.set_ip( "127.0.0.1" );
 		host.set_port( 2593 );
 
-		// Need to add fw.base.nature/grass and fw.base.nature/stone to world,
-		// otherwise session host won't boot up.
-		world.add_class( Class( FlexID::make( "fw.base.nature/grass" ) ) );
-		world.add_class( Class( FlexID::make( "fw.base.nature/stone" ) ) ); // XXX 
+		// Add search path so host can find grass class.
+		host.add_search_path( DATA_DIRECTORY + "/packages" );
 
 		// Start host.
 		BOOST_REQUIRE( host.start() );

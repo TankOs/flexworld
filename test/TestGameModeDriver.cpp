@@ -28,6 +28,7 @@ BOOST_AUTO_TEST_CASE( TestGameModeDriver ) {
 		BOOST_CHECK( mode.get_min_flexworld_version() == Version( 1, 0, 0 ) );
 		BOOST_CHECK( mode.get_max_flexworld_version() == Version( 1, 2, 1 ) );
 		BOOST_CHECK( mode.get_thumbnail() == FlexID::make( "fw.gm.tutorial/thumb.png" ) );
+		BOOST_CHECK( mode.get_default_entity_class_id() == FlexID::make( "fw.base.human/dwarf_male" ) );
 
 		BOOST_REQUIRE( mode.get_num_packages() == 3 );
 

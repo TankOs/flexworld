@@ -2,6 +2,9 @@
 
 #include <FlexWorld/Server.hpp>
 #include <FlexWorld/PlayerInfo.hpp>
+#include <FlexWorld/ClassLoader.hpp>
+#include <FlexWorld/GameMode.hpp>
+#include <FlexWorld/NonCopyable.hpp>
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -16,7 +19,7 @@ class World;
  *
  * Represents a gaming session and implements logics, server-side protocol handlers, scripting engine etc.
  */
-class SessionHost : private Server::Handler {
+class SessionHost : private Server::Handler, public NonCopyable {
 	public:
 		/** Auth mode.
 		 */
@@ -26,17 +29,18 @@ class SessionHost : private Server::Handler {
 		};
 
 		/** Ctor.
-		 * References to the objects are stored, therefore they must be kept alive!
-		 * @param io_service IO service.
-		 * @param lock_facility Lock facility.
-		 * @param account_manager Account manager.
-		 * @param world World.
+		 * @param io_service IO service (referenced).
+		 * @param lock_facility Lock facility (referenced).
+		 * @param account_manager Account manager (referenced).
+		 * @param world World (referenced).
+		 * @param game_mode Game mode (copied).
 		 */
 		SessionHost(
 			boost::asio::io_service& io_service,
 			LockFacility& lock_facility,
 			AccountManager& account_manager,
-			World& world
+			World& world,
+			const GameMode& game_mode
 		);
 
 		/** Dtor.
@@ -79,6 +83,7 @@ class SessionHost : private Server::Handler {
 		unsigned short get_port() const;
 
 		/** Start.
+		 * Make sure to add search paths and set the game mode before.
 		 * @return true on success.
 		 */
 		bool start();
@@ -113,8 +118,16 @@ class SessionHost : private Server::Handler {
 		 */
 		std::size_t get_player_limit() const;
 
+		/** Add search path.
+		 * Search paths are used when looking for classes and assets.
+		 * @param path Path (must exist).
+		 */
+		void add_search_path( const std::string& path );
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
+
+		const Class* get_or_load_class( const FlexID& id );
 
 		void handle_connect( Server::ConnectionID conn_id );
 		void handle_disconnect( Server::ConnectionID conn_id );
@@ -123,6 +136,9 @@ class SessionHost : private Server::Handler {
 		void handle_message( const msg::RequestChunk& req_chunk_msg, Server::ConnectionID conn_id );
 
 		void beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading );
+
+		GameMode m_game_mode;
+		ClassLoader m_class_loader;
 
 		PlayerInfoVector m_player_infos;
 

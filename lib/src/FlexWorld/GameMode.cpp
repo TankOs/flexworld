@@ -78,4 +78,13 @@ void GameMode::add_package( const FlexID& package ) {
 	m_packages.push_back( package );
 }
 
+void GameMode::set_default_entity_class_id( const FlexID& id ) {
+	assert( id.is_valid_resource() );
+	m_default_entity_class_id = id;
+}
+
+const FlexID& GameMode::get_default_entity_class_id() {
+	return m_default_entity_class_id;
+}
+
 }

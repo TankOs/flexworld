@@ -210,6 +210,30 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 				mode.set_thumbnail( thumb_id );
 			}
 		}
+
+		// Default entity class ID.
+		{
+			const YAML::Node* default_entity_class_id_node( meta_node->FindValue( "DefaultEntityClassId" ) );
+			if( !default_entity_class_id_node ) {
+				throw DeserializeException( "DefaultEntityClassId missing." );
+			}
+			else if( default_entity_class_id_node->Type() != YAML::NodeType::Scalar ) {
+				throw DeserializeException( "DefaultEntityClassId not a scalar." );
+			}
+
+			std::string default_entity_class_id;
+			*default_entity_class_id_node >> default_entity_class_id;
+			if( default_entity_class_id.empty() ) {
+				throw DeserializeException( "DefaultEntityClassId is empty." );
+			}
+
+			FlexID id;
+			if( !id.parse( default_entity_class_id ) || !id.is_valid_resource() ) {
+				throw DeserializeException( "Invalid DefaultEntityClassId." );
+			}
+
+			mode.set_default_entity_class_id( id );
+		}
 	}
 
 	// Packages.

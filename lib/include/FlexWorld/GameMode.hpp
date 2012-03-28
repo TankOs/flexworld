@@ -104,9 +104,20 @@ class GameMode {
 		 */
 		void add_package( const FlexID& package );
 
+		/** Set default entity class ID.
+		 * @param id Class ID.
+		 */
+		void set_default_entity_class_id( const FlexID& id );
+
+		/** Get default entity class ID.
+		 * @return Default entity class ID.
+		 */
+		const FlexID& get_default_entity_class_id();
+
 	private:
 		std::vector<FlexID> m_packages;
 		FlexID m_thumbnail;
+		FlexID m_default_entity_class_id;
 		std::string m_name;
 		std::string m_author;
 		std::string m_website;

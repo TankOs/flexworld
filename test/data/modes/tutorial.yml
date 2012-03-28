@@ -6,6 +6,7 @@ Meta:
   MinFlexWorldVersion: [1, 0, 0]
   MaxFlexWorldVersion: [1, 2, 1]
   Thumbnail: fw.gm.tutorial/thumb.png
+  DefaultEntityClassId: fw.base.human/dwarf_male
 Packages:
   - fw.lib.admin
   - fw.base
