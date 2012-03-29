@@ -1101,17 +1101,17 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	using namespace flex;
 
-	static const std::string TARGET = "Status";
-	static const uint8_t TARGET_SIZE = static_cast<uint8_t>( TARGET.size() );
+	static const sf::String MESSAGE = L"Hello, this is the operator!";
+	static const uint16_t MESSAGE_SIZE = static_cast<uint8_t>( MESSAGE.getSize() );
 	static const std::string SENDER = "Tank";
 	static const uint8_t SENDER_SIZE = static_cast<uint8_t>( SENDER.size() );
-	static const std::string MESSAGE = "Hello, this is the operator!";
-	static const uint16_t MESSAGE_SIZE = static_cast<uint8_t>( MESSAGE.size() );
+	static const std::string TARGET = "Status";
+	static const uint8_t TARGET_SIZE = static_cast<uint8_t>( TARGET.size() );
 
 	// Create source buffer.
 	ServerProtocol::Buffer source;
 	source.insert( source.end(), reinterpret_cast<const char*>( &MESSAGE_SIZE ), reinterpret_cast<const char*>( &MESSAGE_SIZE ) + sizeof( MESSAGE_SIZE ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( MESSAGE.c_str() ), reinterpret_cast<const char*>( MESSAGE.c_str() ) + MESSAGE.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( MESSAGE.getData() ), reinterpret_cast<const char*>( MESSAGE.getData() ) + (MESSAGE.getSize() * sizeof( sf::Uint32 )) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &SENDER_SIZE ), reinterpret_cast<const char*>( &SENDER_SIZE ) + sizeof( SENDER_SIZE ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( SENDER.c_str() ), reinterpret_cast<const char*>( SENDER.c_str() ) + SENDER.size() );
 	source.insert( source.end(), reinterpret_cast<const char*>( &TARGET_SIZE ), reinterpret_cast<const char*>( &TARGET_SIZE ) + sizeof( TARGET_SIZE ) );
@@ -1243,7 +1243,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		ServerProtocol::Buffer invalid_source = source;
 
 		// 0 length.
-		invalid_source[sizeof( uint16_t ) + MESSAGE.size()] = 0x00;
+		invalid_source[sizeof( uint16_t ) + (MESSAGE.getSize() * sizeof( sf::Uint32 ))] = 0x00;
 
 		std::size_t eaten = 0;
 		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid sender length." ) );
@@ -1257,7 +1257,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		ServerProtocol::Buffer invalid_source = source;
 
 		// 0 length.
-		invalid_source[sizeof( uint16_t ) + MESSAGE.size() + sizeof( uint8_t ) + SENDER.size()] = 0x00;
+		invalid_source[sizeof( uint16_t ) + (MESSAGE.getSize() * sizeof( sf::Uint32 )) + sizeof( uint8_t ) + SENDER.size()] = 0x00;
 
 		std::size_t eaten = 0;
 		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid target length." ) );

@@ -3,33 +3,13 @@
 #include <FlexWorld/Entity.hpp>
 #include <FlexWorld/Class.hpp>
 
+#include <SFML/System/Utf.hpp>
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
 #include <iostream> // XXX TODO
 
 namespace flex {
 namespace lua {
-
-bool is_valid_command( const std::string& command ) {
-	if( command.empty() ) {
-		return false;
-	}
-
-	for( std::size_t ch_idx = 0; ch_idx < command.size(); ++ch_idx ) {
-		char ch = command[ch_idx];
-
-		if(
-			(ch < 'a' || ch > 'z') &&
-			(ch < 'A' || ch > 'Z') &&
-			(ch < '0' || ch > '9') &&
-			ch != '_'
-		) {
-			return false;
-		}
-	}
-
-	return true;
-}
 
 DILUCULUM_BEGIN_CLASS( Event )
 	DILUCULUM_CLASS_METHOD( Event, hook_system_event )
@@ -58,6 +38,27 @@ void Event::register_class( Diluculum::LuaVariable target ) {
 	target["Class"]["SECONDARY_ACTION"] = SECONDARY_ACTION_EVENT;
 	target["Class"]["CREATE"] = CREATE_EVENT;
 	target["Class"]["DESTROY"] = DESTROY_EVENT;
+}
+
+bool Event::is_valid_command( const std::string& command ) {
+	if( command.empty() ) {
+		return false;
+	}
+
+	for( std::size_t ch_idx = 0; ch_idx < command.size(); ++ch_idx ) {
+		char ch = command[ch_idx];
+
+		if(
+			(ch < 'a' || ch > 'z') &&
+			(ch < 'A' || ch > 'Z') &&
+			(ch < '0' || ch > '9') &&
+			ch != '_'
+		) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 Event::Event( const Diluculum::LuaValueList& /*args*/ ) {
@@ -225,7 +226,7 @@ void Event::trigger_use_class_event( const Class& cls, const Entity& entity, con
 	call_class_event_callbacks( USE_EVENT, cls.get_id().get(), args, state );
 }
 
-void Event::trigger_command( const std::string& command, const std::vector<std::string>& args, Diluculum::LuaState& state ) {
+void Event::trigger_command( const std::string& command, const std::vector<sf::String>& args, Diluculum::LuaState& state ) {
 	assert( is_valid_command( command ) == true );
 
 	// Look for functions.
@@ -239,7 +240,11 @@ void Event::trigger_command( const std::string& command, const std::vector<std::
 	Diluculum::LuaValue tokens = Diluculum::EmptyTable;
 
 	for( std::size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx ) {
-		tokens[arg_idx + 1] = args[arg_idx];
+		// Convert to UTF-8.
+		std::basic_string<sf::Uint8> u_string;
+		sf::Utf32::toUtf8( args[arg_idx].begin(), args[arg_idx].end(), u_string.end() );
+
+		tokens[arg_idx + 1] = reinterpret_cast<const char*>( u_string.c_str() );
 	}
 
 	// Build arguments for call.

@@ -2,6 +2,7 @@
 
 #include <FlexWorld/Message.hpp>
 
+#include <SFML/System/String.hpp>
 #include <string>
 
 namespace flex {
@@ -21,12 +22,12 @@ class Chat : public Message {
 		/** Set message.
 		 * @param message Message.
 		 */
-		void set_message( const std::string& message );
+		void set_message( const sf::String& message );
 
 		/** Get message.
 		 * @return Message.
 		 */
-		const std::string& get_message() const;
+		const sf::String& get_message() const;
 
 		/** Set sender.
 		 * @param sender Sender.
@@ -49,7 +50,7 @@ class Chat : public Message {
 		const std::string& get_target() const;
 
 	private:
-		std::string m_message;
+		sf::String m_message;
 		std::string m_sender;
 		std::string m_target;
 };

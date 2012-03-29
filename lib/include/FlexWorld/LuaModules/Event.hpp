@@ -3,6 +3,7 @@
 #include <Diluculum/LuaVariable.hpp>
 #include <Diluculum/LuaFunction.hpp>
 
+#include <SFML/System/String.hpp>
 #include <map>
 #include <vector>
 #include <cstdint>
@@ -51,6 +52,12 @@ class Event {
 		 * @param target Target variable.
 		 */
 		static void register_class( Diluculum::LuaVariable target );
+
+		/** Check if a string is a valid command.
+		 * @param command Command.
+		 * @return true if valid.
+		 */
+		static bool is_valid_command( const std::string& command );
 
 		/** Lua ctor.
 		 * Not allowed to call.
@@ -124,7 +131,7 @@ class Event {
 		 * @param args Arguments.
 		 * @param state Lua state.
 		 */
-		void trigger_command( const std::string& command, const std::vector<std::string>& args, Diluculum::LuaState& state );
+		void trigger_command( const std::string& command, const std::vector<sf::String>& args, Diluculum::LuaState& state );
 
 	private:
 		typedef std::vector<Diluculum::LuaFunction> FunctionArray;

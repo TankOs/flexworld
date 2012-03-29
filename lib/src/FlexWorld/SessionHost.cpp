@@ -543,7 +543,7 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 
 	const PlayerInfo& info = m_player_infos[conn_id];
 
-	Log::Logger( Log::INFO ) << "[" << chat_msg.get_target() << "] <" << info.username << "> " << chat_msg.get_message() << Log::endl;
+	Log::Logger( Log::INFO ) << "[" << chat_msg.get_target() << "] <" << info.username << "> " << chat_msg.get_message().toAnsiString() << Log::endl;
 }
 
 }

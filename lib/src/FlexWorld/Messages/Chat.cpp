@@ -12,7 +12,7 @@ Chat::Chat() :
 
 void Chat::serialize( Buffer& buffer ) const {
 	// Check values.
-	if( m_message.empty() || m_message.size() > 0xffff ) {
+	if( m_message.isEmpty() || m_message.getSize() > 0xffff ) {
 		throw InvalidDataException( "Invalid message." );
 	}
 
@@ -34,14 +34,27 @@ void Chat::serialize( Buffer& buffer ) const {
 	);
 
 
-	*reinterpret_cast<uint16_t*>( &buffer[buf_ptr] ) = static_cast<uint16_t>( m_message.size() ); buf_ptr += sizeof( uint16_t );
-	buffer.insert( buffer.begin() + buf_ptr, m_message.c_str(), m_message.c_str() + m_message.size() ); buf_ptr += m_message.size();
+	*reinterpret_cast<uint16_t*>( &buffer[buf_ptr] ) = static_cast<uint16_t>( m_message.getSize() );
+	buf_ptr += sizeof( uint16_t );
 
-	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_sender.size() ); buf_ptr += sizeof( uint8_t );
-	buffer.insert( buffer.begin() + buf_ptr, m_sender.c_str(), m_sender.c_str() + m_sender.size() ); buf_ptr += m_sender.size();
+	buffer.insert(
+		buffer.begin() + buf_ptr,
+		reinterpret_cast<const char*>( m_message.getData() ),
+		reinterpret_cast<const char*>( m_message.getData() ) + (m_message.getSize() * sizeof( sf::Uint32 ))
+	);
+	buf_ptr += sizeof( sf::Uint32 ) * m_message.getSize();
 
-	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_target.size() ); buf_ptr += sizeof( uint8_t );
-	buffer.insert( buffer.begin() + buf_ptr, m_target.c_str(), m_target.c_str() + m_target.size() ); buf_ptr += m_target.size();
+	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_sender.size() );
+	buf_ptr += sizeof( uint8_t );
+
+	buffer.insert( buffer.begin() + buf_ptr, m_sender.c_str(), m_sender.c_str() + m_sender.size() );
+	buf_ptr += m_sender.size();
+
+	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_target.size() );
+	buf_ptr += sizeof( uint8_t );
+
+	buffer.insert( buffer.begin() + buf_ptr, m_target.c_str(), m_target.c_str() + m_target.size() );
+	buf_ptr += m_target.size();
 }
 
 std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
@@ -62,14 +75,14 @@ std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
 	}
 
 	// Message pointer.
-	const char* message_ptr = nullptr;
+	const sf::Uint32* message_ptr = nullptr;
 
-	if( buffer_size - buf_ptr < message_length ) {
+	if( buffer_size - buf_ptr < message_length * sizeof( sf::Uint32 ) ) {
 		return 0;
 	}
 
-	message_ptr = &buffer[buf_ptr];
-	buf_ptr += message_length;
+	message_ptr = reinterpret_cast<const sf::Uint32*>( &buffer[buf_ptr] );
+	buf_ptr += message_length * sizeof( sf::Uint32 );
 
 	// Sender length.
 	uint8_t sender_length = 0;
@@ -120,14 +133,14 @@ std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
 	buf_ptr += target_length;
 
 	// Apply.
-	m_message = std::string( message_ptr, message_length );
+	m_message = std::basic_string<sf::Uint32>( message_ptr, message_length );
 	m_sender = std::string( sender_ptr, sender_length );
 	m_target = std::string( target_ptr, target_length );
 
 	return buf_ptr;
 }
 
-void Chat::set_message( const std::string& message ) {
+void Chat::set_message( const sf::String& message ) {
 	m_message = message;
 }
 
@@ -139,7 +152,7 @@ void Chat::set_target( const std::string& target ) {
 	m_target = target;
 }
 
-const std::string& Chat::get_message() const {
+const sf::String& Chat::get_message() const {
 	return m_message;
 }
 
