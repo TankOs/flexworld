@@ -544,6 +544,44 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 	const PlayerInfo& info = m_player_infos[conn_id];
 
 	Log::Logger( Log::INFO ) << "[" << chat_msg.get_target() << "] <" << info.username << "> " << chat_msg.get_message().toAnsiString() << Log::endl;
+
+	// Check if the sent message is a command.
+	const sf::String& text = chat_msg.get_message();
+
+	if( text[0] == '/' ) {
+		// Extract arguments.
+		std::vector<sf::String> args;
+
+		std::size_t pos = 1; // Skip slash.
+		std::string command;
+		sf::String token;
+
+		while( pos < text.getSize() ) {
+			if( text[pos] != ' ' ) {
+				token += text[pos];
+			}
+
+			// If delimiter found or at last position, extract command/argument.
+			if( (text[pos] == ' ' || pos + 1 == text.getSize()) && token.getSize() > 0 ) {
+				// If command not extracted yet do it now.
+				if( command.empty() ) {
+					command = static_cast<std::string>( token );
+				}
+				else { // Extract argument.
+					args.push_back( token );
+				}
+
+				token.clear();
+			}
+
+			++pos;
+		}
+
+		// Give to script manager.
+		if( command.empty() == false ) {
+			m_script_manager.trigger_command( command, args );
+		}
+	}
 }
 
 }

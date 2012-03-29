@@ -14,9 +14,10 @@ function on_shutdown_command( client, args )
 end
 
 function on_rehash_command( client, args )
-	flex.comm:broadcast_server_message( "Game paused, stand by..." )
-	flex.server:rehash()
-	flex.comm:broadcast_server_message( "Game continued, have fun!" )
+	print( "Rehashing..." )
+	--flex.comm:broadcast_server_message( "Game paused, stand by..." )
+	--flex.server:rehash()
+	--flex.comm:broadcast_server_message( "Game continued, have fun!" )
 end
 
 flex.event:hook_command( "shutdown", on_shutdown_command )

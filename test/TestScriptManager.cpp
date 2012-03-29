@@ -2,6 +2,7 @@
 
 #include <FlexWorld/ScriptManager.hpp>
 
+#include <SFML/System/String.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestScriptManager ) {
@@ -64,5 +65,21 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 		BOOST_CHECK( manager.execute_string( "assert( flex.test ~= nil and flex.Test ~= nil )" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( flex.event ~= nil and flex.Event ~= nil )" ) == true );
+	}
+
+	// Trigger command.
+	{
+		ScriptManager manager;
+
+		BOOST_REQUIRE_NO_THROW( manager.execute_string( "function foo( args ) flex.test:set_value( \"yo\", args[1] .. args[2] ) end" ) );
+		BOOST_REQUIRE_NO_THROW( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
+
+		std::vector<sf::String> args;
+		args.push_back( sf::String( "hällo" ) );
+		args.push_back( sf::String( "wörld" ) );
+
+		manager.trigger_command( "test", args );
+
+		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:get_value( \"yo\" ) == \"hällowörld\" )" ) );
 	}
 }

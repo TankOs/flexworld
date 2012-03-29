@@ -83,4 +83,8 @@ const std::string& ScriptManager::get_last_error() const {
 	return m_last_error;
 }
 
+void ScriptManager::trigger_command( const std::string& command, const std::vector<sf::String>& args ) {
+	m_event_module->trigger_command( command, args, *m_state );
+}
+
 }

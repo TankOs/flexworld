@@ -1,7 +1,9 @@
 #pragma once
 
+#include <SFML/System/String.hpp>
 #include <string>
 #include <memory>
+#include <vector>
 
 namespace Diluculum {
 class LuaState;
@@ -50,6 +52,13 @@ class ScriptManager {
 		 * @return Last error or empty if no error happened.
 		 */
 		const std::string& get_last_error() const;
+
+		/** Trigger command.
+		 * @param command Command (must be non-empty and valid).
+		 * @param args Arguments.
+		 * @see is_valid_command
+		 */
+		void trigger_command( const std::string& command, const std::vector<sf::String>& args );
 
 	private:
 		std::string m_last_error;
