@@ -15,15 +15,8 @@ class Chat : public Message {
 		 */
 		Chat();
 
-		/** Set channel.
-		 * @param channel Channel (empty for default vicinity channel).
-		 */
-		void set_channel( const std::string& channel );
-
-		/** Get channel.
-		 * @return Channel (empty means default vicinity channel).
-		 */
-		const std::string& get_channel() const;
+		void serialize( Buffer& buffer ) const;
+		std::size_t deserialize( const char* buffer, std::size_t buffer_size );
 
 		/** Set message.
 		 * @param message Message.
@@ -35,9 +28,30 @@ class Chat : public Message {
 		 */
 		const std::string& get_message() const;
 
+		/** Set sender.
+		 * @param sender Sender.
+		 */
+		void set_sender( const std::string& sender );
+
+		/** Get sender.
+		 * @return Sender.
+		 */
+		const std::string& get_sender() const;
+
+		/** Set target.
+		 * @param target Target.
+		 */
+		void set_target( const std::string& target );
+
+		/** Get target.
+		 * @return Target.
+		 */
+		const std::string& get_target() const;
+
 	private:
-		std::string m_channel;
 		std::string m_message;
+		std::string m_sender;
+		std::string m_target;
 };
 
 }

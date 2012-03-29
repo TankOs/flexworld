@@ -40,7 +40,7 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 	}
 
 #if !defined( NDEBUG )
-	std::cout << "Texture loaded: " << id.get() << std::endl;
+	std::cout << "Loaded: " << id.get() << std::endl;
 #endif
 
 	return true;
@@ -135,7 +135,7 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	}
 
 #if !defined( NDEBUG )
-	std::cout << "Model loaded: " << id.get() << std::endl;
+	std::cout << "Loaded: " << id.get() << std::endl;
 #endif
 
 	return true;
@@ -179,7 +179,7 @@ bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
 	m_prepared_textures[id.get()] = image;
 
 #if !defined( NDEBUG )
-	std::cout << "Loaded texture " << id.get() << "." << std::endl;
+	std::cout << "Loaded: " << id.get() << "." << std::endl;
 #endif
 
 	return true;

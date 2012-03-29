@@ -10,6 +10,7 @@
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Messages/ChunkUnchanged.hpp>
 #include <FlexWorld/Messages/CreateEntity.hpp>
+#include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1090,6 +1091,182 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 	// Deserialize with too less data.
 	{
 		msg::CreateEntity msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestChatMessage ) {
+	using namespace flex;
+
+	static const std::string TARGET = "Status";
+	static const uint8_t TARGET_SIZE = static_cast<uint8_t>( TARGET.size() );
+	static const std::string SENDER = "Tank";
+	static const uint8_t SENDER_SIZE = static_cast<uint8_t>( SENDER.size() );
+	static const std::string MESSAGE = "Hello, this is the operator!";
+	static const uint16_t MESSAGE_SIZE = static_cast<uint8_t>( MESSAGE.size() );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &MESSAGE_SIZE ), reinterpret_cast<const char*>( &MESSAGE_SIZE ) + sizeof( MESSAGE_SIZE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( MESSAGE.c_str() ), reinterpret_cast<const char*>( MESSAGE.c_str() ) + MESSAGE.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &SENDER_SIZE ), reinterpret_cast<const char*>( &SENDER_SIZE ) + sizeof( SENDER_SIZE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( SENDER.c_str() ), reinterpret_cast<const char*>( SENDER.c_str() ) + SENDER.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &TARGET_SIZE ), reinterpret_cast<const char*>( &TARGET_SIZE ) + sizeof( TARGET_SIZE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( TARGET.c_str() ), reinterpret_cast<const char*>( TARGET.c_str() ) + TARGET.size() );
+
+	// Initial state.
+	{
+		msg::Chat msg;
+
+		BOOST_CHECK( msg.get_message() == "" );
+		BOOST_CHECK( msg.get_sender() == "" );
+		BOOST_CHECK( msg.get_target() == "" );
+	}
+
+	// Basic properties.
+	{
+		msg::Chat msg;
+		msg.set_message( MESSAGE );
+		msg.set_sender( SENDER );
+		msg.set_target( TARGET );
+
+		BOOST_CHECK( msg.get_message() == MESSAGE );
+		BOOST_CHECK( msg.get_sender() == SENDER );
+		BOOST_CHECK( msg.get_target() == TARGET );
+	}
+
+	// Serialize.
+	{
+		msg::Chat msg;
+		msg.set_message( MESSAGE );
+		msg.set_sender( SENDER );
+		msg.set_target( TARGET );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Serialize with invalid message.
+	{
+		msg::Chat msg;
+		msg.set_sender( SENDER );
+		msg.set_target( TARGET );
+
+		ServerProtocol::Buffer buffer;
+
+		// Empty message.
+		msg.set_message( "" );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid message." ) );
+
+		// Too long message.
+		msg.set_message( std::string( 0x1ffff, 'x' ) );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid message." ) );
+	}
+
+	// Serialize with invalid sender.
+	{
+		msg::Chat msg;
+		msg.set_message( MESSAGE );
+		msg.set_target( TARGET );
+
+		ServerProtocol::Buffer buffer;
+
+		// Empty sender.
+		msg.set_sender( "" );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid sender." ) );
+
+		// Too long sender.
+		msg.set_sender( std::string( 0x1ff, 'x' ) );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid sender." ) );
+	}
+
+	// Serialize with invalid target.
+	{
+		msg::Chat msg;
+		msg.set_message( MESSAGE );
+		msg.set_sender( SENDER );
+
+		ServerProtocol::Buffer buffer;
+
+		// Empty target.
+		msg.set_target( "" );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid target." ) );
+
+		// Too long target.
+		msg.set_target( std::string( 0x1ff, 'x' ) );
+
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid target." ) );
+	}
+
+	// Deserialize.
+	{
+		msg::Chat msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_message() == MESSAGE );
+		BOOST_CHECK( msg.get_sender() == SENDER );
+		BOOST_CHECK( msg.get_target() == TARGET );
+	}
+
+	// Deserialize with bogus message.
+	{
+		msg::Chat msg;
+
+		ServerProtocol::Buffer invalid_source = source;
+
+		// 0 length.
+		invalid_source[0] = 0x00;
+		invalid_source[1] = 0x00;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid message length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with bogus sender.
+	{
+		msg::Chat msg;
+
+		ServerProtocol::Buffer invalid_source = source;
+
+		// 0 length.
+		invalid_source[sizeof( uint16_t ) + MESSAGE.size()] = 0x00;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid sender length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with bogus target.
+	{
+		msg::Chat msg;
+
+		ServerProtocol::Buffer invalid_source = source;
+
+		// 0 length.
+		invalid_source[sizeof( uint16_t ) + MESSAGE.size() + sizeof( uint8_t ) + SENDER.size()] = 0x00;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid target length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::Chat msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );

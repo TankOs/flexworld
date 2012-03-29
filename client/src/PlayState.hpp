@@ -2,6 +2,7 @@
 
 #include "State.hpp"
 #include "Console.hpp"
+#include "ChatWindow.hpp"
 #include "Sky.hpp"
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
@@ -17,8 +18,6 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <boost/thread.hpp>
-
-#include "ClassDrawable.hpp" // XXX 
 
 /** Play state.
  */
@@ -38,6 +37,10 @@ class PlayState : public State, flex::Client::Handler {
 		void update( const sf::Time& delta );
 		void render() const;
 
+		void update_gui_mode();
+		void enable_gui_mode( bool enable );
+		void reset_mouse();
+
 		void launch_chunk_preparation_thread();
 		void stop_and_wait_for_chunk_preparation_thread();
 		void prepare_chunks();
@@ -54,6 +57,9 @@ class PlayState : public State, flex::Client::Handler {
 		// UI.
 		sfg::Desktop m_desktop;
 		Console::Ptr m_console;
+		ChatWindow::Ptr m_chat_window;
+
+		bool m_gui_mode;
 		bool m_has_focus;
 
 		sf::Text m_fps_text;
@@ -105,7 +111,4 @@ class PlayState : public State, flex::Client::Handler {
 
 		// State.
 		bool m_my_entity_received;
-
-		// XXX TEST
-		ClassDrawable::Ptr m_foobar;
 };

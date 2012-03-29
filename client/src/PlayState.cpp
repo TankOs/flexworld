@@ -10,6 +10,7 @@
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
 
+#include <SFGUI/Engines/BREW.hpp>
 #include <FWSG/WireframeState.hpp>
 #include <sstream>
 
@@ -19,7 +20,6 @@ static const float MESSAGE_SPACING = 5.f;
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
-	m_console( Console::Create() ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
@@ -49,7 +49,12 @@ void PlayState::init() {
 	// Reset handler.
 	get_shared().client->set_handler( *this );
 
+	// Setup desktop.
+	dynamic_cast<sfg::eng::BREW*>( &sfg::Context::Get().GetEngine() )->ResetProperties();
+	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/game.theme" ) );
+
 	// Setup console.
+	m_console = Console::Create();
 	m_desktop.Add( m_console );
 
 	m_console->SetAllocation(
@@ -64,6 +69,21 @@ void PlayState::init() {
 	m_console->OnMessageAdd.Connect( &PlayState::on_console_message_add, this );
 	//m_console->add_message( "Press F11 to show/hide the console." );
 	m_console->Show( false );
+
+	// Setup chat window.
+	m_chat_window = ChatWindow::Create();
+	m_chat_window->SetId( "chat" );
+
+	m_desktop.Add( m_chat_window );
+	m_chat_window->Show( false );
+
+	m_chat_window->SetRequisition( sf::Vector2f( static_cast<float>( get_render_target().getSize().x ) / 2.0f, 200 ) );
+	m_chat_window->SetPosition(
+		sf::Vector2f(
+			0.f,
+			static_cast<float>( get_render_target().getSize().y ) - m_chat_window->GetAllocation().height
+		)
+	);
 
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
@@ -121,18 +141,6 @@ void PlayState::init() {
 
 	// Setup resource manager.
 	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
-
-	///////// XXX TEST XXX ////////////
-	m_resource_manager.prepare_buffer_object_group( flex::FlexID::make( "fw.base.human/dwarf_male.fwm" ) );
-	BufferObjectGroup::PtrConst group = m_resource_manager.find_buffer_object_group( flex::FlexID::make( "fw.base.human/dwarf_male.fwm" ) );
-
-	flex::Class* cls = new flex::Class( flex::ClassDriver::load( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/fw/base/human/dwarf_male.yml" ) ) );
-
-	m_foobar = ClassDrawable::create( m_renderer, m_resource_manager );
-	m_foobar->set_local_transform( sg::Transform( sf::Vector3f( 40, 1, 40 ) ) );
-	m_foobar->set_class( *cls );
-
-	m_scene_graph->attach( m_foobar );
 }
 
 void PlayState::cleanup() {
@@ -173,14 +181,25 @@ void PlayState::cleanup() {
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
-	bool give_gui = true;
+	static bool skip_next_text_event = false;
+	bool give_gui = m_gui_mode;
 
 	if(
 		event.type == sf::Event::Closed ||
 		(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 	) {
-		leave( new MenuState( get_render_target() ) );
-		give_gui = false;
+		// If in GUI mode just leave it.
+		if( m_gui_mode ) {
+			enable_gui_mode( false );
+			give_gui = false;
+
+			m_chat_window->ClearEntry();
+		}
+		else {
+			// Otherwise leave game (TODO: confirmation dialog).
+			leave( new MenuState( get_render_target() ) );
+			give_gui = false;
+		}
 	}
 
 	if( event.type == sf::Event::KeyPressed ) {
@@ -213,24 +232,43 @@ void PlayState::handle_event( const sf::Event& event ) {
 			bool pressed = (event.type == sf::Event::KeyPressed) ? true : false;
 			give_gui = false;
 
-			if( action == Controls::WALK_FORWARD ) {
-				m_walk_forward = pressed;
-				m_update_velocity = true;
-			}
-			else if( action == Controls::WALK_BACKWARD ) {
-				m_walk_backward = pressed;
-				m_update_velocity = true;
-			}
-			else if( action == Controls::STRAFE_LEFT ) {
-				m_strafe_left = pressed;
-				m_update_velocity = true;
-			}
-			else if( action == Controls::STRAFE_RIGHT ) {
-				m_strafe_right = pressed;
-				m_update_velocity = true;
+			// Process action keys. Only when not in GUI mode.
+			if( !m_gui_mode ) {
+				if( action == Controls::WALK_FORWARD ) {
+					m_walk_forward = pressed;
+					m_update_velocity = true;
+				}
+				else if( action == Controls::WALK_BACKWARD ) {
+					m_walk_backward = pressed;
+					m_update_velocity = true;
+				}
+				else if( action == Controls::STRAFE_LEFT ) {
+					m_strafe_left = pressed;
+					m_update_velocity = true;
+				}
+				else if( action == Controls::STRAFE_RIGHT ) {
+					m_strafe_right = pressed;
+					m_update_velocity = true;
+				}
+				else if( action == Controls::CHAT ) {
+					if( pressed ) {
+						m_chat_window->Show( !m_chat_window->IsVisible() );
+						update_gui_mode();
+
+						if( m_chat_window->IsVisible() ) {
+							skip_next_text_event = true;
+							m_chat_window->FocusEntry();
+						}
+					}
+				}
 			}
 		}
+	}
 
+	// Skip text entered event if requested.
+	if( event.type == sf::Event::TextEntered && skip_next_text_event ) {
+		give_gui = false;
+		skip_next_text_event = false;
 	}
 
 	if( give_gui ) {
@@ -251,34 +289,34 @@ void PlayState::update( const sf::Time& delta ) {
 
 	// Process mouse/keyboard input only if window has the focus.
 	if( m_has_focus ) {
-		// Get mouse movement.
-		sf::Vector2i mouse_delta(
-			sf::Mouse::getPosition( get_render_target() ) -
-			sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
-		);
-
-		// Reset mouse.
-		sf::Mouse::setPosition(
-			sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
-			get_render_target()
-		);
-
 		bool eyepoint_changed = false;
 
-		if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
-			// Rotate camera.
-			m_camera.turn(
-				sf::Vector3f(
-					(
-					 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
-					 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
-					),
-					static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
-					0.0f
-				)
+		// Process mouse only if not in GUI mode.
+		if( !m_gui_mode ) {
+			// Get mouse movement.
+			sf::Vector2i mouse_delta(
+				sf::Mouse::getPosition( get_render_target() ) -
+				sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
 			);
 
-			eyepoint_changed = true;
+			if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+				// Reset mouse.
+				reset_mouse();
+
+				// Rotate camera.
+				m_camera.turn(
+					sf::Vector3f(
+						(
+						 (get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
+						 static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
+						),
+						static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
+						0.0f
+					)
+				);
+
+				eyepoint_changed = true;
+			}
 		}
 
 		// Movement.
@@ -378,14 +416,6 @@ void PlayState::update( const sf::Time& delta ) {
 	// Finalize resources.
 	m_resource_manager.finalize_prepared_textures();
 	m_resource_manager.finalize_prepared_buffer_object_groups();
-
-	// TEST.
-	static float angle = 0;
-	angle += 45.0f * delta.asSeconds();
-
-	sg::Transform trans = m_foobar->get_local_transform();
-	trans.set_rotation( sf::Vector3f( 0, angle, 0 ) );
-	m_foobar->set_local_transform( trans );
 
 	// Update scene graph.
 	if( m_scene_graph ) {
@@ -687,4 +717,53 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 		<< " " << msg.get_heading() << "°" << std::endl
 	;
 #endif
+}
+
+void PlayState::update_gui_mode() {
+	bool new_mode = m_gui_mode;
+
+	if(
+		m_console->IsVisible() ||
+		m_chat_window->IsVisible()
+	) {
+		new_mode = true;
+	}
+	else {
+		new_mode = false;
+	}
+
+	if( new_mode == m_gui_mode ) {
+		return;
+	}
+
+	enable_gui_mode( new_mode );
+}
+
+void PlayState::enable_gui_mode( bool enable ) {
+	m_gui_mode = enable;
+
+	get_render_target().setMouseCursorVisible( m_gui_mode );
+
+	if( m_gui_mode ) {
+		// Stop movement.
+		m_walk_forward = false;
+		m_walk_backward = false;
+		m_strafe_left = false;
+		m_strafe_right = false;
+		m_update_velocity = true;
+	}
+	else {
+		// Hide windows.
+		m_console->Show( false );
+		m_chat_window->Show( false );
+
+		reset_mouse();
+	}
+}
+
+void PlayState::reset_mouse() {
+	sf::Mouse::setPosition(
+		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
+		get_render_target()
+	);
 }

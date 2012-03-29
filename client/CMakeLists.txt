@@ -9,6 +9,7 @@ set(
 	SOURCES
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
+	${INC_DIR}/ChatWindow.hpp
 	${INC_DIR}/ClassDrawable.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
@@ -29,6 +30,7 @@ set(
 	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
+	${SRC_DIR}/ChatWindow.cpp
 	${SRC_DIR}/ClassDrawable.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp

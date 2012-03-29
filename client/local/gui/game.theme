@@ -1,0 +1,21 @@
+Window {
+	Gap: 5;
+	BackgroundColor: #00000066;
+	TitleBackgroundColor: #33333399;
+	BorderColor: #00000099;
+	ShadowAlpha: 50;
+}
+
+ScrolledWindow {
+	BorderColor: #00000000;
+}
+
+Notebook {
+	BackgroundColor: #00000033;
+	BorderColor: #00000000;
+}
+
+Entry {
+	BackgroundColor: #00000099;
+	BorderColor: #00000099;
+}
