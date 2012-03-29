@@ -159,11 +159,11 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		// hello_world command.
 		std::vector<sf::String> args;
 		args.push_back( sf::String( L"helloää" ) );
-		args.push_back( sf::String( L"worldẞẞ" ) );
+		args.push_back( sf::String( L"worldöö" ) );
 
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == nil )" ) );
 		event.trigger_command( "hello_world", args, state );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == \"helloää worldẞẞ\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == \"helloää worldöö\" )" ) );
 	}
 
 	// Call functions with invalid arguments.
