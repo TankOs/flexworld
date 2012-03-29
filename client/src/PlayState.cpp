@@ -775,7 +775,7 @@ void PlayState::on_chat_message_ready() {
 	// Send chat message.
 	flex::msg::Chat msg;
 	
-	msg.set_message( static_cast<std::string>( m_chat_window->GetMessage() ) ); // TODO UTF-16
+	msg.set_message( m_chat_window->GetMessage() );
 	msg.set_sender( "-" );
 	msg.set_target( m_chat_window->GetChannelName( m_chat_window->GetActiveChannel() ) );
 
