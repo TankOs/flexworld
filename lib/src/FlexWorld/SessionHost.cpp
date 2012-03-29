@@ -538,4 +538,12 @@ void SessionHost::rehash_scripts() {
 	}
 }
 
+void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionID conn_id ) {
+	assert( conn_id < m_player_infos.size() );
+
+	const PlayerInfo& info = m_player_infos[conn_id];
+
+	Log::Logger( Log::INFO ) << "[" << chat_msg.get_target() << "] <" << info.username << "> " << chat_msg.get_message() << Log::endl;
+}
+
 }

@@ -7,6 +7,7 @@
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
+#include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
 
@@ -84,6 +85,8 @@ void PlayState::init() {
 			static_cast<float>( get_render_target().getSize().y ) - m_chat_window->GetAllocation().height
 		)
 	);
+
+	m_chat_window->OnMessageReady.Connect( &PlayState::on_chat_message_ready, this );
 
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
@@ -709,7 +712,7 @@ void PlayState::on_console_message_add() {
 	update_latest_messages();
 }
 
-void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID conn_id ) {
+void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 #if !defined( NDEBUG )
 	std::cout
 		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
@@ -766,4 +769,15 @@ void PlayState::reset_mouse() {
 		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
 		get_render_target()
 	);
+}
+
+void PlayState::on_chat_message_ready() {
+	// Send chat message.
+	flex::msg::Chat msg;
+	
+	msg.set_message( static_cast<std::string>( m_chat_window->GetMessage() ) ); // TODO UTF-16
+	msg.set_sender( "-" );
+	msg.set_target( m_chat_window->GetChannelName( m_chat_window->GetActiveChannel() ) );
+
+	get_shared().client->send_message( msg );
 }
