@@ -6,6 +6,7 @@
 #include <SFML/System/Utf.hpp>
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
+#include <iterator>
 #include <iostream> // XXX TODO
 
 namespace flex {

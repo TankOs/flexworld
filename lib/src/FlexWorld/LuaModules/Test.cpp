@@ -4,6 +4,7 @@
 #include <Diluculum/LuaExceptions.hpp>
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
+#include <iterator>
 
 namespace flex {
 namespace lua {
