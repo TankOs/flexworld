@@ -241,10 +241,10 @@ void Event::trigger_command( const std::string& command, const std::vector<sf::S
 
 	for( std::size_t arg_idx = 0; arg_idx < args.size(); ++arg_idx ) {
 		// Convert to UTF-8.
-		std::basic_string<sf::Uint8> u_string;
-		sf::Utf32::toUtf8( args[arg_idx].begin(), args[arg_idx].end(), u_string.end() );
+		std::string u_string;
+		sf::Utf32::toUtf8( args[arg_idx].begin(), args[arg_idx].end(), std::back_inserter( u_string ) );
 
-		tokens[arg_idx + 1] = reinterpret_cast<const char*>( u_string.c_str() );
+		tokens[arg_idx + 1] = u_string;
 	}
 
 	// Build arguments for call.

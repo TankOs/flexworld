@@ -1,5 +1,6 @@
 #include <FlexWorld/LuaModules/Test.hpp>
 
+#include <SFML/System/Utf.hpp>
 #include <Diluculum/LuaExceptions.hpp>
 #include <Diluculum/LuaState.hpp>
 #include <Diluculum/LuaWrappers.hpp>
@@ -48,7 +49,13 @@ Diluculum::LuaValueList Test::set_value( const Diluculum::LuaValueList& args ) {
 		throw Diluculum::LuaError( "Expected string for value." );
 	}
 
-	m_values[args[0].asString()] = args[1].asString();
+	// Convert UTF-8 to UTF-32.
+	const std::string source = args[1].asString();
+
+	std::basic_string<sf::Uint32> tmp;
+	sf::Utf8::toUtf32( source.begin(), source.end(), std::back_inserter( tmp ) );
+
+	m_values[args[0].asString()] = tmp;
 
 	return Diluculum::LuaValueList();
 }
@@ -69,7 +76,12 @@ Diluculum::LuaValueList Test::find_value( const Diluculum::LuaValueList& args ) 
 	}
 
 	Diluculum::LuaValueList ret;
-	ret.push_back( value_iter->second );
+
+	// Convert to UTF-8.
+	std::string conv;
+	sf::Utf32::toUtf8( value_iter->second.begin(), value_iter->second.end(), std::back_inserter( conv ) );
+
+	ret.push_back( conv );
 
 	return ret;
 }

@@ -4,8 +4,12 @@
 
 function on_hello_world_command( args )
 	assert( #args == 2 )
-	assert( args[1] == "helloää" )
-	assert( args[2] == "worldöö" )
+	assert( args[1] == "hellä" )
+	assert( args[2] == "hellö" )
+
+	-- Check UTF-8.
+	assert( #args[1] == 6 )
+	assert( #args[2] == 6 )
 
 	flex.test:set_value( "hello_world", args[1] .. " " .. args[2] )
 end

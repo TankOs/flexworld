@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/System/String.hpp>
 #include <Diluculum/LuaValue.hpp>
 #include <Diluculum/LuaVariable.hpp>
 #include <map>
@@ -58,7 +59,7 @@ class Test {
 		Diluculum::LuaValueList find_value( const Diluculum::LuaValueList& args ) const;
 
 	private:
-		typedef std::map<const std::string, std::string> StringMap;
+		typedef std::map<const std::string, sf::String> StringMap;
 
 		StringMap m_values;
 };
