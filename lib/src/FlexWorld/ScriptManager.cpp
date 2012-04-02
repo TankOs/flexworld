@@ -87,4 +87,8 @@ void ScriptManager::trigger_command( const std::string& command, const std::vect
 	m_event_module->trigger_command( command, args, *m_state );
 }
 
+void ScriptManager::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender ) {
+	m_event_module->trigger_chat_system_event( message, channel, sender, *m_state );
+}
+
 }

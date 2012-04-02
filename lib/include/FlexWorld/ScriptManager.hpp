@@ -60,6 +60,13 @@ class ScriptManager {
 		 */
 		void trigger_command( const std::string& command, const std::vector<sf::String>& args );
 
+		/** Trigger chat system event.
+		 * @param message Message.
+		 * @param channel Channel.
+		 * @param sender Sender.
+		 */
+		void trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
+
 	private:
 		std::string m_last_error;
 

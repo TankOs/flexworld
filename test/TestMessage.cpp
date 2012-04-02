@@ -1101,21 +1101,21 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
 BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	using namespace flex;
 
-	static const sf::String MESSAGE = L"Hello, this is the operator!";
+	static const sf::String MESSAGE = "Hello, this is the operator!";
 	static const uint16_t MESSAGE_SIZE = static_cast<uint8_t>( MESSAGE.getSize() );
-	static const std::string SENDER = "Tank";
-	static const uint8_t SENDER_SIZE = static_cast<uint8_t>( SENDER.size() );
-	static const std::string TARGET = "Status";
-	static const uint8_t TARGET_SIZE = static_cast<uint8_t>( TARGET.size() );
+	static const sf::String CHANNEL = "Status";
+	static const uint8_t CHANNEL_SIZE = static_cast<uint8_t>( CHANNEL.getSize() );
+	static const sf::String SENDER = "Tank";
+	static const uint8_t SENDER_SIZE = static_cast<uint8_t>( SENDER.getSize() );
 
 	// Create source buffer.
 	ServerProtocol::Buffer source;
 	source.insert( source.end(), reinterpret_cast<const char*>( &MESSAGE_SIZE ), reinterpret_cast<const char*>( &MESSAGE_SIZE ) + sizeof( MESSAGE_SIZE ) );
 	source.insert( source.end(), reinterpret_cast<const char*>( MESSAGE.getData() ), reinterpret_cast<const char*>( MESSAGE.getData() ) + (MESSAGE.getSize() * sizeof( sf::Uint32 )) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CHANNEL_SIZE ), reinterpret_cast<const char*>( &CHANNEL_SIZE ) + sizeof( CHANNEL_SIZE ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( CHANNEL.getData() ), reinterpret_cast<const char*>( CHANNEL.getData() ) + (CHANNEL.getSize() * sizeof( sf::Uint32 )) );
 	source.insert( source.end(), reinterpret_cast<const char*>( &SENDER_SIZE ), reinterpret_cast<const char*>( &SENDER_SIZE ) + sizeof( SENDER_SIZE ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( SENDER.c_str() ), reinterpret_cast<const char*>( SENDER.c_str() ) + SENDER.size() );
-	source.insert( source.end(), reinterpret_cast<const char*>( &TARGET_SIZE ), reinterpret_cast<const char*>( &TARGET_SIZE ) + sizeof( TARGET_SIZE ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( TARGET.c_str() ), reinterpret_cast<const char*>( TARGET.c_str() ) + TARGET.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( SENDER.getData() ), reinterpret_cast<const char*>( SENDER.getData() ) + (SENDER.getSize() * sizeof( sf::Uint32 )) );
 
 	// Initial state.
 	{
@@ -1123,7 +1123,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 
 		BOOST_CHECK( msg.get_message() == "" );
 		BOOST_CHECK( msg.get_sender() == "" );
-		BOOST_CHECK( msg.get_target() == "" );
+		BOOST_CHECK( msg.get_channel() == "" );
 	}
 
 	// Basic properties.
@@ -1131,11 +1131,11 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		msg::Chat msg;
 		msg.set_message( MESSAGE );
 		msg.set_sender( SENDER );
-		msg.set_target( TARGET );
+		msg.set_channel( CHANNEL );
 
 		BOOST_CHECK( msg.get_message() == MESSAGE );
 		BOOST_CHECK( msg.get_sender() == SENDER );
-		BOOST_CHECK( msg.get_target() == TARGET );
+		BOOST_CHECK( msg.get_channel() == CHANNEL );
 	}
 
 	// Serialize.
@@ -1143,7 +1143,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		msg::Chat msg;
 		msg.set_message( MESSAGE );
 		msg.set_sender( SENDER );
-		msg.set_target( TARGET );
+		msg.set_channel( CHANNEL );
 
 		ServerProtocol::Buffer buffer;
 		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
@@ -1155,7 +1155,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	{
 		msg::Chat msg;
 		msg.set_sender( SENDER );
-		msg.set_target( TARGET );
+		msg.set_channel( CHANNEL );
 
 		ServerProtocol::Buffer buffer;
 
@@ -1174,7 +1174,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	{
 		msg::Chat msg;
 		msg.set_message( MESSAGE );
-		msg.set_target( TARGET );
+		msg.set_channel( CHANNEL );
 
 		ServerProtocol::Buffer buffer;
 
@@ -1198,14 +1198,14 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		ServerProtocol::Buffer buffer;
 
 		// Empty target.
-		msg.set_target( "" );
+		msg.set_channel( "" );
 
-		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid target." ) );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid channel." ) );
 
 		// Too long target.
-		msg.set_target( std::string( 0x1ff, 'x' ) );
+		msg.set_channel( std::string( 0x1ff, 'x' ) );
 
-		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid target." ) );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::Chat::InvalidDataException, ExceptionChecker<msg::Chat::InvalidDataException>( "Invalid channel." ) );
 	}
 
 	// Deserialize.
@@ -1218,7 +1218,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		BOOST_CHECK( eaten == source.size() );
 		BOOST_CHECK( msg.get_message() == MESSAGE );
 		BOOST_CHECK( msg.get_sender() == SENDER );
-		BOOST_CHECK( msg.get_target() == TARGET );
+		BOOST_CHECK( msg.get_channel() == CHANNEL );
 	}
 
 	// Deserialize with bogus message.
@@ -1236,7 +1236,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		BOOST_CHECK( eaten == 0 );
 	}
 
-	// Deserialize with bogus sender.
+	// Deserialize with bogus channel.
 	{
 		msg::Chat msg;
 
@@ -1246,21 +1246,21 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 		invalid_source[sizeof( uint16_t ) + (MESSAGE.getSize() * sizeof( sf::Uint32 ))] = 0x00;
 
 		std::size_t eaten = 0;
-		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid sender length." ) );
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid channel length." ) );
 		BOOST_CHECK( eaten == 0 );
 	}
 
-	// Deserialize with bogus target.
+	// Deserialize with bogus sender.
 	{
 		msg::Chat msg;
 
 		ServerProtocol::Buffer invalid_source = source;
 
 		// 0 length.
-		invalid_source[sizeof( uint16_t ) + (MESSAGE.getSize() * sizeof( sf::Uint32 )) + sizeof( uint8_t ) + SENDER.size()] = 0x00;
+		invalid_source[sizeof( uint16_t ) + (MESSAGE.getSize() * sizeof( sf::Uint32 )) + sizeof( uint8_t ) + (CHANNEL.getSize() * sizeof( sf::Uint32 ))] = 0x00;
 
 		std::size_t eaten = 0;
-		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid target length." ) );
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ), msg::Chat::BogusDataException, ExceptionChecker<msg::Chat::BogusDataException>( "Invalid sender length." ) );
 		BOOST_CHECK( eaten == 0 );
 	}
 

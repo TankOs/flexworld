@@ -118,6 +118,14 @@ class Event {
 		 */
 		void trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state );
 
+		/** Trigger chat system event.
+		 * @param message Message.
+		 * @param channel Channel.
+		 * @param sender Sender.
+		 * @param state Lua state.
+		 */
+		void trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state );
+
 		/** Trigger use class event.
 		 * @param cls Class.
 		 * @param entity Entity being used.

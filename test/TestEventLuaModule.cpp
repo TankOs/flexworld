@@ -103,6 +103,24 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == \"called1337\" )" ) );
 	}
 
+	// Trigger chat event.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_event( state );
+
+		lua::Test test;
+		lua::Event event;
+
+		test.register_object( state["flex"]["test"] );
+		event.register_object( state["flex"]["event"] );
+
+		// Load script.
+		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
+
+		// Trigger.
+		BOOST_CHECK_NO_THROW( event.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337, state ) );
+	}
+
 	// Trigger class events.
 	{
 		// Create test data.

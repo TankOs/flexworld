@@ -32,27 +32,27 @@ class Chat : public Message {
 		/** Set sender.
 		 * @param sender Sender.
 		 */
-		void set_sender( const std::string& sender );
+		void set_sender( const sf::String& sender );
 
 		/** Get sender.
 		 * @return Sender.
 		 */
-		const std::string& get_sender() const;
+		const sf::String& get_sender() const;
 
-		/** Set target.
-		 * @param target Target.
+		/** Set channel.
+		 * @param channel Channel.
 		 */
-		void set_target( const std::string& target );
+		void set_channel( const sf::String& channel );
 
-		/** Get target.
-		 * @return Target.
+		/** Get channel.
+		 * @return Channel.
 		 */
-		const std::string& get_target() const;
+		const sf::String& get_channel() const;
 
 	private:
 		sf::String m_message;
-		std::string m_sender;
-		std::string m_target;
+		sf::String m_channel;
+		sf::String m_sender;
 };
 
 }

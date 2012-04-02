@@ -16,12 +16,12 @@ void Chat::serialize( Buffer& buffer ) const {
 		throw InvalidDataException( "Invalid message." );
 	}
 
-	if( m_sender.empty() || m_sender.size() > 0xff ) {
+	if( m_sender.isEmpty() || m_sender.getSize() > 0xff ) {
 		throw InvalidDataException( "Invalid sender." );
 	}
 
-	if( m_target.empty() || m_target.size() > 0xff ) {
-		throw InvalidDataException( "Invalid target." );
+	if( m_channel.isEmpty() || m_channel.getSize() > 0xff ) {
+		throw InvalidDataException( "Invalid channel." );
 	}
 
 	std::size_t buf_ptr = buffer.size();
@@ -29,11 +29,12 @@ void Chat::serialize( Buffer& buffer ) const {
 	buffer.resize(
 		+ buf_ptr
 		+ sizeof( uint16_t ) // Message length.
+		+ sizeof( uint8_t ) // Channel length.
 		+ sizeof( uint8_t ) // Sender length.
-		+ sizeof( uint8_t ) // Target length.
 	);
 
 
+	// Message.
 	*reinterpret_cast<uint16_t*>( &buffer[buf_ptr] ) = static_cast<uint16_t>( m_message.getSize() );
 	buf_ptr += sizeof( uint16_t );
 
@@ -44,17 +45,27 @@ void Chat::serialize( Buffer& buffer ) const {
 	);
 	buf_ptr += sizeof( sf::Uint32 ) * m_message.getSize();
 
-	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_sender.size() );
+	// Channel.
+	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_channel.getSize() );
 	buf_ptr += sizeof( uint8_t );
 
-	buffer.insert( buffer.begin() + buf_ptr, m_sender.c_str(), m_sender.c_str() + m_sender.size() );
-	buf_ptr += m_sender.size();
+	buffer.insert(
+		buffer.begin() + buf_ptr,
+		reinterpret_cast<const char*>( m_channel.getData() ),
+		reinterpret_cast<const char*>( m_channel.getData() ) + (m_channel.getSize() * sizeof( sf::Uint32 ))
+	);
+	buf_ptr += sizeof( sf::Uint32 ) * m_channel.getSize();
 
-	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_target.size() );
+	// Sender.
+	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_sender.getSize() );
 	buf_ptr += sizeof( uint8_t );
 
-	buffer.insert( buffer.begin() + buf_ptr, m_target.c_str(), m_target.c_str() + m_target.size() );
-	buf_ptr += m_target.size();
+	buffer.insert(
+		buffer.begin() + buf_ptr,
+		reinterpret_cast<const char*>( m_sender.getData() ),
+		reinterpret_cast<const char*>( m_sender.getData() ) + (m_sender.getSize() * sizeof( sf::Uint32 ))
+	);
+	buf_ptr += sizeof( sf::Uint32 ) * m_sender.getSize();
 }
 
 std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
@@ -84,6 +95,30 @@ std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
 	message_ptr = reinterpret_cast<const sf::Uint32*>( &buffer[buf_ptr] );
 	buf_ptr += message_length * sizeof( sf::Uint32 );
 
+	// Channel length.
+	uint8_t channel_length = 0;
+
+	if( buffer_size - buf_ptr < sizeof( channel_length ) ) {
+		return 0;
+	}
+
+	channel_length = *reinterpret_cast<const uint8_t*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( channel_length );
+
+	if( channel_length == 0 ) {
+		throw BogusDataException( "Invalid channel length." );
+	}
+
+	// Channel pointer.
+	const sf::Uint32* channel_ptr = nullptr;
+
+	if( buffer_size - buf_ptr < channel_length * sizeof( sf::Uint32 ) ) {
+		return 0;
+	}
+
+	channel_ptr = reinterpret_cast<const sf::Uint32*>( &buffer[buf_ptr] );
+	buf_ptr += channel_length * sizeof( sf::Uint32 );
+
 	// Sender length.
 	uint8_t sender_length = 0;
 
@@ -99,43 +134,19 @@ std::size_t Chat::deserialize( const char* buffer, std::size_t buffer_size ) {
 	}
 
 	// Sender pointer.
-	const char* sender_ptr = nullptr;
+	const sf::Uint32* sender_ptr = nullptr;
 
-	if( buffer_size - buf_ptr < sender_length ) {
+	if( buffer_size - buf_ptr < sender_length * sizeof( sf::Uint32 ) ) {
 		return 0;
 	}
 
-	sender_ptr = &buffer[buf_ptr];
-	buf_ptr += sender_length;
-
-	// Target length.
-	uint8_t target_length = 0;
-
-	if( buffer_size - buf_ptr < sizeof( target_length ) ) {
-		return 0;
-	}
-
-	target_length = *reinterpret_cast<const uint8_t*>( &buffer[buf_ptr] );
-	buf_ptr += sizeof( target_length );
-
-	if( target_length == 0 ) {
-		throw BogusDataException( "Invalid target length." );
-	}
-
-	// Target pointer.
-	const char* target_ptr = nullptr;
-
-	if( buffer_size - buf_ptr < target_length ) {
-		return 0;
-	}
-
-	target_ptr = &buffer[buf_ptr];
-	buf_ptr += target_length;
+	sender_ptr = reinterpret_cast<const sf::Uint32*>( &buffer[buf_ptr] );
+	buf_ptr += sender_length * sizeof( sf::Uint32 );
 
 	// Apply.
 	m_message = std::basic_string<sf::Uint32>( message_ptr, message_length );
-	m_sender = std::string( sender_ptr, sender_length );
-	m_target = std::string( target_ptr, target_length );
+	m_sender = std::basic_string<sf::Uint32>( sender_ptr, sender_length );
+	m_channel = std::basic_string<sf::Uint32>( channel_ptr, channel_length );
 
 	return buf_ptr;
 }
@@ -144,24 +155,24 @@ void Chat::set_message( const sf::String& message ) {
 	m_message = message;
 }
 
-void Chat::set_sender( const std::string& sender ) {
+void Chat::set_sender( const sf::String& sender ) {
 	m_sender = sender;
 }
 
-void Chat::set_target( const std::string& target ) {
-	m_target = target;
+void Chat::set_channel( const sf::String& channel ) {
+	m_channel = channel;
 }
 
 const sf::String& Chat::get_message() const {
 	return m_message;
 }
 
-const std::string& Chat::get_sender() const {
+const sf::String& Chat::get_sender() const {
 	return m_sender;
 }
 
-const std::string& Chat::get_target() const {
-	return m_target;
+const sf::String& Chat::get_channel() const {
+	return m_channel;
 }
 
 }

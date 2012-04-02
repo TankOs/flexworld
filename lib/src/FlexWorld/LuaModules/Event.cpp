@@ -25,20 +25,20 @@ void Event::register_class( Diluculum::LuaVariable target ) {
 	target["System"] = Diluculum::EmptyTable;
 	target["System"]["CONNECT"] = CONNECT_EVENT;
 	target["System"]["DISCONNECT"] = DISCONNECT_EVENT;
-	target["System"]["LOGIN"] = LOGIN_EVENT;
-	target["System"]["LOGIN_FAIL"] = LOGIN_FAIL_EVENT;
+	//target["System"]["LOGIN"] = LOGIN_EVENT;
+	//target["System"]["LOGIN_FAIL"] = LOGIN_FAIL_EVENT;
 	target["System"]["CHAT"] = CHAT_EVENT;
 	target["System"]["UNLOAD"] = UNLOAD_EVENT;
 
 	// Class events.
 	target["Class"] = Diluculum::EmptyTable;
 	target["Class"]["USE"] = USE_EVENT;
-	target["Class"]["TAKE"] = TAKE_EVENT;
-	target["Class"]["DROP"] = DROP_EVENT;
+	//target["Class"]["TAKE"] = TAKE_EVENT;
+	//target["Class"]["DROP"] = DROP_EVENT;
 	target["Class"]["PRIMARY_ACTION"] = PRIMARY_ACTION_EVENT;
 	target["Class"]["SECONDARY_ACTION"] = SECONDARY_ACTION_EVENT;
-	target["Class"]["CREATE"] = CREATE_EVENT;
-	target["Class"]["DESTROY"] = DESTROY_EVENT;
+	//target["Class"]["CREATE"] = CREATE_EVENT;
+	//target["Class"]["DESTROY"] = DESTROY_EVENT;
 }
 
 bool Event::is_valid_command( const std::string& command ) {
@@ -192,6 +192,23 @@ void Event::trigger_connect_system_event( uint16_t client_id, Diluculum::LuaStat
 	args.push_back( client_id );
 
 	call_system_event_callbacks( CONNECT_EVENT, args, state );
+}
+
+void Event::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state ) {
+	// Convert UTF-32 to UTF-8.
+	std::string message_u8;
+	std::string channel_u8;
+
+	sf::Utf32::toUtf8( message.begin(), message.end(), std::back_inserter( message_u8 ) );
+	sf::Utf32::toUtf8( channel.begin(), channel.end(), std::back_inserter( channel_u8 ) );
+
+	// Build Lua argument list.
+	Diluculum::LuaValueList args;
+	args.push_back( message_u8 );
+	args.push_back( channel_u8 );
+	args.push_back( sender );
+
+	call_system_event_callbacks( CHAT_EVENT, args, state );
 }
 
 void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {

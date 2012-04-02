@@ -75,11 +75,19 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_REQUIRE_NO_THROW( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
 
 		std::vector<sf::String> args;
-		args.push_back( sf::String( "hällo" ) );
-		args.push_back( sf::String( "wörld" ) );
+		args.push_back( sf::String( L"hello" ) );
+		args.push_back( sf::String( L"world" ) );
 
 		manager.trigger_command( "test", args );
 
-		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:get_value( \"yo\" ) == \"hällowörld\" )" ) );
+		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:get_value( \"yo\" ) == \"halloworld\" )" ) );
+	}
+
+	// Trigger chat system event.
+	{
+		ScriptManager manager;
+
+		BOOST_REQUIRE_NO_THROW( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
+		BOOST_CHECK_NO_THROW( manager.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) );
 	}
 }

@@ -9,3 +9,4 @@ Meta:
   DefaultEntityClassId: fw.base.human/dwarf_male
 Packages:
   - fw.admin
+  - fw.chat

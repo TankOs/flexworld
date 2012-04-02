@@ -543,8 +543,6 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 
 	const PlayerInfo& info = m_player_infos[conn_id];
 
-	Log::Logger( Log::INFO ) << "[" << chat_msg.get_target() << "] <" << info.username << "> " << chat_msg.get_message().toAnsiString() << Log::endl;
-
 	// Check if the sent message is a command.
 	const sf::String& text = chat_msg.get_message();
 
@@ -581,6 +579,10 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 		if( command.empty() == false ) {
 			m_script_manager.trigger_command( command, args );
 		}
+	}
+	else {
+		// No command, give to script manager normally.
+		m_script_manager.trigger_chat_system_event( chat_msg.get_message(), chat_msg.get_channel(), conn_id );
 	}
 }
 

@@ -776,8 +776,8 @@ void PlayState::on_chat_message_ready() {
 	flex::msg::Chat msg;
 	
 	msg.set_message( m_chat_window->GetMessage() );
+	msg.set_channel( m_chat_window->GetChannelName( m_chat_window->GetActiveChannel() ) );
 	msg.set_sender( "-" );
-	msg.set_target( m_chat_window->GetChannelName( m_chat_window->GetActiveChannel() ) );
 
 	get_shared().client->send_message( msg );
 }
