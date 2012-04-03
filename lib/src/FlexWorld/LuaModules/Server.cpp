@@ -4,6 +4,8 @@
 #include <Diluculum/LuaWrappers.hpp>
 #include <Diluculum/LuaExceptions.hpp>
 
+#include <cstdint>
+
 namespace flex {
 namespace lua {
 
