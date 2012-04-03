@@ -36,6 +36,8 @@ set(
 	${INC_DIR}/FlexWorld/Log.hpp
 	${INC_DIR}/FlexWorld/Log.inl
 	${INC_DIR}/FlexWorld/LuaModules/Event.hpp
+	${INC_DIR}/FlexWorld/LuaModules/Server.hpp
+	${INC_DIR}/FlexWorld/LuaModules/ServerGate.hpp
 	${INC_DIR}/FlexWorld/LuaModules/Test.hpp
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
@@ -88,6 +90,8 @@ set(
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
 	${SRC_DIR}/FlexWorld/Log.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Event.cpp
+	${SRC_DIR}/FlexWorld/LuaModules/Server.cpp
+	${SRC_DIR}/FlexWorld/LuaModules/ServerGate.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Test.cpp
 	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
