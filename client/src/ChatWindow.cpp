@@ -1,6 +1,6 @@
 #include "ChatWindow.hpp"
 
-#include <SFGUI/Box.hpp>
+#include <SFGUI/Alignment.hpp>
 
 ChatWindow::Ptr ChatWindow::Create() {
 	Ptr ptr( new ChatWindow );
@@ -152,5 +152,19 @@ void ChatWindow::AddMessage( const sf::String& message, const sf::String& channe
 
 	// Add message.
 	sfg::Label::Ptr label = sfg::Label::Create( message );
-	chan_ptr->vbox->Pack( label, false, true );
+
+	sfg::Alignment::Ptr alignment = sfg::Alignment::Create();
+	alignment->SetScale( sf::Vector2f( 0, 1 ) );
+	alignment->Add( label );
+
+	chan_ptr->vbox->Pack( alignment, false, true );
+
+	// Scroll down.
+	sfg::Adjustment::Ptr new_adjustment = sfg::Adjustment::Create();
+	*new_adjustment = *chan_ptr->scrolled_window->GetVerticalAdjustment();
+
+	new_adjustment->IncrementPage();
+
+	chan_ptr->scrolled_window->SetVerticalAdjustment( new_adjustment );
+	chan_ptr->scrolled_window->Invalidate();
 }

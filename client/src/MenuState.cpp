@@ -176,7 +176,7 @@ void MenuState::init() {
 		float scale( static_cast<float>( std::rand() % (100 - 9) + 10 ) / 100.f );
 
 		sf::Sprite cloud_sprite( m_cloud_texture );
-		cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getWidth() / 2 ), static_cast<float>( m_cloud_texture.getHeight() / 2 ) );
+		cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getSize().x / 2 ), static_cast<float>( m_cloud_texture.getSize().y / 2 ) );
 		cloud_sprite.setPosition( cloud_position.x, cloud_position.y );
 		cloud_sprite.setScale( scale, scale );
 		cloud_sprite.setColor( sf::Color( 255, 255, 255, 160 ) );

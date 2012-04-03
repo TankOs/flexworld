@@ -73,6 +73,9 @@ void PlayState::init() {
 
 	m_chat_window->OnMessageReady.Connect( &PlayState::on_chat_message_ready, this );
 
+	// XXX Create some test channels.
+	m_chat_window->CreateChannel( "Broadcast" );
+
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
 
@@ -199,7 +202,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
-			// TODO Show message in chat window.
+			m_chat_window->AddMessage( "*** Screenshot saved.", "Status" );
 		}
 	}
 
