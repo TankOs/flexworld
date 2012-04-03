@@ -2,10 +2,11 @@
 -- Script for testing command hooks.
 --
 
-function on_hello_world_command( args )
+function on_hello_world_command( args, sender )
 	assert( #args == 2 )
 	assert( args[1] == "hellä" )
 	assert( args[2] == "hellö" )
+	assert( sender == 1337 )
 
 	-- Check UTF-8.
 	assert( #args[1] == 6 )

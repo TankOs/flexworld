@@ -180,7 +180,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		args.push_back( sf::String( L"hell\xF6" ) );
 
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == nil )" ) );
-		event.trigger_command( "hello_world", args, state );
+		event.trigger_command( "hello_world", args, 1337, state );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == \"hell\xC3\xA4 hell\xC3\xB6\" )" ) );
 	}
 

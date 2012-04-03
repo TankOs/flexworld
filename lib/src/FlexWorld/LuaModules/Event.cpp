@@ -244,7 +244,7 @@ void Event::trigger_use_class_event( const Class& cls, const Entity& entity, con
 	call_class_event_callbacks( USE_EVENT, cls.get_id().get(), args, state );
 }
 
-void Event::trigger_command( const std::string& command, const std::vector<sf::String>& args, Diluculum::LuaState& state ) {
+void Event::trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender, Diluculum::LuaState& state ) {
 	assert( is_valid_command( command ) == true );
 
 	// Look for functions.
@@ -269,6 +269,7 @@ void Event::trigger_command( const std::string& command, const std::vector<sf::S
 	Diluculum::LuaValueList call_args;
 
 	call_args.push_back( tokens );
+	call_args.push_back( static_cast<int>( sender ) );
 
 	// Call command callback.
 	state.call( cmd_iter->second, call_args, command );

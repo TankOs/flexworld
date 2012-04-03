@@ -90,15 +90,15 @@ const std::string& ScriptManager::get_last_error() const {
 	return m_last_error;
 }
 
-bool ScriptManager::trigger_command( const std::string& command, const std::vector<sf::String>& args ) {
+bool ScriptManager::trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender ) {
 	m_last_error = "";
 
 	try {
-		m_event_module->trigger_command( command, args, *m_state );
+		m_event_module->trigger_command( command, args, sender, *m_state );
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "Command event error: " << m_last_error << Log::endl;
+		Log::Logger( Log::ERR ) << "Command error: " << m_last_error << Log::endl;
 
 		return false;
 	}

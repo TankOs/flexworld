@@ -64,6 +64,7 @@ class ChatWindow : public sfg::Window {
 		void AddMessage( const sf::String& message, const sf::String& channel );
 
 		sfg::Signal OnMessageReady; ///< Fired when user wants to send a message.
+		sfg::Signal OnCloseClick; ///< Fired when user clicks on "Close" button to close the window.
 
 	private:
 		struct Channel {
@@ -80,12 +81,16 @@ class ChatWindow : public sfg::Window {
 
 		void OnSendButtonClick();
 		void OnInputEntryKeyPress();
+		void OnCloseButtonClick();
 
 		ChannelArray m_channels;
 
 		sfg::Notebook::Ptr m_notebook;
 		sfg::Entry::Ptr m_input_entry;
 		sfg::Button::Ptr m_send_button;
+		sfg::Button::Ptr m_clear_button;
+		sfg::Button::Ptr m_join_button;
+		sfg::Button::Ptr m_close_button;
 
 		sf::String m_message;
 };

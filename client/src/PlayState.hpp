@@ -45,6 +45,7 @@ class PlayState : public State, flex::Client::Handler {
 		void prepare_chunks();
 
 		void on_chat_message_ready();
+		void on_chat_close_click();
 		void update_latest_messages();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );

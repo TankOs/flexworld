@@ -75,18 +75,18 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	{
 		ScriptManager manager( server_gate );
 
-		BOOST_REQUIRE_NO_THROW( manager.execute_string( "function foo( args ) flex.test:set_value( \"yo\", args[1] .. args[2] ) end" ) );
-		BOOST_REQUIRE_NO_THROW( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
+		BOOST_CHECK( manager.execute_string( "function foo( args, sender ) flex.test:set_value( \"yo\", args[1] .. args[2] .. tostring( sender ) ) end" ) );
+		BOOST_CHECK( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
 
 		std::vector<sf::String> args;
 		args.push_back( sf::String( L"hello" ) );
 		args.push_back( sf::String( L"world" ) );
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
-		BOOST_CHECK( manager.trigger_command( "test", args ) == true );
+		BOOST_CHECK( manager.trigger_command( "test", args, 123 ) == true );
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 
-		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:get_value( \"yo\" ) == \"halloworld\" )" ) );
+		BOOST_CHECK( manager.execute_string( "assert( flex.test:find_value( \"yo\" ) == \"helloworld123\" )" ) );
 
 		// Error handling.
 		manager.clear();
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
 		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_command( \"meow\", faulty )" ) == true );
 
-		BOOST_CHECK( manager.trigger_command( "meow", args ) == false );
+		BOOST_CHECK( manager.trigger_command( "meow", args, 888 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		bool result = false;
 
 
-		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
+		BOOST_REQUIRE( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
 		BOOST_REQUIRE( result == true );
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate );
 		bool result = false;
 
-		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );
+		BOOST_REQUIRE( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );
 		BOOST_REQUIRE( result == true );
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );

@@ -137,9 +137,10 @@ class Event {
 		/** Trigger command.
 		 * @param command Command.
 		 * @param args Arguments.
+		 * @param sender Sender client ID.
 		 * @param state Lua state.
 		 */
-		void trigger_command( const std::string& command, const std::vector<sf::String>& args, Diluculum::LuaState& state );
+		void trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender, Diluculum::LuaState& state );
 
 	private:
 		typedef std::vector<Diluculum::LuaFunction> FunctionArray;

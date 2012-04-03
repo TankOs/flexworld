@@ -11,11 +11,27 @@ ScrolledWindow {
 }
 
 Notebook {
-	BackgroundColor: #00000033;
-	BorderColor: #00000000;
+	BackgroundColor: #00000044;
+	BackgroundColorDark: #00000000;
+	BackgroundColorLight: #ffffff44;
+	BorderColor: #00000044;
 }
 
 Entry {
-	BackgroundColor: #00000099;
-	BorderColor: #00000099;
+	BackgroundColor: #00000044;
+	BorderColor: #00000000;
+}
+
+Button {
+	BorderColor:#00000000;
+	BackgroundColor: #00000044;
+	Padding: 8;
+}
+
+Button:PRELIGHT {
+	BackgroundColor: #ffffff22;
+}
+
+Button.small {
+	Padding: 2;
 }

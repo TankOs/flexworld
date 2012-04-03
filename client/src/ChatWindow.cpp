@@ -9,21 +9,34 @@ ChatWindow::Ptr ChatWindow::Create() {
 	ptr->m_notebook = sfg::Notebook::Create();
 	ptr->m_input_entry = sfg::Entry::Create();
 	ptr->m_send_button = sfg::Button::Create( "Send" );
+	ptr->m_clear_button = sfg::Button::Create( "Clear" );
+	ptr->m_join_button = sfg::Button::Create( "Join" );
+	ptr->m_close_button = sfg::Button::Create( "Close" );
 
 	// Layout.
 	sfg::Box::Ptr send_box = sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f );
 	send_box->Pack( ptr->m_input_entry, true, true );
 	send_box->Pack( ptr->m_send_button, false, true );
 
+	sfg::Box::Ptr buttons_vbox = sfg::Box::Create( sfg::Box::VERTICAL, 5.0f );
+	buttons_vbox->Pack( ptr->m_close_button, false, true );
+	buttons_vbox->Pack( ptr->m_join_button, false, true );
+	buttons_vbox->Pack( ptr->m_clear_button, false, true );
+
 	sfg::Box::Ptr vbox = sfg::Box::Create( sfg::Box::VERTICAL, 5.0f );
 	vbox->Pack( ptr->m_notebook, true, true );
 	vbox->Pack( send_box, false, true );
 
-	ptr->Add( vbox );
+	sfg::Box::Ptr hbox = sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f );
+	hbox->Pack( vbox, true, true );
+	hbox->Pack( buttons_vbox, false, true );
+
+	ptr->Add( hbox );
 
 	// Signals.
 	ptr->m_send_button->OnClick.Connect( &ChatWindow::OnSendButtonClick, &(*ptr) );
 	ptr->m_input_entry->OnKeyPress.Connect( &ChatWindow::OnInputEntryKeyPress, &(*ptr) );
+	ptr->m_close_button->OnClick.Connect( &ChatWindow::OnCloseButtonClick, &(*ptr) );
 
 	// Init.
 	ptr->SetTitle( L"Chat" );
@@ -57,7 +70,16 @@ void ChatWindow::CreateChannel( const sf::String& name ) {
 
 	m_channels.push_back( chan );
 
-	m_notebook->AppendPage( chan.scrolled_window, sfg::Label::Create( name ) );
+	// Tab widget.
+	sfg::Label::Ptr tab_label = sfg::Label::Create( name );
+	sfg::Button::Ptr close_button = sfg::Button::Create( "X" );
+	close_button->SetClass( "small" );
+
+	sfg::Box::Ptr tab_box = sfg::Box::Create( sfg::Box::HORIZONTAL, 5.0f );
+	tab_box->Pack( tab_label, true, true );
+	tab_box->Pack( close_button, false, false );
+
+	m_notebook->AppendPage( chan.scrolled_window, tab_box );
 
 	Refresh();
 }
@@ -158,13 +180,18 @@ void ChatWindow::AddMessage( const sf::String& message, const sf::String& channe
 	alignment->Add( label );
 
 	chan_ptr->vbox->Pack( alignment, false, true );
+	chan_ptr->scrolled_window->Refresh();
 
 	// Scroll down.
 	sfg::Adjustment::Ptr new_adjustment = sfg::Adjustment::Create();
 	*new_adjustment = *chan_ptr->scrolled_window->GetVerticalAdjustment();
 
-	new_adjustment->IncrementPage();
+	new_adjustment->SetValue( new_adjustment->GetUpper() + 9999 );
 
+	// Set new adjustment for scrolled window AND viewport(!).
 	chan_ptr->scrolled_window->SetVerticalAdjustment( new_adjustment );
-	chan_ptr->scrolled_window->Invalidate();
+}
+
+void ChatWindow::OnCloseButtonClick() {
+	OnCloseClick();
 }

@@ -60,10 +60,11 @@ class ScriptManager {
 		/** Trigger command.
 		 * @param command Command (must be non-empty and valid).
 		 * @param args Arguments.
+		 * @param sender Sender client ID.
 		 * @return false if error occured.
 		 * @see is_valid_command
 		 */
-		bool trigger_command( const std::string& command, const std::vector<sf::String>& args );
+		bool trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender );
 
 		/** Trigger connect system event.
 		 * @param client_id Client ID.

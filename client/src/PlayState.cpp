@@ -61,7 +61,6 @@ void PlayState::init() {
 	m_chat_window->SetId( "chat" );
 
 	m_desktop.Add( m_chat_window );
-	m_chat_window->Show( false );
 
 	m_chat_window->SetRequisition( sf::Vector2f( static_cast<float>( get_render_target().getSize().x ) / 2.0f, 200 ) );
 	m_chat_window->SetPosition(
@@ -72,9 +71,26 @@ void PlayState::init() {
 	);
 
 	m_chat_window->OnMessageReady.Connect( &PlayState::on_chat_message_ready, this );
+	m_chat_window->OnCloseClick.Connect( &PlayState::on_chat_close_click, this );
 
 	// XXX Create some test channels.
 	m_chat_window->CreateChannel( "Broadcast" );
+
+	// Fix notebook bug.
+	m_chat_window->SetAllocation(
+		sf::FloatRect(
+			m_chat_window->GetAllocation().left,
+			m_chat_window->GetAllocation().top,
+			m_chat_window->GetAllocation().width + 1,
+			m_chat_window->GetAllocation().height
+		)
+	);
+
+	m_chat_window->AddMessage( "*** Press F12 to save a screenshot.", "Status" );
+	m_chat_window->AddMessage( "*** Press F3 for wireframe mode.", "Status" );
+	m_chat_window->AddMessage( "*** FlexWorld (c) Stefan Schindler, do not distribute.", "Status" );
+
+	m_chat_window->Show( false );
 
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
@@ -248,6 +264,15 @@ void PlayState::handle_event( const sf::Event& event ) {
 						if( m_chat_window->IsVisible() ) {
 							skip_next_text_event = true;
 							m_chat_window->FocusEntry();
+
+							// Move mouse cursor to window to keep distances low. ;-)
+							sf::Mouse::setPosition(
+								sf::Vector2i(
+									static_cast<int>( m_chat_window->GetAllocation().left ) + static_cast<int>( m_chat_window->GetAllocation().width / 2 ),
+									static_cast<int>( m_chat_window->GetAllocation().top ) + static_cast<int>( m_chat_window->GetAllocation().height / 2 )
+								),
+								get_render_target()
+							);
 						}
 					}
 				}
@@ -761,4 +786,9 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 	message += msg.get_message();
 
 	m_chat_window->AddMessage( message, msg.get_channel() );
+}
+
+void PlayState::on_chat_close_click() {
+	m_chat_window->Show( false );
+	update_gui_mode();
 }

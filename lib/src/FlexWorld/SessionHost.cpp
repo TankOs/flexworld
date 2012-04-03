@@ -582,7 +582,7 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 
 		// Give to script manager.
 		if( command.empty() == false ) {
-			m_script_manager->trigger_command( command, args );
+			m_script_manager->trigger_command( command, args, conn_id );
 		}
 	}
 	else {
