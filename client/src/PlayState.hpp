@@ -1,7 +1,6 @@
 #pragma once
 
 #include "State.hpp"
-#include "Console.hpp"
 #include "ChatWindow.hpp"
 #include "Sky.hpp"
 #include "Camera.hpp"
@@ -45,7 +44,6 @@ class PlayState : public State, flex::Client::Handler {
 		void stop_and_wait_for_chunk_preparation_thread();
 		void prepare_chunks();
 
-		void on_console_message_add();
 		void on_chat_message_ready();
 		void update_latest_messages();
 
@@ -57,7 +55,6 @@ class PlayState : public State, flex::Client::Handler {
 
 		// UI.
 		sfg::Desktop m_desktop;
-		Console::Ptr m_console;
 		ChatWindow::Ptr m_chat_window;
 
 		bool m_gui_mode;

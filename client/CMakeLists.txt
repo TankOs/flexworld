@@ -14,7 +14,6 @@ set(
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
 	${INC_DIR}/ConnectState.hpp
-	${INC_DIR}/Console.hpp
 	${INC_DIR}/Controls.hpp
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
@@ -35,7 +34,6 @@ set(
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
 	${SRC_DIR}/ConnectState.cpp
-	${SRC_DIR}/Console.cpp
 	${SRC_DIR}/Controls.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/KeyNames.cpp

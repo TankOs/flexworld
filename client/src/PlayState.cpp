@@ -56,23 +56,6 @@ void PlayState::init() {
 	dynamic_cast<sfg::eng::BREW*>( &sfg::Context::Get().GetEngine() )->ResetProperties();
 	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/game.theme" ) );
 
-	// Setup console.
-	m_console = Console::Create();
-	m_desktop.Add( m_console );
-
-	m_console->SetAllocation(
-		sf::FloatRect(
-			0,
-			0,
-			static_cast<float>( get_render_target().getSize().x ),
-			static_cast<float>( get_render_target().getSize().y ) * .3f
-		)
-	);
-
-	m_console->OnMessageAdd.Connect( &PlayState::on_console_message_add, this );
-	//m_console->add_message( "Press F11 to show/hide the console." );
-	m_console->Show( false );
-
 	// Setup chat window.
 	m_chat_window = ChatWindow::Create();
 	m_chat_window->SetId( "chat" );
@@ -211,16 +194,12 @@ void PlayState::handle_event( const sf::Event& event ) {
 	}
 
 	if( event.type == sf::Event::KeyPressed ) {
-		if( event.key.code == sf::Keyboard::F11 ) {
-			m_console->Show( !m_console->IsVisible() );
-			give_gui = false;
-		}
-		else if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
+		if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
 			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
-			m_console->add_message( L"Screenshot saved." );
+			// TODO Show message in chat window.
 		}
 	}
 
@@ -507,12 +486,9 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 
 	std::stringstream sstr;
 	sstr << "Requested " << num_requests << " chunks.";
-	//m_console->add_message( sstr.str() );
 }
 
 void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID /*conn_id*/ ) {
-	//m_console->add_message( sf::String( "Beamed to planet " ) + msg.get_planet_name() + sf::String( "." ) );
-
 	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
 	m_my_entity_received = false;
 
@@ -527,7 +503,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	get_shared().lock_facility->lock_world( false );
 
 	if( !planet ) {
-		//m_console->add_message( "Host beamed us to an invalid planet." );
 		return;
 	}
 
@@ -545,7 +520,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	flex::Chunk::Vector block_pos;
 
 	if( !planet->transform( msg.get_position(), chunk_pos, block_pos ) ) {
-		//m_console->add_message( "Host gave invalid beam position." );
 		get_shared().lock_facility->lock_planet( *planet, false );
 		return;
 	}
@@ -570,16 +544,6 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_scene_graph->attach( m_planet_drawable );
 
 	get_shared().lock_facility->lock_planet( *planet, false );
-
-	// XXX 
-	std::stringstream debug_msg;
-	debug_msg
-		<< "New cuboid: "
-		<< m_view_cuboid.x << ", " << m_view_cuboid.y << ", " << m_view_cuboid.z
-		<< " "
-		<< m_view_cuboid.width << " * " << m_view_cuboid.height << " * " << m_view_cuboid.depth
-	;
-	//m_console->add_message( debug_msg.str() );
 
 	// Request chunks.
 	request_chunks( m_view_cuboid );
@@ -707,16 +671,6 @@ void PlayState::update_latest_messages() {
 	}
 }
 
-void PlayState::on_console_message_add() {
-	m_message_timer.restart();
-
-	const sf::String& string = m_console->get_message( m_console->get_num_messages() - 1 );
-	sf::Text text( string, sf::Font::getDefaultFont(), 12 );
-
-	m_latest_messages.push_back( text );
-	update_latest_messages();
-}
-
 void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 #if !defined( NDEBUG )
 	std::cout
@@ -738,10 +692,7 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 void PlayState::update_gui_mode() {
 	bool new_mode = m_gui_mode;
 
-	if(
-		m_console->IsVisible() ||
-		m_chat_window->IsVisible()
-	) {
+	if( m_chat_window->IsVisible() ) {
 		new_mode = true;
 	}
 	else {
@@ -770,7 +721,6 @@ void PlayState::enable_gui_mode( bool enable ) {
 	}
 	else {
 		// Hide windows.
-		m_console->Show( false );
 		m_chat_window->Show( false );
 
 		reset_mouse();
