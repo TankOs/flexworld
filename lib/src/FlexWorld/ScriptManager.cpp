@@ -91,4 +91,8 @@ void ScriptManager::trigger_chat_system_event( const sf::String& message, const 
 	m_event_module->trigger_chat_system_event( message, channel, sender, *m_state );
 }
 
+void ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
+	m_event_module->trigger_connect_system_event( client_id, *m_state );
+}
+
 }

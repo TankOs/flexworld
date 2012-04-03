@@ -264,6 +264,9 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 	msg::LoginOK ok_msg;
 	ok_msg.set_entity_id( entity_id );
 	m_server->send_message( ok_msg, conn_id );
+
+	// Trigger event.
+	m_script_manager.trigger_connect_system_event( conn_id );
 }
 
 void SessionHost::set_auth_mode( AuthMode mode ) {

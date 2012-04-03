@@ -61,6 +61,11 @@ class ScriptManager {
 		 */
 		void trigger_command( const std::string& command, const std::vector<sf::String>& args );
 
+		/** Trigger connect system event.
+		 * @param client_id Client ID.
+		 */
+		void trigger_connect_system_event( uint16_t client_id );
+
 		/** Trigger chat system event.
 		 * @param message Message.
 		 * @param channel Channel.

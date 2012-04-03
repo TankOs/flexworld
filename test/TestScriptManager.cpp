@@ -86,8 +86,22 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	// Trigger chat system event.
 	{
 		ScriptManager manager;
+		bool result = false;
 
-		BOOST_REQUIRE_NO_THROW( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
+		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
+		BOOST_REQUIRE( result == true );
+
 		BOOST_CHECK_NO_THROW( manager.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) );
+	}
+
+	// Trigger connect system event.
+	{
+		ScriptManager manager;
+		bool result = false;
+
+		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );
+		BOOST_REQUIRE( result == true );
+
+		BOOST_CHECK_NO_THROW( manager.trigger_connect_system_event( 1337 ) );
 	}
 }
