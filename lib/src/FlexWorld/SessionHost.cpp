@@ -148,13 +148,6 @@ bool SessionHost::is_running() const {
 void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
 	Log::Logger( Log::INFO ) << "Client connected from " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
 
-	// Check limit.
-	if( m_server->get_num_peers() > m_player_limit ) {
-		Log::Logger( Log::WARNING ) << "Server full, disconnecting " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
-		m_server->disconnect_client( conn_id );
-		return;
-	}
-
 	// Prepare player info.
 	if( conn_id >= m_player_infos.size() ) {
 		m_player_infos.resize( conn_id + 1 );
@@ -162,6 +155,13 @@ void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
 
 	assert( m_player_infos[conn_id].connected == false );
 	m_player_infos[conn_id].connected = true;
+
+	// Check limit (important: player info must be created before, because handle_disconnect checks it).
+	if( m_server->get_num_peers() > m_player_limit ) {
+		Log::Logger( Log::WARNING ) << "Server full, disconnecting " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
+		m_server->disconnect_client( conn_id );
+		return;
+	}
 
 	// Client connected, send server info.
 	msg::ServerInfo msg;
@@ -540,8 +540,6 @@ void SessionHost::rehash_scripts() {
 
 void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionID conn_id ) {
 	assert( conn_id < m_player_infos.size() );
-
-	const PlayerInfo& info = m_player_infos[conn_id];
 
 	// Check if the sent message is a command.
 	const sf::String& text = chat_msg.get_message();
