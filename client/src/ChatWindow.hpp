@@ -5,6 +5,7 @@
 #include <SFGUI/Entry.hpp>
 #include <SFGUI/Button.hpp>
 #include <SFGUI/ScrolledWindow.hpp>
+#include <SFGUI/Box.hpp>
 #include <SFGUI/Notebook.hpp>
 
 /** Window for providing chat UI with multiple channels.
@@ -23,7 +24,7 @@ class ChatWindow : public sfg::Window {
 		 * Skipped if channel does already exist.
 		 * @param name Name.
 		 */
-		void CreateChannel( const std::string& name );
+		void CreateChannel( const sf::String& name );
 
 		/** Focus entry of active page.
 		 */
@@ -48,26 +49,34 @@ class ChatWindow : public sfg::Window {
 		 * @param index Channel index (must be valid).
 		 * @return Channel name.
 		 */
-		const std::string& GetChannelName( std::size_t index ) const;
+		const sf::String& GetChannelName( std::size_t index ) const;
 
 		/** Get active channel.
 		 * @return Channel index.
 		 */
 		std::size_t GetActiveChannel() const;
 
+		/** Add message.
+		 * Channel will be automagically created if it doesn't exist.
+		 * @param message Message.
+		 * @param channel Channel.
+		 */
+		void AddMessage( const sf::String& message, const sf::String& channel );
+
 		sfg::Signal OnMessageReady; ///< Fired when user wants to send a message.
 
 	private:
 		struct Channel {
-			std::string name;
+			sf::String name;
 			sfg::ScrolledWindow::Ptr scrolled_window;
+			sfg::Box::Ptr vbox;
 		};
 
 		typedef std::vector<Channel> ChannelArray;
 
 		ChatWindow();
 
-		Channel* FindChannel( const std::string& name );
+		Channel* FindChannel( const sf::String& name );
 
 		void OnSendButtonClick();
 		void OnInputEntryKeyPress();

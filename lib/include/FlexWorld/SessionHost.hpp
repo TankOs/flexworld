@@ -138,6 +138,7 @@ class SessionHost :
 		// Gate funcs.
 		const std::string& get_client_username( uint16_t client_id ) const;
 		std::size_t get_num_connected_clients() const;
+		void broadcast_chat_message( const sf::String& message, const sf::String& channel, const sf::String& sender );
 
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;

@@ -728,6 +728,11 @@ void PlayState::enable_gui_mode( bool enable ) {
 }
 
 void PlayState::reset_mouse() {
+	// Do nothing if window not focused.
+	if( !m_has_focus ) {
+		return;
+	}
+
 	sf::Mouse::setPosition(
 		sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 ),
 		get_render_target()
@@ -743,4 +748,14 @@ void PlayState::on_chat_message_ready() {
 	msg.set_sender( "-" );
 
 	get_shared().client->send_message( msg );
+}
+
+void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID conn_id ) {
+	sf::String message = "<";
+
+	message += msg.get_sender();
+	message += "> ";
+	message += msg.get_message();
+
+	m_chat_window->AddMessage( message, msg.get_channel() );
 }

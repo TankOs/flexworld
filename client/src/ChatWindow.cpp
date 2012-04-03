@@ -37,7 +37,7 @@ ChatWindow::ChatWindow() :
 {
 }
 
-void ChatWindow::CreateChannel( const std::string& name ) {
+void ChatWindow::CreateChannel( const sf::String& name ) {
 	if( FindChannel( name ) != nullptr ) {
 		return;
 	}
@@ -47,6 +47,10 @@ void ChatWindow::CreateChannel( const std::string& name ) {
 	// Widgets.
 	chan.name = name;
 	chan.scrolled_window = sfg::ScrolledWindow::Create();
+	chan.vbox = sfg::Box::Create( sfg::Box::VERTICAL, 5.f );
+
+	// Layout.
+	chan.scrolled_window->AddWithViewport( chan.vbox );
 
 	// Init.
 	chan.scrolled_window->SetScrollbarPolicy( sfg::ScrolledWindow::HORIZONTAL_AUTOMATIC | sfg::ScrolledWindow::VERTICAL_AUTOMATIC );
@@ -58,7 +62,7 @@ void ChatWindow::CreateChannel( const std::string& name ) {
 	Refresh();
 }
 
-ChatWindow::Channel* ChatWindow::FindChannel( const std::string& name ) {
+ChatWindow::Channel* ChatWindow::FindChannel( const sf::String& name ) {
 	for( std::size_t idx = 0; idx < m_channels.size(); ++idx ) {
 		if( m_channels[idx].name == name ) {
 			return &m_channels[idx];
@@ -124,7 +128,7 @@ std::size_t ChatWindow::GetNumChannels() const {
 	return m_channels.size();
 }
 
-const std::string& ChatWindow::GetChannelName( std::size_t index ) const {
+const sf::String& ChatWindow::GetChannelName( std::size_t index ) const {
 	assert( index < m_channels.size() );
 
 	return m_channels[index].name;
@@ -132,4 +136,21 @@ const std::string& ChatWindow::GetChannelName( std::size_t index ) const {
 
 std::size_t ChatWindow::GetActiveChannel() const {
 	return static_cast<std::size_t>( m_notebook->GetCurrentPage() );
+}
+
+void ChatWindow::AddMessage( const sf::String& message, const sf::String& channel ) {
+	// Find channel.
+	Channel* chan_ptr = FindChannel( channel );
+
+	// Create if it doesn't exist.
+	if( chan_ptr == nullptr ) {
+		CreateChannel( channel );
+	}
+
+	chan_ptr = FindChannel( channel );
+	assert( chan_ptr != nullptr );
+
+	// Add message.
+	sfg::Label::Ptr label = sfg::Label::Create( message );
+	chan_ptr->vbox->Pack( label, false, true );
 }

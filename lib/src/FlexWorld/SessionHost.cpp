@@ -610,4 +610,24 @@ std::size_t SessionHost::get_num_connected_clients() const {
 	return m_server->get_num_peers();
 }
 
+void SessionHost::broadcast_chat_message( const sf::String& message, const sf::String& channel, const sf::String& sender ) {
+	assert( message.getSize() > 0 && message.getSize() <= 0xffff );
+	assert( channel.getSize() > 0 && channel.getSize() <= 0xff );
+	assert( sender.getSize() > 0 && sender.getSize() <= 0xff );
+
+	// Construct chat message.
+	msg::Chat chat_msg;
+
+	chat_msg.set_message( message );
+	chat_msg.set_channel( channel );
+	chat_msg.set_sender( sender );
+
+	// Deliver to all connected clients.
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected ) {
+			m_server->send_message( chat_msg, static_cast<Server::ConnectionID>( client_idx ) );
+		}
+	}
+}
+
 }

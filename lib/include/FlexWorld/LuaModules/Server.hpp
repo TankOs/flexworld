@@ -56,6 +56,12 @@ class Server {
 		 */
 		Diluculum::LuaValueList get_num_connected_clients( const Diluculum::LuaValueList& args ) const;
 
+		/** Broadcast a chat message.
+		 * @param args message:string, channel:string, sender:string
+		 * @return nil
+		 */
+		Diluculum::LuaValueList broadcast_chat_message( const Diluculum::LuaValueList& args );
+
 	private:
 		ServerGate* m_gate;
 };

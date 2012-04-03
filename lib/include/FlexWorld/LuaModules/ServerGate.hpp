@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/System/String.hpp>
 #include <string>
 #include <cstdint>
 
@@ -26,6 +27,14 @@ class ServerGate {
 		 * @throws std::runtime_error in case of any error.
 		 */
 		virtual std::size_t get_num_connected_clients() const = 0;
+
+		/** Broadcast chat message.
+		 * @param message Message.
+		 * @param channel Channel.
+		 * @param sender Sender.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual void broadcast_chat_message( const sf::String& message, const sf::String& channel, const sf::String& sender ) = 0;
 
 	private:
 };
