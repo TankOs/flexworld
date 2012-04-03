@@ -103,6 +103,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		// Setup host.
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
+		host.set_ip( "127.0.0.1" );
+		host.set_port( 2593 );
 		host.add_search_path( DATA_DIRECTORY + std::string( "/packages" ) );
 		host.set_auth_mode( SessionHost::OPEN_AUTH );
 
