@@ -308,8 +308,7 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	// Client is ready, send him to the construct planet.
 	m_lock_facility.lock_planet( *construct, false );
 
-	// Beam.
-	beam_player( conn_id, "construct", sf::Vector3f( 0, 0, 0 ), 0 );
+	beam_player( conn_id, "construct", sf::Vector3f( 40, 2.75f, 40 ), 200 );
 }
 
 void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
@@ -330,7 +329,8 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 
 	// Update entity.
 	info.entity->set_position( position );
-	// TODO Angle/heading
+	info.entity->set_rotation( sf::Vector3f( 0, heading, 0 ) );
+
 	// TODO Notify players on old planet of entity teleport.
 
 	// Link entity to new planet.
@@ -383,7 +383,7 @@ void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& 
 
 		msg::CreateEntity create_msg;
 		create_msg.set_position( entity->get_position() );
-		create_msg.set_heading( 123.0f ); // TODO
+		create_msg.set_heading( entity->get_rotation().y );
 		create_msg.set_class( entity->get_class().get_id().get() );
 
 		m_server->send_message( create_msg, conn_id );

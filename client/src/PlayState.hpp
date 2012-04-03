@@ -105,6 +105,8 @@ class PlayState : public State, flex::Client::Handler {
 		sf::Vector3f m_velocity;
 
 		bool m_update_velocity;
+		bool m_update_eyepoint;
+
 		bool m_walk_forward;
 		bool m_walk_backward;
 		bool m_strafe_left;

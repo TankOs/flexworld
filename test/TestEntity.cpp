@@ -21,6 +21,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( ent.get_name() == sword_cls.get_name() );
 		BOOST_CHECK( ent.get_amount() == 1 );
 		BOOST_CHECK( ent.get_position() == sf::Vector3f( 0, 0, 0 ) );
+		BOOST_CHECK( ent.get_rotation() == sf::Vector3f( 0, 0, 0 ) );
 	}
 
 	// Basic properties.
@@ -30,10 +31,12 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		ent.set_id( 123 );
 		ent.set_amount( 333 );
 		ent.set_position( sf::Vector3f( 4, 5, 6 ) );
+		ent.set_rotation( sf::Vector3f( 7, 8, 9 ) );
 
 		BOOST_CHECK( ent.get_id() == 123 );
 		BOOST_CHECK( ent.get_amount() == 333 );
 		BOOST_CHECK( ent.get_position() == sf::Vector3f( 4, 5, 6 ) );
+		BOOST_CHECK( ent.get_rotation() == sf::Vector3f( 7, 8, 9 ) );
 	}
 
 	// Custom/class name.
@@ -56,6 +59,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		ent0.set_id( 123 );
 		ent0.set_amount( 333 );
 		ent0.set_position( sf::Vector3f( 4, 5, 6 ) );
+		ent0.set_rotation( sf::Vector3f( 7, 8, 9 ) );
 		ent0.set_name( "CustomName" );
 
 		Entity ent1( ent0 );
@@ -64,6 +68,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( ent0.get_name() == ent1.get_name() );
 		BOOST_CHECK( ent0.get_amount() == ent1.get_amount() );
 		BOOST_CHECK( ent0.get_position() == ent1.get_position() );
+		BOOST_CHECK( ent0.get_rotation() == ent1.get_rotation() );
 	}
 
 	// Assignment operator.
@@ -73,6 +78,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		ent0.set_id( 123 );
 		ent0.set_amount( 333 );
 		ent0.set_position( sf::Vector3f( 4, 5, 6 ) );
+		ent0.set_rotation( sf::Vector3f( 7, 8, 9 ) );
 		ent0.set_name( "CustomName" );
 
 		Entity ent1( FlexID::make( "foo/bar" ) );
@@ -83,5 +89,6 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( ent0.get_name() == ent1.get_name() );
 		BOOST_CHECK( ent0.get_amount() == ent1.get_amount() );
 		BOOST_CHECK( ent0.get_position() == ent1.get_position() );
+		BOOST_CHECK( ent0.get_rotation() == ent1.get_rotation() );
 	}
 }

@@ -7,6 +7,7 @@ namespace flex {
 
 Entity::Entity( const Class& cls ) :
 	m_position( 0, 0, 0 ),
+	m_rotation( 0, 0, 0 ),
 	m_id( 0 ),
 	m_amount( 1 ),
 	m_class( &cls )
@@ -15,6 +16,7 @@ Entity::Entity( const Class& cls ) :
 
 Entity::Entity( const Entity& other ) :
 	m_position( other.m_position ),
+	m_rotation( other.m_rotation ),
 	m_id( other.m_id ),
 	m_amount( other.m_amount ),
 	m_class( other.m_class )
@@ -67,6 +69,7 @@ void Entity::set_position( const sf::Vector3f& position ) {
 
 Entity& Entity::operator=( const Entity& other ) {
 	m_position = other.m_position;
+	m_rotation = other.m_rotation;
 	m_id = other.m_id;
 	m_amount = other.m_amount;
 	m_class = other.m_class;
@@ -79,6 +82,14 @@ Entity& Entity::operator=( const Entity& other ) {
 	}
 
 	return *this;
+}
+
+void Entity::set_rotation( const sf::Vector3f& rotation ) {
+	m_rotation = rotation;
+}
+
+const sf::Vector3f& Entity::get_rotation() const {
+	return m_rotation;
 }
 
 }

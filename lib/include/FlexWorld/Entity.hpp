@@ -87,8 +87,19 @@ class Entity {
 		 */
 		void set_position( const sf::Vector3f& position );
 
+		/** Set rotation.
+		 * @param rotation Rotation.
+		 */
+		void set_rotation( const sf::Vector3f& rotation );
+
+		/** Get rotation.
+		 * @return Rotation.
+		 */
+		const sf::Vector3f& get_rotation() const;
+
 	private:
 		sf::Vector3f m_position;
+		sf::Vector3f m_rotation;
 		std::unique_ptr<std::string> m_name;
 		ID m_id;
 		AmountType m_amount;

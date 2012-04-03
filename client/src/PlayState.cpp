@@ -21,12 +21,14 @@ static const float MESSAGE_SPACING = 5.f;
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
 	m_desktop( target ),
+	m_gui_mode( false ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
+	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
 	m_strafe_left( false ),
@@ -144,6 +146,9 @@ void PlayState::init() {
 
 	// Setup resource manager.
 	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+
+	// Reset mouse so that the initial view direction is straight.
+	reset_mouse();
 }
 
 void PlayState::cleanup() {
@@ -292,8 +297,6 @@ void PlayState::update( const sf::Time& delta ) {
 
 	// Process mouse/keyboard input only if window has the focus.
 	if( m_has_focus ) {
-		bool eyepoint_changed = false;
-
 		// Process mouse only if not in GUI mode.
 		if( !m_gui_mode ) {
 			// Get mouse movement.
@@ -318,7 +321,7 @@ void PlayState::update( const sf::Time& delta ) {
 					)
 				);
 
-				eyepoint_changed = true;
+				m_update_eyepoint = true;
 			}
 		}
 
@@ -341,16 +344,16 @@ void PlayState::update( const sf::Time& delta ) {
 
 		if( m_velocity.z != 0 ) {
 			m_camera.walk( (m_velocity.z * 4.0f) * delta.asSeconds() );
-			eyepoint_changed = true;
+			m_update_eyepoint = true;
 		}
 
 		if( m_velocity.x != 0 ) {
 			m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
-			eyepoint_changed = true;
+			m_update_eyepoint = true;
 		}
 
 		// If eyepoint changed update transform of scene graph.
-		if( eyepoint_changed ) {
+		if( m_update_eyepoint ) {
 			/*m_camera_node->set_local_transform(
 				sg::Transform(
 					sf::Vector3f( 0, 0, 0 ),
@@ -381,6 +384,8 @@ void PlayState::update( const sf::Time& delta ) {
 					sf::Vector3f( 1, 1, 1 )
 				)
 			);
+
+			m_update_eyepoint = false;
 		}
 	}
 
@@ -717,9 +722,17 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 	std::cout
 		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
 		<< msg.get_position().x << ", " << msg.get_position().y << ", " << msg.get_position().z
-		<< " " << msg.get_heading() << "°" << std::endl
+		<< " (" << msg.get_heading() << "°)" << std::endl
 	;
 #endif
+
+	// If own entity set position.
+	if( msg.get_id() == get_shared().entity_id ) {
+		m_camera.set_position( msg.get_position() );
+		m_camera.set_rotation( sf::Vector3f( 0, msg.get_heading(), 0 ) );
+
+		m_update_eyepoint = true;
+	}
 }
 
 void PlayState::update_gui_mode() {
