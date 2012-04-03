@@ -46,6 +46,7 @@ set(
 	${INC_DIR}/FlexWorld/Messages/Chunk.hpp
 	${INC_DIR}/FlexWorld/Messages/ChunkUnchanged.hpp
 	${INC_DIR}/FlexWorld/Messages/CreateEntity.hpp
+	${INC_DIR}/FlexWorld/Messages/DestroyBlock.hpp
 	${INC_DIR}/FlexWorld/Messages/LoginOK.hpp
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
 	${INC_DIR}/FlexWorld/Messages/Ready.hpp
@@ -101,6 +102,7 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/Chunk.cpp
 	${SRC_DIR}/FlexWorld/Messages/ChunkUnchanged.cpp
 	${SRC_DIR}/FlexWorld/Messages/CreateEntity.cpp
+	${SRC_DIR}/FlexWorld/Messages/DestroyBlock.cpp
 	${SRC_DIR}/FlexWorld/Messages/LoginOK.cpp
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp
 	${SRC_DIR}/FlexWorld/Messages/Ready.cpp

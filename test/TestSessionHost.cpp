@@ -7,6 +7,7 @@
 #include <FlexWorld/GameMode.hpp>
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Messages/OpenLogin.hpp>
+#include <FlexWorld/Log.hpp>
 
 #include <SFML/System/Clock.hpp>
 #include <boost/asio.hpp>
@@ -14,6 +15,8 @@
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	using namespace flex;
+
+	Log::Logger.set_min_level( Log::FATAL );
 
 	GameMode game_mode;
 	game_mode.set_default_entity_class_id( FlexID::make( "test/grass" ) );
@@ -78,6 +81,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 		// Verify scripts got loaded.
 		BOOST_CHECK( host.get_num_loaded_scripts() == 2 );
 	}
+
+	Log::Logger.set_min_level( Log::DEBUG );
 }
 
 
@@ -94,12 +99,19 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 			++m_num_chat_messages_received;
 		}
 
+		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_disconnect( flex::Server::ConnectionID /*conn_id*/ ) {}
+
 		std::size_t m_num_chat_messages_received;
 		flex::msg::Chat m_last_chat_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 	using namespace flex;
+
+	Log::Logger.set_min_level( Log::FATAL );
 
 	boost::asio::io_service io_service;
 	GameMode mode;
@@ -226,4 +238,6 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		host.stop();
 		io_service.run();
 	}
+
+	Log::Logger.set_min_level( Log::DEBUG );
 }

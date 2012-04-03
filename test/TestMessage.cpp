@@ -11,6 +11,7 @@
 #include <FlexWorld/Messages/ChunkUnchanged.hpp>
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
+#include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1267,6 +1268,62 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	// Deserialize with too less data.
 	{
 		msg::Chat msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestDestroyBlockMessage ) {
+	using namespace flex;
+
+	static const msg::DestroyBlock::BlockPosition BLOCK_POS( 10, 20, 30 );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &BLOCK_POS ), reinterpret_cast<const char*>( &BLOCK_POS ) + sizeof( BLOCK_POS ) );
+
+	// Initial state.
+	{
+		msg::DestroyBlock msg;
+
+		BOOST_CHECK( msg.get_block_position() == msg::DestroyBlock::BlockPosition( 0, 0, 0 ) );
+	}
+
+	// Basic properties.
+	{
+		msg::DestroyBlock msg;
+		msg.set_block_position( BLOCK_POS );
+
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+	}
+
+	// Serialize.
+	{
+		msg::DestroyBlock msg;
+		msg.set_block_position( BLOCK_POS );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::DestroyBlock msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::DestroyBlock msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
