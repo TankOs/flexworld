@@ -78,9 +78,20 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		args.push_back( sf::String( L"hello" ) );
 		args.push_back( sf::String( L"world" ) );
 
-		manager.trigger_command( "test", args );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+		BOOST_CHECK( manager.trigger_command( "test", args ) == true );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
 
 		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:get_value( \"yo\" ) == \"halloworld\" )" ) );
+
+		// Error handling.
+		manager.clear();
+
+		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_command( \"meow\", faulty )" ) == true );
+
+		BOOST_CHECK( manager.trigger_command( "meow", args ) == false );
+		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 
 	// Trigger chat system event.
@@ -88,10 +99,22 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager;
 		bool result = false;
 
+
 		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
 		BOOST_REQUIRE( result == true );
 
-		BOOST_CHECK_NO_THROW( manager.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+		BOOST_CHECK( manager.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) == true );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+
+		// Error handling.
+		manager.clear();
+
+		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_system_event( flex.Event.System.CHAT, faulty )" ) == true );
+
+		BOOST_CHECK( manager.trigger_chat_system_event( sf::String(), sf::String(), 0 ) == false );
+		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 
 	// Trigger connect system event.
@@ -102,6 +125,17 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );
 		BOOST_REQUIRE( result == true );
 
-		BOOST_CHECK_NO_THROW( manager.trigger_connect_system_event( 1337 ) );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == true );
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+
+		// Error handling.
+		manager.clear();
+
+		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_system_event( flex.Event.System.CONNECT, faulty )" ) == true );
+
+		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == false );
+		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 }

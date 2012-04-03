@@ -1,6 +1,7 @@
 #include <FlexWorld/ScriptManager.hpp>
 #include <FlexWorld/LuaModules/Test.hpp>
 #include <FlexWorld/LuaModules/Event.hpp>
+#include <FlexWorld/Log.hpp>
 
 #include <Diluculum/LuaState.hpp>
 
@@ -83,16 +84,52 @@ const std::string& ScriptManager::get_last_error() const {
 	return m_last_error;
 }
 
-void ScriptManager::trigger_command( const std::string& command, const std::vector<sf::String>& args ) {
-	m_event_module->trigger_command( command, args, *m_state );
+bool ScriptManager::trigger_command( const std::string& command, const std::vector<sf::String>& args ) {
+	m_last_error = "";
+
+	try {
+		m_event_module->trigger_command( command, args, *m_state );
+	}
+	catch( const Diluculum::LuaError& e ) {
+		m_last_error = e.what();
+		Log::Logger( Log::ERR ) << "Command event error: " << m_last_error << Log::endl;
+
+		return false;
+	}
+
+	return true;
 }
 
-void ScriptManager::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender ) {
-	m_event_module->trigger_chat_system_event( message, channel, sender, *m_state );
+bool ScriptManager::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender ) {
+	m_last_error = "";
+
+	try {
+		m_event_module->trigger_chat_system_event( message, channel, sender, *m_state );
+	}
+	catch( const Diluculum::LuaError& e ) {
+		m_last_error = e.what();
+		Log::Logger( Log::ERR ) << "CHAT system event error: " << m_last_error << Log::endl;
+
+		return false;
+	}
+
+	return true;
 }
 
-void ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
-	m_event_module->trigger_connect_system_event( client_id, *m_state );
+bool ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
+	m_last_error = "";
+
+	try {
+		m_event_module->trigger_connect_system_event( client_id, *m_state );
+	}
+	catch( const Diluculum::LuaError& e ) {
+		m_last_error = e.what();
+		Log::Logger( Log::ERR ) << "CONNECT system event error: " << m_last_error << Log::endl;
+
+		return false;
+	}
+
+	return true;
 }
 
 }

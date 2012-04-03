@@ -57,21 +57,24 @@ class ScriptManager {
 		/** Trigger command.
 		 * @param command Command (must be non-empty and valid).
 		 * @param args Arguments.
+		 * @return false if error occured.
 		 * @see is_valid_command
 		 */
-		void trigger_command( const std::string& command, const std::vector<sf::String>& args );
+		bool trigger_command( const std::string& command, const std::vector<sf::String>& args );
 
 		/** Trigger connect system event.
 		 * @param client_id Client ID.
+		 * @return false if error occured.
 		 */
-		void trigger_connect_system_event( uint16_t client_id );
+		bool trigger_connect_system_event( uint16_t client_id );
 
 		/** Trigger chat system event.
 		 * @param message Message.
 		 * @param channel Channel.
 		 * @param sender Sender.
+		 * @return false if error occured.
 		 */
-		void trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
+		bool trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
 
 	private:
 		std::string m_last_error;
