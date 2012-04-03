@@ -6,6 +6,7 @@
 #include <FlexWorld/GameMode.hpp>
 #include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/ScriptManager.hpp>
+#include <FlexWorld/LuaModules/ServerGate.hpp>
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -20,7 +21,11 @@ class World;
  *
  * Represents a gaming session and implements logics, server-side protocol handlers, scripting engine etc.
  */
-class SessionHost : private Server::Handler, public NonCopyable {
+class SessionHost :
+	private Server::Handler,
+	public NonCopyable,
+	public lua::ServerGate
+{
 	public:
 		/** Auth mode.
 		 */
@@ -130,6 +135,9 @@ class SessionHost : private Server::Handler, public NonCopyable {
 		 */
 		std::size_t get_num_loaded_scripts() const;
 
+		// Gate funcs.
+		const std::string& get_client_username( uint16_t client_id ) const;
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 
@@ -149,7 +157,7 @@ class SessionHost : private Server::Handler, public NonCopyable {
 		GameMode m_game_mode;
 		ClassLoader m_class_loader;
 
-		ScriptManager m_script_manager;
+		ScriptManager* m_script_manager;
 		std::size_t m_num_loaded_scripts;
 
 		PlayerInfoVector m_player_infos;

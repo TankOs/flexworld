@@ -5,7 +5,10 @@
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/GameMode.hpp>
+#include <FlexWorld/Client.hpp>
+#include <FlexWorld/Messages/OpenLogin.hpp>
 
+#include <boost/asio.hpp>
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
@@ -73,5 +76,64 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 		// Verify scripts got loaded.
 		BOOST_CHECK( host.get_num_loaded_scripts() == 2 );
+	}
+}
+
+
+class TestSessionHostGateClientHandler : public flex::Client::Handler {
+};
+
+BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
+	using namespace flex;
+
+	boost::asio::io_service io_service;
+	GameMode mode;
+	World world;
+	AccountManager account_manager;
+	LockFacility lock_facility;
+
+	mode.set_default_entity_class_id( FlexID::make( "fw.base.nature/grass" ) );
+	mode.add_package( FlexID::make( "sessionhostscripts" ) );
+
+	// Initial state.
+	{
+		// Setup host.
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		host.add_search_path( DATA_DIRECTORY + std::string( "/packages" ) );
+		host.set_auth_mode( SessionHost::OPEN_AUTH );
+
+		BOOST_REQUIRE( host.start() );
+
+		// get_client_username
+		{
+			TestSessionHostGateClientHandler handler;
+			Client client( io_service, handler );
+
+			client.start( host.get_ip(), host.get_port() );
+
+			// Poll the IO service to process the connection.
+			io_service.poll();
+
+			// Authenticate.
+			msg::OpenLogin ol_msg;
+			ol_msg.set_username( "Tank" );
+			ol_msg.set_password( "h4x0r" );
+
+			client.send_message( ol_msg );
+
+			// Poll IO service.
+			io_service.poll();
+
+			// At this point expected data should be ready.
+			BOOST_CHECK_NO_THROW( host.get_client_username( 0 ) == "Tank" );
+
+			// Check invalid ID.
+			BOOST_CHECK_THROW( host.get_client_username( 1 ), std::runtime_error );
+		}
+
+		// Stop session host.
+		host.stop();
+		io_service.run();
 	}
 }

@@ -55,6 +55,7 @@ Log& Log::operator()( Level level ) {
 		<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_min << ":"
 		<< std::setfill( '0' ) << std::setw( 2 ) << time_s->tm_sec
 		<< "] "
+		<< std::setfill( ' ' ) << std::setw( 11 )
 	;
 
 	if( level == DEBUG ) {

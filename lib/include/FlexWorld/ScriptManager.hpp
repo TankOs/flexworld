@@ -15,6 +15,8 @@ namespace flex {
 namespace lua {
 class Test;
 class Event;
+class Server;
+class ServerGate;
 }
 
 /** Lua script manager.
@@ -22,8 +24,9 @@ class Event;
 class ScriptManager {
 	public:
 		/** Ctor.
+		 * @param server_gate Server gate.
 		 */
-		ScriptManager();
+		ScriptManager( lua::ServerGate& server_gate );
 
 		/** Dtor.
 		 */
@@ -82,6 +85,9 @@ class ScriptManager {
 		Diluculum::LuaState* m_state;
 		lua::Test* m_test_module;
 		lua::Event* m_event_module;
+
+		lua::ServerGate& m_server_gate;
+		lua::Server* m_server_module;
 };
 
 }

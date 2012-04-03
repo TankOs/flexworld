@@ -1,16 +1,19 @@
 #include <FlexWorld/ScriptManager.hpp>
 #include <FlexWorld/LuaModules/Test.hpp>
 #include <FlexWorld/LuaModules/Event.hpp>
+#include <FlexWorld/LuaModules/Server.hpp>
 #include <FlexWorld/Log.hpp>
 
 #include <Diluculum/LuaState.hpp>
 
 namespace flex {
 
-ScriptManager::ScriptManager() :
+ScriptManager::ScriptManager( lua::ServerGate& server_gate ) :
 	m_state( nullptr ),
 	m_test_module( nullptr ),
-	m_event_module( nullptr )
+	m_event_module( nullptr ),
+	m_server_gate( server_gate ),
+	m_server_module( nullptr )
 {
 	// Initialize.
 	clear();
@@ -38,13 +41,16 @@ void ScriptManager::clear() {
 	// Create modules.
 	m_test_module = new lua::Test;
 	m_event_module = new lua::Event;
+	m_server_module = new lua::Server( m_server_gate );
 
 	// Setup modules.
 	lua::Test::register_class( (*m_state)["flex"]["Test"] );
 	lua::Event::register_class( (*m_state)["flex"]["Event"] );
+	lua::Server::register_class( (*m_state)["flex"]["Server"] );
 
 	m_test_module->register_object( (*m_state)["flex"]["test"] );
 	m_event_module->register_object( (*m_state)["flex"]["event"] );
+	m_server_module->register_object( (*m_state)["flex"]["server"] );
 }
 
 bool ScriptManager::execute_file( const std::string& path ) {

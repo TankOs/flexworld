@@ -1,8 +1,7 @@
 function on_connect_system_event( client )
-	print( "Client " .. client .. " connected." )
-
 	local username = flex.server:get_client_username( client )
 
+	print( "Client " .. username .. " connected." )
 	flex.server:broadcast_chat_message( username .. " joined the game.", "Status", "" )
 end
 

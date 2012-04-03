@@ -6,6 +6,8 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 set(
 	SOURCES
 	${PROJECT_BINARY_DIR}/Config.hpp
+	ExampleServerGate.cpp
+	ExampleServerGate.hpp
 	LuaUtils.cpp
 	LuaUtils.hpp
 	Test.cpp
@@ -24,7 +26,6 @@ set(
 	TestFlexID.cpp
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
-	TestGate.cpp
 	TestLockFacility.cpp
 	TestMath.cpp
 	TestMesh.cpp
@@ -39,6 +40,7 @@ set(
 	TestSaveInfoDriver.cpp
 	TestScriptManager.cpp
 	TestServer.cpp
+	TestServerLuaModule.cpp
 	TestServerProtocol.cpp
 	TestSessionHost.cpp
 	TestTestLuaModule.cpp

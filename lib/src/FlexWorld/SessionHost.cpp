@@ -28,6 +28,7 @@ SessionHost::SessionHost(
 	const GameMode& game_mode
 ) :
 	m_game_mode( game_mode ),
+	m_script_manager( nullptr ),
 	m_num_loaded_scripts( 0 ),
 	m_io_service( io_service ),
 	m_lock_facility( lock_facility ),
@@ -37,11 +38,14 @@ SessionHost::SessionHost(
 	m_player_limit( 1 ),
 	m_max_view_radius( 10 )
 {
+	m_script_manager = new ScriptManager( *this );
 	m_server.reset( new Server( m_io_service, *this ) );
 }
 
 SessionHost::~SessionHost() {
 	stop();
+
+	delete m_script_manager;
 }
 
 const LockFacility& SessionHost::get_lock_facility() const {
@@ -146,7 +150,7 @@ bool SessionHost::is_running() const {
 }
 
 void SessionHost::handle_connect( Server::ConnectionID conn_id ) {
-	Log::Logger( Log::INFO ) << "Client connected from " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
+	Log::Logger( Log::INFO ) << "Client #" << conn_id << " connected from " << m_server->get_client_ip( conn_id ) << "." << Log::endl;
 
 	// Prepare player info.
 	if( conn_id >= m_player_infos.size() ) {
@@ -266,7 +270,7 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 	m_server->send_message( ok_msg, conn_id );
 
 	// Trigger event.
-	m_script_manager.trigger_connect_system_event( conn_id );
+	m_script_manager->trigger_connect_system_event( conn_id );
 }
 
 void SessionHost::set_auth_mode( AuthMode mode ) {
@@ -484,7 +488,7 @@ void SessionHost::rehash_scripts() {
 	Log::Logger( Log::INFO ) << "Searching for scripts in " << m_game_mode.get_num_packages() << " package(s)." << Log::endl;
 
 	// Clear current script manager. TODO Trigger UNLOAD_EVENT.
-	m_script_manager.clear();
+	m_script_manager->clear();
 	m_num_loaded_scripts = 0;
 
 	// Enumerate scripts of game mode.
@@ -528,14 +532,14 @@ void SessionHost::rehash_scripts() {
 		std::set<std::string>::iterator script_path_iter_end( found_scripts.end() );
 		
 		for( ; script_path_iter != script_path_iter_end; ++script_path_iter ) {
-			if( m_script_manager.execute_file( *script_path_iter ) ) {
+			if( m_script_manager->execute_file( *script_path_iter ) ) {
 				// Output filename only.
 				Log::Logger( Log::INFO ) << "-> " << *script_path_iter << Log::endl;
 				++m_num_loaded_scripts;
 			}
 			else {
 				Log::Logger( Log::ERR ) << "Failed executing script: " << *script_path_iter << Log::endl;
-				Log::Logger( Log::ERR ) << m_script_manager.get_last_error() << Log::endl;
+				Log::Logger( Log::ERR ) << m_script_manager->get_last_error() << Log::endl;
 			}
 		}
 	}
@@ -578,13 +582,28 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 
 		// Give to script manager.
 		if( command.empty() == false ) {
-			m_script_manager.trigger_command( command, args );
+			m_script_manager->trigger_command( command, args );
 		}
 	}
 	else {
 		// No command, give to script manager normally.
-		m_script_manager.trigger_chat_system_event( chat_msg.get_message(), chat_msg.get_channel(), conn_id );
+		m_script_manager->trigger_chat_system_event( chat_msg.get_message(), chat_msg.get_channel(), conn_id );
 	}
+}
+
+const std::string& SessionHost::get_client_username( uint16_t client_id ) const {
+	// Make sure client ID is valid and connected.
+	if( client_id >= m_player_infos.size() ) {
+		throw std::runtime_error( "Invalid client ID." );
+	}
+
+	const PlayerInfo& info = m_player_infos[client_id];
+
+	if( info.connected == false ) {
+		throw std::runtime_error( "Invalid client ID." );
+	}
+
+	return info.username;
 }
 
 }

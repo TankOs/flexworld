@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "ExampleServerGate.hpp"
 
 #include <FlexWorld/ScriptManager.hpp>
 
@@ -8,29 +9,31 @@
 BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	using namespace flex;
 
+	ExampleServerGate server_gate;
+
 	// Initial state.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 	}
 
 	// Execute files.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		BOOST_CHECK( manager.execute_file( DATA_DIRECTORY + "/scripts/some_funcs.lua" ) == true );
 	}
 
 	// Execute string.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		BOOST_CHECK( manager.execute_string( "a = 5" ) == true );
 	}
 
 	// Verify last error is reset.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		// Strings.
 		BOOST_CHECK( manager.execute_string( "this is invalid Lua code" ) == false );
@@ -49,7 +52,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Clear Lua state.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		BOOST_CHECK( manager.execute_string( "a = 5" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( a == 5 )" ) == true );
@@ -61,15 +64,16 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Make sure modules are present.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		BOOST_CHECK( manager.execute_string( "assert( flex.test ~= nil and flex.Test ~= nil )" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( flex.event ~= nil and flex.Event ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( flex.server ~= nil and flex.Server ~= nil )" ) == true );
 	}
 
 	// Trigger command.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 
 		BOOST_REQUIRE_NO_THROW( manager.execute_string( "function foo( args ) flex.test:set_value( \"yo\", args[1] .. args[2] ) end" ) );
 		BOOST_REQUIRE_NO_THROW( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
@@ -96,7 +100,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Trigger chat system event.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 		bool result = false;
 
 
@@ -119,7 +123,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Trigger connect system event.
 	{
-		ScriptManager manager;
+		ScriptManager manager( server_gate );
 		bool result = false;
 
 		BOOST_REQUIRE_NO_THROW( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );
