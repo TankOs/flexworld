@@ -474,6 +474,9 @@ void MenuState::on_start_game_accept() {
 		// Set auth mode.
 		get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
 
+		// Set random port.
+		get_shared().host->set_port( static_cast<unsigned short>( std::rand() % 38976 + 1024 ) );
+
 		leave( new ConnectState( get_render_target() ) );
 	}
 

@@ -89,7 +89,7 @@ void ConnectState::update( const sf::Time& delta ) {
 	) {
 		m_next_info_text = sf::String( L"Making connection..." );
 
-		get_shared().client->start( "127.0.0.1", 2593 ); // TODO IP+port
+		get_shared().client->start( get_shared().host->get_ip(), get_shared().host->get_port() );
 	}
 
 	// Update GUI.
