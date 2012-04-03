@@ -474,8 +474,34 @@ void MenuState::on_start_game_accept() {
 		// Set auth mode.
 		get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
 
-		// Set random port.
-		get_shared().host->set_port( static_cast<unsigned short>( std::rand() % 38976 + 1024 ) );
+		// Set endpoint.
+		get_shared().host->set_ip( "127.0.0.1" );
+
+		// Find free port.
+		bool in_use = true;
+		unsigned short port = 2593;
+		boost::asio::io_service io_service;
+
+		while( in_use ) {
+			boost::asio::ip::tcp::socket prober( io_service );
+			boost::asio::ip::tcp::endpoint endpoint(
+				boost::asio::ip::address::from_string( get_shared().host->get_ip( ) ),
+				port
+			);
+
+			try {
+				prober.connect( endpoint );
+
+				// Connection successful, try next port.
+				++port;
+			}
+			catch( const boost::system::system_error& /*e*/ ) {
+				// Connection failed, use port.
+				in_use = false;
+			}
+		}
+
+		get_shared().host->set_port( port );
 
 		leave( new ConnectState( get_render_target() ) );
 	}

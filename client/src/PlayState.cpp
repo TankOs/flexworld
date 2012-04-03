@@ -234,7 +234,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 	if( event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased ) {
 		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.key.code );
 
-		if( action != Controls::UNMAPPED ) {
+		if( action != Controls::UNMAPPED && !m_gui_mode ) {
 			bool pressed = (event.type == sf::Event::KeyPressed) ? true : false;
 			give_gui = false;
 
