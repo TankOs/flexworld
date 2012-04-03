@@ -24,6 +24,7 @@ set(
 	TestFlexID.cpp
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
+	TestGate.cpp
 	TestLockFacility.cpp
 	TestMath.cpp
 	TestMesh.cpp
