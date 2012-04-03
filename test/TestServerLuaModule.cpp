@@ -61,6 +61,18 @@ BOOST_AUTO_TEST_CASE( TestServerLuaModule ) {
 		BOOST_CHECK( check_error( "Invalid client ID.", "assert( flex.server:get_client_username( 1000 ) == \"H4x0r\" )", state ) == true );
 	}
 
+	// Get number of connected clients.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_server( state );
+
+		ExampleServerGate gate;
+		lua::Server server( gate );
+		server.register_object( state["flex"]["server"] );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.server:get_num_connected_clients() == 123 )" ) );
+	}
+
 	// Call functions with wrong arguments.
 	{
 		Diluculum::LuaState state;
@@ -72,7 +84,9 @@ BOOST_AUTO_TEST_CASE( TestServerLuaModule ) {
 
 		// get_client_username
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.server:get_client_username()", state ) == true );
-
 		BOOST_CHECK( check_error( "Expected number for client_id.", "flex.server:get_client_username( \"foo\" )", state ) == true );
+
+		// get_num_connected_clients
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.server:get_num_connected_clients( 123 )", state ) == true );
 	}
 }

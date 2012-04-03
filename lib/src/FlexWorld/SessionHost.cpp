@@ -606,4 +606,8 @@ const std::string& SessionHost::get_client_username( uint16_t client_id ) const 
 	return info.username;
 }
 
+std::size_t SessionHost::get_num_connected_clients() const {
+	return m_server->get_num_peers();
+}
+
 }

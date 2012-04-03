@@ -12,3 +12,6 @@ const std::string& ExampleServerGate::get_client_username( uint16_t client_id ) 
 	return h4x0r;
 }
 
+std::size_t ExampleServerGate::get_num_connected_clients() const {
+	return 123;
+}

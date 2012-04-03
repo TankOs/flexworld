@@ -8,6 +8,7 @@
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Messages/OpenLogin.hpp>
 
+#include <SFML/System/Clock.hpp>
 #include <boost/asio.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -57,7 +58,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	enum { TIMEOUT = 2000 };
 	enum { WAIT_INTERVAL = 25 };
 
-	// Run and stop.
+	// Start and stop.
 	{
 		boost::asio::io_service service;
 		LockFacility lock_facility;
@@ -95,6 +96,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 	mode.set_default_entity_class_id( FlexID::make( "fw.base.nature/grass" ) );
 	mode.add_package( FlexID::make( "sessionhostscripts" ) );
 
+	enum { TIMEOUT = 2000 };
+
 	// Initial state.
 	{
 		// Setup host.
@@ -105,15 +108,24 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		BOOST_REQUIRE( host.start() );
 
-		// get_client_username
+		// get_client_username (get_num_connected_clients is also checked)
 		{
 			TestSessionHostGateClientHandler handler;
 			Client client( io_service, handler );
 
 			client.start( host.get_ip(), host.get_port() );
 
-			// Poll the IO service to process the connection.
-			io_service.poll();
+			// Poll until client is connected.
+			{
+				sf::Clock timer;
+
+				while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
+					io_service.poll();
+				}
+
+				BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+				BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
+			}
 
 			// Authenticate.
 			msg::OpenLogin ol_msg;
@@ -123,6 +135,9 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 			client.send_message( ol_msg );
 
 			// Poll IO service.
+			io_service.poll();
+			io_service.poll();
+			io_service.poll();
 			io_service.poll();
 
 			// At this point expected data should be ready.

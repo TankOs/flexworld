@@ -50,6 +50,12 @@ class Server {
 		 */
 		Diluculum::LuaValueList get_client_username( const Diluculum::LuaValueList& args ) const;
 
+		/** Get number of connected clients (Lua function).
+		 * @param args Ignored.
+		 * @return num:number
+		 */
+		Diluculum::LuaValueList get_num_connected_clients( const Diluculum::LuaValueList& args ) const;
+
 	private:
 		ServerGate* m_gate;
 };

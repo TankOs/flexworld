@@ -11,13 +11,14 @@ namespace lua {
 
 DILUCULUM_BEGIN_CLASS( Server )
 	DILUCULUM_CLASS_METHOD( Server, get_client_username )
+	DILUCULUM_CLASS_METHOD( Server, get_num_connected_clients )
 DILUCULUM_END_CLASS( Server )
 
 void Server::register_class( Diluculum::LuaVariable target ) {
 	DILUCULUM_REGISTER_CLASS( target, Server );
 }
 
-Server::Server( const Diluculum::LuaValueList& args ) {
+Server::Server( const Diluculum::LuaValueList& /*args*/ ) {
 	throw Diluculum::LuaError( "Not allowed to instantiate Server." );
 }
 
@@ -49,6 +50,23 @@ Diluculum::LuaValueList Server::get_client_username( const Diluculum::LuaValueLi
 		const std::string& username = m_gate->get_client_username( client_id );
 		
 		ret.push_back( username );
+	}
+	catch( const std::runtime_error& e ) {
+		throw Diluculum::LuaError( e.what() );
+	}
+
+	return ret;
+}
+
+Diluculum::LuaValueList Server::get_num_connected_clients( const Diluculum::LuaValueList& args ) const {
+	if( args.size() != 0 ) {
+		throw Diluculum::LuaError( "Wrong number of arguments." );
+	}
+
+	Diluculum::LuaValueList ret;
+
+	try {
+		ret.push_back( static_cast<int>( m_gate->get_num_connected_clients() ) );
 	}
 	catch( const std::runtime_error& e ) {
 		throw Diluculum::LuaError( e.what() );
