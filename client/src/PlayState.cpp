@@ -792,3 +792,47 @@ void PlayState::on_chat_close_click() {
 	m_chat_window->Show( false );
 	update_gui_mode();
 }
+
+void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID conn_id ) {
+	if( get_shared().host == nullptr ) {
+		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
+		return;
+	}
+
+	flex::Planet::Vector chunk_pos;
+
+	// Get planet.
+	get_shared().lock_facility->lock_world( true );
+	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+
+	if( !planet ) {
+#if !defined( NDEBUG )
+		std::cout << "WARNING: Host destroyed a block at a planet I don't have." << std::endl;
+#endif
+	}
+	else {
+		get_shared().lock_facility->lock_planet( *planet, true );
+
+		// Get chunk position.
+		chunk_pos.x = static_cast<flex::Planet::ScalarType>( msg.get_block_position().x / planet->get_chunk_size().x );
+		chunk_pos.y = static_cast<flex::Planet::ScalarType>( msg.get_block_position().y / planet->get_chunk_size().y );
+		chunk_pos.z = static_cast<flex::Planet::ScalarType>( msg.get_block_position().z / planet->get_chunk_size().z );
+
+		get_shared().lock_facility->lock_planet( *planet, false );
+	}
+
+	get_shared().lock_facility->lock_world( false );
+
+	if( !planet ) {
+		return;
+	}
+
+	// Add chunk to preparation list.
+	{
+		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
+		m_chunk_list.push_back( chunk_pos );
+	}
+
+	// Notify thread.
+	m_prepare_chunks_condition.notify_one();
+}
