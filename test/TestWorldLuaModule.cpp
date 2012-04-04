@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		lua::World world( gate );
 		world.register_object( state["flex"]["world"] );
 
-		( state.doString( "flex.world:destroy_block( 1, 2, 3, \"foobar\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.world:destroy_block( 1, 2, 3, \"foobar\" )" ) );
 	}
 
 	// Call functions with invalid arguments.

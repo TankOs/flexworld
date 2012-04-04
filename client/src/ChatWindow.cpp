@@ -82,6 +82,10 @@ void ChatWindow::CreateChannel( const sf::String& name ) {
 	m_notebook->AppendPage( chan.scrolled_window, tab_box );
 
 	Refresh();
+
+	// FIXME Workaround SFGUI notebook bug.
+	SetAllocation( sf::FloatRect( GetAllocation().left, GetAllocation().top, GetAllocation().width + 1, GetAllocation().height ) );
+	SetAllocation( sf::FloatRect( GetAllocation().left, GetAllocation().top, GetAllocation().width - 1, GetAllocation().height ) );
 }
 
 ChatWindow::Channel* ChatWindow::FindChannel( const sf::String& name ) {

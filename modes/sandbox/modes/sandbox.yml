@@ -10,3 +10,4 @@ Meta:
 Packages:
   - fw.admin
   - fw.chat
+  - fw.sandbox.admin
