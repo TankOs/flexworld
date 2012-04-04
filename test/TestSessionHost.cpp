@@ -1,4 +1,5 @@
 #include "Config.hpp"
+#include "ExceptionChecker.hpp"
 
 #include <FlexWorld/SessionHost.hpp>
 #include <FlexWorld/AccountManager.hpp>
@@ -99,6 +100,10 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 			++m_num_chat_messages_received;
 		}
 
+		void handle_message( const flex::msg::DestroyBlock& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+			m_last_destroy_block_message = msg;
+		}
+
 		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
@@ -106,6 +111,7 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 
 		std::size_t m_num_chat_messages_received;
 		flex::msg::Chat m_last_chat_message;
+		flex::msg::DestroyBlock m_last_destroy_block_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
@@ -113,9 +119,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	Log::Logger.set_min_level( Log::FATAL );
 
-	boost::asio::io_service io_service;
 	GameMode mode;
-	World world;
 	AccountManager account_manager;
 	LockFacility lock_facility;
 
@@ -124,8 +128,12 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	enum { TIMEOUT = 2000 };
 
+	// get_client_username, get_num_connected_clients, broadcast_chat_message
+	// (do tests here that need client connections)
 	{
 		// Setup host.
+		boost::asio::io_service io_service;
+		World world;
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
 		host.set_ip( "127.0.0.1" );
@@ -136,106 +144,177 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		BOOST_REQUIRE( host.start() );
 
-		// get_client_username, get_num_connected_clients, broadcast_chat_message
+		TestSessionHostGateClientHandler handler;
+		Client client( io_service, handler );
+
+		client.start( host.get_ip(), host.get_port() );
+
+		// Poll until client is connected.
 		{
-			TestSessionHostGateClientHandler handler;
-			Client client( io_service, handler );
+			sf::Clock timer;
 
-			client.start( host.get_ip(), host.get_port() );
-
-			// Poll until client is connected.
-			{
-				sf::Clock timer;
-
-				while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
-					io_service.poll();
-				}
-
-				BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
-				BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
-			}
-
-			// Authenticate.
-			{
-				msg::OpenLogin ol_msg;
-				ol_msg.set_username( "Tank" );
-				ol_msg.set_password( "h4x0r" );
-
-				client.send_message( ol_msg );
-			}
-
-			// Poll IO service.
-			io_service.poll();
-
-			// At this point expected data should be ready.
-			BOOST_CHECK_NO_THROW( host.get_client_username( 0 ) == "Tank" );
-
-			// Check invalid ID.
-			BOOST_CHECK_THROW( host.get_client_username( 1 ), std::runtime_error );
-
-			// Connect another client to test broadcast_chat_message.
-			TestSessionHostGateClientHandler handler2;
-			Client client2( io_service, handler2 );
-
-			client2.start( host.get_ip(), host.get_port() );
-
-			// Poll until client is connected.
-			{
-				sf::Clock timer;
-
-				while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 2 ) {
-					io_service.poll();
-				}
-
-				BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
-				BOOST_REQUIRE( host.get_num_connected_clients() == 2 );
-			}
-
-			// Authenticate.
-			{
-				msg::OpenLogin ol_msg;
-				ol_msg.set_username( "Tank2" );
-				ol_msg.set_password( "h4x0r" );
-
-				client.send_message( ol_msg );
+			while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
 				io_service.poll();
 			}
 
-			// Broadcast the message.
-			std::size_t old_num_0 = handler.m_num_chat_messages_received;
-			std::size_t old_num_1 = handler2.m_num_chat_messages_received;
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
+		}
 
-			host.broadcast_chat_message( sf::String( "Meow" ), sf::String( "IAmA" ), sf::String( "Kitty" ) );
+		// Authenticate.
+		{
+			msg::OpenLogin ol_msg;
+			ol_msg.set_username( "Tank" );
+			ol_msg.set_password( "h4x0r" );
 
-			{
-				sf::Clock timer;
+			client.send_message( ol_msg );
+		}
 
-				while(
-					timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) &&
-					(
-						handler.m_num_chat_messages_received < (old_num_0 + 1) ||
-						handler2.m_num_chat_messages_received < (old_num_1 + 1)
-					)
-				) {
-					io_service.poll();
-				}
+		// Poll IO service.
+		io_service.poll();
 
-				BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
-				BOOST_REQUIRE( handler.m_num_chat_messages_received == 1 );
-				BOOST_REQUIRE( handler2.m_num_chat_messages_received == 1 );
+		// At this point expected data should be ready.
+		BOOST_CHECK_NO_THROW( host.get_client_username( 0 ) == "Tank" );
+
+		// Check invalid ID.
+		BOOST_CHECK_THROW( host.get_client_username( 1 ), std::runtime_error );
+
+		// Connect another client to test broadcast_chat_message.
+		TestSessionHostGateClientHandler handler2;
+		Client client2( io_service, handler2 );
+
+		client2.start( host.get_ip(), host.get_port() );
+
+		// Poll until client is connected.
+		{
+			sf::Clock timer;
+
+			while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 2 ) {
+				io_service.poll();
 			}
 
-			BOOST_CHECK( handler.m_last_chat_message.get_message() == sf::String( "Meow" ) );
-			BOOST_CHECK( handler.m_last_chat_message.get_channel() == sf::String( "IAmA" ) );
-			BOOST_CHECK( handler.m_last_chat_message.get_sender() == sf::String( "Kitty" ) );
-			BOOST_CHECK( handler2.m_last_chat_message.get_message() == sf::String( "Meow" ) );
-			BOOST_CHECK( handler2.m_last_chat_message.get_channel() == sf::String( "IAmA" ) );
-			BOOST_CHECK( handler2.m_last_chat_message.get_sender() == sf::String( "Kitty" ) );
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( host.get_num_connected_clients() == 2 );
 		}
+
+		// Authenticate.
+		{
+			msg::OpenLogin ol_msg;
+			ol_msg.set_username( "Tank2" );
+			ol_msg.set_password( "h4x0r" );
+
+			client.send_message( ol_msg );
+			io_service.poll();
+		}
+
+		// Broadcast the message.
+		std::size_t old_num_0 = handler.m_num_chat_messages_received;
+		std::size_t old_num_1 = handler2.m_num_chat_messages_received;
+
+		host.broadcast_chat_message( sf::String( "Meow" ), sf::String( "IAmA" ), sf::String( "Kitty" ) );
+
+		{
+			sf::Clock timer;
+
+			while(
+				timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) &&
+				(
+					handler.m_num_chat_messages_received < (old_num_0 + 1) ||
+					handler2.m_num_chat_messages_received < (old_num_1 + 1)
+				)
+			) {
+				io_service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( handler.m_num_chat_messages_received == 1 );
+			BOOST_REQUIRE( handler2.m_num_chat_messages_received == 1 );
+		}
+
+		BOOST_CHECK( handler.m_last_chat_message.get_message() == sf::String( "Meow" ) );
+		BOOST_CHECK( handler.m_last_chat_message.get_channel() == sf::String( "IAmA" ) );
+		BOOST_CHECK( handler.m_last_chat_message.get_sender() == sf::String( "Kitty" ) );
+		BOOST_CHECK( handler2.m_last_chat_message.get_message() == sf::String( "Meow" ) );
+		BOOST_CHECK( handler2.m_last_chat_message.get_channel() == sf::String( "IAmA" ) );
+		BOOST_CHECK( handler2.m_last_chat_message.get_sender() == sf::String( "Kitty" ) );
 
 		// Stop session host.
 		host.stop();
 		io_service.run();
+	}
+
+	// destroy_block
+	{
+		static const Planet::Vector CHUNK_POS( 0, 0, 0 );
+		static const Chunk::Vector BLOCK_POS( 2, 3, 4 );
+		static const std::string PLANET_ID = "construct";
+
+		// Create class.
+		World world;
+
+		{
+			Class cls( FlexID::make( "a/class" ) );
+			world.add_class( cls );
+		}
+
+		const Class *cls = world.find_class( FlexID::make( "a/class" ) );
+		BOOST_REQUIRE( cls != nullptr );
+
+		// Setup host.
+		boost::asio::io_service io_service;
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		host.set_ip( "127.0.0.1" );
+		host.set_port( 2593 );
+		host.set_player_limit( 1 );
+		host.add_search_path( DATA_DIRECTORY + std::string( "/packages" ) );
+		host.set_auth_mode( SessionHost::OPEN_AUTH );
+
+		BOOST_REQUIRE( host.start() );
+
+		// Get planet.
+		Planet* planet = world.find_planet( PLANET_ID );
+		BOOST_REQUIRE( planet != nullptr );
+
+		// Set a block.
+		planet->set_block( CHUNK_POS, BLOCK_POS, *cls );
+
+		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == cls );
+
+		// Connect client.
+		TestSessionHostGateClientHandler handler;
+		Client client( io_service, handler );
+
+		client.start( host.get_ip(), host.get_port() );
+
+		// Poll until client is connected.
+		{
+			sf::Clock timer;
+
+			while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
+				io_service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
+		}
+
+		// Destroy block.
+		BOOST_CHECK_NO_THROW( host.destroy_block( lua::WorldGate::BlockPosition( 2, 3, 4 ), "construct" ) );
+		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == nullptr );
+
+		// Poll IO service.
+		io_service.poll();
+
+		// Check that client received destroy block message.
+		BOOST_CHECK( handler.m_last_destroy_block_message.get_block_position() == lua::WorldGate::BlockPosition( 2, 3, 4 ) );
+
+		// Check invalid destroy calls.
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 32, 0 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 1, 0 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "foobar" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Planet not found." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
 	}
 
 	Log::Logger.set_min_level( Log::DEBUG );

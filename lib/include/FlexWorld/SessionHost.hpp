@@ -7,6 +7,7 @@
 #include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/ScriptManager.hpp>
 #include <FlexWorld/LuaModules/ServerGate.hpp>
+#include <FlexWorld/LuaModules/WorldGate.hpp>
 
 #include <boost/asio.hpp>
 #include <memory>
@@ -24,7 +25,8 @@ class World;
 class SessionHost :
 	private Server::Handler,
 	public NonCopyable,
-	public lua::ServerGate
+	public lua::ServerGate,
+	public lua::WorldGate
 {
 	public:
 		/** Auth mode.
@@ -135,10 +137,19 @@ class SessionHost :
 		 */
 		std::size_t get_num_loaded_scripts() const;
 
-		// Gate funcs.
+		/////// Gate funcs.
+		// Server gate.
 		const std::string& get_client_username( uint16_t client_id ) const;
 		std::size_t get_num_connected_clients() const;
 		void broadcast_chat_message( const sf::String& message, const sf::String& channel, const sf::String& sender );
+
+		// World gate.
+		/** Destroy block.
+		 * @param block_position Block position.
+		 * @param planet_id Planet.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		void destroy_block( const WorldGate::BlockPosition& block_position, const std::string& planet_id );
 
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;

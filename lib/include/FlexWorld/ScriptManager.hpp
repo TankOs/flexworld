@@ -17,6 +17,8 @@ class Test;
 class Event;
 class Server;
 class ServerGate;
+class World;
+class WorldGate;
 }
 
 /** Lua script manager.
@@ -25,8 +27,9 @@ class ScriptManager {
 	public:
 		/** Ctor.
 		 * @param server_gate Server gate.
+		 * @param world_gate World gate.
 		 */
-		ScriptManager( lua::ServerGate& server_gate );
+		ScriptManager( lua::ServerGate& server_gate, lua::WorldGate& world_gate );
 
 		/** Dtor.
 		 */
@@ -89,6 +92,9 @@ class ScriptManager {
 
 		lua::ServerGate& m_server_gate;
 		lua::Server* m_server_module;
+
+		lua::WorldGate& m_world_gate;
+		lua::World* m_world_module;
 };
 
 }

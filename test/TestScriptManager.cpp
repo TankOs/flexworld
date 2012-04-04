@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "ExampleServerGate.hpp"
+#include "ExampleWorldGate.hpp"
 
 #include <FlexWorld/ScriptManager.hpp>
 
@@ -10,30 +11,31 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	using namespace flex;
 
 	ExampleServerGate server_gate;
+	ExampleWorldGate world_gate;
 
 	// Initial state.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 	}
 
 	// Execute files.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_CHECK( manager.execute_file( DATA_DIRECTORY + "/scripts/some_funcs.lua" ) == true );
 	}
 
 	// Execute string.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_CHECK( manager.execute_string( "a = 5" ) == true );
 	}
 
 	// Verify last error is reset.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		// Strings.
 		BOOST_CHECK( manager.execute_string( "this is invalid Lua code" ) == false );
@@ -52,7 +54,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Clear Lua state.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_CHECK( manager.execute_string( "a = 5" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( a == 5 )" ) == true );
@@ -64,16 +66,17 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Make sure modules are present.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_CHECK( manager.execute_string( "assert( flex.test ~= nil and flex.Test ~= nil )" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( flex.event ~= nil and flex.Event ~= nil )" ) == true );
 		BOOST_CHECK( manager.execute_string( "assert( flex.server ~= nil and flex.Server ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( flex.world ~= nil and flex.World ~= nil )" ) == true );
 	}
 
 	// Trigger command.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_CHECK( manager.execute_string( "function foo( args, sender ) flex.test:set_value( \"yo\", args[1] .. args[2] .. tostring( sender ) ) end" ) );
 		BOOST_CHECK( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
@@ -100,7 +103,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Trigger chat system event.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 		bool result = false;
 
 
@@ -123,7 +126,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 	// Trigger connect system event.
 	{
-		ScriptManager manager( server_gate );
+		ScriptManager manager( server_gate, world_gate );
 		bool result = false;
 
 		BOOST_REQUIRE( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/connect.lua" ) ) );

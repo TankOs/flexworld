@@ -13,6 +13,10 @@ class WorldGate {
 	public:
 		typedef sf::Vector3<uint32_t> BlockPosition; ///< Block position type.
 
+		/** Dtor.
+		 */
+		virtual ~WorldGate();
+
 		/** Destroy block.
 		 * @param block_position Block position.
 		 * @param planet Planet ID.

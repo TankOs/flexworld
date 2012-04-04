@@ -1,4 +1,4 @@
-#include <boost/test/unit_test.hpp>
+#include "ExceptionChecker.hpp"
 
 #include <FlexWorld/Message.hpp>
 #include <FlexWorld/Messages/OpenLogin.hpp>
@@ -15,26 +15,7 @@
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
-template <class T>
-struct ExceptionChecker {
-	ExceptionChecker( const std::string& msg_ ) :
-		msg( msg_ )
-	{
-	}
-
-	bool operator()( const T& e ) {
-		bool result = (e.what() == msg);
-
-		if( !result ) {
-			std::cout << "Expected: " << msg << std::endl;
-			std::cout << "Thrown:   " << e.what() << std::endl;
-		}
-
-		return result;
-	}
-
-	std::string msg;
-};
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
 	using namespace flex;

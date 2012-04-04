@@ -11,11 +11,12 @@
 #include <FlexWorld/Messages/ChunkUnchanged.hpp>
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
+#include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/TemplateUtils.hpp>
 
 namespace flex {
 
-typedef tpl::Typelist<msg::OpenLogin, tpl::Typelist<msg::ServerInfo, tpl::Typelist<msg::LoginOK, tpl::Typelist<msg::Ready, tpl::Typelist<msg::Beam, tpl::Typelist<msg::RequestChunk, tpl::Typelist<msg::ChunkUnchanged, tpl::Typelist<msg::CreateEntity, tpl::Typelist<msg::Chat>>>>>>>>> ServerMessageList;
+typedef tpl::Typelist<msg::OpenLogin, tpl::Typelist<msg::ServerInfo, tpl::Typelist<msg::LoginOK, tpl::Typelist<msg::Ready, tpl::Typelist<msg::Beam, tpl::Typelist<msg::RequestChunk, tpl::Typelist<msg::ChunkUnchanged, tpl::Typelist<msg::CreateEntity, tpl::Typelist<msg::Chat, tpl::Typelist<msg::DestroyBlock>>>>>>>>>> ServerMessageList;
 typedef Protocol<ServerMessageList> ServerProtocol;
 
 }

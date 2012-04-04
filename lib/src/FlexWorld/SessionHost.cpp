@@ -4,6 +4,7 @@
 #include <FlexWorld/Messages/Beam.hpp>
 #include <FlexWorld/Messages/Chunk.hpp>
 #include <FlexWorld/Messages/CreateEntity.hpp>
+#include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
@@ -27,6 +28,9 @@ SessionHost::SessionHost(
 	World& world,
 	const GameMode& game_mode
 ) :
+	Server::Handler(),
+	lua::ServerGate(),
+	lua::WorldGate(),
 	m_game_mode( game_mode ),
 	m_script_manager( nullptr ),
 	m_num_loaded_scripts( 0 ),
@@ -38,7 +42,7 @@ SessionHost::SessionHost(
 	m_player_limit( 1 ),
 	m_max_view_radius( 10 )
 {
-	m_script_manager = new ScriptManager( *this );
+	m_script_manager = new ScriptManager( *this, *this );
 	m_server.reset( new Server( m_io_service, *this ) );
 }
 
@@ -628,6 +632,82 @@ void SessionHost::broadcast_chat_message( const sf::String& message, const sf::S
 			m_server->send_message( chat_msg, static_cast<Server::ConnectionID>( client_idx ) );
 		}
 	}
+}
+
+void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position, const std::string& planet_id ) {
+	if( planet_id.empty() ) {
+		throw std::runtime_error( "Invalid planet." );
+	}
+
+	m_lock_facility.lock_world( true );
+
+	// Find planet.
+	Planet* planet = m_world.find_planet( planet_id );
+
+	m_lock_facility.lock_planet( *planet, true );
+
+	if( planet == nullptr ) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Planet not found." );
+	}
+
+	// Convert to "internal" coordinates.
+	Planet::Vector chunk_pos(
+		static_cast<Planet::ScalarType>( block_position.x / planet->get_chunk_size().x ),
+		static_cast<Planet::ScalarType>( block_position.y / planet->get_chunk_size().y ),
+		static_cast<Planet::ScalarType>( block_position.z / planet->get_chunk_size().z )
+	);
+
+	// Check for valid chunk position.
+	if(
+		chunk_pos.x >= planet->get_size().x ||
+		chunk_pos.y >= planet->get_size().y ||
+		chunk_pos.z >= planet->get_size().z
+	) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Block position out of range." );
+	}
+
+	// Make sure chunk at given position exists.
+	if( planet->has_chunk( chunk_pos ) == false ) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "No block at given position." );
+	}
+
+	// Calculate relative block position.
+	Chunk::Vector block_pos(
+		static_cast<Chunk::ScalarType>( block_position.x % planet->get_chunk_size().x ),
+		static_cast<Chunk::ScalarType>( block_position.y % planet->get_chunk_size().y ),
+		static_cast<Chunk::ScalarType>( block_position.z % planet->get_chunk_size().z )
+	);
+
+	// Make sure block exists.
+	if( planet->find_block( chunk_pos, block_pos ) == nullptr ) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "No block at given position." );
+	}
+
+	// Destroy!
+	planet->reset_block( chunk_pos, block_pos );
+
+	// Notify clients. TODO Only those in vicinity and on planet.
+	msg::DestroyBlock db_msg;
+	db_msg.set_block_position( block_position );
+
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected == false ) {
+			continue;
+		}
+
+		m_server->send_message( db_msg, static_cast<Server::ConnectionID>( client_idx ) );
+	}
+
+	m_lock_facility.lock_planet( *planet, false );
+	m_lock_facility.lock_world( false );
 }
 
 }

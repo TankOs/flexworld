@@ -10,6 +10,7 @@ set(
 	ExampleServerGate.hpp
 	ExampleWorldGate.cpp
 	ExampleWorldGate.hpp
+	ExceptionChecker.hpp
 	LuaUtils.cpp
 	LuaUtils.hpp
 	Test.cpp

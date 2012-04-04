@@ -3,7 +3,8 @@
 namespace flex {
 namespace lua {
 
-
+WorldGate::~WorldGate() {
+}
 
 }
 }
