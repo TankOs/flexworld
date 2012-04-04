@@ -124,7 +124,6 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	enum { TIMEOUT = 2000 };
 
-	// Initial state.
 	{
 		// Setup host.
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );

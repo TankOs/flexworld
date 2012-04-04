@@ -39,6 +39,8 @@ set(
 	${INC_DIR}/FlexWorld/LuaModules/Server.hpp
 	${INC_DIR}/FlexWorld/LuaModules/ServerGate.hpp
 	${INC_DIR}/FlexWorld/LuaModules/Test.hpp
+	${INC_DIR}/FlexWorld/LuaModules/World.hpp
+	${INC_DIR}/FlexWorld/LuaModules/WorldGate.hpp
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
@@ -94,6 +96,8 @@ set(
 	${SRC_DIR}/FlexWorld/LuaModules/Server.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/ServerGate.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Test.cpp
+	${SRC_DIR}/FlexWorld/LuaModules/World.cpp
+	${SRC_DIR}/FlexWorld/LuaModules/WorldGate.cpp
 	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp

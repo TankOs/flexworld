@@ -8,6 +8,8 @@ set(
 	${PROJECT_BINARY_DIR}/Config.hpp
 	ExampleServerGate.cpp
 	ExampleServerGate.hpp
+	ExampleWorldGate.cpp
+	ExampleWorldGate.hpp
 	LuaUtils.cpp
 	LuaUtils.hpp
 	Test.cpp
@@ -46,6 +48,7 @@ set(
 	TestTestLuaModule.cpp
 	TestVersion.cpp
 	TestWorld.cpp
+	TestWorldLuaModule.cpp
 )
 
 if( NOT Boost_USE_STATIC_LIBS )
