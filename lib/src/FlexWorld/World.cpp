@@ -157,4 +157,12 @@ void World::unlink_entity_from_planet( Entity::ID entity_id ) {
 	}
 }
 
+World::PlanetConstIterator World::planets_begin() const {
+	return m_planets.begin();
+}
+
+World::PlanetConstIterator World::planets_end() const {
+	return m_planets.end();
+}
+
 }

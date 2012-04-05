@@ -7,7 +7,6 @@
 namespace flex {
 
 class Planet;
-class Entity;
 
 /** Lock facility for securing several backend objects.
  *
@@ -16,6 +15,14 @@ class Entity;
  */
 class LockFacility {
 	public:
+		/** Ctor.
+		 */
+		LockFacility();
+
+		/** Dtor.
+		 */
+		~LockFacility();
+
 		/** Lock or unlock account manager.
 		 * @param do_lock true to lock, false to unlock.
 		 */
@@ -37,41 +44,50 @@ class LockFacility {
 		bool is_world_locked() const;
 
 		/** Lock or unlock planet.
-		 * @param planet Planet.
+		 * @param planet Planet (lock must have been created before).
 		 * @param do_lock true to lock, false to unlock.
+		 * @see create_planet_lock
 		 */
 		void lock_planet( const Planet& planet, bool do_lock );
 
 		/** Check if planet is locked.
-		 * @param planet Planet.
+		 * @param planet Planet (lock must have been created before).
 		 * @return true when locked.
+		 * @see create_planet_lock
 		 */
 		bool is_planet_locked( const Planet& planet ) const;
 
-		/** Lock or unlock entity.
-		 * @param entity Entity.
-		 * @param do_lock true to lock, false to unlock.
+		/** Get number of planet locks.
+		 * @return Number of planet locks.
 		 */
-		void lock_entity( const Entity& entity, bool do_lock );
+		std::size_t get_num_planet_locks() const;
 
-		/** Check if entity is locked.
-		 * @param entity Entity.
-		 * @return true when locked.
+		/** Get number of currently locked planets.
+		 * @return Number of locked planets.
 		 */
-		bool is_entity_locked( const Entity& entity ) const;
+		std::size_t get_num_locked_planets() const;
+
+		/** Create planet lock.
+		 * @param planet Planet.
+		 */
+		void create_planet_lock( const Planet& planet );
+
+		/** Destroy planet lock.
+		 * @param planet Planet.
+		 */
+		void destroy_planet_lock( const Planet& planet );
 
 	private:
 		typedef std::map<const Planet*, RefLock*> PlanetLockMap;
-		typedef std::map<const Entity*, RefLock*> EntityLockMap;
 
 		PlanetLockMap m_planet_locks;
-		EntityLockMap m_entity_locks;
 
 		RefLock m_account_manager_lock;
 		RefLock m_world_lock;
 
-		mutable boost::mutex m_planet_locks_mutex;
-		mutable boost::mutex m_entity_locks_mutex;
+		mutable boost::mutex m_internal_lock;
+
+		std::size_t m_num_locked_planets;
 };
 
 }

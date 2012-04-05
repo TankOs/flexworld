@@ -11,6 +11,7 @@
 
 #include <boost/asio.hpp>
 #include <memory>
+#include <set>
 
 namespace flex {
 
@@ -153,6 +154,7 @@ class SessionHost :
 
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
+		typedef std::set<std::string> StringSet;
 
 		const Class* get_or_load_class( const FlexID& id );
 
@@ -179,6 +181,7 @@ class SessionHost :
 		LockFacility& m_lock_facility;
 		AccountManager& m_account_manager;
 		World& m_world;
+		StringSet m_managed_planets;
 
 		std::unique_ptr<Server> m_server;
 

@@ -5,6 +5,12 @@
 
 #include <boost/test/unit_test.hpp>
 
+bool g_main_thread_wait = false;
+boost::mutex g_main_thread_wait_mutex;
+
+void planet_thread_func( flex::LockFacility* facility ) {
+}
+
 BOOST_AUTO_TEST_CASE( TestLockFacility ) {
 	using namespace flex;
 
@@ -13,6 +19,9 @@ BOOST_AUTO_TEST_CASE( TestLockFacility ) {
 		LockFacility facility;
 
 		BOOST_CHECK( facility.is_account_manager_locked() == false );
+		BOOST_CHECK( facility.is_world_locked() == false );
+		BOOST_CHECK( facility.get_num_planet_locks() == 0 );
+		BOOST_CHECK( facility.get_num_locked_planets() == 0 );
 	}
 
 	// Lock account manager.
@@ -71,85 +80,29 @@ BOOST_AUTO_TEST_CASE( TestLockFacility ) {
 		BOOST_CHECK( facility.is_world_locked() == false );
 	}
 
-	// Lock planets.
+	// Planets.
 	{
-		Planet foo( "foo", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
-		Planet bar( "bar", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
-		Planet baz( "baz", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
-
 		LockFacility facility;
+		Planet foo( "foo", Planet::Vector( 1, 1, 1 ), Chunk::Vector( 1, 1, 1 ) );
 
-		facility.lock_planet( foo, true );
-		BOOST_CHECK( facility.is_planet_locked( foo ) == true );
-
-		facility.lock_planet( foo, false );
+		facility.create_planet_lock( foo );
+		BOOST_CHECK( facility.get_num_planet_locks() == 1 );
+		BOOST_CHECK( facility.get_num_locked_planets() == 0 );
 		BOOST_CHECK( facility.is_planet_locked( foo ) == false );
 
-		// Lock twice.
+		// Lock.
 		facility.lock_planet( foo, true );
-		BOOST_CHECK( facility.is_planet_locked( foo ) == true );
-		facility.lock_planet( foo, true );
+		BOOST_CHECK( facility.get_num_locked_planets() == 1 );
 		BOOST_CHECK( facility.is_planet_locked( foo ) == true );
 
+		// Unlock.
 		facility.lock_planet( foo, false );
-		BOOST_CHECK( facility.is_planet_locked( foo ) == true );
-		facility.lock_planet( foo, false );
+		BOOST_CHECK( facility.get_num_locked_planets() == 0 );
 		BOOST_CHECK( facility.is_planet_locked( foo ) == false );
 
-		facility.lock_planet( foo, true );
-		facility.lock_planet( bar, true );
-		facility.lock_planet( baz, true );
-		BOOST_CHECK( facility.is_planet_locked( foo ) == true );
-		BOOST_CHECK( facility.is_planet_locked( bar ) == true );
-		BOOST_CHECK( facility.is_planet_locked( baz ) == true );
-
-		facility.lock_planet( foo, false );
-		facility.lock_planet( bar, false );
-		facility.lock_planet( baz, false );
-		BOOST_CHECK( facility.is_planet_locked( foo ) == false );
-		BOOST_CHECK( facility.is_planet_locked( bar ) == false );
-		BOOST_CHECK( facility.is_planet_locked( baz ) == false );
-	}
-
-	// Lock entities.
-	{
-		Class cls( FlexID::make( "foo/bar" ) );
-
-		Entity foo( cls );
-		Entity bar( cls );
-		Entity baz( cls );
-
-		LockFacility facility;
-
-		facility.lock_entity( foo, true );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == true );
-
-		facility.lock_entity( foo, false );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == false );
-
-		// Lock twice.
-		facility.lock_entity( foo, true );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == true );
-		facility.lock_entity( foo, true );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == true );
-
-		facility.lock_entity( foo, false );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == true );
-		facility.lock_entity( foo, false );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == false );
-
-		facility.lock_entity( foo, true );
-		facility.lock_entity( bar, true );
-		facility.lock_entity( baz, true );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == true );
-		BOOST_CHECK( facility.is_entity_locked( bar ) == true );
-		BOOST_CHECK( facility.is_entity_locked( baz ) == true );
-
-		facility.lock_entity( foo, false );
-		facility.lock_entity( bar, false );
-		facility.lock_entity( baz, false );
-		BOOST_CHECK( facility.is_entity_locked( foo ) == false );
-		BOOST_CHECK( facility.is_entity_locked( bar ) == false );
-		BOOST_CHECK( facility.is_entity_locked( baz ) == false );
+		// Cleanup.
+		facility.destroy_planet_lock( foo );
+		BOOST_CHECK( facility.get_num_planet_locks() == 0 );
+		BOOST_CHECK( facility.get_num_locked_planets() == 0 );
 	}
 }

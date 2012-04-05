@@ -25,8 +25,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 	// Initial state.
 	{
-		boost::asio::io_service service;
 		LockFacility lock_facility;
+		boost::asio::io_service service;
 		AccountManager acc_mgr;
 		World world;
 		SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
@@ -64,23 +64,45 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 
 	// Start and stop.
 	{
-		boost::asio::io_service service;
 		LockFacility lock_facility;
-		AccountManager acc_mgr;
 		World world;
 
-		SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
-		host.set_ip( "127.0.0.1" );
-		host.set_port( 2593 );
+		// Create planet (for lock facility check, see below).
+		world.create_planet( "foobar", Planet::Vector( 1, 1, 1 ), Chunk::Vector( 1, 1, 1 ) );
 
-		// Add search path so host can find grass class.
-		host.add_search_path( DATA_DIRECTORY + "/packages" );
+		const Planet* planet = world.find_planet( "foobar" );
+		BOOST_REQUIRE( planet != nullptr );
 
-		// Start host.
-		BOOST_REQUIRE( host.start() );
+		lock_facility.create_planet_lock( *planet );
 
-		// Verify scripts got loaded.
-		BOOST_CHECK( host.get_num_loaded_scripts() == 2 );
+		{
+			boost::asio::io_service service;
+			AccountManager acc_mgr;
+
+			SessionHost host( service, lock_facility, acc_mgr, world, game_mode );
+			host.set_ip( "127.0.0.1" );
+			host.set_port( 2593 );
+
+			// Add search path so host can find grass class.
+			host.add_search_path( DATA_DIRECTORY + "/packages" );
+
+			// Start host.
+			BOOST_REQUIRE( host.start() );
+
+			// Verify scripts got loaded.
+			BOOST_CHECK( host.get_num_loaded_scripts() == 2 );
+
+			// Check construct planet has been added to lock facility.
+			BOOST_CHECK( world.get_num_planets() == 2 );
+			BOOST_CHECK( lock_facility.get_num_planet_locks() == 2 );
+		}
+
+		// Check that SessionHost only removed planet locks of planets it created
+		// itself. Also make sure planets are not removed at all.
+		BOOST_CHECK( lock_facility.get_num_planet_locks() == 1 );
+		BOOST_CHECK( world.get_num_planets() == 2 );
+
+		lock_facility.destroy_planet_lock( *planet );
 	}
 
 	Log::Logger.set_min_level( Log::DEBUG );

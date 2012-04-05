@@ -168,9 +168,9 @@ void PlayState::cleanup() {
 	get_shared().io_service->run();
 
 	// Free all backend stuff.
+	get_shared().host.reset();
 	get_shared().lock_facility.reset();
 	get_shared().client.reset();
-	get_shared().host.reset();
 
 	// Restore old matrices.
 	glMatrixMode( GL_TEXTURE );
@@ -638,7 +638,6 @@ void PlayState::prepare_chunks() {
 			const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 			assert( planet );
 			get_shared().lock_facility->lock_planet( *planet, true );
-
 			get_shared().lock_facility->lock_world( false );
 
 			// Make sure chunk exists.

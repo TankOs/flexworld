@@ -1,6 +1,38 @@
 #include <FlexWorld/LockFacility.hpp>
 
+#include <iostream>
+
 namespace flex {
+
+LockFacility::LockFacility() :
+	m_num_locked_planets( 0 )
+{
+}
+
+LockFacility::~LockFacility() {
+	boost::lock_guard<boost::mutex> lock( m_internal_lock );
+
+#if !defined( NDEBUG )
+	// Warn if there're still planet locks or even planets locked.
+	if( m_num_locked_planets > 0 ) {
+		std::cout << "*** WARNING *** Planets still locked." << std::endl;
+	}
+#endif
+
+	if( m_planet_locks.size() > 0 ) {
+#if !defined( NDEBUG )
+		std::cout << "*** WARNING *** Planet locks still available." << std::endl;
+#endif
+
+		PlanetLockMap::iterator lock_iter( m_planet_locks.begin() );
+		PlanetLockMap::iterator lock_iter_end( m_planet_locks.end() );
+		
+		for( ; lock_iter != lock_iter_end; ++lock_iter ) {
+			delete lock_iter->second;
+		}
+	}
+
+}
 
 void LockFacility::lock_account_manager( bool do_lock ) {
 	if( do_lock ) {
@@ -31,26 +63,40 @@ bool LockFacility::is_world_locked() const {
 }
 
 void LockFacility::lock_planet( const Planet& planet, bool do_lock ) {
-	boost::lock_guard<boost::mutex> map_lock( m_planet_locks_mutex );
+	RefLock* ref_lock = nullptr;
 
-	if( do_lock ) {
-		PlanetLockMap::iterator lock_iter = m_planet_locks.find( &planet );
+	// Get RefLock ptr.
+	{
+		boost::lock_guard<boost::mutex> lock( m_internal_lock );
 
-		if( lock_iter == m_planet_locks.end() ) {
-			lock_iter = m_planet_locks.insert( std::pair<const Planet*, RefLock*>( &planet, new RefLock ) ).first;
+		PlanetLockMap::iterator iter = m_planet_locks.find( &planet );
+	
+		assert( iter != m_planet_locks.end() );
+		if( iter == m_planet_locks.end() ) {
+			return;
 		}
 
-		lock_iter->second->lock();
+		ref_lock = iter->second;
+	}
+
+	// Lock/unlock.
+	if( do_lock ) {
+		ref_lock->lock();
 	}
 	else {
-		PlanetLockMap::iterator lock_iter = m_planet_locks.find( &planet );
-		assert( lock_iter != m_planet_locks.end() );
+		assert( ref_lock->get_usage_count() > 0 );
+		ref_lock->unlock();
+	}
 
-		lock_iter->second->unlock();
+	// Update planet lock counter.
+	{
+		boost::lock_guard<boost::mutex> lock( m_internal_lock );
 
-		if( lock_iter->second->get_usage_count() == 0 ) {
-			delete lock_iter->second;
-			m_planet_locks.erase( lock_iter );
+		if( do_lock ) {
+			++m_num_locked_planets;
+		}
+		else {
+			--m_num_locked_planets;
 		}
 	}
 }
@@ -59,47 +105,68 @@ bool LockFacility::is_planet_locked( const Planet& planet ) const {
 	bool is_locked = false;
 
 	{
-		boost::lock_guard<boost::mutex> map_lock( m_planet_locks_mutex );
-		is_locked = m_planet_locks.find( &planet ) != m_planet_locks.end();
+		boost::lock_guard<boost::mutex> lock( m_internal_lock );
+
+		PlanetLockMap::const_iterator iter = m_planet_locks.find( &planet );
+		assert( iter != m_planet_locks.end() );
+
+		if( iter != m_planet_locks.end() ) {
+			is_locked = iter->second->get_usage_count() > 0;
+		}
 	}
 
 	return is_locked;
 }
 
-void LockFacility::lock_entity( const Entity& entity, bool do_lock ) {
-	boost::lock_guard<boost::mutex> map_lock( m_entity_locks_mutex );
-
-	if( do_lock ) {
-		EntityLockMap::iterator lock_iter = m_entity_locks.find( &entity );
-
-		if( lock_iter == m_entity_locks.end() ) {
-			lock_iter = m_entity_locks.insert( std::pair<const Entity*, RefLock*>( &entity, new RefLock ) ).first;
-		}
-
-		lock_iter->second->lock();
-	}
-	else {
-		EntityLockMap::iterator lock_iter = m_entity_locks.find( &entity );
-		assert( lock_iter != m_entity_locks.end() );
-
-		lock_iter->second->unlock();
-
-		if( lock_iter->second->get_usage_count() == 0 ) {
-			delete lock_iter->second;
-			m_entity_locks.erase( lock_iter );
-		}
-	}
-}
-
-bool LockFacility::is_entity_locked( const Entity& entity ) const {
-	bool is_locked = false;
+std::size_t LockFacility::get_num_planet_locks() const {
+	std::size_t num = 0;
 
 	{
-		boost::lock_guard<boost::mutex> map_lock( m_entity_locks_mutex );
-		is_locked = m_entity_locks.find( &entity ) != m_entity_locks.end();
+		boost::lock_guard<boost::mutex> lock( m_internal_lock );
+		num = m_planet_locks.size();
 	}
 
-	return is_locked;
+	return num;
+}
+
+std::size_t LockFacility::get_num_locked_planets() const {
+	std::size_t num = 0;
+
+	{
+		boost::lock_guard<boost::mutex> lock( m_internal_lock );
+		num = m_num_locked_planets;
+	}
+
+	return num;
+}
+
+void LockFacility::create_planet_lock( const Planet& planet ) {
+	boost::lock_guard<boost::mutex> lock( m_internal_lock );
+
+	assert( m_planet_locks.find( &planet ) == m_planet_locks.end() );
+
+	m_planet_locks[&planet] = new RefLock;
+}
+
+void LockFacility::destroy_planet_lock( const Planet& planet ) {
+	assert( is_planet_locked( planet ) == false );
+
+	boost::lock_guard<boost::mutex> lock( m_internal_lock );
+
+	PlanetLockMap::iterator iter = m_planet_locks.find( &planet );
+	assert( iter != m_planet_locks.end() );
+
+	if( iter != m_planet_locks.end() ) {
+		if( iter->second->get_usage_count() == 0 ) {
+			delete iter->second;
+			m_planet_locks.erase( iter );
+		}
+		else {
+#if !defined( NDEBUG )
+			std::cout << "*** WARNING *** Tried to destroy a locked planet." << std::endl;
+#endif
+		}
+	}
 }
 
 }

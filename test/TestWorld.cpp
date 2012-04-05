@@ -54,6 +54,36 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 		BOOST_CHECK( planet->get_chunk_size() == Chunk::Vector( 16, 16, 16 ) );
 	}
 
+	// Iterate over planets.
+	{
+		World world;
+
+		world.create_planet( "planet0", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
+		world.create_planet( "planet1", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
+		world.create_planet( "planet2", Planet::Vector( 4, 4, 4 ), Chunk::Vector( 16, 16, 16 ) );
+
+		World::PlanetConstIterator iter = world.planets_begin();
+		World::PlanetConstIterator iter_end = world.planets_end();
+
+		bool planets[3] = {false, false, false};
+
+		for( ; iter != iter_end; ++iter ) {
+			if( iter->first == "planet0" ) {
+				planets[0] = true;
+			}
+			else if( iter->first == "planet1" ) {
+				planets[1] = true;
+			}
+			else if( iter->first == "planet2" ) {
+				planets[2] = true;
+			}
+		}
+
+		BOOST_CHECK( planets[0] == true );
+		BOOST_CHECK( planets[1] == true );
+		BOOST_CHECK( planets[2] == true );
+	}
+
 	// Manage classes.
 	{
 		FlexID id;

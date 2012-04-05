@@ -17,6 +17,8 @@ namespace flex {
  */
 class World {
 	public:
+		typedef std::map<const std::string, Planet*>::const_iterator PlanetConstIterator; ///< Planet iterator (const).
+
 		/** Ctor.
 		 */
 		World();
@@ -103,6 +105,17 @@ class World {
 		 * @param entity_id Entity ID (must exist).
 		 */
 		void unlink_entity_from_planet( Entity::ID entity_id );
+
+		/** Get iterator to first planet.
+		 * If there's no planet, this iterator is equal to planets_end().
+		 * @return Iterator.
+		 */
+		PlanetConstIterator planets_begin() const;
+
+		/** Get iterator to field behind last planet.
+		 * @return Iterator.
+		 */
+		PlanetConstIterator planets_end() const;
 
 	private:
 		typedef std::map<const std::string, Planet*> PlanetMap;

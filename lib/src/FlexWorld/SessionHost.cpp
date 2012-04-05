@@ -50,6 +50,27 @@ SessionHost::~SessionHost() {
 	stop();
 
 	delete m_script_manager;
+
+	// Destroy all planet locks the host created.
+	m_lock_facility.lock_world( true );
+
+	StringSet::iterator planet_iter( m_managed_planets.begin() );
+	StringSet::iterator planet_iter_end( m_managed_planets.end() );
+	
+	for( ; planet_iter != planet_iter_end; ++planet_iter ) {
+		const Planet* planet = m_world.find_planet( *planet_iter );
+
+		if( planet == nullptr ) {
+#if !defined( NDEBUG )
+			std::cout << "*** WARNING *** Session host couldn't destroy planet " << *planet_iter << "!" << std::endl;
+#endif
+		}
+		else {
+			m_lock_facility.destroy_planet_lock( *planet );
+		}
+	}
+
+	m_lock_facility.lock_world( false );
 }
 
 const LockFacility& SessionHost::get_lock_facility() const {
@@ -118,6 +139,10 @@ bool SessionHost::start() {
 		m_lock_facility.lock_world( false );
 		return false;
 	}
+
+	// Create the lock and add planet to managed planets.
+	m_lock_facility.create_planet_lock( *planet );
+	m_managed_planets.insert( planet->get_id() );
 
 	// Build grass plane.
 	{
@@ -639,18 +664,18 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 		throw std::runtime_error( "Invalid planet." );
 	}
 
-	m_lock_facility.lock_world( true );
 
 	// Find planet.
+	m_lock_facility.lock_world( true );
 	Planet* planet = m_world.find_planet( planet_id );
 
-	m_lock_facility.lock_planet( *planet, true );
-
 	if( planet == nullptr ) {
-		m_lock_facility.lock_planet( *planet, false );
 		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "Planet not found." );
 	}
+
+	m_lock_facility.lock_planet( *planet, true );
+	m_lock_facility.lock_world( false );
 
 	// Convert to "internal" coordinates.
 	Planet::Vector chunk_pos(
@@ -666,14 +691,12 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 		chunk_pos.z >= planet->get_size().z
 	) {
 		m_lock_facility.lock_planet( *planet, false );
-		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "Block position out of range." );
 	}
 
 	// Make sure chunk at given position exists.
 	if( planet->has_chunk( chunk_pos ) == false ) {
 		m_lock_facility.lock_planet( *planet, false );
-		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "No block at given position." );
 	}
 
@@ -687,7 +710,6 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 	// Make sure block exists.
 	if( planet->find_block( chunk_pos, block_pos ) == nullptr ) {
 		m_lock_facility.lock_planet( *planet, false );
-		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "No block at given position." );
 	}
 
@@ -707,7 +729,6 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 	}
 
 	m_lock_facility.lock_planet( *planet, false );
-	m_lock_facility.lock_world( false );
 }
 
 }
