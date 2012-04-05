@@ -197,7 +197,7 @@ void MenuState::init() {
 	// Prepare background.
 	float width = static_cast<float>( get_render_target().getSize().x );
 	float height = static_cast<float>( get_render_target().getSize().y );
-	sf::Uint8 alpha = 100;
+	sf::Uint8 alpha = 255;
 
 	m_background_varray[0] = sf::Vertex( sf::Vector2f( 0, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
 	m_background_varray[1] = sf::Vertex( sf::Vector2f( 0, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
