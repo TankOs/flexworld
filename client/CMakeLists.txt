@@ -13,6 +13,7 @@ set(
 	${INC_DIR}/ClassDrawable.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
+	${INC_DIR}/ColorPicker.hpp
 	${INC_DIR}/ConnectState.hpp
 	${INC_DIR}/Controls.hpp
 	${INC_DIR}/IntroState.hpp
@@ -33,6 +34,7 @@ set(
 	${SRC_DIR}/ClassDrawable.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
+	${SRC_DIR}/ColorPicker.cpp
 	${SRC_DIR}/ConnectState.cpp
 	${SRC_DIR}/Controls.cpp
 	${SRC_DIR}/IntroState.cpp

@@ -39,4 +39,16 @@ float calc_rect_area( float a, float b ) {
 	return a * b;
 }
 
+sf::Vector3f polar_to_vector( float theta, float phi, float r ) {
+	return sf::Vector3f(
+		-r * std::sin( theta ) * std::sin( phi ),
+		r * std::cos( theta ),
+		-r * std::sin( theta ) * std::cos( phi )
+	);
+}
+
+float deg_to_rad( float deg ) {
+	return deg / 180.0f * PI;
+}
+
 }
