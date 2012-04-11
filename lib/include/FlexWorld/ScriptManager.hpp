@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/Vector3.hpp>
 #include <string>
 #include <memory>
 #include <vector>
@@ -11,6 +12,7 @@ class LuaState;
 }
 
 namespace flex {
+class Entity;
 
 namespace lua {
 class Test;
@@ -82,6 +84,22 @@ class ScriptManager {
 		 * @return false if error occured.
 		 */
 		bool trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
+
+		/** Trigger block action class event.
+		 * @param block_pos Block position of block the action is performed on.
+		 * @param next_block_pos Block position of block's neighbour (depending on which face the player clicked on).
+		 * @param primary true if primary action, otherwise secondary.
+		 * @param actor Actor entity (either entity in hand or player entity itself if not holding anything).
+		 * @param client_id Client ID.
+		 * @return false if error occured.
+		 */
+		bool trigger_block_action_class_event(
+			const sf::Vector3<uint32_t>& block_pos,
+			const sf::Vector3<uint32_t>& next_block_pos,
+			bool primary,
+			const flex::Entity& actor,
+			uint16_t client_id
+		);
 
 	private:
 		std::string m_last_error;

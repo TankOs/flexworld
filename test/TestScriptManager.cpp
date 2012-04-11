@@ -3,6 +3,9 @@
 #include "ExampleWorldGate.hpp"
 
 #include <FlexWorld/ScriptManager.hpp>
+#include <FlexWorld/LuaModules/Event.hpp>
+#include <FlexWorld/Class.hpp>
+#include <FlexWorld/Entity.hpp>
 
 #include <SFML/System/String.hpp>
 #include <boost/test/unit_test.hpp>
@@ -144,5 +147,28 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
+	}
+
+	// Trigger block action class event.
+	{
+		ScriptManager manager( server_gate, world_gate );
+
+		BOOST_REQUIRE( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/block_action.lua" ) ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, \"some/class\", handler )" ) == true );
+
+		Class cls( FlexID::make( "some/class" ) );
+		Entity actor( cls );
+		actor.set_id( 100 );
+
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+		BOOST_CHECK(
+			manager.trigger_block_action_class_event(
+				lua::Event::BlockPosition( 1, 2, 3 ),
+				lua::Event::BlockPosition( 4, 5, 6 ),
+				true,
+				actor,
+				1337
+			) == true
+		);
 	}
 }

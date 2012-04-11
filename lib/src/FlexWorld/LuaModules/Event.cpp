@@ -24,21 +24,12 @@ void Event::register_class( Diluculum::LuaVariable target ) {
 	// System events.
 	target["System"] = Diluculum::EmptyTable;
 	target["System"]["CONNECT"] = CONNECT_EVENT;
-	target["System"]["DISCONNECT"] = DISCONNECT_EVENT;
-	//target["System"]["LOGIN"] = LOGIN_EVENT;
-	//target["System"]["LOGIN_FAIL"] = LOGIN_FAIL_EVENT;
 	target["System"]["CHAT"] = CHAT_EVENT;
-	target["System"]["UNLOAD"] = UNLOAD_EVENT;
 
 	// Class events.
 	target["Class"] = Diluculum::EmptyTable;
 	target["Class"]["USE"] = USE_EVENT;
-	//target["Class"]["TAKE"] = TAKE_EVENT;
-	//target["Class"]["DROP"] = DROP_EVENT;
-	target["Class"]["PRIMARY_ACTION"] = PRIMARY_ACTION_EVENT;
-	target["Class"]["SECONDARY_ACTION"] = SECONDARY_ACTION_EVENT;
-	//target["Class"]["CREATE"] = CREATE_EVENT;
-	//target["Class"]["DESTROY"] = DESTROY_EVENT;
+	target["Class"]["BLOCK_ACTION"] = BLOCK_ACTION_EVENT;
 }
 
 bool Event::is_valid_command( const std::string& command ) {
@@ -273,6 +264,38 @@ void Event::trigger_command( const std::string& command, const std::vector<sf::S
 
 	// Call command callback.
 	state.call( cmd_iter->second, call_args, command );
+}
+
+void Event::trigger_block_action_class_event(
+	const BlockPosition& block_pos,
+	const BlockPosition& next_block_pos,
+	bool primary,
+	const flex::Entity& actor,
+	uint16_t client_id,
+	Diluculum::LuaState& state
+) {
+	// Build block position table.
+	Diluculum::LuaValue block_pos_table = Diluculum::EmptyTable;
+	block_pos_table[1] = block_pos.x;
+	block_pos_table[2] = block_pos.y;
+	block_pos_table[3] = block_pos.z;
+
+	// Build next block position table.
+	Diluculum::LuaValue next_block_pos_table = Diluculum::EmptyTable;
+	next_block_pos_table[1] = next_block_pos.x;
+	next_block_pos_table[2] = next_block_pos.y;
+	next_block_pos_table[3] = next_block_pos.z;
+
+	// Build argument list.
+	Diluculum::LuaValueList args;
+
+	args.push_back( block_pos_table );
+	args.push_back( next_block_pos_table );
+	args.push_back( primary );
+	args.push_back( actor.get_id() );
+	args.push_back( client_id );
+
+	call_class_event_callbacks( BLOCK_ACTION_EVENT, actor.get_class().get_id().get(), args, state );
 }
 
 }

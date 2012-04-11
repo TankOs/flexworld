@@ -4,6 +4,7 @@
 #include <Diluculum/LuaFunction.hpp>
 
 #include <SFML/System/String.hpp>
+#include <SFML/System/Vector3.hpp>
 #include <map>
 #include <vector>
 #include <cstdint>
@@ -23,28 +24,21 @@ namespace lua {
  */
 class Event {
 	public:
+		typedef sf::Vector3<uint32_t> BlockPosition; ///< Block position type.
+
 		/** System event.
 		 */
 		enum SystemEvent {
 			CONNECT_EVENT = 0, ///< Client connected.
-			DISCONNECT_EVENT, ///< Client disconnected.
-			LOGIN_EVENT, ///< Client logged in.
-			LOGIN_FAIL_EVENT, ///< Client failed to login.
 			CHAT_EVENT, ///< Chat message.
-			UNLOAD_EVENT, ///< Script gets unloaded.
 			NUM_SYSTEM_EVENTS ///< Number of system events.
 		};
 
 		/** Class event.
 		 */
 		enum ClassEvent {
-			USE_EVENT = 0, ///< Entity used object.
-			TAKE_EVENT, ///< Entity took object.
-			DROP_EVENT, ///< Entity dropped object.
-			PRIMARY_ACTION_EVENT, ///< Primary action triggered on object.
-			SECONDARY_ACTION_EVENT, ///< Secondary action triggered on object.
-			CREATE_EVENT, ///< Object created.
-			DESTROY_EVENT, ///< Object destroyed.
+			USE_EVENT, ///< Player used entity.
+			BLOCK_ACTION_EVENT, ///< Player used primary action on block.
 			NUM_CLASS_EVENTS ///< Number of class events.
 		};
 
@@ -133,6 +127,23 @@ class Event {
 		 * @param state Lua state.
 		 */
 		void trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state );
+
+		/** Trigger block action class event.
+		 * @param block_pos Block position of block the action is performed on.
+		 * @param next_block_pos Block position of block's neighbour (depending on which face the player clicked on).
+		 * @param primary true if primary action, otherwise secondary.
+		 * @param actor Actor entity (either entity in hand or player entity itself if not holding anything).
+		 * @param client_id Client ID.
+		 * @param state Lua state.
+		 */
+		void trigger_block_action_class_event(
+			const BlockPosition& block_pos,
+			const BlockPosition& next_block_pos,
+			bool primary,
+			const flex::Entity& actor,
+			uint16_t client_id,
+			Diluculum::LuaState& state
+		);
 
 		/** Trigger command.
 		 * @param command Command.

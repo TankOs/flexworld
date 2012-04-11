@@ -47,10 +47,9 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		event.register_object( state["flex"]["event"] );
 
 		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.DISCONNECT, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.UNLOAD, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CHAT, function() end )" ) );
 
-		BOOST_CHECK( event.get_num_system_hooks() == 3 );
+		BOOST_CHECK( event.get_num_system_hooks() == 2 );
 	}
 
 	// Hook class events.
@@ -62,10 +61,9 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		event.register_object( state["flex"]["event"] );
 
 		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.PRIMARY_ACTION, \"some/class\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.SECONDARY_ACTION, \"some/class\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, \"some/class\", function() end )" ) );
 
-		BOOST_CHECK( event.get_num_class_hooks() == 3 );
+		BOOST_CHECK( event.get_num_class_hooks() == 2 );
 	}
 
 	// Hook commands.
@@ -158,6 +156,20 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == \"100,200\" )" ) );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == \"200,100\" )" ) );
+
+		// Trigger block action event.
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == nil )" ) );
+
+		event.trigger_block_action_class_event(
+			lua::Event::BlockPosition( 1, 2, 3 ),
+			lua::Event::BlockPosition( 4, 5, 6 ),
+			true,
+			ent_a,
+			1337,
+			state
+		);
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == \"called\" )" ) );
 	}
 
 	// Trigger commands.
