@@ -6,7 +6,7 @@ Meta:
   MinFlexWorldVersion: [0, 0, 0]
   MaxFlexWorldVersion: [0, 0, 0]
   Thumbnail: fw.gm.sandbox/thumbnail.png
-  DefaultEntityClassId: fw.base.human/dwarf_male
+  DefaultEntityClassId: fw.sandbox.player/dwarf_male
 Packages:
   - fw.admin
   - fw.chat

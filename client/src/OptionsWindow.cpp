@@ -115,8 +115,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	row_index = 0;
 	bindings_table->Attach( sfg::Label::Create( L"Use/Take:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Drop:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
-	bindings_table->Attach( sfg::Label::Create( L"Primary attack:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
-	bindings_table->Attach( sfg::Label::Create( L"Secondary attack:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	bindings_table->Attach( sfg::Label::Create( L"Primary action:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	bindings_table->Attach( sfg::Label::Create( L"Secondary action:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Inventory:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Chat:" ), sf::Rect<sf::Uint32>( 2, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
