@@ -21,7 +21,7 @@ function on_dblock_command( args, sender )
 		return
 	end
 
-	flex.world:destroy_block( x, y, z, planet )
+	flex.world:destroy_block( {x, y, z}, planet )
 	flex.server:broadcast_chat_message( username .. " destroyed block @ " .. x .. ", " .. y .. ", " .. z .. ".", reply_channel, "Server" )
 end
 
@@ -53,7 +53,7 @@ function on_dblockrange_command( args, sender )
 	for rx = x0, x1 do
 		for ry = y0, y1 do
 			for rz = z0, z1 do
-				flex.world:destroy_block( rx, ry, rz, planet )
+				flex.world:destroy_block( {rx, ry, rz}, planet )
 			end
 		end
 	end

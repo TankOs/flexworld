@@ -33,37 +33,36 @@ void World::register_object( Diluculum::LuaVariable target ) {
 }
 
 Diluculum::LuaValueList World::destroy_block( const Diluculum::LuaValueList& args ) {
-	if( args.size() != 4 ) {
+	if( args.size() != 2 ) {
 		throw Diluculum::LuaError( "Wrong number of arguments." );
 	}
 
-	if( args[0].type() != LUA_TNUMBER ) {
-		throw Diluculum::LuaError( "Expected number for x." );
+	if( args[0].type() != LUA_TTABLE ) {
+		throw Diluculum::LuaError( "Expected table for position." );
 	}
-	else if( args[1].type() != LUA_TNUMBER ) {
-		throw Diluculum::LuaError( "Expected number for y." );
-	}
-	else if( args[2].type() != LUA_TNUMBER ) {
-		throw Diluculum::LuaError( "Expected number for z." );
-	}
-	else if( args[3].type() != LUA_TSTRING ) {
+	else if( args[1].type() != LUA_TSTRING ) {
 		throw Diluculum::LuaError( "Expected string for planet." );
 	}
 
-	if( args[0].asNumber() < 0 ) {
-		throw Diluculum::LuaError( "Invalid x." );
+	Diluculum::LuaValueMap position_table = args[0].asTable();
+
+	if( position_table.size() != 3 ) {
+		throw Diluculum::LuaError( "Wrong number of elements in position table." );
 	}
-	else if( args[1].asNumber() < 0 ) {
-		throw Diluculum::LuaError( "Invalid y." );
+	else if( position_table[1].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for x position." );
 	}
-	else if( args[2].asNumber() < 0 ) {
-		throw Diluculum::LuaError( "Invalid z." );
+	else if( position_table[2].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for y position." );
+	}
+	else if( position_table[3].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for z position." );
 	}
 
-	uint32_t x = static_cast<uint32_t>( args[0].asNumber() );
-	uint32_t y = static_cast<uint32_t>( args[1].asNumber() );
-	uint32_t z = static_cast<uint32_t>( args[2].asNumber() );
-	std::string planet = args[3].asString();
+	uint32_t x = static_cast<uint32_t>( position_table[1].asNumber() );
+	uint32_t y = static_cast<uint32_t>( position_table[2].asNumber() );
+	uint32_t z = static_cast<uint32_t>( position_table[3].asNumber() );
+	std::string planet = args[1].asString();
 
 	if( planet.empty() ) {
 		throw Diluculum::LuaError( "Invalid planet." );

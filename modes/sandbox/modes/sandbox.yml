@@ -11,3 +11,4 @@ Packages:
   - fw.admin
   - fw.chat
   - fw.sandbox.admin
+  - fw.sandbox.player
