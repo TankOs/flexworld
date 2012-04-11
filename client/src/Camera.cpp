@@ -38,7 +38,10 @@ const sf::Vector3f& Camera::get_position() const {
 }
 
 void Camera::set_rotation( const sf::Vector3f& rotation ) {
-	m_rotation = rotation;
+	m_rotation.x = std::fmod( rotation.x, 360.0f );
+	m_rotation.y = std::fmod( rotation.y, 360.0f );
+	m_rotation.z = std::fmod( rotation.z, 360.0f );
+
 	apply_clamp();
 }
 
@@ -47,7 +50,10 @@ const sf::Vector3f& Camera::get_rotation() const {
 }
 
 void Camera::turn( const sf::Vector3f& angle ) {
-	m_rotation += angle;
+	m_rotation.x = std::fmod( m_rotation.x + angle.x, 360.f );
+	m_rotation.y = std::fmod( m_rotation.y + angle.y, 360.f );
+	m_rotation.z = std::fmod( m_rotation.z + angle.z, 360.f );
+
 	apply_clamp();
 }
 

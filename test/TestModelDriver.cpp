@@ -557,9 +557,9 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		// Too less vertices.
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Too less vertices." ) );
 
-		buffer.insert( buffer.end(), sizeof( sg::Vertex ), 0 );
-		buffer.insert( buffer.end(), sizeof( sg::Vertex ), 0 );
-		buffer.insert( buffer.end(), sizeof( sg::Vertex ), 0 );
+		buffer.insert( buffer.end(), sizeof( sf::Vector3f ) + sizeof( sf::Vector3f ) + sizeof( sf::Vector2f ), 0 );
+		buffer.insert( buffer.end(), sizeof( sf::Vector3f ) + sizeof( sf::Vector3f ) + sizeof( sf::Vector2f ), 0 );
+		buffer.insert( buffer.end(), sizeof( sf::Vector3f ) + sizeof( sf::Vector3f ) + sizeof( sf::Vector2f ), 0 );
 
 		// Too less triangles.
 		BOOST_CHECK( deserialize_and_check_exception( buffer, "Too less triangles." ) );

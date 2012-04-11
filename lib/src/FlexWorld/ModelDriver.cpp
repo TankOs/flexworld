@@ -55,8 +55,18 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 
 			buffer.insert(
 				buffer.end(),
-				reinterpret_cast<const char*>( &vertex ),
-				reinterpret_cast<const char*>( &vertex ) + sizeof( vertex )
+				reinterpret_cast<const char*>( &vertex.vector ),
+				reinterpret_cast<const char*>( &vertex.vector ) + sizeof( vertex.vector )
+			);
+			buffer.insert(
+				buffer.end(),
+				reinterpret_cast<const char*>( &vertex.normal ),
+				reinterpret_cast<const char*>( &vertex.normal ) + sizeof( vertex.normal )
+			);
+			buffer.insert(
+				buffer.end(),
+				reinterpret_cast<const char*>( &vertex.uv ),
+				reinterpret_cast<const char*>( &vertex.uv ) + sizeof( vertex.uv )
 			);
 		}
 
@@ -217,16 +227,22 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 		Mesh mesh;
 		mesh.set_texture_slot( texture_slot );
 
-		// Read vertices.
+		// Read vertices (vector, normal and UV coordinates only).
 		sg::Vertex vertex;
 
-		if( buffer.size() - buf_ptr < num_vertices * sizeof( vertex ) ) {
+		if( buffer.size() - buf_ptr < num_vertices * (sizeof( vertex.vector ) + sizeof( vertex.normal ) + sizeof( vertex.uv )) ) {
 			throw DeserializationException( "Too less vertices." );
 		}
 
 		for( uint16_t vertex_idx = 0; vertex_idx < num_vertices; ++vertex_idx ) {
-			vertex = *reinterpret_cast<const sg::Vertex*>( &buffer[buf_ptr] );
-			buf_ptr += sizeof( vertex );
+			vertex.vector = *reinterpret_cast<const sf::Vector3f*>( &buffer[buf_ptr] );
+			buf_ptr += sizeof( vertex.vector );
+
+			vertex.normal = *reinterpret_cast<const sf::Vector3f*>( &buffer[buf_ptr] );
+			buf_ptr += sizeof( vertex.normal );
+
+			vertex.uv = *reinterpret_cast<const sf::Vector2f*>( &buffer[buf_ptr] );
+			buf_ptr += sizeof( vertex.uv );
 
 			mesh.get_geometry().add_vertex( vertex );
 		}

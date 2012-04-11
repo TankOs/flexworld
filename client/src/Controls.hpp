@@ -9,20 +9,20 @@ class Controls {
 		/** Actions.
 		 */
 		enum Action {
-			UNMAPPED = 0,
-			WALK_FORWARD,
-			WALK_BACKWARD,
-			STRAFE_LEFT,
-			STRAFE_RIGHT,
-			JUMP,
-			CROUCH,
-			USE,
-			DROP,
-			PRIMARY_ATTACK,
-			SECONDARY_ATTACK,
-			INVENTORY,
-			CHAT,
-			ACTION_COUNT
+			UNMAPPED = 0, ///< Unmapped.
+			WALK_FORWARD, ///< Walk forward.
+			WALK_BACKWARD, ///< Walk backward.
+			STRAFE_LEFT, ///< Strafe left.
+			STRAFE_RIGHT, ///< Strafe right.
+			JUMP, ///< Jump.
+			CROUCH, ///< Crouch.
+			USE, ///< Use.
+			DROP, ///< Drop.
+			PRIMARY_ACTION, ///< Primary action.
+			SECONDARY_ACTION, ///< Secondary action.
+			INVENTORY, ///< Inventory.
+			CHAT, ///< Chat.
+			NUM_ACTIONS ///< Total number of actions.
 		};
 
 		typedef std::map<const int, Action> ControlMap; ///< Key/Button -> Action bindings.

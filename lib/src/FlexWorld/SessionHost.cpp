@@ -165,6 +165,25 @@ bool SessionHost::start() {
 		}
 	}
 
+	/// XXX Build huge block.
+	{
+		Planet::Vector chunk_pos( 1, 0, 1 );
+		Chunk::Vector block_pos( 0, 0, 0 );
+
+		for( block_pos.x = 0; block_pos.x < DEFAULT_CHUNK_SIZE.x; ++block_pos.x ) {
+			for( block_pos.y = 0; block_pos.y < DEFAULT_CHUNK_SIZE.y; ++block_pos.y ) {
+				for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
+					if(
+						(block_pos.y % 2 == 0 && block_pos.x % 2 == 0) ||
+						(block_pos.y % 2 != 0 && block_pos.x % 2 != 0)
+					) {
+						planet->set_block( chunk_pos, block_pos, *grass_cls );
+					}
+				}
+			}
+		}
+	}
+
 	// Release lock again.
 	m_lock_facility.lock_world( false );
 

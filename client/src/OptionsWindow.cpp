@@ -40,8 +40,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_action_buttons[Controls::CROUCH] = sfg::Button::Create();
 	window->m_action_buttons[Controls::USE] = sfg::Button::Create();
 	window->m_action_buttons[Controls::DROP] = sfg::Button::Create();
-	window->m_action_buttons[Controls::PRIMARY_ATTACK] = sfg::Button::Create();
-	window->m_action_buttons[Controls::SECONDARY_ATTACK] = sfg::Button::Create();
+	window->m_action_buttons[Controls::PRIMARY_ACTION] = sfg::Button::Create();
+	window->m_action_buttons[Controls::SECONDARY_ACTION] = sfg::Button::Create();
 	window->m_action_buttons[Controls::INVENTORY] = sfg::Button::Create();
 	window->m_action_buttons[Controls::CHAT] = sfg::Button::Create();
 
@@ -131,8 +131,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	row_index = 0;
 	bindings_table->Attach( window->m_action_buttons[Controls::USE], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::DROP], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	bindings_table->Attach( window->m_action_buttons[Controls::PRIMARY_ATTACK], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
-	bindings_table->Attach( window->m_action_buttons[Controls::SECONDARY_ATTACK], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	bindings_table->Attach( window->m_action_buttons[Controls::PRIMARY_ACTION], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	bindings_table->Attach( window->m_action_buttons[Controls::SECONDARY_ACTION], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::INVENTORY], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::CHAT], sf::Rect<sf::Uint32>( 3, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 

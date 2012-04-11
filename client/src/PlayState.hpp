@@ -72,7 +72,7 @@ class PlayState : public State, flex::Client::Handler {
 		sf::Sprite m_crosshair_sprite;
 
 		// Resources.
-		ResourceManager m_resource_manager;
+		mutable ResourceManager m_resource_manager;
 
 		// Scene.
 		sg::Renderer m_renderer;

@@ -67,8 +67,8 @@ void Client::run() {
 			controls.map_key( sf::Keyboard::F, Controls::INVENTORY );
 			controls.map_key( sf::Keyboard::T, Controls::CHAT );
 
-			controls.map_button( sf::Mouse::Left, Controls::PRIMARY_ATTACK );
-			controls.map_button( sf::Mouse::Right, Controls::SECONDARY_ATTACK );
+			controls.map_button( sf::Mouse::Left, Controls::PRIMARY_ACTION );
+			controls.map_button( sf::Mouse::Right, Controls::SECONDARY_ACTION );
 		}
 	}
 

@@ -175,7 +175,7 @@ bool UserSettings::load( const std::string& filename ) {
 			key_iter.first() >> key;
 			key_iter.second() >> action;
 
-			if( action > Controls::UNMAPPED && action < Controls::ACTION_COUNT ) {
+			if( action > Controls::UNMAPPED && action < Controls::NUM_ACTIONS ) {
 				new_settings.m_controls.map_key( key, static_cast<Controls::Action>( action ) );
 			}
 		}
@@ -195,7 +195,7 @@ bool UserSettings::load( const std::string& filename ) {
 			button_iter.first() >> button;
 			button_iter.second() >> action;
 
-			if( action > Controls::UNMAPPED && action < Controls::ACTION_COUNT ) {
+			if( action > Controls::UNMAPPED && action < Controls::NUM_ACTIONS ) {
 				new_settings.m_controls.map_button( button, static_cast<Controls::Action>( action ) );
 			}
 		}

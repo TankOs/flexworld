@@ -352,7 +352,7 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	
 	for( ; tex_geometry_iter != tex_geometry_iter_end; ++tex_geometry_iter ) {
 		// Create buffer object.
-		sg::BufferObject::Ptr buffer_object( new sg::BufferObject( sg::BufferObject::NORMALS | sg::BufferObject::TEX_COORDS ) );
+		sg::BufferObject::Ptr buffer_object( new sg::BufferObject( sg::BufferObject::NORMALS | sg::BufferObject::TEX_COORDS, false ) );
 
 		// Save buffer object, texture and geometry for delayed initialization.
 		DelayedStep::Entry entry;

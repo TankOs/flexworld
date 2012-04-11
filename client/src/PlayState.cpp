@@ -2,8 +2,8 @@
 
 #include "PlayState.hpp"
 #include "MenuState.hpp"
+#include "ColorPicker.hpp"
 #include "Shared.hpp"
-#include <FlexWorld/ClassDriver.hpp> // XXX 
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -12,8 +12,11 @@
 #include <FlexWorld/Config.hpp>
 
 #include <SFGUI/Engines/BREW.hpp>
+#include <FWSG/Transform.hpp>
 #include <FWSG/WireframeState.hpp>
+#include <FWSG/DepthTestState.hpp>
 #include <sstream>
+#include <iostream> // XXX 
 
 static const sf::Time MESSAGE_DELAY = sf::milliseconds( 2000 );
 static const float MESSAGE_SPACING = 5.f;
@@ -110,6 +113,8 @@ void PlayState::init() {
 	m_sun_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
 	m_sun_texture.setSmooth( true );
 	m_sky->set_sun_texture( m_sun_texture );
+
+	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup camera.
 	m_camera.set_fov( get_shared().user_settings.get_fov() );
@@ -230,33 +235,46 @@ void PlayState::handle_event( const sf::Event& event ) {
 		m_has_focus = true;
 	}
 
-	// Check for movement keys.
-	if( event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased ) {
-		Controls::Action action = get_shared().user_settings.get_controls().get_key_action( event.key.code );
+	// Event processing when not in GUI mode, in general movement and actions.
+	if( !m_gui_mode ) {
+		// Check for actions.
+		if( event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased || event.type == sf::Event::MouseButtonPressed ) {
+			Controls::Action action;
+			bool pressed = false;
 
-		if( action != Controls::UNMAPPED && !m_gui_mode ) {
-			bool pressed = (event.type == sf::Event::KeyPressed) ? true : false;
-			give_gui = false;
+			if( event.type == sf::Event::MouseButtonPressed ) {
+				// Mouse button action.
+				pressed = true;
+				action = get_shared().user_settings.get_controls().get_button_action( event.mouseButton.button );
+			}
+			else {
+				// Key action.
+				pressed = (event.type == sf::Event::KeyPressed);
+				action = get_shared().user_settings.get_controls().get_key_action( event.key.code );
+			}
 
-			// Process action keys. Only when not in GUI mode.
-			if( !m_gui_mode ) {
-				if( action == Controls::WALK_FORWARD ) {
+			switch( action ) {
+				case Controls::WALK_FORWARD:
 					m_walk_forward = pressed;
 					m_update_velocity = true;
-				}
-				else if( action == Controls::WALK_BACKWARD ) {
+					break;
+
+				case Controls::WALK_BACKWARD:
 					m_walk_backward = pressed;
 					m_update_velocity = true;
-				}
-				else if( action == Controls::STRAFE_LEFT ) {
+					break;
+
+				case Controls::STRAFE_LEFT:
 					m_strafe_left = pressed;
 					m_update_velocity = true;
-				}
-				else if( action == Controls::STRAFE_RIGHT ) {
+					break;
+
+				case Controls::STRAFE_RIGHT:
 					m_strafe_right = pressed;
 					m_update_velocity = true;
-				}
-				else if( action == Controls::CHAT ) {
+					break;
+
+				case Controls::CHAT:
 					if( pressed ) {
 						m_chat_window->Show( !m_chat_window->IsVisible() );
 						update_gui_mode();
@@ -267,15 +285,79 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 							// Move mouse cursor to window to keep distances low. ;-)
 							sf::Mouse::setPosition(
-								sf::Vector2i(
-									static_cast<int>( m_chat_window->GetAllocation().left ) + static_cast<int>( m_chat_window->GetAllocation().width / 2 ),
-									static_cast<int>( m_chat_window->GetAllocation().top ) + static_cast<int>( m_chat_window->GetAllocation().height / 2 )
-								),
-								get_render_target()
-							);
+									sf::Vector2i(
+										static_cast<int>( m_chat_window->GetAllocation().left ) + static_cast<int>( m_chat_window->GetAllocation().width / 2 ),
+										static_cast<int>( m_chat_window->GetAllocation().top ) + static_cast<int>( m_chat_window->GetAllocation().height / 2 )
+										),
+									get_render_target()
+									);
 						}
 					}
-				}
+
+					break;
+
+				case Controls::PRIMARY_ACTION:
+					{
+						// Calc forward vector.
+						sf::Vector3f forward = flex::polar_to_vector(
+							flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
+							flex::deg_to_rad( -m_camera.get_rotation().y ),
+							1.0f
+						);
+
+						float distance = 15.0f; // TODO Take distance from server?
+						sf::Vector3f origin = m_camera.get_position();
+
+						// Get planet.
+						get_shared().lock_facility->lock_world( true );
+
+						const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+						assert( planet != nullptr );
+
+						get_shared().lock_facility->lock_planet( *planet, true );
+						get_shared().lock_facility->lock_world( false );
+
+						ColorPicker::Result result = ColorPicker::pick(
+							origin,
+							forward,
+							distance,
+							sg::Transform(
+								sf::Vector3f(
+									-m_camera.get_position().x,
+									-m_camera.get_position().y,
+									-m_camera.get_position().z
+								),
+								sf::Vector3f(
+									m_camera.get_rotation().x,
+									m_camera.get_rotation().y,
+									m_camera.get_rotation().z
+								)
+							),
+							sf::Vector2i(
+								get_render_target().getSize().x / 2,
+								get_render_target().getSize().y / 2
+							),
+							*planet,
+							m_resource_manager
+						);
+
+						get_shared().lock_facility->lock_planet( *planet, false );
+
+						if( result.m_type == ColorPicker::Result::NONE ) {
+							std::cout << "Nothing picked." << std::endl;
+						}
+						else if( result.m_type == ColorPicker::Result::BLOCK ) {
+							std::cout << "Block picked @ " << result.m_block_position.x << ", " << result.m_block_position.y << ", " << result.m_block_position.z << std::endl;
+						}
+						else if( result.m_type == ColorPicker::Result::ENTITY ) {
+							std::cout << "Entity " << result.m_entity_id << " picked." << std::endl;
+						}
+					}
+
+					break;
+
+				default:
+					break;
 			}
 		}
 	}
@@ -451,18 +533,20 @@ void PlayState::render() const {
 		static_cast<float>( local_sky_color.a ) / 255.f
 	);
 
-	glEnable( GL_DEPTH_TEST );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// Render sky.
 	m_sky->render();
 
 	// Render scene graph.
+	glColor3f( 1, 1, 1 );
 	m_renderer.render();
+
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );
 	glDisable( GL_DEPTH_TEST );
+	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
 	glEnableClientState( GL_VERTEX_ARRAY ); // SFML needs this.
 	glEnableClientState( GL_TEXTURE_COORD_ARRAY ); // SFML needs this.
@@ -777,7 +861,7 @@ void PlayState::on_chat_message_ready() {
 	get_shared().client->send_message( msg );
 }
 
-void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID conn_id ) {
+void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 	sf::String message = "<";
 
 	message += msg.get_sender();
@@ -792,7 +876,7 @@ void PlayState::on_chat_close_click() {
 	update_gui_mode();
 }
 
-void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID conn_id ) {
+void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
 		return;
