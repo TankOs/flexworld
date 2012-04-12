@@ -12,6 +12,7 @@
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/Messages/DestroyBlock.hpp>
+#include <FlexWorld/Messages/BlockAction.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1305,6 +1306,99 @@ BOOST_AUTO_TEST_CASE( TestDestroyBlockMessage ) {
 	// Deserialize with too less data.
 	{
 		msg::DestroyBlock msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestBlockActionMessage ) {
+	using namespace flex;
+
+	static const msg::BlockAction::BlockPosition BLOCK_POS( 1, 2, 3 );
+	static const bool PRIMARY = false;
+	static const Facing FACING = EAST;
+	static const uint8_t FLAGS_COMBINED = (static_cast<uint8_t>( PRIMARY ) << 4) | (static_cast<uint8_t>( FACING ) & 0x0f);
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &BLOCK_POS ), reinterpret_cast<const char*>( &BLOCK_POS ) + sizeof( BLOCK_POS ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &FLAGS_COMBINED ), reinterpret_cast<const char*>( &FLAGS_COMBINED ) + sizeof( FLAGS_COMBINED ) );
+
+	// Initial state.
+	{
+		msg::BlockAction msg;
+
+		BOOST_CHECK( msg.get_block_position() == msg::DestroyBlock::BlockPosition( 0, 0, 0 ) );
+		BOOST_CHECK( msg.is_primary() == true );
+		BOOST_CHECK( msg.get_facing() == NORTH );
+	}
+
+	// Basic properties.
+	{
+		msg::BlockAction msg;
+
+		msg.set_block_position( BLOCK_POS );
+		msg.set_primary( PRIMARY );
+		msg.set_facing( FACING );
+
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+		BOOST_CHECK( msg.is_primary() == PRIMARY );
+		BOOST_CHECK( msg.get_facing() == FACING );
+	}
+
+	// Serialize.
+	{
+		msg::BlockAction msg;
+
+		msg.set_block_position( BLOCK_POS );
+		msg.set_primary( PRIMARY );
+		msg.set_facing( FACING );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::BlockAction msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+		BOOST_CHECK( msg.is_primary() == PRIMARY );
+		BOOST_CHECK( msg.get_facing() == FACING );
+	}
+
+	// Deserialize with invalid facing.
+	{
+		ServerProtocol::Buffer invalid_source = source;
+		invalid_source[sizeof( BLOCK_POS )] = static_cast<uint8_t>( 0x1f );
+
+		msg::BlockAction msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION(
+			eaten = msg.deserialize(
+				&invalid_source[0],
+				invalid_source.size()
+			),
+			msg::BlockAction::BogusDataException,
+			ExceptionChecker<msg::BlockAction::BogusDataException>( "Invalid facing." )
+		);
+
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::BlockAction msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );

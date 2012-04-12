@@ -29,6 +29,7 @@ set(
 	${INC_DIR}/FlexWorld/Cuboid.inl
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/Face.hpp
+	${INC_DIR}/FlexWorld/Facing.hpp
 	${INC_DIR}/FlexWorld/FlexID.hpp
 	${INC_DIR}/FlexWorld/GameMode.hpp
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
@@ -44,6 +45,7 @@ set(
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
+	${INC_DIR}/FlexWorld/Messages/BlockAction.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
 	${INC_DIR}/FlexWorld/Messages/Chunk.hpp
 	${INC_DIR}/FlexWorld/Messages/ChunkUnchanged.hpp
@@ -102,6 +104,7 @@ set(
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
+	${SRC_DIR}/FlexWorld/Messages/BlockAction.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chunk.cpp
 	${SRC_DIR}/FlexWorld/Messages/ChunkUnchanged.cpp
