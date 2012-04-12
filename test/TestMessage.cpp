@@ -13,6 +13,7 @@
 #include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/Messages/BlockAction.hpp>
+#include <FlexWorld/Messages/SetBlock.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1399,6 +1400,95 @@ BOOST_AUTO_TEST_CASE( TestBlockActionMessage ) {
 	// Deserialize with too less data.
 	{
 		msg::BlockAction msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestSetBlockMessage ) {
+	using namespace flex;
+
+	static const msg::BlockAction::BlockPosition BLOCK_POS( 1, 2, 3 );
+	static const std::string CLASS_ID = "some/class";
+	static const uint8_t CLASS_ID_SIZE = static_cast<uint8_t>( CLASS_ID.size() );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &BLOCK_POS ), reinterpret_cast<const char*>( &BLOCK_POS ) + sizeof( BLOCK_POS ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CLASS_ID_SIZE ), reinterpret_cast<const char*>( &CLASS_ID_SIZE ) + sizeof( CLASS_ID_SIZE ) );
+	source.insert( source.end(), CLASS_ID.begin(), CLASS_ID.end() );
+
+	// Initial state.
+	{
+		msg::SetBlock msg;
+
+		BOOST_CHECK( msg.get_block_position() == msg::SetBlock::BlockPosition( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_class_id() == "" );
+	}
+
+	// Basic properties.
+	{
+		msg::SetBlock msg;
+
+		msg.set_block_position( BLOCK_POS );
+		msg.set_class_id( CLASS_ID );
+
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+		BOOST_CHECK( msg.get_class_id() == CLASS_ID );
+	}
+
+	// Serialize.
+	{
+		msg::SetBlock msg;
+
+		msg.set_block_position( BLOCK_POS );
+		msg.set_class_id( CLASS_ID );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::SetBlock msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+
+		BOOST_CHECK( msg.get_block_position() == BLOCK_POS );
+		BOOST_CHECK( msg.get_class_id() == CLASS_ID );
+	}
+
+	// Deserialize with invalid class ID length.
+	{
+		ServerProtocol::Buffer invalid_source = source;
+
+		invalid_source[sizeof( BLOCK_POS )] = 0;
+
+		msg::SetBlock msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION(
+			eaten = msg.deserialize(
+				&invalid_source[0],
+				invalid_source.size()
+			),
+			msg::SetBlock::BogusDataException,
+			ExceptionChecker<msg::BlockAction::BogusDataException>( "Invalid class ID length." )
+		);
+
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::SetBlock msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );

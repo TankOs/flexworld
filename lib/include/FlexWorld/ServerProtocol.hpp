@@ -13,6 +13,7 @@
 #include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/Messages/BlockAction.hpp>
+#include <FlexWorld/Messages/SetBlock.hpp>
 #include <FlexWorld/TemplateUtils.hpp>
 
 namespace flex {
@@ -28,8 +29,9 @@ typedef
 	tpl::Typelist<msg::CreateEntity,
 	tpl::Typelist<msg::Chat,
 	tpl::Typelist<msg::DestroyBlock,
-	tpl::Typelist<msg::BlockAction
-	>>>>>>>>>>>
+	tpl::Typelist<msg::BlockAction,
+	tpl::Typelist<msg::SetBlock
+	>>>>>>>>>>>>
 	ServerMessageList
 ;
 
