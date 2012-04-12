@@ -126,6 +126,10 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 			m_last_destroy_block_message = msg;
 		}
 
+		void handle_message( const flex::msg::SetBlock& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+			m_last_set_block_message = msg;
+		}
+
 		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
@@ -134,6 +138,7 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 		std::size_t m_num_chat_messages_received;
 		flex::msg::Chat m_last_chat_message;
 		flex::msg::DestroyBlock m_last_destroy_block_message;
+		flex::msg::SetBlock m_last_set_block_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
@@ -408,8 +413,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		io_service.poll();
 
 		// Check that client received set block message.
-		//BOOST_CHECK( handler.m_last_set_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
-		//BOOST_CHECK( handler.m_last_set_block_message.get_facing() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+		BOOST_CHECK( handler.m_last_set_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+		BOOST_CHECK( handler.m_last_set_block_message.get_class_id() == CLASS_ID.get() );
 
 		// Check invalid set calls.
 		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), PLANET_ID, CLASS_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );

@@ -13,7 +13,7 @@ function on_build_class_block_action( block, next_block, primary, actor, client_
 		--flex.server:broadcast_chat_message( username .. " destroyed a block @ " .. block[1] .. ", " .. block[2] .. ", " .. block[3] .. ".", reply_channel, "Server" )
 	else
 		-- Primary action places a block.
-		flex.world:set_block( next_block, "fw.base.nature/stone", planet )
+		flex.world:set_block( next_block, planet, "fw.base.nature/stone" )
 	end
 end
 

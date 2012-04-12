@@ -804,6 +804,19 @@ void SessionHost::set_block( const WorldGate::BlockPosition& block_position, con
 
 	m_lock_facility.lock_planet( *planet, false );
 	m_lock_facility.lock_world( false );
+
+	// Notify clients. TODO Only those in vicinity and on planet.
+	msg::SetBlock sb_msg;
+	sb_msg.set_block_position( block_position );
+	sb_msg.set_class_id( cls_id.get() );
+
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected == false ) {
+			continue;
+		}
+
+		m_server->send_message( sb_msg, static_cast<Server::ConnectionID>( client_idx ) );
+	}
 }
 
 void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id ) {
