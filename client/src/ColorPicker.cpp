@@ -194,9 +194,15 @@ ColorPicker::Result ColorPicker::pick(
 			for( std::size_t triangle_idx = 0; triangle_idx < num_triangles; ++triangle_idx ) {
 				sf::Vector3f vectors[3];
 
-				vectors[0] = geo_position + mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 0 ) ) ).vector;
-				vectors[1] = geo_position + mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 1 ) ) ).vector;
-				vectors[2] = geo_position + mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 2 ) ) ).vector;
+				// Get vectors and divide by block scale divisor.
+				vectors[0] = mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 0 ) ) ).vector / model->get_block_scale_divisor();
+				vectors[1] = mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 1 ) ) ).vector / model->get_block_scale_divisor();
+				vectors[2] = mesh_geo.get_vertex( static_cast<uint32_t>( mesh_geo.get_index( triangle_idx * 3 + 2 ) ) ).vector / model->get_block_scale_divisor();
+
+				// Add absolute position.
+				vectors[0] += geo_position;
+				vectors[1] += geo_position;
+				vectors[2] += geo_position;
 
 				geometry.add_triangle(
 					sg::Vertex( vectors[0], sf::Vector3f(), sf::Vector2f(), block_color ),
@@ -304,7 +310,15 @@ ColorPicker::Result ColorPicker::pick(
 
 	// Build bounding box geometry.
 	sg::TriangleGeometry bb_geometry;
-	const flex::FloatCuboid& bb = model->get_bounding_box();
+	flex::FloatCuboid bb = model->get_bounding_box();
+
+	// Apply block scale divisor.
+	bb.x /= model->get_block_scale_divisor();
+	bb.y /= model->get_block_scale_divisor();
+	bb.z /= model->get_block_scale_divisor();
+	bb.width /= model->get_block_scale_divisor();
+	bb.height /= model->get_block_scale_divisor();
+	bb.depth /= model->get_block_scale_divisor();
 
 	// Front (south face).
 	bb_geometry.add_triangle(

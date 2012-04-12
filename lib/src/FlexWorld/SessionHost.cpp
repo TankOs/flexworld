@@ -165,25 +165,6 @@ bool SessionHost::start() {
 		}
 	}
 
-	/// XXX Build huge block.
-	{
-		Planet::Vector chunk_pos( 1, 0, 1 );
-		Chunk::Vector block_pos( 0, 0, 0 );
-
-		for( block_pos.x = 0; block_pos.x < DEFAULT_CHUNK_SIZE.x; ++block_pos.x ) {
-			for( block_pos.y = 0; block_pos.y < DEFAULT_CHUNK_SIZE.y; ++block_pos.y ) {
-				for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
-					if(
-						(block_pos.y % 2 == 0 && block_pos.x % 2 == 0) ||
-						(block_pos.y % 2 != 0 && block_pos.x % 2 != 0)
-					) {
-						planet->set_block( chunk_pos, block_pos, *grass_cls );
-					}
-				}
-			}
-		}
-	}
-
 	// Release lock again.
 	m_lock_facility.lock_world( false );
 
@@ -844,10 +825,44 @@ void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::Connec
 	if( info.planet->transform( block_position, chunk_pos, block_pos ) ) {
 		// Verify the block exists.
 		if( info.planet->find_block( chunk_pos, block_pos ) != nullptr ) {
+			// Get next block. Set to current block as a fallback.
+			msg::BlockAction::BlockPosition next_block = ba_msg.get_block_position();
+
+			if( ba_msg.get_facing() == NORTH ) {
+				if( next_block.z > 0 ) {
+					--next_block.z;
+				}
+			}
+			else if( ba_msg.get_facing() == SOUTH ) {
+				if( next_block.z + 1 < info.planet->get_size().z * info.planet->get_chunk_size().z ) {
+					++next_block.z;
+				}
+			}
+			else if( ba_msg.get_facing() == WEST ) {
+				if( next_block.x > 0 ) {
+					--next_block.x;
+				}
+			}
+			else if( ba_msg.get_facing() == EAST ) {
+				if( next_block.x + 1 < info.planet->get_size().x * info.planet->get_chunk_size().x ) {
+					++next_block.x;
+				}
+			}
+			else if( ba_msg.get_facing() == DOWN ) {
+				if( next_block.y > 0 ) {
+					--next_block.y;
+				}
+			}
+			else if( ba_msg.get_facing() == UP ) {
+				if( next_block.y + 1 < info.planet->get_size().y * info.planet->get_chunk_size().y ) {
+					++next_block.y;
+				}
+			}
+
 			// Send to script manager.
 			m_script_manager->trigger_block_action_class_event(
 				ba_msg.get_block_position(),
-				ba_msg.get_block_position(), // TODO Get next block.
+				next_block,
 				ba_msg.is_primary(),
 				*info.entity, // TODO Replace by entity holding in hand if any.
 				conn_id

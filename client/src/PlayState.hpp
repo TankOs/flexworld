@@ -53,6 +53,7 @@ class PlayState : public State, flex::Client::Handler {
 		void handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID conn_id );
+		void handle_message( const flex::msg::SetBlock& msg, flex::Client::ConnectionID conn_id );
 
 		void request_chunks( const ViewCuboid& cuboid );
 
