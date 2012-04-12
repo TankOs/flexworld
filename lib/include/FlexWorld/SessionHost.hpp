@@ -166,6 +166,7 @@ class SessionHost :
 		void handle_message( const msg::Ready& login_msg, Server::ConnectionID conn_id );
 		void handle_message( const msg::RequestChunk& req_chunk_msg, Server::ConnectionID conn_id );
 		void handle_message( const msg::Chat& chat_msg, Server::ConnectionID conn_id );
+		void handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id );
 
 		void beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading );
 

@@ -297,7 +297,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 					break;
 
 				case Controls::PRIMARY_ACTION:
+				case Controls::SECONDARY_ACTION:
 					{
+						bool primary = (action == Controls::PRIMARY_ACTION);
+
 						// Calc forward vector.
 						sf::Vector3f forward = flex::polar_to_vector(
 							flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
@@ -344,13 +347,18 @@ void PlayState::handle_event( const sf::Event& event ) {
 						get_shared().lock_facility->lock_planet( *planet, false );
 
 						if( result.m_type == ColorPicker::Result::NONE ) {
-							std::cout << "Nothing picked." << std::endl;
 						}
 						else if( result.m_type == ColorPicker::Result::BLOCK ) {
-							std::cout << "Block picked @ " << result.m_block_position.x << ", " << result.m_block_position.y << ", " << result.m_block_position.z << std::endl;
+							// Send block action msg.
+							flex::msg::BlockAction ba_msg;
+
+							ba_msg.set_block_position( result.m_block_position );
+							ba_msg.set_facing( flex::NORTH ); // TODO
+							ba_msg.set_primary( primary );
+
+							get_shared().client->send_message( ba_msg );
 						}
 						else if( result.m_type == ColorPicker::Result::ENTITY ) {
-							std::cout << "Entity " << result.m_entity_id << " picked." << std::endl;
 						}
 					}
 

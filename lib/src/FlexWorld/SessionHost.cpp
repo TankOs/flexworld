@@ -750,4 +750,44 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 	m_lock_facility.lock_planet( *planet, false );
 }
 
+void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id ) {
+	assert( conn_id < m_player_infos.size() );
+
+	const PlayerInfo& info = m_player_infos[conn_id];
+	assert( info.connected == true );
+	assert( info.entity != nullptr );
+	assert( info.planet != nullptr );
+
+	m_lock_facility.lock_world( true ); // Keep world locked as entity is being accessed (actor).
+	m_lock_facility.lock_planet( *info.planet, true );
+
+	// Convert to float coordinate so that transform() accepts it.
+	sf::Vector3f block_position(
+		static_cast<float>( ba_msg.get_block_position().x ),
+		static_cast<float>( ba_msg.get_block_position().y ),
+		static_cast<float>( ba_msg.get_block_position().z )
+	);
+
+	Planet::Vector chunk_pos;
+	Chunk::Vector block_pos;
+
+	// Transform to chunk and block coordinates.
+	if( info.planet->transform( block_position, chunk_pos, block_pos ) ) {
+		// Verify the block exists.
+		if( info.planet->find_block( chunk_pos, block_pos ) != nullptr ) {
+			// Send to script manager.
+			m_script_manager->trigger_block_action_class_event(
+				ba_msg.get_block_position(),
+				ba_msg.get_block_position(), // TODO Get next block.
+				ba_msg.is_primary(),
+				*info.entity, // TODO Replace by entity holding in hand if any.
+				conn_id
+			);
+		}
+	}
+
+	m_lock_facility.lock_planet( *info.planet, false );
+	m_lock_facility.lock_world( false );
+}
+
 }
