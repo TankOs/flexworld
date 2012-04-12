@@ -683,7 +683,6 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 		throw std::runtime_error( "Invalid planet." );
 	}
 
-
 	// Find planet.
 	m_lock_facility.lock_world( true );
 	Planet* planet = m_world.find_planet( planet_id );
@@ -748,6 +747,9 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 	}
 
 	m_lock_facility.lock_planet( *planet, false );
+}
+
+void SessionHost::set_block( const WorldGate::BlockPosition& block_position, const std::string& planet, const FlexID& cls ) {
 }
 
 void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id ) {

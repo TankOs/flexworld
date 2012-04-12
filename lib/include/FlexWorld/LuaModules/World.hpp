@@ -32,10 +32,16 @@ class World {
 		void register_object( Diluculum::LuaVariable target );
 
 		/** Destroy block (Lua function).
-		 * @param args x:number y:number z:number planet:string
+		 * @param args block_position:table(x,y,z) planet:string
 		 * @return nil
 		 */
 		Diluculum::LuaValueList destroy_block( const Diluculum::LuaValueList& args );
+
+		/** Set block (Lua function).
+		 * @param args block_position:table(x,y,z) planet:string class:string
+		 * @return nil
+		 */
+		Diluculum::LuaValueList set_block( const Diluculum::LuaValueList& args );
 
 	private:
 		WorldGate* m_gate;

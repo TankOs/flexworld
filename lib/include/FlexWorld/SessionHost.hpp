@@ -152,6 +152,14 @@ class SessionHost :
 		 */
 		void destroy_block( const WorldGate::BlockPosition& block_position, const std::string& planet_id );
 
+		/** Set block.
+		 * @param block_position Block position.
+		 * @param planet Planet ID.
+		 * @param cls Class ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		void set_block( const WorldGate::BlockPosition& block_position, const std::string& planet, const FlexID& cls );
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 		typedef std::set<std::string> StringSet;
