@@ -81,7 +81,8 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		ent0.set_rotation( sf::Vector3f( 7, 8, 9 ) );
 		ent0.set_name( "CustomName" );
 
-		Entity ent1( FlexID::make( "foo/bar" ) );
+		Class fb_cls( FlexID::make( "foo/bar" ) );
+		Entity ent1( fb_cls );
 		ent1 = ent0;
 
 		BOOST_CHECK( ent0.get_id() == ent1.get_id() );

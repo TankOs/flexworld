@@ -322,21 +322,101 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		}
 
 		// Destroy block.
-		BOOST_CHECK_NO_THROW( host.destroy_block( lua::WorldGate::BlockPosition( 2, 3, 4 ), "construct" ) );
+		BOOST_CHECK_NO_THROW( host.destroy_block( lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ), PLANET_ID ) );
 		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == nullptr );
 
 		// Poll IO service.
 		io_service.poll();
 
 		// Check that client received destroy block message.
-		BOOST_CHECK( handler.m_last_destroy_block_message.get_block_position() == lua::WorldGate::BlockPosition( 2, 3, 4 ) );
+		BOOST_CHECK( handler.m_last_destroy_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
 
 		// Check invalid destroy calls.
-		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 32, 0 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
-		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 1, 0 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
-		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), "construct" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 32, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 1, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "foobar" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Planet not found." ) );
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+	}
+
+	// set_block
+	{
+		static const Planet::Vector CHUNK_POS( 0, 0, 0 );
+		static const Chunk::Vector BLOCK_POS( 2, 3, 4 );
+		static const std::string PLANET_ID = "construct";
+		static const FlexID CLASS_ID = FlexID::make( "some/class" );
+
+		// Create class.
+		World world;
+
+		{
+			Class cls( CLASS_ID );
+			world.add_class( cls );
+		}
+
+		const Class *cls = world.find_class( CLASS_ID );
+		BOOST_REQUIRE( cls != nullptr );
+
+		// Setup host.
+		boost::asio::io_service io_service;
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		host.set_ip( "127.0.0.1" );
+		host.set_port( 2593 );
+		host.set_player_limit( 1 );
+		host.add_search_path( DATA_DIRECTORY + std::string( "/packages" ) );
+		host.set_auth_mode( SessionHost::OPEN_AUTH );
+
+		BOOST_REQUIRE( host.start() );
+
+		// Get planet.
+		Planet* planet = world.find_planet( PLANET_ID );
+		BOOST_REQUIRE( planet != nullptr );
+
+		// Make sure block doesn't exist yet.
+		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == nullptr );
+
+		// Connect client.
+		TestSessionHostGateClientHandler handler;
+		Client client( io_service, handler );
+
+		client.start( host.get_ip(), host.get_port() );
+
+		// Poll until client is connected.
+		{
+			sf::Clock timer;
+
+			while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
+				io_service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
+		}
+
+		// Set block.
+		BOOST_CHECK_NO_THROW( host.set_block( lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ), PLANET_ID, CLASS_ID ) );
+
+		const Class* set_cls = planet->find_block( CHUNK_POS, BLOCK_POS );
+		BOOST_CHECK( set_cls != nullptr );
+
+		if( set_cls != nullptr ) {
+			BOOST_CHECK( set_cls->get_id() == CLASS_ID );
+		}
+
+		// Poll IO service.
+		io_service.poll();
+
+		// Check that client received set block message.
+		//BOOST_CHECK( handler.m_last_set_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+		//BOOST_CHECK( handler.m_last_set_block_message.get_facing() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+
+		// Check invalid set calls.
+		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), PLANET_ID, CLASS_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );
+		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "foobar", CLASS_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Planet not found." ) );
+		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "", CLASS_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), PLANET_ID, FlexID::make( "package" ) ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), PLANET_ID, FlexID::make( "no/exist" ) ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Class not found." ) );
 	}
 
 	Log::Logger.set_min_level( Log::DEBUG );

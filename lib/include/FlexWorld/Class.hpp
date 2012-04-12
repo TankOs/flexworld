@@ -18,7 +18,7 @@ class Class {
 		/** Ctor.
 		 * @param id ID.
 		 */
-		Class( const FlexID& id );
+		explicit Class( const FlexID& id );
 
 		/** Copy ctor.
 		 * @param other Other class.

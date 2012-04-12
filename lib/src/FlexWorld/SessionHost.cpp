@@ -749,7 +749,61 @@ void SessionHost::destroy_block( const WorldGate::BlockPosition& block_position,
 	m_lock_facility.lock_planet( *planet, false );
 }
 
-void SessionHost::set_block( const WorldGate::BlockPosition& block_position, const std::string& planet, const FlexID& cls ) {
+void SessionHost::set_block( const WorldGate::BlockPosition& block_position, const std::string& planet_id, const FlexID& cls_id ) {
+	if( planet_id.empty() ) {
+		throw std::runtime_error( "Invalid planet." );
+	}
+
+	if( !cls_id.is_valid_resource() ) {
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	// Check that class exists (or try to load).
+	m_lock_facility.lock_world( true );
+
+	const Class* cls = get_or_load_class( cls_id );
+
+	if( cls == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Class not found." );
+	}
+
+	// Find planet.
+	Planet* planet = m_world.find_planet( planet_id );
+
+	if( planet == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Planet not found." );
+	}
+
+	m_lock_facility.lock_planet( *planet, true );
+
+	// Transform coordinate.
+	sf::Vector3f f_block_position(
+		static_cast<float>( block_position.x ),
+		static_cast<float>( block_position.y ),
+		static_cast<float>( block_position.z )
+	);
+
+	Planet::Vector chunk_pos;
+	Chunk::Vector block_pos;
+
+	if( !planet->transform( f_block_position, chunk_pos, block_pos ) ) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Block position out of range." );
+	}
+
+	// Make sure chunk at given position exists.
+	if( !planet->has_chunk( chunk_pos ) ) {
+		planet->create_chunk( chunk_pos );
+	}
+
+	// Set block.
+	planet->set_block( chunk_pos, block_pos, *cls );
+
+	m_lock_facility.lock_planet( *planet, false );
+	m_lock_facility.lock_world( false );
 }
 
 void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id ) {
