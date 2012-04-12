@@ -244,6 +244,9 @@ ColorPicker::Result ColorPicker::pick(
 
 	renderer.render();
 
+	// Release render step.
+	step.reset();
+
 	// Read pixel.
 	sf::Color read_color;
 
@@ -255,7 +258,6 @@ ColorPicker::Result ColorPicker::pick(
 	if( lighting ) {
 		glEnable( GL_LIGHTING );
 	}
-
 
 	// Check if background (= nothing) picked.
 	if( read_color == sf::Color::White ) {
@@ -277,6 +279,172 @@ ColorPicker::Result ColorPicker::pick(
 	Result result;
 	result.m_type = Result::BLOCK;
 	result.m_block_position = *color_blocks[read_index];
+
+	// The final step is to determine the side the user clicked on. This is
+	// accomplished by rendering the bounding box.
+	std::shared_ptr<const flex::Model> model;
+
+	sf::Vector3f b_pos(
+		static_cast<float>( result.m_block_position.x ),
+		static_cast<float>( result.m_block_position.y ),
+		static_cast<float>( result.m_block_position.z )
+	);
+
+	// Get model of hit block.
+	{
+		bool transform_result = planet.transform( b_pos, chunk_pos, block_pos );
+		assert( transform_result );
+
+		block_cls = planet.find_block( chunk_pos, block_pos );
+		assert( block_cls );
+
+		model = resource_manager.find_model( block_cls->get_model().get_id() );
+		assert( model != nullptr );
+	}
+
+	// Build bounding box geometry.
+	sg::TriangleGeometry bb_geometry;
+	const flex::FloatCuboid& bb = model->get_bounding_box();
+
+	// Front (south face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Red ),
+		false
+	);
+
+	// Back (north face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Green ),
+		false
+	);
+
+	// Left (west face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Yellow ),
+		false
+	);
+
+	// Right (east face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Blue ),
+		false
+	);
+
+	// Top (up face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y + bb.height, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Black ),
+		false
+	);
+
+	// Bottom (down face).
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		false
+	);
+	bb_geometry.add_triangle(
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		sg::Vertex( sf::Vector3f( b_pos.x + bb.x + bb.width, b_pos.y + bb.y, b_pos.z + bb.z + bb.depth ), sf::Vector3f(), sf::Vector2f(), sf::Color::Cyan ),
+		false
+	);
+
+	// Render.
+	bo.reset( new sg::BufferObject( sg::BufferObject::COLORS, false ) );
+	bo->load( bb_geometry );
+
+	step = renderer.create_step(
+		r_state,
+		transform,
+		local_transform,
+		bo
+	);
+
+	glEnable( GL_SCISSOR_TEST );
+	glDisable( GL_LIGHTING );
+
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	renderer.render();
+
+	if( lighting ) {
+		glEnable( GL_LIGHTING );
+	}
+
+	// Read pixel.
+	glReadPixels( pixel_pos.x, pixel_pos.y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &read_color );
+
+	glDisable( GL_SCISSOR_TEST );
+
+	// If white, which shouldn't happen, nothing got picked.
+	if( read_color == sf::Color::White ) {
+		//std::cerr << "WARNING: Face picking into the void? Not very clever!" << std::endl;
+		return Result();
+	}
+
+	if( read_color == sf::Color::Red ) {
+		result.m_facing = flex::SOUTH;
+	}
+	else if( read_color == sf::Color::Green ) {
+		result.m_facing = flex::NORTH;
+	}
+	else if( read_color == sf::Color::Yellow ) {
+		result.m_facing = flex::WEST;
+	}
+	else if( read_color == sf::Color::Blue ) {
+		result.m_facing = flex::EAST;
+	}
+	else if( read_color == sf::Color::Black ) {
+		result.m_facing = flex::UP;
+	}
+	else if( read_color == sf::Color::Cyan ) {
+		result.m_facing = flex::DOWN;
+	}
+	else {
+		//std::cerr << "WARNING: Face picker read an invalid color." << std::endl;
+		return Result();
+	}
 
 	return result;
 }

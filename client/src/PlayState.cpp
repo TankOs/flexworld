@@ -353,7 +353,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 							flex::msg::BlockAction ba_msg;
 
 							ba_msg.set_block_position( result.m_block_position );
-							ba_msg.set_facing( flex::NORTH ); // TODO
+							ba_msg.set_facing( result.m_facing );
 							ba_msg.set_primary( primary );
 
 							get_shared().client->send_message( ba_msg );
@@ -549,7 +549,6 @@ void PlayState::render() const {
 	// Render scene graph.
 	glColor3f( 1, 1, 1 );
 	m_renderer.render();
-
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );

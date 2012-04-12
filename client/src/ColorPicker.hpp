@@ -1,5 +1,7 @@
 #pragma once
 
+#include <FlexWorld/Facing.hpp>
+
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <cstdint>
@@ -46,6 +48,7 @@ class ColorPicker {
 
 			ObjectType m_type; ///< Type of hit object.
 			BlockPosition m_block_position; ///< Position of hit block (in absolute planet coordinates).
+			flex::Facing m_facing; ///< Facing.
 			uint32_t m_entity_id; ///< ID of hit entity.
 		};
 
