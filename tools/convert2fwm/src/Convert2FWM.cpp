@@ -6,9 +6,9 @@
 #include <FlexWorld/Face.hpp>
 
 #include <FWSG/Vertex.hpp>
-#include <assimp/assimp.hpp>
-#include <assimp/aiScene.h>
-#include <assimp/aiPostProcess.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include <assimp/Importer.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <iostream>
 #include <iomanip>

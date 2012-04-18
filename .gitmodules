@@ -10,3 +10,6 @@
 [submodule "extlibs/Diluculum"]
 	path = extlibs/Diluculum
 	url = git://github.com/lmbarros/Diluculum.git
+[submodule "extlibs/assimp"]
+	path = extlibs/assimp
+	url = git://github.com/assimp/assimp.git

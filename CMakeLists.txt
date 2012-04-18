@@ -166,6 +166,12 @@ endif()
 
 # Convert2FWM tool.
 if( FW_BUILD_CONVERT2FWM )
+	# Build Assimp.
+	set( BUILD_ASSIMP_SAMPLES FALSE CACHE BOOL "" FORCE )
+	set( BUILD_ASSIMP_TOOLS FALSE CACHE BOOL "" FORCE )
+	set( BUILD_STATIC_LIB TRUE CACHE BOOL "" FORCE )
+	add_subdirectory( "extlibs/assimp/" )
+
 	add_subdirectory( "tools/convert2fwm" )
 endif()
 
