@@ -21,7 +21,6 @@ static const float SLIDE_TARGET_X = 50.f;
 
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
-	m_desktop( target ),
 	m_fade_main_menu_out( false ),
 	m_background_varray( sf::Quads, 4 )
 {

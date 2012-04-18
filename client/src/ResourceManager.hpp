@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BufferObjectGroup.hpp"
+#include "TextureFilter.hpp"
 
 #include <FlexWorld/FlexID.hpp>
 #include <FlexWorld/Model.hpp>
@@ -21,6 +22,10 @@ class BufferObject;
  */
 class ResourceManager {
 	public:
+		/** Ctor.
+		 */
+		ResourceManager();
+
 		/** Set base path.
 		 * @param path Path.
 		 */
@@ -92,6 +97,20 @@ class ResourceManager {
 		 */
 		void finalize_prepared_buffer_object_groups();
 
+		/** Set anisotropy level.
+		 * The method will check if the requested level is available for the GPU.
+		 * The anisotropy will be applied to all previously loaded textures and
+		 * loaded ones in the future.
+		 * @param level Level (final = 2^(level - 1), 0 to disable).
+		 */
+		void set_anisotropy_level( uint8_t level );
+
+		/** Set texture filter.
+		 * Applied to all loaded textures + textures loaded in the future.
+		 * @param filter Filter.
+		 */
+		void set_texture_filter( TextureFilter filter );
+
 	private:
 		typedef std::shared_ptr<sf::Texture> TexturePtr;
 		typedef std::shared_ptr<flex::Model> ModelPtr;
@@ -103,6 +122,9 @@ class ResourceManager {
 		typedef std::map<const std::string, BufferObjectGroup::Ptr> BufferObjectGroupMap;
 		typedef std::map<const std::string, ImagePtr> PreparedTextureMap;
 		typedef std::map<const std::string, ModelPtrConst> PreparedBufferObjectGroupMap;
+
+		void setup_texture( TexturePtr texture, const sf::Image* image ) const;
+		void setup_all_textures() const;
 
 		PreparedTextureMap m_prepared_textures;
 		PreparedBufferObjectGroupMap m_prepared_buffer_object_groups;
@@ -116,4 +138,7 @@ class ResourceManager {
 		mutable boost::mutex m_buffer_object_groups_mutex;
 
 		std::string m_base_path;
+
+		float m_anisotropy_level;
+		TextureFilter m_texture_filter;
 };

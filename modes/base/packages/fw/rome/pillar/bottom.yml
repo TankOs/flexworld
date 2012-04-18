@@ -1,0 +1,5 @@
+ID: "fw.rome.pillar/bottom"
+Name: "Pillar (bottom)"
+Textures:
+  - "fw.rome.pillar/stone.png"
+Model: "fw.rome.pillar/bottom.fwm"

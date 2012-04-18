@@ -1,0 +1,5 @@
+ID: "fw.base.nature/wooden_planks_grass_we"
+Name: "Wooden planks and grass"
+Textures:
+  - "fw.base.nature/wooden_planks_grass_we.png"
+Model: "fw.base.prim/cube.fwm"

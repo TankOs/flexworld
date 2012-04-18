@@ -27,6 +27,7 @@ set(
 	${INC_DIR}/Sky.hpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
+	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp

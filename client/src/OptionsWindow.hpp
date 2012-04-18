@@ -60,6 +60,7 @@ class OptionsWindow : public sfg::Window {
 
 		void on_fps_limit_change();
 		void on_fov_change();
+		void on_anisotropy_level_change();
 
 		void on_vsync_toggle();
 
@@ -92,4 +93,8 @@ class OptionsWindow : public sfg::Window {
 
 		sfg::CheckButton::Ptr m_fullscreen_check;
 		sfg::ComboBox::Ptr m_resolution_combo;
+
+		sfg::Scale::Ptr m_anisotropy_level_scale;
+		sfg::Label::Ptr m_anisotropy_level_label;
+		sfg::ComboBox::Ptr m_texture_filter_combo;
 };

@@ -1,7 +1,11 @@
-#include <cstdint>
+#include <GL/glew.h>
 
 #include "OptionsWindow.hpp"
 #include "KeyNames.hpp"
+
+#include <SFML/OpenGL.hpp>
+#include <cstdint>
+#include <cmath>
 
 OptionsWindow::OptionsWindow( const UserSettings& user_settings ) :
 	Window( Window::BACKGROUND ),
@@ -68,6 +72,10 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 	window->m_fullscreen_check = sfg::CheckButton::Create( L"Fullscreen" );
 	window->m_resolution_combo = sfg::ComboBox::Create();
+
+	window->m_anisotropy_level_scale = sfg::Scale::Create( 0.0f, 0.0f, 1.0f, sfg::Scale::HORIZONTAL );
+	window->m_anisotropy_level_label = sfg::Label::Create( "Off" );
+	window->m_texture_filter_combo = sfg::ComboBox::Create();
 
 	// Layout //////////////////////////////////////////////////
 
@@ -180,9 +188,28 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	sfg::Frame::Ptr resolution_frame( sfg::Frame::Create( L"Resolution" ) );
 	resolution_frame->Add( resolution_table );
 
+	sfg::Box::Ptr anisotropy_level_box = sfg::Box::Create( sfg::Box::HORIZONTAL, 10.0f );
+	anisotropy_level_box->Pack( window->m_anisotropy_level_scale, true, true );
+	anisotropy_level_box->Pack( window->m_anisotropy_level_label, false, true );
+	window->m_anisotropy_level_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+
+	sfg::Table::Ptr textures_table = sfg::Table::Create();
+	textures_table->SetRowSpacings( 10.0f );
+	textures_table->SetColumnSpacings( 10.0f );
+
+	textures_table->Attach( sfg::Label::Create( "Anisotropic filter:" ), sf::Rect<sf::Uint32>( 0, 0, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	textures_table->Attach( anisotropy_level_box, sf::Rect<sf::Uint32>( 1, 0, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	textures_table->Attach( sfg::Label::Create( "Texture filter:" ), sf::Rect<sf::Uint32>( 0, 1, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	textures_table->Attach( window->m_texture_filter_combo, sf::Rect<sf::Uint32>( 1, 1, 1, 1 ), sfg::Table::EXPAND | sfg::Table::FILL, sfg::Table::FILL );
+
+	sfg::Frame::Ptr textures_frame = sfg::Frame::Create( "Textures" );
+	textures_frame->Add( textures_table );
+
 	sfg::Box::Ptr video_page_box( sfg::Box::Create( sfg::Box::VERTICAL, 5.0f ) );
 	video_page_box->Pack( general_frame, false );
 	video_page_box->Pack( resolution_frame, false );
+	video_page_box->Pack( textures_frame, false );
 
 	// Notebook.
 	window->m_notebook = sfg::Notebook::Create();
@@ -214,6 +241,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 
 	window->m_fps_limit_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fps_limit_change, &*window );
 	window->m_fov_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fov_change, &*window );
+	window->m_anisotropy_level_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_anisotropy_level_change, &*window );
 
 	window->m_enable_vsync_check->OnToggle.Connect( &OptionsWindow::on_vsync_toggle, &*window );
 
@@ -243,6 +271,22 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 		}
 	}
 
+	// Add filters.
+	window->m_texture_filter_combo->AppendItem( "Trilinear" );
+	window->m_texture_filter_combo->AppendItem( "Bilinear" );
+	window->m_texture_filter_combo->AppendItem( "I like pixels" );
+
+	// Find out maximum anisotropy level.
+	float max_level = 0.0f;
+
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_level );
+
+	if( max_level > 0 ) {
+		window->m_anisotropy_level_scale->SetRange( 0.0f, std::log( max_level ) / std::log( 2.0f ) + 1.0f );
+	}
+	else {
+	}
+
 	window->load_values();
 
 	return window;
@@ -255,6 +299,7 @@ void OptionsWindow::on_ok_click() {
 	m_user_settings.enable_vsync( m_enable_vsync_check->IsActive() );
 	m_user_settings.set_fps_limit( static_cast<uint32_t>( m_fps_limit_scale->GetValue() ) );
 	m_user_settings.set_fov( static_cast<uint8_t>( m_fov_scale->GetValue() ) );
+	m_user_settings.set_anisotropy_level( static_cast<uint8_t>( m_anisotropy_level_scale->GetValue() ) );
 	m_user_settings.get_controls().set_mouse_inverted( m_mouse_inverted_check->IsActive() );
 	m_user_settings.get_controls().set_mouse_sensitivity( m_mouse_sensitivity_scale->GetValue() );
 	m_user_settings.enable_fullscreen( m_fullscreen_check->IsActive() );
@@ -270,6 +315,9 @@ void OptionsWindow::on_ok_click() {
 
 		m_user_settings.set_video_mode( sf::VideoMode( width, height, sf::VideoMode::getDesktopMode().bitsPerPixel ) );
 	}
+
+	// Texture filter.
+	m_user_settings.set_texture_filter( static_cast<TextureFilter>( m_texture_filter_combo->GetSelectedItem() ) );
 
 	OnAccept();
 }
@@ -405,6 +453,7 @@ void OptionsWindow::load_values() {
 	m_fps_limit_value_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
 	m_fov_scale->SetValue( static_cast<float>( m_user_settings.get_fov() ) );
 	m_fov_label->SetRequisition( sf::Vector2f( 50.0f, 0.0f ) );
+	m_anisotropy_level_scale->SetValue( static_cast<float>( m_user_settings.get_anisotropy_level() ) );
 
 	m_fullscreen_check->SetActive( m_user_settings.is_fullscreen_enabled() );
 
@@ -426,11 +475,17 @@ void OptionsWindow::load_values() {
 		}
 	}
 
+	// Select texture filter.
+	m_texture_filter_combo->SelectItem(
+		std::max( 0, std::min( static_cast<int>( m_texture_filter_combo->GetItemCount() ) - 1, static_cast<int>( m_user_settings.get_texture_filter() ) ) )
+	);
+
 	on_vsync_toggle();
 	refresh_action_button_labels();
 	on_sensitivity_change();
 	on_fps_limit_change();
 	on_fov_change();
+	on_anisotropy_level_change();
 
 	// Cycle through all notebook pages so that the size is maximized.
 	while( m_notebook->GetCurrentPage() + 1 < m_notebook->GetPageCount() ) {
@@ -439,4 +494,18 @@ void OptionsWindow::load_values() {
 
 
 	m_notebook->SetCurrentPage( 0 );
+}
+
+void OptionsWindow::on_anisotropy_level_change() {
+	if( m_anisotropy_level_scale->GetValue() == 0.0f ) {
+		m_anisotropy_level_label->SetText( "Off" );
+	}
+	else {
+		std::stringstream sstr;
+
+		sstr << static_cast<unsigned int>( std::pow( 2, m_anisotropy_level_scale->GetValue() - 1.0f ) );
+		sstr << "x";
+
+		m_anisotropy_level_label->SetText( sstr.str() );
+	}
 }

@@ -112,6 +112,8 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_walk_backward;
 		bool m_strafe_left;
 		bool m_strafe_right;
+		bool m_fly_up; // XXX
+		bool m_fly_down; // XXX
 
 		// State.
 		bool m_my_entity_received;

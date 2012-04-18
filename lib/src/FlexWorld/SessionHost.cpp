@@ -489,6 +489,7 @@ const Class* SessionHost::get_or_load_class( const FlexID& id ) {
 		}
 		catch( const ClassLoader::LoadException& e ) {
 			Log::Logger( Log::ERR ) << "Failed to load class " << id.get() << ". Reason: " << e.what() << Log::endl;
+			m_lock_facility.lock_world( false );
 			return nullptr;
 		}
 	}

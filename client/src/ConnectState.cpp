@@ -7,7 +7,6 @@
 
 ConnectState::ConnectState( sf::RenderWindow& target ) :
 	State( target ),
-	m_desktop( target ),
 	m_canceled( false ),
 	m_go_on( false )
 {

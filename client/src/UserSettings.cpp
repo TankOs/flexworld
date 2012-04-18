@@ -22,8 +22,10 @@ std::string UserSettings::get_profile_path() {
 
 UserSettings::UserSettings() :
 	m_video_mode( sf::VideoMode::getDesktopMode() ),
+	m_texture_filter( TRILINEAR_FILTER ),
 	m_fps_limit( 60 ),
 	m_fov( 60 ),
+	m_anisotropy_level( 0 ),
 	m_vsync( false ),
 	m_fullscreen( true )
 {
@@ -145,6 +147,36 @@ bool UserSettings::load( const std::string& filename ) {
 			}
 		}
 
+		const YAML::Node* ani_node = video_node->FindValue( "AnisotropyLevel" );
+
+		if( ani_node ) {
+			try {
+				int read = 0;
+
+				*ani_node >> read;
+
+				uint8_t level = static_cast<uint8_t>( read );
+				new_settings.set_anisotropy_level( level );
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
+
+		const YAML::Node* filter_node = video_node->FindValue( "TextureFilter" );
+
+		if( filter_node ) {
+			try {
+				int read = 0;
+
+				*filter_node >> read;
+
+				TextureFilter filter = static_cast<TextureFilter>( std::max( 0, std::min( NUM_FILTERS - 1, read ) ) );
+				new_settings.set_texture_filter( filter );
+			}
+			catch( const YAML::Exception& ) {
+			}
+		}
+
 		const YAML::Node* window_position_node = video_node->FindValue( "WindowPosition" );
 
 		if( window_position_node ) {
@@ -242,6 +274,8 @@ bool UserSettings::save( const std::string& filename ) {
 				<< Key << "VSync" << Value << is_vsync_enabled()
 				<< Key << "FPSLimit" << Value << get_fps_limit()
 				<< Key << "FOV" << Value << get_fov()
+				<< Key << "AnisotropyLevel" << Value << static_cast<unsigned int>( get_anisotropy_level() )
+				<< Key << "TextureFilter" << Value << get_texture_filter() 
 				<< Key << "WindowPosition" << Value << BeginSeq
 					<< get_window_position().x << get_window_position().y
 				<< EndSeq
@@ -348,4 +382,20 @@ void UserSettings::set_window_position( const sf::Vector2i& pos ) {
 
 const sf::Vector2i& UserSettings::get_window_position() const {
 	return m_window_position;
+}
+
+void UserSettings::set_anisotropy_level( uint8_t level ) {
+	m_anisotropy_level = level;
+}
+
+uint8_t UserSettings::get_anisotropy_level() const {
+	return m_anisotropy_level;
+}
+
+void UserSettings::set_texture_filter( TextureFilter filter ) {
+	m_texture_filter = filter;
+}
+
+TextureFilter UserSettings::get_texture_filter() const {
+	return m_texture_filter;
 }

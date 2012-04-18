@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Controls.hpp"
+#include "TextureFilter.hpp"
 
 #include <SFML/Window/VideoMode.hpp>
 #include <SFML/System/Vector2.hpp>
@@ -122,6 +123,26 @@ class UserSettings {
 		 */
 		const sf::Vector2i& get_window_position() const;
 
+		/** Set anisotropy level.
+		 * @param level Level.
+		 */
+		void set_anisotropy_level( uint8_t level );
+
+		/** Get anisotropy level.
+		 * @return Anisotropy level.
+		 */
+		uint8_t get_anisotropy_level() const;
+
+		/** Set texture filter.
+		 * @param filter Filter.
+		 */
+		void set_texture_filter( TextureFilter filter );
+
+		/** Get texture filter.
+		 * @return Filter.
+		 */
+		TextureFilter get_texture_filter() const;
+
 	private:
 		Controls m_controls;
 
@@ -132,9 +153,11 @@ class UserSettings {
 
 		sf::Vector2i m_window_position;
 
-		uint32_t m_fps_limit;
+		TextureFilter m_texture_filter;
 
+		uint32_t m_fps_limit;
 		uint8_t m_fov;
+		uint8_t m_anisotropy_level;
 		bool m_vsync;
 		bool m_fullscreen;
 };

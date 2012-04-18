@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+
 #include "ResourceManager.hpp"
 
 #include <FlexWorld/ModelDriver.hpp>
@@ -5,6 +7,12 @@
 #include <FWSG/BufferObject.hpp>
 #include <fstream>
 #include <iterator>
+
+ResourceManager::ResourceManager() :
+	m_anisotropy_level( 0 ),
+	m_texture_filter( TRILINEAR_FILTER )
+{
+}
 
 void ResourceManager::set_base_path( const std::string& path ) {
 	m_base_path = path;
@@ -22,17 +30,21 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 		m_textures.erase( id.get() );
 	}
 
-	// Create texture and load image into it.
-	TexturePtr texture( new sf::Texture );
+	// Load image.
+	sf::Image image;
 
-	if( !texture->loadFromFile( m_base_path + id.as_path() ) ) {
+	if( !image.loadFromFile( m_base_path + id.as_path() ) ) {
 #if !defined( NDEBUG )
-		std::cerr << "ERROR: Failed to load texture " << id.get() << "." << std::endl;
+		std::cerr << "ERROR: Failed to load image " << id.get() << "." << std::endl;
 #endif
 		return false;
 	}
 
-	texture->setSmooth( true );
+	// Create and setup texture.
+	TexturePtr texture( new sf::Texture );
+
+	texture->loadFromImage( image );
+	setup_texture( texture, &image );
 
 	{
 		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
@@ -197,7 +209,9 @@ void ResourceManager::finalize_prepared_textures() {
 	
 	for( ; tex_iter != tex_iter_end; ++tex_iter ) {
 		m_textures[tex_iter->first]->loadFromImage( *tex_iter->second );
-		m_textures[tex_iter->first]->setSmooth( true );
+
+		// Setup texture.
+		setup_texture( m_textures[tex_iter->first], &*tex_iter->second );
 	}
 
 	m_prepared_textures.clear();
@@ -259,4 +273,74 @@ void ResourceManager::finalize_prepared_buffer_object_groups() {
 			group->get_buffer_object( mesh_idx )->load( model->get_mesh( mesh_idx ).get_geometry() );
 		}
 	}
+}
+
+void ResourceManager::set_anisotropy_level( uint8_t level ) {
+	float max_level = 0.0f;
+
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_level );
+	m_anisotropy_level = std::min( max_level, static_cast<float>( level ) );
+
+	// Resetup all textures.
+	setup_all_textures();
+}
+
+void ResourceManager::setup_texture( TexturePtr texture, const sf::Image* image ) const {
+	texture->bind();
+
+	// Texture filter.
+	if( m_texture_filter == TRILINEAR_FILTER ) {
+		sf::Image image_copy;
+
+		// No source image available, copy from texture.
+		if( !image ) {
+			image_copy = texture->copyToImage();
+			image = &image_copy;
+		}
+
+		gluBuild2DMipmaps(
+			GL_TEXTURE_2D,
+			GL_RGBA, 
+			image->getSize().x,
+			image->getSize().y,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			image->getPixelsPtr()
+		);
+
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	}
+	else if( m_texture_filter == BILINEAR_FILTER ) {
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+	}
+	else if( m_texture_filter == NEAREST_FILTER ) {
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+	}
+
+	// Anisotropic filter.
+	glTexParameterf(
+		GL_TEXTURE_2D,
+		GL_TEXTURE_MAX_ANISOTROPY_EXT,
+		m_anisotropy_level > 0 ? std::pow( 2.0f, static_cast<float>( m_anisotropy_level - 1 ) ) : 0.0f
+	);
+
+	glBindTexture( GL_TEXTURE_2D, 0 );
+}
+
+void ResourceManager::setup_all_textures() const {
+	TextureMap::const_iterator tex_iter( m_textures.begin() );
+	TextureMap::const_iterator tex_iter_end( m_textures.end() );
+	
+	for( ; tex_iter != tex_iter_end; ++tex_iter ) {
+		setup_texture( tex_iter->second, nullptr );
+	}
+}
+
+void ResourceManager::set_texture_filter( TextureFilter filter ) {
+	m_texture_filter = filter;
+
+	setup_all_textures();
 }

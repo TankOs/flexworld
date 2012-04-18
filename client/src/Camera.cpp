@@ -75,3 +75,7 @@ void Camera::strafe( float distance ) {
 	m_position.x -= std::sin( (m_rotation.y - 90.0f) * flex::PI / 180.0f ) * distance;
 	m_position.z += std::cos( (m_rotation.y - 90.0f) * flex::PI / 180.0f ) * distance;
 }
+
+void Camera::fly( float distance ) {
+	m_position.y += distance;
+}

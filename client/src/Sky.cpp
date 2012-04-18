@@ -70,6 +70,8 @@ void Sky::render() const {
 
 	// Render sun.
 	if( m_sun_texture ) {
+		// Call twice to fix a weird(?) SFML bug.
+		m_sun_texture->bind();
 		m_sun_texture->bind();
 	}
 

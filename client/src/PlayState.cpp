@@ -23,7 +23,6 @@ static const float MESSAGE_SPACING = 5.f;
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
-	m_desktop( target ),
 	m_gui_mode( false ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
@@ -36,6 +35,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_walk_backward( false ),
 	m_strafe_left( false ),
 	m_strafe_right( false ),
+	m_fly_up( false ),
+	m_fly_down( false ),
 	m_my_entity_received( false )
 {
 }
@@ -153,6 +154,8 @@ void PlayState::init() {
 
 	// Setup resource manager.
 	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+	m_resource_manager.set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
+	m_resource_manager.set_texture_filter( get_shared().user_settings.get_texture_filter() );
 
 	// Reset mouse so that the initial view direction is straight.
 	reset_mouse();
@@ -273,6 +276,17 @@ void PlayState::handle_event( const sf::Event& event ) {
 					m_strafe_right = pressed;
 					m_update_velocity = true;
 					break;
+
+				case Controls::JUMP:
+					m_fly_up = pressed;
+					m_update_velocity = true;
+					break;
+
+				case Controls::CROUCH:
+					m_fly_down = pressed;
+					m_update_velocity = true;
+					break;
+
 
 				case Controls::CHAT:
 					if( pressed ) {
@@ -430,8 +444,9 @@ void PlayState::update( const sf::Time& delta ) {
 				m_velocity.x = 0;
 			}
 			else {*/
-				m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 				m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+				m_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
+				m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 
 				flex::normalize( m_velocity );
 			//}
@@ -446,6 +461,11 @@ void PlayState::update( const sf::Time& delta ) {
 
 		if( m_velocity.x != 0 ) {
 			m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
+			m_update_eyepoint = true;
+		}
+
+		if( m_velocity.y != 0 ) {
+			m_camera.fly( (m_velocity.y * 4.0f) * delta.asSeconds() );
 			m_update_eyepoint = true;
 		}
 
@@ -548,7 +568,22 @@ void PlayState::render() const {
 
 	// Render scene graph.
 	glColor3f( 1, 1, 1 );
+
+	glEnable( GL_LIGHTING );
+	GLfloat ambient[] = {0.9f, 0.9f, 0.9f};
+	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f};
+	GLfloat position[] = {20.0f, 40.0f, 30.0f};
+
+	glEnable( GL_LIGHT0 );
+
 	m_renderer.render();
+
+	glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );
+	glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuse );
+	glLightfv( GL_LIGHT0, GL_POSITION, position );
+
+	glDisable( GL_LIGHT0 );
+	glDisable( GL_LIGHTING );
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );

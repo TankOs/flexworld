@@ -70,6 +70,11 @@ class Camera {
 		 */
 		void strafe( float distance );
 
+		/** Fly (along local +y axis).
+		 * @param distance Distance.
+		 */
+		void fly( float distance );
+
 	private:
 		void apply_clamp();
 
