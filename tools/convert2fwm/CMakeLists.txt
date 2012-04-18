@@ -12,11 +12,13 @@ set(
 include_directories( ${PROJECT_SOURCE_DIR}/../../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../../lib/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../../extlibs/assimp/include/ )
+include_directories( ${SFML_INCLUDE_DIR} )
 
 add_executable( convert2fwm ${SOURCES} )
-target_link_libraries( convert2fwm assimp )
 target_link_libraries( convert2fwm flexworld )
 target_link_libraries( convert2fwm fwsg )
+target_link_libraries( convert2fwm assimp )
+target_link_libraries( convert2fwm ${SFML_SYSTEM_LIBRARY} )
 
 if( FW_PORTABLE_INSTALL OR WINDOWS )
 	install(
