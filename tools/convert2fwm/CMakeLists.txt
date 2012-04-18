@@ -28,7 +28,7 @@ if( FW_PORTABLE_INSTALL OR WINDOWS )
 elseif( LINUX )
 	install(
 		TARGETS convert2fwm
-		DESTINATION bin
+		DESTINATION games
 	)
 else()
 	message( FATAL_ERROR "Install?!?!?!" )
