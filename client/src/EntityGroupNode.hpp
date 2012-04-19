@@ -3,6 +3,7 @@
 #include <FWSG/Node.hpp>
 
 #include <map>
+#include <cstdint>
 
 namespace sg {
 class Renderer;
