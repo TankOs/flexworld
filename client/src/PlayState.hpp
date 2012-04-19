@@ -2,7 +2,6 @@
 
 #include "State.hpp"
 #include "ChatWindow.hpp"
-#include "Sky.hpp"
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
 #include "PlanetDrawable.hpp"
@@ -80,9 +79,6 @@ class PlayState : public State, flex::Client::Handler {
 
 		sg::Node::Ptr m_scene_graph;
 		PlanetDrawable::Ptr m_planet_drawable;
-
-		sf::Texture m_sun_texture;
-		std::unique_ptr<Sky> m_sky;
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;

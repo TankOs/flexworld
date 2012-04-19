@@ -24,7 +24,6 @@ set(
 	${INC_DIR}/PlayState.hpp
 	${INC_DIR}/ResourceManager.hpp
 	${INC_DIR}/Shared.cpp
-	${INC_DIR}/Sky.hpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/TextureFilter.hpp
@@ -47,7 +46,6 @@ set(
 	${SRC_DIR}/PlayState.cpp
 	${SRC_DIR}/ResourceManager.cpp
 	${SRC_DIR}/Shared.hpp
-	${SRC_DIR}/Sky.cpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
 	${SRC_DIR}/UserSettings.hpp

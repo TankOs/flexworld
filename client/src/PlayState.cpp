@@ -107,14 +107,6 @@ void PlayState::init() {
 	);
 
 	// Setup scene.
-	// Sky.
-	m_sky.reset( new Sky );
-	m_sky->set_camera( m_camera );
-
-	m_sun_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sky/sun.png" ) );
-	m_sun_texture.setSmooth( true );
-	m_sky->set_sun_texture( m_sun_texture );
-
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup camera.
@@ -399,10 +391,6 @@ void PlayState::update( const sf::Time& delta ) {
 	// Ask IO service.
 	get_shared().io_service->poll();
 
-	// Update sky.
-	//m_sky->set_time_of_day( m_sky->get_time_of_day() + (delta.AsSeconds() * (0.041f / 30.0f)) );
-	m_sky->set_time_of_day( 0.1f );
-
 	// Update GUI.
 	m_desktop.Update( delta.asSeconds() );
 
@@ -551,39 +539,50 @@ void PlayState::update( const sf::Time& delta ) {
 void PlayState::render() const {
 	sf::RenderWindow& target = get_render_target();
 
-	// Clear.
-	sf::Color local_sky_color = m_sky->get_local_sky_color();
-
 	glClearColor(
-		static_cast<float>( local_sky_color.r ) / 255.f,
-		static_cast<float>( local_sky_color.g ) / 255.f,
-		static_cast<float>( local_sky_color.b ) / 255.f,
-		static_cast<float>( local_sky_color.a ) / 255.f
+		0x5a / 255.0f,
+		0x87 / 255.0f,
+		0xfc / 255.0f,
+		1.0f
 	);
 
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+	// Reset matrices.
+	glMatrixMode( GL_TEXTURE );
+	glLoadIdentity();
+
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity();
+
 	// Render sky.
-	m_sky->render();
+	//m_sky->render();
 
 	// Render scene graph.
 	glColor3f( 1, 1, 1 );
 
-	glEnable( GL_LIGHTING );
-	GLfloat ambient[] = {0.9f, 0.9f, 0.9f};
-	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f};
-	GLfloat position[] = {20.0f, 40.0f, 30.0f};
+	// Fake light.
+	glLoadIdentity();
+
+	GLfloat ambient[] = {0.9f, 0.9f, 0.9f, 1.0f};
+	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+	GLfloat position[] = {-0.5f, 1.0f, -0.7f, 0.0f};
+
+	glRotatef( m_camera.get_rotation().x, 1.0f, 0.0f, 0.0f );
+	glRotatef( m_camera.get_rotation().y, 0.0f, 1.0f, 0.0f );
+	/*glTranslatef( -m_camera.get_position().x, 2.0f, -m_camera.get_position().z );*/
+
+	glLightfv( GL_LIGHT0, GL_POSITION, position );
+	glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );
+	glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuse );
 
 	glEnable( GL_LIGHT0 );
+	glEnable( GL_LIGHTING );
 
 	m_renderer.render();
 
-	glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );
-	glLightfv( GL_LIGHT0, GL_DIFFUSE, diffuse );
-	glLightfv( GL_LIGHT0, GL_POSITION, position );
-
-	glDisable( GL_LIGHT0 );
 	glDisable( GL_LIGHTING );
+	glDisable( GL_LIGHT0 );
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );
