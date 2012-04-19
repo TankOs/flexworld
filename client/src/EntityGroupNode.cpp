@@ -42,7 +42,7 @@ void EntityGroupNode::update_entity( const flex::Entity& entity ) {
 
 	iter->second->set_local_transform(
 		sg::Transform(
-			entity.get_position() - entity.get_class().get_origin(),
+			entity.get_position(),
 			entity.get_rotation(),
 			entity.get_class().get_scale(),
 			entity.get_class().get_origin()
