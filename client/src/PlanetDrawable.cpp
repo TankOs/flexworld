@@ -461,3 +461,9 @@ void PlanetDrawable::handle_update_render_state() {
 		}
 	}
 }
+
+void PlanetDrawable::cancel_chunk_prepare() {
+	boost::lock_guard<boost::mutex> lock( m_delayed_steps_mutex );
+
+	m_delayed_steps.clear();
+}

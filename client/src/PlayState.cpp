@@ -28,6 +28,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_do_prepare_chunks( false ),
+	m_cancel_prepare_chunks( false ),
 	m_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
 	m_update_eyepoint( true ),
@@ -208,6 +209,23 @@ void PlayState::handle_event( const sf::Event& event ) {
 		else {
 			// Otherwise leave game (TODO: confirmation dialog).
 			leave( new MenuState( get_render_target() ) );
+
+			// Cancel preparing chunks.
+			{
+				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_chunks_mutex );
+				m_cancel_prepare_chunks = true;
+			}
+
+			{
+				boost::lock_guard<boost::mutex> do_lock( m_prepare_chunks_mutex );
+				m_do_prepare_chunks = false;
+			}
+
+			// Cancel building VBOs.
+			if( m_planet_drawable ) {
+				m_planet_drawable->cancel_chunk_prepare();
+			}
+
 			give_gui = false;
 		}
 	}
@@ -722,10 +740,20 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 		return;
 	}
 
-	// Add chunk to preparation list.
+	// Add chunk to preparation list. Check if the same chunk has already been
+	// added. If so, bring to front.
 	{
 		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
-		m_chunk_list.push_back( msg.get_position() );
+
+		ChunkPositionList::iterator pos_iter = std::find( m_chunk_list.begin(), m_chunk_list.end(), msg.get_position() );
+
+		if( pos_iter != m_chunk_list.end() ) {
+			m_chunk_list.erase( pos_iter );
+			m_chunk_list.push_front( msg.get_position() );
+		}
+		else {
+			m_chunk_list.push_back( msg.get_position() );
+		}
 	}
 
 	// Notify thread.
@@ -751,6 +779,16 @@ void PlayState::prepare_chunks() {
 
 		// Work until all chunks have been processed.
 		while( m_chunk_list.size() > 0 ) {
+			// Shall we cancel?
+			{
+				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_chunks_mutex );
+
+				if( m_cancel_prepare_chunks ) {
+					m_chunk_list.clear();
+					continue;
+				}
+			}
+
 			// Get next chunk position.
 			flex::Planet::Vector chunk_pos = m_chunk_list.front();
 			m_chunk_list.pop_front();

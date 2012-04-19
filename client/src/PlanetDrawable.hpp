@@ -45,6 +45,10 @@ class PlanetDrawable : public sg::Drawable {
 		 */
 		void prepare_chunk( const flex::Planet::Vector& chunk_pos );
 
+		/** Cancel preparing chunks.
+		 */
+		void cancel_chunk_prepare();
+
 	private:
 		struct DelayedStep {
 			/** --

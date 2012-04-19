@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	// destroy_block
 	{
-		static const Planet::Vector CHUNK_POS( 0, 0, 0 );
+		static const Planet::Vector CHUNK_POS( 0, 10, 0 );
 		static const Chunk::Vector BLOCK_POS( 2, 3, 4 );
 		static const std::string PLANET_ID = "construct";
 
@@ -304,6 +304,10 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		BOOST_REQUIRE( planet != nullptr );
 
 		// Set a block.
+		if( !planet->has_chunk( CHUNK_POS ) ) {
+			planet->create_chunk( CHUNK_POS );
+		}
+
 		planet->set_block( CHUNK_POS, BLOCK_POS, *cls );
 
 		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == cls );
@@ -327,14 +331,28 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		}
 
 		// Destroy block.
-		BOOST_CHECK_NO_THROW( host.destroy_block( lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ), PLANET_ID ) );
+		BOOST_CHECK_NO_THROW(
+			host.destroy_block(
+				lua::WorldGate::BlockPosition(
+					CHUNK_POS.x * planet->get_chunk_size().x + BLOCK_POS.x,
+					CHUNK_POS.y * planet->get_chunk_size().y + BLOCK_POS.y,
+					CHUNK_POS.z * planet->get_chunk_size().z + BLOCK_POS.z
+				),
+			PLANET_ID )
+		);
 		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == nullptr );
 
 		// Poll IO service.
 		io_service.poll();
 
 		// Check that client received destroy block message.
-		BOOST_CHECK( handler.m_last_destroy_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+		BOOST_CHECK(
+			handler.m_last_destroy_block_message.get_block_position() == lua::WorldGate::BlockPosition(
+				CHUNK_POS.x * planet->get_chunk_size().x + BLOCK_POS.x,
+				CHUNK_POS.y * planet->get_chunk_size().y + BLOCK_POS.y,
+				CHUNK_POS.z * planet->get_chunk_size().z + BLOCK_POS.z
+			)
+		);
 
 		// Check invalid destroy calls.
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 32, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
@@ -346,7 +364,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	// set_block
 	{
-		static const Planet::Vector CHUNK_POS( 0, 0, 0 );
+		static const Planet::Vector CHUNK_POS( 0, 10, 0 );
 		static const Chunk::Vector BLOCK_POS( 2, 3, 4 );
 		static const std::string PLANET_ID = "construct";
 		static const FlexID CLASS_ID = FlexID::make( "some/class" );
@@ -379,6 +397,10 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		BOOST_REQUIRE( planet != nullptr );
 
 		// Make sure block doesn't exist yet.
+		if( !planet->has_chunk( CHUNK_POS ) ) {
+			planet->create_chunk( CHUNK_POS );
+		}
+
 		BOOST_CHECK( planet->find_block( CHUNK_POS, BLOCK_POS ) == nullptr );
 
 		// Connect client.
@@ -400,7 +422,15 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		}
 
 		// Set block.
-		BOOST_CHECK_NO_THROW( host.set_block( lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ), PLANET_ID, CLASS_ID ) );
+		BOOST_CHECK_NO_THROW(
+			host.set_block(
+				lua::WorldGate::BlockPosition(
+					CHUNK_POS.x * planet->get_chunk_size().x + BLOCK_POS.x,
+					CHUNK_POS.y * planet->get_chunk_size().y + BLOCK_POS.y,
+					CHUNK_POS.z * planet->get_chunk_size().z + BLOCK_POS.z
+				),
+			PLANET_ID, CLASS_ID )
+		);
 
 		const Class* set_cls = planet->find_block( CHUNK_POS, BLOCK_POS );
 		BOOST_CHECK( set_cls != nullptr );
@@ -413,7 +443,13 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		io_service.poll();
 
 		// Check that client received set block message.
-		BOOST_CHECK( handler.m_last_set_block_message.get_block_position() == lua::WorldGate::BlockPosition( BLOCK_POS.x, BLOCK_POS.y, BLOCK_POS.z ) );
+		BOOST_CHECK(
+			handler.m_last_set_block_message.get_block_position() == lua::WorldGate::BlockPosition(
+				CHUNK_POS.x * planet->get_chunk_size().x + BLOCK_POS.x,
+				CHUNK_POS.y * planet->get_chunk_size().y + BLOCK_POS.y,
+				CHUNK_POS.z * planet->get_chunk_size().z + BLOCK_POS.z
+			)
+		);
 		BOOST_CHECK( handler.m_last_set_block_message.get_class_id() == CLASS_ID.get() );
 
 		// Check invalid set calls.

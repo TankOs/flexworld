@@ -146,7 +146,7 @@ bool SessionHost::start() {
 
 	// Build grass plane.
 	{
-		Planet::Vector chunk_pos( 0, 0, 0 );
+		Planet::Vector chunk_pos( 0, 4, 0 );
 		Chunk::Vector block_pos( 0, 0, 0 );
 
 		for( chunk_pos.x = 0; chunk_pos.x < DEFAULT_CONSTRUCT_SIZE.x; ++chunk_pos.x ) {
@@ -157,8 +157,10 @@ bool SessionHost::start() {
 				}
 
 				for( block_pos.x = 0; block_pos.x < DEFAULT_CHUNK_SIZE.x; ++block_pos.x ) {
-					for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
-						planet->set_block( chunk_pos, block_pos, *grass_cls );
+					for( block_pos.y = DEFAULT_CHUNK_SIZE.y - 2; block_pos.y < DEFAULT_CHUNK_SIZE.y; ++block_pos.y ) {
+						for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
+							planet->set_block( chunk_pos, block_pos, *grass_cls );
+						}
 					}
 				}
 			}
@@ -341,10 +343,13 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 		return;
 	}
 
+	// XXX
+	float height = 5.f * static_cast<float>( construct->get_chunk_size().y ) + 1.0f;
+
 	// Client is ready, send him to the construct planet.
 	m_lock_facility.lock_planet( *construct, false );
 
-	beam_player( conn_id, "construct", sf::Vector3f( 40, 2.75f, 40 ), 200 );
+	beam_player( conn_id, "construct", sf::Vector3f( 40, height + 1.75f, 40 ), 200 );
 }
 
 void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
