@@ -5,6 +5,8 @@
 #include <SFML/System/Vector3.hpp>
 #include <string>
 #include <memory>
+#include <vector>
+#include <map>
 #include <cstdint>
 
 namespace flex {
@@ -97,13 +99,78 @@ class Entity {
 		 */
 		const sf::Vector3f& get_rotation() const;
 
+		/** Get parent.
+		 * @return Parent or nullptr.
+		 */
+		const Entity* get_parent() const;
+
+		/** Set parent.
+		 * @param parent Parent or nullptr when no parent.
+		 */
+		void set_parent( const Entity* parent );
+
+		/** Attach entity to hook.
+		 * Undefined behaviour if entity is already attached to another entity or
+		 * if hook is unknown.
+		 * @param child Entity to attach, ptr is stored (must be in detached state).
+		 * @param hook_id Hook ID (must exist).
+		 */
+		void attach( Entity& child, const std::string& hook_id );
+
+		/** Detach entity.
+		 * Undefined behaviour if not attached.
+		 * @param child Child.
+		 */
+		void detach( Entity& child );
+
+		/** Get number of total children.
+		 * @return Number of children.
+		 */
+		std::size_t get_num_children() const;
+
+		/** Get number of children at a specific hook.
+		 * Undefined behaviour if hook doesn't exist.
+		 * @param hook_id Hook (must exist).
+		 * @return Number of children for hook.
+		 */
+		std::size_t get_num_children( const std::string& hook_id ) const;
+
+		/** Check if child is attached.
+		 * @param child Child.
+		 * @return true if attached.
+		 */
+		bool has_child( const Entity& child ) const;
+
+		/** Check if child is attached to specific hook.
+		 * Undefined behaviour if hook ID is invalid.
+		 * @param child Child.
+		 * @param hook_id Hook (must exist).
+		 * @return true if attached.
+		 */
+		bool has_child( const Entity& child, const std::string& hook_id ) const;
+
+		/** Get child.
+		 * Undefined behaviour if hook ID is invalid, no entity has been attached
+		 * to the given hook or the index is invalid.
+		 * @param hook_id Hook.
+		 * @param index Index.
+		 * @return Child.
+		 */
+		Entity& get_child( const std::string& hook_id, std::size_t index ) const;
+
 	private:
+		typedef std::vector<Entity*> EntityPtrArray;
+		typedef std::map<const std::string, EntityPtrArray> HookEntityMap;
+
+		HookEntityMap m_children;
+
 		sf::Vector3f m_position;
 		sf::Vector3f m_rotation;
 		std::unique_ptr<std::string> m_name;
 		ID m_id;
 		AmountType m_amount;
 		const Class* m_class;
+		const Entity* m_parent;
 };
 
 }
