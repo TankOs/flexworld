@@ -2,7 +2,7 @@
 -- Block tools for players.
 --
 
-next_class_id = "fw.base.nature/stone"
+next_class_id = "fw.base.nature/wooden_planks"
 
 function on_build_class_block_action( block, next_block, primary, actor, client_id )
 	local planet = "construct" -- TODO

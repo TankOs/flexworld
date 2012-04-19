@@ -75,11 +75,22 @@ class Camera {
 		 */
 		void fly( float distance );
 
+		/** Set eye offset.
+		 * @param offset Offset.
+		 */
+		void set_eye_offset( const sf::Vector3f& offset );
+
+		/** Get eye offset.
+		 * @return Offset.
+		 */
+		const sf::Vector3f& get_eye_offset() const;
+
 	private:
 		void apply_clamp();
 
 		sf::Vector3f m_position;
 		sf::Vector3f m_rotation;
+		sf::Vector3f m_eye_offset;
 		float m_fov;
 		float m_aspect;
 		float m_pitch_clamp;

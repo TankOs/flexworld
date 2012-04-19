@@ -7,6 +7,7 @@
 Camera::Camera() :
 	m_position( 0, 0, 0 ),
 	m_rotation( 0, 0, 0 ),
+	m_eye_offset( 0, 0, 0 ),
 	m_fov( 90 ),
 	m_aspect( 1 ),
 	m_pitch_clamp( 360.0f )
@@ -78,4 +79,12 @@ void Camera::strafe( float distance ) {
 
 void Camera::fly( float distance ) {
 	m_position.y += distance;
+}
+
+void Camera::set_eye_offset( const sf::Vector3f& offset ) {
+	m_eye_offset = offset;
+}
+
+const sf::Vector3f& Camera::get_eye_offset() const {
+	return m_eye_offset;
 }

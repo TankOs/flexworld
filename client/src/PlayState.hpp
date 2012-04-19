@@ -4,7 +4,6 @@
 #include "ChatWindow.hpp"
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
-#include "PlanetDrawable.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
@@ -16,6 +15,9 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <boost/thread.hpp>
+
+class PlanetDrawable;
+class EntityGroupNode;
 
 /** Play state.
  */
@@ -39,9 +41,9 @@ class PlayState : public State, flex::Client::Handler {
 		void enable_gui_mode( bool enable );
 		void reset_mouse();
 
-		void launch_chunk_preparation_thread();
-		void stop_and_wait_for_chunk_preparation_thread();
-		void prepare_chunks();
+		void launch_objects_preparation_thread();
+		void stop_and_wait_for_objects_preparation_thread();
+		void prepare_objects();
 
 		void on_chat_message_ready();
 		void on_chat_close_click();
@@ -78,7 +80,10 @@ class PlayState : public State, flex::Client::Handler {
 		sg::Renderer m_renderer;
 
 		sg::Node::Ptr m_scene_graph;
-		PlanetDrawable::Ptr m_planet_drawable;
+		std::shared_ptr<PlanetDrawable> m_planet_drawable;
+
+		std::shared_ptr<EntityGroupNode> m_entity_group_node;
+		boost::mutex m_entity_group_node_mutex;
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;
@@ -86,20 +91,21 @@ class PlayState : public State, flex::Client::Handler {
 		// Backend data.
 		std::string m_current_planet_id;
 
-		// Chunk preparation thread.
+		// Object preparation thread.
 		typedef std::list<flex::Planet::Vector> ChunkPositionList;
+		typedef std::list<uint32_t> EntityIDList;
 
-		boost::mutex m_chunk_list_mutex; // Protects the chunk position list.
-		boost::mutex m_prepare_chunks_mutex; // Protects run var of chunk preparation thread.
-		boost::condition_variable m_prepare_chunks_condition; // Condition for triggering preparation thread.
-		std::unique_ptr<boost::thread> m_prepare_chunks_thread; // The thread.
+		boost::mutex m_object_list_mutex; // Protects the object lists.
+		boost::mutex m_prepare_objects_mutex; // Protects run var of object preparation thread.
+		boost::mutex m_cancel_prepare_objects_mutex; // Protects cancellation variable.
+		boost::condition_variable m_prepare_objects_condition; // Condition for triggering preparation thread.
+		std::unique_ptr<boost::thread> m_prepare_objects_thread; // The thread.
 
 		ChunkPositionList m_chunk_list;
-		bool m_do_prepare_chunks;
-		bool m_cancel_prepare_chunks;
-		bool m_prepare_thread_ready;
+		EntityIDList m_entity_ids;
 
-		boost::mutex m_cancel_prepare_chunks_mutex;
+		bool m_do_prepare_objects; // Run the loop.
+		bool m_cancel_prepare_objects; // Cancel the loop.
 
 		// Controls.
 		sf::Vector3f m_velocity;

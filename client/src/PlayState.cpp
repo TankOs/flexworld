@@ -4,6 +4,8 @@
 #include "MenuState.hpp"
 #include "ColorPicker.hpp"
 #include "Shared.hpp"
+#include "PlanetDrawable.hpp"
+#include "EntityGroupNode.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -16,7 +18,7 @@
 #include <FWSG/WireframeState.hpp>
 #include <FWSG/DepthTestState.hpp>
 #include <sstream>
-#include <iostream> // XXX 
+#include <iostream>
 
 static const sf::Time MESSAGE_DELAY = sf::milliseconds( 2000 );
 static const float MESSAGE_SPACING = 5.f;
@@ -27,8 +29,8 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
-	m_do_prepare_chunks( false ),
-	m_cancel_prepare_chunks( false ),
+	m_do_prepare_objects( false ),
+	m_cancel_prepare_objects( false ),
 	m_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
 	m_update_eyepoint( true ),
@@ -117,6 +119,7 @@ void PlayState::init() {
 	);
 	m_camera.set_pitch_clamp( 90.f );
 	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
+	m_camera.set_eye_offset( sf::Vector3f( 0, 1.75f, 0 ) ); // TODO Get view height from class.
 
 	// Projection matrix.
 	glMatrixMode( GL_PROJECTION );
@@ -138,9 +141,6 @@ void PlayState::init() {
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 
-	// Misc.
-	get_render_target().setMouseCursorVisible( false );
-
 	// Notify server that we're ready.
 	flex::msg::Ready ready_msg;
 	get_shared().client->send_message( ready_msg );
@@ -152,11 +152,14 @@ void PlayState::init() {
 
 	// Reset mouse so that the initial view direction is straight.
 	reset_mouse();
+
+	// Disable GUI mode for initial settings.
+	enable_gui_mode( false );
 }
 
 void PlayState::cleanup() {
-	// Terminate chunk preparation thread.
-	stop_and_wait_for_chunk_preparation_thread();
+	// Terminate objects preparation thread.
+	stop_and_wait_for_objects_preparation_thread();
 
 	// Close connections.
 	get_shared().client->stop();
@@ -210,15 +213,15 @@ void PlayState::handle_event( const sf::Event& event ) {
 			// Otherwise leave game (TODO: confirmation dialog).
 			leave( new MenuState( get_render_target() ) );
 
-			// Cancel preparing chunks.
+			// Cancel preparing objects.
 			{
-				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_chunks_mutex );
-				m_cancel_prepare_chunks = true;
+				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_objects_mutex );
+				m_cancel_prepare_objects = true;
 			}
 
 			{
-				boost::lock_guard<boost::mutex> do_lock( m_prepare_chunks_mutex );
-				m_do_prepare_chunks = false;
+				boost::lock_guard<boost::mutex> do_lock( m_prepare_objects_mutex );
+				m_do_prepare_objects = false;
 			}
 
 			// Cancel building VBOs.
@@ -323,66 +326,68 @@ void PlayState::handle_event( const sf::Event& event ) {
 				case Controls::PRIMARY_ACTION:
 				case Controls::SECONDARY_ACTION:
 					{
-						bool primary = (action == Controls::PRIMARY_ACTION);
+						if( pressed ) {
+							bool primary = (action == Controls::PRIMARY_ACTION);
 
-						// Calc forward vector.
-						sf::Vector3f forward = flex::polar_to_vector(
-							flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
-							flex::deg_to_rad( -m_camera.get_rotation().y ),
-							1.0f
-						);
+							// Calc forward vector.
+							sf::Vector3f forward = flex::polar_to_vector(
+								flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
+								flex::deg_to_rad( -m_camera.get_rotation().y ),
+								1.0f
+							);
 
-						float distance = 15.0f; // TODO Take distance from server?
-						sf::Vector3f origin = m_camera.get_position();
+							float distance = 15.0f; // TODO Take distance from server?
+							sf::Vector3f origin = m_camera.get_position() + m_camera.get_eye_offset();
 
-						// Get planet.
-						get_shared().lock_facility->lock_world( true );
+							// Get planet.
+							get_shared().lock_facility->lock_world( true );
 
-						const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
-						assert( planet != nullptr );
+							const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+							assert( planet != nullptr );
 
-						get_shared().lock_facility->lock_planet( *planet, true );
-						get_shared().lock_facility->lock_world( false );
+							get_shared().lock_facility->lock_planet( *planet, true );
+							get_shared().lock_facility->lock_world( false );
 
-						ColorPicker::Result result = ColorPicker::pick(
-							origin,
-							forward,
-							distance,
-							sg::Transform(
-								sf::Vector3f(
-									-m_camera.get_position().x,
-									-m_camera.get_position().y,
-									-m_camera.get_position().z
+							ColorPicker::Result result = ColorPicker::pick(
+								origin,
+								forward,
+								distance,
+								sg::Transform(
+									sf::Vector3f(
+										-m_camera.get_position().x - m_camera.get_eye_offset().x,
+										-m_camera.get_position().y - m_camera.get_eye_offset().y,
+										-m_camera.get_position().z - m_camera.get_eye_offset().z
+									),
+									sf::Vector3f(
+										m_camera.get_rotation().x,
+										m_camera.get_rotation().y,
+										m_camera.get_rotation().z
+									)
 								),
-								sf::Vector3f(
-									m_camera.get_rotation().x,
-									m_camera.get_rotation().y,
-									m_camera.get_rotation().z
-								)
-							),
-							sf::Vector2i(
-								get_render_target().getSize().x / 2,
-								get_render_target().getSize().y / 2
-							),
-							*planet,
-							m_resource_manager
-						);
+								sf::Vector2i(
+									get_render_target().getSize().x / 2,
+									get_render_target().getSize().y / 2
+								),
+								*planet,
+								m_resource_manager
+							);
 
-						get_shared().lock_facility->lock_planet( *planet, false );
+							get_shared().lock_facility->lock_planet( *planet, false );
 
-						if( result.m_type == ColorPicker::Result::NONE ) {
-						}
-						else if( result.m_type == ColorPicker::Result::BLOCK ) {
-							// Send block action msg.
-							flex::msg::BlockAction ba_msg;
+							if( result.m_type == ColorPicker::Result::NONE ) {
+							}
+							else if( result.m_type == ColorPicker::Result::BLOCK ) {
+								// Send block action msg.
+								flex::msg::BlockAction ba_msg;
 
-							ba_msg.set_block_position( result.m_block_position );
-							ba_msg.set_facing( result.m_facing );
-							ba_msg.set_primary( primary );
+								ba_msg.set_block_position( result.m_block_position );
+								ba_msg.set_facing( result.m_facing );
+								ba_msg.set_primary( primary );
 
-							get_shared().client->send_message( ba_msg );
-						}
-						else if( result.m_type == ColorPicker::Result::ENTITY ) {
+								get_shared().client->send_message( ba_msg );
+							}
+							else if( result.m_type == ColorPicker::Result::ENTITY ) {
+							}
 						}
 					}
 
@@ -445,17 +450,17 @@ void PlayState::update( const sf::Time& delta ) {
 		// Movement.
 		if( m_update_velocity ) {
 			// If we didn't receive our own entity yet, do not move (what to move anyways?).
-			/*if( !m_my_entity_received ) {
+			if( !m_my_entity_received ) {
 				m_velocity.z = 0;
 				m_velocity.x = 0;
 			}
-			else {*/
+			else {
 				m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
 				m_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
 				m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 
 				flex::normalize( m_velocity );
-			//}
+			}
 
 			m_update_velocity = false;
 		}
@@ -477,31 +482,12 @@ void PlayState::update( const sf::Time& delta ) {
 
 		// If eyepoint changed update transform of scene graph.
 		if( m_update_eyepoint ) {
-			/*m_camera_node->set_local_transform(
-				sg::Transform(
-					sf::Vector3f( 0, 0, 0 ),
-					m_camera.get_rotation(),
-					sf::Vector3f( 1, 1, 1 )
-				)
-			);
-
-			if( m_planet_drawable ) {
-				m_planet_drawable->set_local_transform(
-					sg::Transform(
-						sf::Vector3f( 0, 0, 0 ),
-						sf::Vector3f( 0, 0, 0 ),
-						sf::Vector3f( 1, 1, 1 ),
-						m_camera.get_position()
-					)
-				);
-			}*/
-
 			m_scene_graph->set_local_transform(
 				sg::Transform(
 					sf::Vector3f(
-						-m_camera.get_position().x,
-						-m_camera.get_position().y,
-						-m_camera.get_position().z
+						-m_camera.get_position().x - m_camera.get_eye_offset().x,
+						-m_camera.get_position().y - m_camera.get_eye_offset().y,
+						-m_camera.get_position().z - m_camera.get_eye_offset().z
 					),
 					m_camera.get_rotation(),
 					sf::Vector3f( 1, 1, 1 )
@@ -678,13 +664,13 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	}
 
 	// Stop preparation thread.
-	stop_and_wait_for_chunk_preparation_thread();
+	stop_and_wait_for_objects_preparation_thread();
 
 	// Save current planet ID.
 	m_current_planet_id = msg.get_planet_name();
 
-	// Setup preparation thread for chunks.
-	launch_chunk_preparation_thread();
+	// Setup preparation thread for objects.
+	launch_objects_preparation_thread();
 
 	// Update view cuboid.
 	flex::Planet::Vector chunk_pos;
@@ -702,17 +688,20 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	m_view_cuboid.height = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), flex::Planet::ScalarType( 10 ) );
 	m_view_cuboid.depth = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), flex::Planet::ScalarType( 10 ) );
 
-	// Setup planet renderer.
-	//m_planet_renderer.reset( new PlanetRenderer( *planet, m_resource_manager ) );
-	//m_planet_renderer->set_camera( m_camera );
-
-	// Detach old planet drawable.
+	// Detach old drawables.
 	if( m_planet_drawable ) {
 		m_scene_graph->detach( m_planet_drawable );
 	}
 
+	if( m_entity_group_node ) {
+		m_scene_graph->detach( m_entity_group_node );
+	}
+
 	m_planet_drawable = PlanetDrawable::create( *planet, m_resource_manager, m_renderer );
+	m_entity_group_node = EntityGroupNode::create( m_resource_manager, m_renderer );
+
 	m_scene_graph->attach( m_planet_drawable );
+	m_scene_graph->attach( m_entity_group_node );
 
 	get_shared().lock_facility->lock_planet( *planet, false );
 
@@ -743,7 +732,7 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 	// Add chunk to preparation list. Check if the same chunk has already been
 	// added. If so, bring to front.
 	{
-		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
+		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
 
 		ChunkPositionList::iterator pos_iter = std::find( m_chunk_list.begin(), m_chunk_list.end(), msg.get_position() );
 
@@ -757,96 +746,125 @@ void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Clie
 	}
 
 	// Notify thread.
-	m_prepare_chunks_condition.notify_one();
+	m_prepare_objects_condition.notify_one();
 }
 
-void PlayState::prepare_chunks() {
+void PlayState::prepare_objects() {
 	// We need a valid context for loading textures.
 	sf::Context context;
 
-	boost::unique_lock<boost::mutex> do_lock( m_prepare_chunks_mutex );
+	boost::unique_lock<boost::mutex> do_lock( m_prepare_objects_mutex );
 	sf::Clock clock;
 
-	while( m_do_prepare_chunks ) {
+	while( m_do_prepare_objects ) {
 		// If there's no data, wait.
-		m_chunk_list_mutex.lock();
+		m_object_list_mutex.lock();
 
-		if( m_chunk_list.size() == 0 ) {
-			m_chunk_list_mutex.unlock();
-			m_prepare_chunks_condition.wait( do_lock );
+		if( m_chunk_list.size() == 0 && m_entity_ids.size() == 0 ) {
+			m_object_list_mutex.unlock();
+			m_prepare_objects_condition.wait( do_lock );
 			continue;
 		}
 
-		// Work until all chunks have been processed.
-		while( m_chunk_list.size() > 0 ) {
+		// Work until all objects have been processed.
+		while( m_chunk_list.size() > 0 || m_entity_ids.size() > 0 ) {
 			// Shall we cancel?
 			{
-				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_chunks_mutex );
+				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_objects_mutex );
 
-				if( m_cancel_prepare_chunks ) {
+				if( m_cancel_prepare_objects ) {
 					m_chunk_list.clear();
+					m_entity_ids.clear();
 					continue;
 				}
 			}
 
-			// Get next chunk position.
-			flex::Planet::Vector chunk_pos = m_chunk_list.front();
-			m_chunk_list.pop_front();
+			// Check for unprepared chunk.
+			if( m_chunk_list.size() > 0 ) {
+				// Get next chunk position.
+				flex::Planet::Vector chunk_pos = m_chunk_list.front();
+				m_chunk_list.pop_front();
 
-			m_chunk_list_mutex.unlock();
+				m_object_list_mutex.unlock();
 
-			// Get planet.
-			get_shared().lock_facility->lock_world( true );
+				// Get planet.
+				get_shared().lock_facility->lock_world( true );
 
-			const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
-			assert( planet );
-			get_shared().lock_facility->lock_planet( *planet, true );
-			get_shared().lock_facility->lock_world( false );
+				const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+				assert( planet );
+				get_shared().lock_facility->lock_planet( *planet, true );
+				get_shared().lock_facility->lock_world( false );
 
-			// Make sure chunk exists.
-			if( planet->has_chunk( chunk_pos ) ) {
-				// Prepare chunk in renderer.
-				//m_planet_renderer->prepare_chunk( chunk_pos );
-				m_planet_drawable->prepare_chunk( chunk_pos );
-			}
-			else {
+				// Make sure chunk exists.
+				if( planet->has_chunk( chunk_pos ) ) {
+					// Prepare chunk in renderer.
+					//m_planet_renderer->prepare_chunk( chunk_pos );
+					m_planet_drawable->prepare_chunk( chunk_pos );
+				}
+				else {
 #if !defined( NDEBUG )
-				std::cout << "Skipping, no chunk at given position." << std::endl;
+					std::cout << "Skipping, no chunk at given position." << std::endl;
 #endif
+				}
+
+				get_shared().lock_facility->lock_planet( *planet, false );
+			}
+			else if( m_entity_ids.size() > 0 ) {
+				// Get next entity ID for preparation.
+				uint32_t next_entity_id = m_entity_ids.front();
+				m_entity_ids.pop_front();
+
+				m_object_list_mutex.unlock();
+
+				// Fetch entity.
+				get_shared().lock_facility->lock_world( true );
+
+				const flex::Entity* entity = get_shared().world->find_entity( next_entity_id );
+				assert( entity );
+
+				// Give to entity drawable.
+				assert( m_entity_group_node );
+
+				{
+					boost::lock_guard<boost::mutex> ed_lock( m_entity_group_node_mutex );
+					m_entity_group_node->add_entity( *entity );
+				}
+
+				get_shared().lock_facility->lock_world( false );
 			}
 
-			get_shared().lock_facility->lock_planet( *planet, false );
-			m_chunk_list_mutex.lock();
+			// Go on.
+			m_object_list_mutex.lock();
 		}
 
-		m_chunk_list_mutex.unlock();
+		m_object_list_mutex.unlock();
 	}
 
 }
 
-void PlayState::launch_chunk_preparation_thread() {
-	assert( !m_prepare_chunks_thread );
-	assert( m_do_prepare_chunks == false );
+void PlayState::launch_objects_preparation_thread() {
+	assert( !m_prepare_objects_thread );
+	assert( m_do_prepare_objects == false );
 
-	m_do_prepare_chunks = true;
-	m_prepare_chunks_thread.reset( new boost::thread( std::bind( &PlayState::prepare_chunks, this ) ) );
+	m_do_prepare_objects = true;
+	m_prepare_objects_thread.reset( new boost::thread( std::bind( &PlayState::prepare_objects, this ) ) );
 }
 
-void PlayState::stop_and_wait_for_chunk_preparation_thread() {
+void PlayState::stop_and_wait_for_objects_preparation_thread() {
 	// Do nothing if thread is not running.
-	if( !m_prepare_chunks_thread ) {
+	if( !m_prepare_objects_thread ) {
 		return;
 	}
 
 	{
-		boost::lock_guard<boost::mutex> do_lock( m_prepare_chunks_mutex );
-		m_do_prepare_chunks = false;
+		boost::lock_guard<boost::mutex> do_lock( m_prepare_objects_mutex );
+		m_do_prepare_objects = false;
 	}
 
-	m_prepare_chunks_condition.notify_one();
-	m_prepare_chunks_thread->join();
+	m_prepare_objects_condition.notify_one();
+	m_prepare_objects_thread->join();
 
-	m_prepare_chunks_thread.reset();
+	m_prepare_objects_thread.reset();
 }
 
 void PlayState::update_latest_messages() {
@@ -862,6 +880,11 @@ void PlayState::update_latest_messages() {
 }
 
 void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+	if( get_shared().host == nullptr ) {
+		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
+		return;
+	}
+
 #if !defined( NDEBUG )
 	std::cout
 		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
@@ -872,10 +895,24 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 
 	// If own entity set position.
 	if( msg.get_id() == get_shared().entity_id ) {
+		m_my_entity_received = true;
+
 		m_camera.set_position( msg.get_position() );
 		m_camera.set_rotation( sf::Vector3f( 0, msg.get_heading(), 0 ) );
 
 		m_update_eyepoint = true;
+	}
+
+	// Add to entity drawable. TODO Do not add own entity!
+	if( m_entity_group_node ) {
+		{
+			boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
+
+			m_entity_ids.push_back( msg.get_id() );
+		}
+
+		// Notify thread.
+		m_prepare_objects_condition.notify_one();
 	}
 }
 
@@ -900,6 +937,7 @@ void PlayState::enable_gui_mode( bool enable ) {
 	m_gui_mode = enable;
 
 	get_render_target().setMouseCursorVisible( m_gui_mode );
+	get_render_target().setKeyRepeatEnabled( m_gui_mode );
 
 	if( m_gui_mode ) {
 		// Stop movement.
@@ -907,6 +945,8 @@ void PlayState::enable_gui_mode( bool enable ) {
 		m_walk_backward = false;
 		m_strafe_left = false;
 		m_strafe_right = false;
+		m_fly_up = false;
+		m_fly_down = false;
 		m_update_velocity = true;
 	}
 	else {
@@ -991,12 +1031,12 @@ void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client
 
 	// Add chunk to preparation list.
 	{
-		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
+		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
 		m_chunk_list.push_back( chunk_pos );
 	}
 
 	// Notify thread.
-	m_prepare_chunks_condition.notify_one();
+	m_prepare_objects_condition.notify_one();
 }
 
 void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
@@ -1035,10 +1075,10 @@ void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::Co
 
 	// Add chunk to preparation list.
 	{
-		boost::lock_guard<boost::mutex> list_lock( m_chunk_list_mutex );
+		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
 		m_chunk_list.push_back( chunk_pos );
 	}
 
 	// Notify thread.
-	m_prepare_chunks_condition.notify_one();
+	m_prepare_objects_condition.notify_one();
 }

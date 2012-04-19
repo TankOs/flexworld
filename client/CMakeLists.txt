@@ -16,6 +16,7 @@ set(
 	${INC_DIR}/ColorPicker.hpp
 	${INC_DIR}/ConnectState.hpp
 	${INC_DIR}/Controls.hpp
+	${INC_DIR}/EntityGroupNode.hpp
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
@@ -37,6 +38,7 @@ set(
 	${SRC_DIR}/ColorPicker.cpp
 	${SRC_DIR}/ConnectState.cpp
 	${SRC_DIR}/Controls.cpp
+	${SRC_DIR}/EntityGroupNode.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/KeyNames.cpp
 	${SRC_DIR}/Main.cpp

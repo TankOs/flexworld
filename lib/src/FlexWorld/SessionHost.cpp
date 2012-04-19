@@ -344,12 +344,12 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	}
 
 	// XXX
-	float height = 5.f * static_cast<float>( construct->get_chunk_size().y ) + 1.0f;
+	float height = 5.f * static_cast<float>( construct->get_chunk_size().y );
 
 	// Client is ready, send him to the construct planet.
 	m_lock_facility.lock_planet( *construct, false );
 
-	beam_player( conn_id, "construct", sf::Vector3f( 40, height + 1.75f, 40 ), 200 );
+	beam_player( conn_id, "construct", sf::Vector3f( 40, height, 40 ), 200 );
 }
 
 void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
