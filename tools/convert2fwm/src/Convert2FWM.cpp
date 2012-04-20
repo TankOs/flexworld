@@ -348,14 +348,14 @@ int main( int argc, char** argv ) {
 			// Get low values for each axis.
 			sf::Vector3f min(
 				std::min( v0.x, std::min( v1.x, v2.x ) ),
-				std::min( v0.y, std::min( v1.y, v2.z ) ),
+				std::min( v0.y, std::min( v1.y, v2.y ) ),
 				std::min( v0.z, std::min( v1.z, v2.z ) )
 			);
 
 			// Get max values for each axis.
 			sf::Vector3f max(
 				std::max( v0.x, std::max( v1.x, v2.x ) ),
-				std::max( v0.y, std::max( v1.y, v2.z ) ),
+				std::max( v0.y, std::max( v1.y, v2.y ) ),
 				std::max( v0.z, std::max( v1.z, v2.z ) )
 			);
 

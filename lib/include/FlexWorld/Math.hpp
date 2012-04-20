@@ -45,4 +45,11 @@ sf::Vector3f polar_to_vector( float theta, float phi, float r = 1.f );
  */
 float deg_to_rad( float deg );
 
+/** Dot product.
+ * @param a Vector.
+ * @param b Vector.
+ * @return Dot product a x b.
+ */
+sf::Vector3f dot_product( const sf::Vector3f& a, const sf::Vector3f& b );
+
 }

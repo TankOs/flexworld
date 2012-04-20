@@ -1,0 +1,5 @@
+ID: "fw.building/wooden_stair"
+Name: "Stair (wooden)"
+Textures:
+  - "fw.base.nature/wooden_planks.png"
+Model: "fw.building/stair.fwm"

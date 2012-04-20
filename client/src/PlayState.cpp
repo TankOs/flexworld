@@ -570,7 +570,7 @@ void PlayState::render() const {
 
 	GLfloat ambient[] = {0.9f, 0.9f, 0.9f, 1.0f};
 	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-	GLfloat position[] = {-0.5f, 1.0f, -0.7f, 0.0f};
+	GLfloat position[] = {-0.5f, 1.0f, 0.7f, 0.0f};
 
 	glRotatef( m_camera.get_rotation().x, 1.0f, 0.0f, 0.0f );
 	glRotatef( m_camera.get_rotation().y, 0.0f, 1.0f, 0.0f );

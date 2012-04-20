@@ -1,0 +1,5 @@
+ID: "fw.building/wooden_fence"
+Name: "Fence (wooden)"
+Textures:
+  - "fw.base.nature/wooden_planks.png"
+Model: "fw.building/fence.fwm"

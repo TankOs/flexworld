@@ -88,4 +88,18 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 		BOOST_CHECK( std::abs( 0.0f - result.y ) <= FAULT_TOLERANCE );
 		BOOST_CHECK( std::abs( 0.0f - result.z ) <= FAULT_TOLERANCE );
 	}
+
+	// Dot product.
+	{
+		sf::Vector3f result = dot_product(
+			sf::Vector3f( 1, 2, 3 ),
+			sf::Vector3f( 3, 2, 1 )
+		);
+
+		BOOST_CHECK(
+			result.x == -4 &&
+			result.y == 8 &&
+			result.z == -4
+		);
+	}
 }

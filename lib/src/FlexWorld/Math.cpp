@@ -51,4 +51,12 @@ float deg_to_rad( float deg ) {
 	return deg / 180.0f * PI;
 }
 
+sf::Vector3f dot_product( const sf::Vector3f& a, const sf::Vector3f& b ) {
+	return sf::Vector3f(
+		a.y * b.z - a.z * b.y,
+		a.z * b.x - a.x * b.z,
+		a.x * b.y - a.y * b.x
+	);
+}
+
 }
