@@ -34,9 +34,9 @@ ChatWindow::Ptr ChatWindow::Create() {
 	ptr->Add( hbox );
 
 	// Signals.
-	ptr->m_send_button->OnClick.Connect( &ChatWindow::OnSendButtonClick, &(*ptr) );
+	ptr->m_send_button->OnLeftClick.Connect( &ChatWindow::OnSendButtonClick, &(*ptr) );
 	ptr->m_input_entry->OnKeyPress.Connect( &ChatWindow::OnInputEntryKeyPress, &(*ptr) );
-	ptr->m_close_button->OnClick.Connect( &ChatWindow::OnCloseButtonClick, &(*ptr) );
+	ptr->m_close_button->OnLeftClick.Connect( &ChatWindow::OnCloseButtonClick, &(*ptr) );
 
 	// Init.
 	ptr->SetTitle( L"Chat" );

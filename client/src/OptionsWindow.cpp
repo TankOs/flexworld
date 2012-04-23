@@ -55,7 +55,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Connect signals, set active mapping labels and store Button -> Action
 	// relations.
 	for( ; ab_iter != ab_iter_end; ++ab_iter ) {
-		ab_iter->second->OnClick.Connect( &OptionsWindow::on_action_button_click, &*window );
+		ab_iter->second->OnLeftClick.Connect( &OptionsWindow::on_action_button_click, &*window );
 		window->m_button_actions[ab_iter->second] = ab_iter->first;
 	}
 
@@ -236,8 +236,8 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	// Signals.
 	window->m_mouse_sensitivity_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_sensitivity_change, &*window );
 
-	ok_button->OnClick.Connect( &OptionsWindow::on_ok_click, &*window );
-	cancel_button->OnClick.Connect( &OptionsWindow::on_cancel_click, &*window );
+	ok_button->OnLeftClick.Connect( &OptionsWindow::on_ok_click, &*window );
+	cancel_button->OnLeftClick.Connect( &OptionsWindow::on_cancel_click, &*window );
 
 	window->m_fps_limit_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fps_limit_change, &*window );
 	window->m_fov_scale->GetAdjustment()->OnChange.Connect( &OptionsWindow::on_fov_change, &*window );

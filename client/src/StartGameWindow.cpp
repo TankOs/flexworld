@@ -78,8 +78,8 @@ StartGameWindow::Ptr StartGameWindow::Create() {
 	window->Add( content_box );
 
 	// Signals.
-	ok_button->OnClick.Connect( &StartGameWindow::on_ok_click, &*window );
-	cancel_button->OnClick.Connect( &StartGameWindow::on_cancel_click, &*window );
+	ok_button->OnLeftClick.Connect( &StartGameWindow::on_ok_click, &*window );
+	cancel_button->OnLeftClick.Connect( &StartGameWindow::on_cancel_click, &*window );
 
 	window->m_max_players_scale->GetAdjustment()->OnChange.Connect( &StartGameWindow::on_max_players_change, &*window );
 

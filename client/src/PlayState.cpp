@@ -303,10 +303,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 				case Controls::CHAT:
 					if( pressed ) {
-						m_chat_window->Show( !m_chat_window->IsVisible() );
+						m_chat_window->Show( !m_chat_window->IsGloballyVisible() );
 						update_gui_mode();
 
-						if( m_chat_window->IsVisible() ) {
+						if( m_chat_window->IsGloballyVisible() ) {
 							skip_next_text_event = true;
 							m_chat_window->FocusEntry();
 
@@ -919,7 +919,7 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 void PlayState::update_gui_mode() {
 	bool new_mode = m_gui_mode;
 
-	if( m_chat_window->IsVisible() ) {
+	if( m_chat_window->IsGloballyVisible() ) {
 		new_mode = true;
 	}
 	else {

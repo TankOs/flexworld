@@ -75,12 +75,16 @@ Scale {
 ComboBox {
 	BackgroundColor: #ffffff22;
 	BorderColor: #ffffff00;
-	HighlightedColor: #ffffff55;
+	HighlightedColor: #22222255;
 	Padding: 10;
 }
 
 ComboBox:PRELIGHT {
 	BackgroundColor: #ffffff55;
+}
+
+ComboBox:ACTIVE {
+	BackgroundColor: #000000aa;
 }
 
 /** {

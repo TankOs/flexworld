@@ -93,10 +93,10 @@ void MenuState::init() {
 	m_desktop.Add( m_window );
 
 	// Signals.
-	m_insta_button->OnClick.Connect( &MenuState::on_insta_click, this );
-	m_start_game_button->OnClick.Connect( &MenuState::on_start_game_click, this );
-	options_button->OnClick.Connect( &MenuState::on_options_click, this );
-	quit_button->OnClick.Connect( &MenuState::on_quit_click, this );
+	m_insta_button->OnLeftClick.Connect( &MenuState::on_insta_click, this );
+	m_start_game_button->OnLeftClick.Connect( &MenuState::on_start_game_click, this );
+	options_button->OnLeftClick.Connect( &MenuState::on_options_click, this );
+	quit_button->OnLeftClick.Connect( &MenuState::on_quit_click, this );
 
 	// Init.
 	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
