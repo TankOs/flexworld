@@ -22,6 +22,7 @@ class Controls {
 			SECONDARY_ACTION, ///< Secondary action.
 			INVENTORY, ///< Inventory.
 			CHAT, ///< Chat.
+			RUN, ///< Run modifier.
 			NUM_ACTIONS ///< Total number of actions.
 		};
 

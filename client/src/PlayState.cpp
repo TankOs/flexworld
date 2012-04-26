@@ -20,8 +20,9 @@
 #include <sstream>
 #include <iostream>
 
-static const sf::Time MESSAGE_DELAY = sf::milliseconds( 2000 );
-static const float MESSAGE_SPACING = 5.f;
+static const float MAX_WALK_SPEED = 1.5f; // [m/s] TODO: Replace by class' walk speed.
+static const float MAX_RUN_SPEED = 4.0f; // [m/s] TODO: Replace by class' walk speed.
+static const float WALK_ACCELERATION = 15.0f; // x/s². TODO: Replace by class' acceleration.
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -32,12 +33,14 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_do_prepare_objects( false ),
 	m_cancel_prepare_objects( false ),
 	m_velocity( 0, 0, 0 ),
+	m_target_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
 	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
 	m_strafe_left( false ),
 	m_strafe_right( false ),
+	m_run( false ),
 	m_fly_up( false ),
 	m_fly_down( false ),
 	m_my_entity_received( false )
@@ -290,6 +293,11 @@ void PlayState::handle_event( const sf::Event& event ) {
 					m_update_velocity = true;
 					break;
 
+				case Controls::RUN:
+					m_run = pressed;
+					m_update_velocity = true;
+					break;
+
 				case Controls::JUMP:
 					m_fly_up = pressed;
 					m_update_velocity = true;
@@ -451,32 +459,57 @@ void PlayState::update( const sf::Time& delta ) {
 		if( m_update_velocity ) {
 			// If we didn't receive our own entity yet, do not move (what to move anyways?).
 			if( !m_my_entity_received ) {
-				m_velocity.z = 0;
 				m_velocity.x = 0;
+				m_velocity.y = 0;
+				m_velocity.z = 0;
 			}
 			else {
-				m_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
-				m_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
-				m_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+				m_target_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+				m_target_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
+				m_target_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 
-				flex::normalize( m_velocity );
+				flex::normalize( m_target_velocity );
+				m_target_velocity.x *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
+				m_target_velocity.y *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
+				m_target_velocity.z *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
 			}
 
 			m_update_velocity = false;
 		}
 
+		if( m_velocity.x < m_target_velocity.x ) {
+			m_velocity.x = std::min( m_target_velocity.x, m_velocity.x + WALK_ACCELERATION * delta.asSeconds() );
+		}
+		else if( m_velocity.x > m_target_velocity.x ) {
+			m_velocity.x = std::max( m_target_velocity.x, m_velocity.x - WALK_ACCELERATION * delta.asSeconds() );
+		}
+
+		if( m_velocity.y < m_target_velocity.y ) {
+			m_velocity.y = std::min( m_target_velocity.y, m_velocity.y + WALK_ACCELERATION * delta.asSeconds() );
+		}
+		else if( m_velocity.y > m_target_velocity.y ) {
+			m_velocity.y = std::max( m_target_velocity.y, m_velocity.y - WALK_ACCELERATION * delta.asSeconds() );
+		}
+
+		if( m_velocity.z < m_target_velocity.z ) {
+			m_velocity.z = std::min( m_target_velocity.z, m_velocity.z + WALK_ACCELERATION * delta.asSeconds() );
+		}
+		else if( m_velocity.z > m_target_velocity.z ) {
+			m_velocity.z = std::max( m_target_velocity.z, m_velocity.z - WALK_ACCELERATION * delta.asSeconds() );
+		}
+
 		if( m_velocity.z != 0 ) {
-			m_camera.walk( (m_velocity.z * 4.0f) * delta.asSeconds() );
+			m_camera.walk( m_velocity.z * delta.asSeconds() );
 			m_update_eyepoint = true;
 		}
 
 		if( m_velocity.x != 0 ) {
-			m_camera.strafe( (m_velocity.x * 4.0f) * delta.asSeconds() );
+			m_camera.strafe( m_velocity.x * delta.asSeconds() );
 			m_update_eyepoint = true;
 		}
 
 		if( m_velocity.y != 0 ) {
-			m_camera.fly( (m_velocity.y * 4.0f) * delta.asSeconds() );
+			m_camera.fly( m_velocity.y * delta.asSeconds() );
 			m_update_eyepoint = true;
 		}
 
@@ -518,16 +551,6 @@ void PlayState::update( const sf::Time& delta ) {
 		);
 
 		elapsed = sf::Time::Zero;
-	}
-
-	// Remove latest messages.
-	if( m_message_timer.getElapsedTime() >= MESSAGE_DELAY ) {
-		m_message_timer.restart();
-
-		if( m_latest_messages.size() > 0 ) {
-			m_latest_messages.erase( m_latest_messages.begin() );
-			update_latest_messages();
-		}
 	}
 
 	// Finalize resources.
@@ -865,18 +888,6 @@ void PlayState::stop_and_wait_for_objects_preparation_thread() {
 	m_prepare_objects_thread->join();
 
 	m_prepare_objects_thread.reset();
-}
-
-void PlayState::update_latest_messages() {
-	float y = MESSAGE_SPACING;
-
-	for( std::size_t msg_idx = 0; msg_idx < m_latest_messages.size(); ++msg_idx ) {
-		if( msg_idx > 0 ) {
-			y += m_latest_messages[msg_idx - 1].getGlobalBounds().height + MESSAGE_SPACING;
-		}
-
-		m_latest_messages[msg_idx].setPosition( MESSAGE_SPACING, y );
-	}
 }
 
 void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID /*conn_id*/ ) {

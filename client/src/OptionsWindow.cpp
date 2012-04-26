@@ -48,6 +48,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_action_buttons[Controls::SECONDARY_ACTION] = sfg::Button::Create();
 	window->m_action_buttons[Controls::INVENTORY] = sfg::Button::Create();
 	window->m_action_buttons[Controls::CHAT] = sfg::Button::Create();
+	window->m_action_buttons[Controls::RUN] = sfg::Button::Create();
 
 	ActionButtonMap::iterator ab_iter( window->m_action_buttons.begin() );
 	ActionButtonMap::iterator ab_iter_end( window->m_action_buttons.end() );
@@ -63,9 +64,9 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	window->m_waiting_for_input_label->Show( false );
 
 	// Video.
-	window->m_enable_vsync_check = sfg::CheckButton::Create( L"Vertical sync (avoids tearing)" );
+	window->m_enable_vsync_check = sfg::CheckButton::Create( L"Vertical sync" );
 	window->m_fps_limit_label = sfg::Label::Create( L"FPS limit:" );
-	window->m_fps_limit_scale = sfg::Scale::Create( 1.0f, 200.0f, 1.0f, sfg::Scale::HORIZONTAL );
+	window->m_fps_limit_scale = sfg::Scale::Create( 1.0f, 500.0f, 1.0f, sfg::Scale::HORIZONTAL );
 	window->m_fps_limit_value_label = sfg::Label::Create( L"(--)" );
 	window->m_fov_scale = sfg::Scale::Create( UserSettings::MIN_FOV, UserSettings::MAX_FOV, 1.0f, sfg::Scale::HORIZONTAL );
 	window->m_fov_label = sfg::Label::Create( L"(--)" );
@@ -117,6 +118,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	bindings_table->Attach( sfg::Label::Create( L"Backward:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Strafe left:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Strafe right:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
+	bindings_table->Attach( sfg::Label::Create( L"Run:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Jump:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 	bindings_table->Attach( sfg::Label::Create( L"Crouch:" ), sf::Rect<sf::Uint32>( 0, row_index++, 1, 1 ), sfg::Table::FILL, sfg::Table::FILL );
 
@@ -133,6 +135,7 @@ OptionsWindow::Ptr OptionsWindow::Create( const UserSettings& user_settings ) {
 	bindings_table->Attach( window->m_action_buttons[Controls::WALK_BACKWARD], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::STRAFE_LEFT], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::STRAFE_RIGHT], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
+	bindings_table->Attach( window->m_action_buttons[Controls::RUN], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::JUMP], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 	bindings_table->Attach( window->m_action_buttons[Controls::CROUCH], sf::Rect<sf::Uint32>( 1, row_index++, 1, 1 ), sfg::Table::FILL | sfg::Table::EXPAND, sfg::Table::FILL );
 

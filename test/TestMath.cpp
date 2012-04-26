@@ -102,4 +102,11 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 			result.z == -4
 		);
 	}
+
+	// Signum.
+	{
+		BOOST_CHECK( signum( -10 ) == -1 );
+		BOOST_CHECK( signum( 0 ) == 0 );
+		BOOST_CHECK( signum( 10 ) == 1 );
+	}
 }

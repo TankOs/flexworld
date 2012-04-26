@@ -52,4 +52,13 @@ float deg_to_rad( float deg );
  */
 sf::Vector3f dot_product( const sf::Vector3f& a, const sf::Vector3f& b );
 
+/** Compute signum.
+ * @param val Value.
+ * @return -1 if value < 0, 0 if value == 0 and 1 if value > 0.
+ */
+template <class T>
+char signum( const T& val );
+
 }
+
+#include "Math.inl"

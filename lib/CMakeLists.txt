@@ -42,6 +42,8 @@ set(
 	${INC_DIR}/FlexWorld/LuaModules/Test.hpp
 	${INC_DIR}/FlexWorld/LuaModules/World.hpp
 	${INC_DIR}/FlexWorld/LuaModules/WorldGate.hpp
+	${INC_DIR}/FlexWorld/Math.hpp
+	${INC_DIR}/FlexWorld/Math.inl
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp

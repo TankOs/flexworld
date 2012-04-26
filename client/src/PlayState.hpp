@@ -47,7 +47,6 @@ class PlayState : public State, flex::Client::Handler {
 
 		void on_chat_message_ready();
 		void on_chat_close_click();
-		void update_latest_messages();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
@@ -109,6 +108,7 @@ class PlayState : public State, flex::Client::Handler {
 
 		// Controls.
 		sf::Vector3f m_velocity;
+		sf::Vector3f m_target_velocity;
 
 		bool m_update_velocity;
 		bool m_update_eyepoint;
@@ -117,6 +117,7 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_walk_backward;
 		bool m_strafe_left;
 		bool m_strafe_right;
+		bool m_run;
 		bool m_fly_up; // XXX
 		bool m_fly_down; // XXX
 
