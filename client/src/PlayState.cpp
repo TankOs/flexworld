@@ -916,8 +916,8 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 		m_update_eyepoint = true;
 	}
 
-	// Add to entity drawable. TODO Do not add own entity!
-	if( m_entity_group_node ) {
+	// Add to entity drawable (skip own entity).
+	if( m_entity_group_node && msg.get_id() != get_shared().entity_id ) {
 		{
 			boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
 
