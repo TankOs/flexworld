@@ -8,7 +8,11 @@ function on_spawn_command( args, client_id )
 		return
 	end
 
-	flex.world:create_entity( args[1], {0, 0, 0}, "construct" ) -- TODO Replace by player planet + position.
+	local class_id = args[1]
+	local ent_id = flex.server:get_client_entity_id( client_id )
+	local ent_pos, ent_planet = flex.world:get_entity_position( ent_id )
+
+	flex.world:create_entity( class_id, ent_pos, ent_planet )
 end
 
 flex.event:hook_command( "spawn", on_spawn_command )

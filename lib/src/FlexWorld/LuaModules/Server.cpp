@@ -12,9 +12,10 @@ namespace flex {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( Server )
+	DILUCULUM_CLASS_METHOD( Server, broadcast_chat_message )
+	DILUCULUM_CLASS_METHOD( Server, get_client_entity_id )
 	DILUCULUM_CLASS_METHOD( Server, get_client_username )
 	DILUCULUM_CLASS_METHOD( Server, get_num_connected_clients )
-	DILUCULUM_CLASS_METHOD( Server, broadcast_chat_message )
 DILUCULUM_END_CLASS( Server )
 
 void Server::register_class( Diluculum::LuaVariable target ) {
@@ -130,6 +131,32 @@ Diluculum::LuaValueList Server::broadcast_chat_message( const Diluculum::LuaValu
 	}
 
 	return Diluculum::LuaValueList();
+}
+
+Diluculum::LuaValueList Server::get_client_entity_id( const Diluculum::LuaValueList& args ) {
+	// Check arguments.
+	if( args.size() != 1 ) {
+		throw Diluculum::LuaError( "Wrong number of arguments." );
+	}
+
+	if( args[0].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for client ID." );
+	}
+
+	uint32_t client_id = static_cast<uint32_t>( args[0].asNumber() );
+	uint32_t entity_id = 0;
+
+	try {
+		entity_id = m_gate->get_client_entity_id( client_id );
+	}
+	catch( const std::runtime_error& e ) {
+		throw Diluculum::LuaError( e.what() );
+	}
+
+	Diluculum::LuaValueList ret;
+	ret.push_back( entity_id );
+
+	return ret;
 }
 
 }

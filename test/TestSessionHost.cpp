@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	enum { TIMEOUT = 2000 };
 
-	// get_client_username, get_num_connected_clients, broadcast_chat_message
+	// get_client_username, get_num_connected_clients, broadcast_chat_message, get_client_entity_id
 	// (do tests here that need client connections)
 	{
 		// Setup host.
@@ -206,10 +206,27 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		io_service.poll();
 
 		// At this point expected data should be ready.
-		BOOST_CHECK_NO_THROW( host.get_client_username( 0 ) == "Tank" );
+		std::string username;
+		uint32_t entity_id = 123;
+
+		BOOST_CHECK_NO_THROW( username = host.get_client_username( 0 ) );
+		BOOST_CHECK_NO_THROW( entity_id = host.get_client_entity_id( 0 ) );
+
+		BOOST_CHECK( username == "Tank" );
+		BOOST_CHECK( entity_id == 0 );
 
 		// Check invalid ID.
-		BOOST_CHECK_THROW( host.get_client_username( 1 ), std::runtime_error );
+		BOOST_CHECK_EXCEPTION(
+			host.get_client_username( 1 ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid client ID." )
+		);
+
+		BOOST_CHECK_EXCEPTION(
+			host.get_client_entity_id( 1 ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid client ID." )
+		);
 
 		// Connect another client to test broadcast_chat_message.
 		TestSessionHostGateClientHandler handler2;

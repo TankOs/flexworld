@@ -29,3 +29,14 @@ void ExampleServerGate::broadcast_chat_message( const sf::String& message, const
 		throw std::runtime_error( "Invalid sender." );
 	}
 }
+
+uint32_t ExampleServerGate::get_client_entity_id( uint32_t client_id ) const {
+	if( client_id == 0 ) {
+		return 1337;
+	}
+	else if( client_id == 1 ) {
+		return 1234;
+	}
+
+	throw std::runtime_error( "Invalid client ID." );
+}

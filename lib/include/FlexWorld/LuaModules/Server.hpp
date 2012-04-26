@@ -62,6 +62,12 @@ class Server {
 		 */
 		Diluculum::LuaValueList broadcast_chat_message( const Diluculum::LuaValueList& args );
 
+		/** Get a client's entity ID.
+		 * @param args client_id:number
+		 * @return entity_id:number
+		 */
+		Diluculum::LuaValueList get_client_entity_id( const Diluculum::LuaValueList& args );
+
 	private:
 		ServerGate* m_gate;
 };

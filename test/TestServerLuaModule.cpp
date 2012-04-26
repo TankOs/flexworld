@@ -90,6 +90,22 @@ BOOST_AUTO_TEST_CASE( TestServerLuaModule ) {
 		BOOST_CHECK( check_error( "Invalid sender.","flex.server:broadcast_chat_message( \"Message\", \"Channel\", \"Fuxx\" )", state ) == true );
 	}
 
+	// Get client's entity ID.
+	{
+		Diluculum::LuaState state;
+		setup_state_for_server( state );
+
+		ExampleServerGate gate;
+		lua::Server server( gate );
+		server.register_object( state["flex"]["server"] );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.server:get_client_entity_id( 0 ) == 1337 )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.server:get_client_entity_id( 1 ) == 1234 )" ) );
+
+		// Give non-expected values.
+		BOOST_CHECK( check_error( "Invalid client ID.","flex.server:get_client_entity_id( 123 )", state ) == true );
+	}
+
 	// Call functions with wrong arguments.
 	{
 		Diluculum::LuaState state;
@@ -117,5 +133,10 @@ BOOST_AUTO_TEST_CASE( TestServerLuaModule ) {
 		BOOST_CHECK( check_error( "Expected string for message.", "flex.server:broadcast_chat_message( 123, \"Channel\", \"Sender\" )", state ) == true );
 		BOOST_CHECK( check_error( "Expected string for channel.", "flex.server:broadcast_chat_message( \"Message\", 123, \"Sender\" )", state ) == true );
 		BOOST_CHECK( check_error( "Expected string for sender.", "flex.server:broadcast_chat_message( \"Message\", \"Channel\", 123 )", state ) == true );
+
+		// get_client_entity_id
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.server:get_client_entity_id()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.server:get_client_entity_id( 1, 2 )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for client ID.", "flex.server:get_client_entity_id( \"123\" )", state ) == true );
 	}
 }

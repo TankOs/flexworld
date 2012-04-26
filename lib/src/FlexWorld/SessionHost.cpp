@@ -947,7 +947,22 @@ void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& pos
 			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );
 		}
 	}
+}
 
+uint32_t SessionHost::get_client_entity_id( uint32_t client_id ) const {
+	// Check for valid client ID.
+	if( client_id >= m_player_infos.size() || m_player_infos[client_id].connected == false ) {
+		throw std::runtime_error( "Invalid client ID." );
+	}
+
+	assert( m_player_infos[client_id].entity != nullptr );
+
+	// Get ID.
+	m_lock_facility.lock_world( true );
+	uint32_t entity_id = m_player_infos[client_id].entity->get_id();
+	m_lock_facility.lock_world( false );
+
+	return entity_id;
 }
 
 }

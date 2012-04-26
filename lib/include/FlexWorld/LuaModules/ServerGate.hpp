@@ -36,6 +36,14 @@ class ServerGate {
 		 */
 		virtual void broadcast_chat_message( const sf::String& message, const sf::String& channel, const sf::String& sender ) = 0;
 
+		/** Get a client's entity ID.
+		 * @param client_id Client ID.
+		 * @return Entity ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual uint32_t get_client_entity_id( uint32_t client_id ) const = 0;
+
+
 	private:
 };
 
