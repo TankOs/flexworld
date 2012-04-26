@@ -550,6 +550,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		BOOST_REQUIRE( entity != nullptr );
 		BOOST_CHECK( entity->get_class().get_id() == CLASS_ID );
+		BOOST_CHECK( entity->get_position() == ENTITY_POS );
+		BOOST_CHECK( world.find_linked_planet( entity->get_id() )->get_id() == PLANET_ID );
 
 		// Poll IO service.
 		io_service.poll();
@@ -637,6 +639,50 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 			host.create_entity( CLASS_ID, ENTITY_POS, "ficki" ),
 			std::runtime_error,
 			ExceptionChecker<std::runtime_error>( "Planet not found." )
+		);
+	}
+
+	// get_entity_position
+	{
+		// Setup host.
+		boost::asio::io_service io_service;
+		World world;
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		// Create test resources.
+		static const FlexID cls_id = FlexID::make( "some/class" );
+
+		Class cls( cls_id );
+		world.add_class( cls );
+		world.create_planet( "foobar", Planet::Vector( 1, 1, 1 ), Chunk::Vector( 16, 16, 16 ) );
+
+		Entity& entity = world.create_entity( cls_id );
+		entity.set_position( sf::Vector3f( 1, 10, 100 ) );
+		world.link_entity_to_planet( entity.get_id(), "foobar" );
+
+		// Check.
+		sf::Vector3f ent_pos( 0, 0, 0 );
+		std::string planet_id;
+
+		host.get_entity_position( entity.get_id(), ent_pos, planet_id );
+
+		BOOST_CHECK( ent_pos == sf::Vector3f( 1, 10, 100 ) );
+		BOOST_CHECK( planet_id == "foobar" );
+
+		// Create entity without linking to planet.
+		world.create_entity( cls_id );
+
+		// Check invalid calls.
+		BOOST_CHECK_EXCEPTION(
+			host.get_entity_position( 100, ent_pos, planet_id ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Entity not found." )
+		);
+
+		BOOST_CHECK_EXCEPTION(
+			host.get_entity_position( 1, ent_pos, planet_id ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Entity not linked to a planet." )
 		);
 	}
 

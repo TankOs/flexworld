@@ -11,9 +11,10 @@ namespace flex {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( World )
-	DILUCULUM_CLASS_METHOD( World, destroy_block )
-	DILUCULUM_CLASS_METHOD( World, set_block )
 	DILUCULUM_CLASS_METHOD( World, create_entity )
+	DILUCULUM_CLASS_METHOD( World, destroy_block )
+	DILUCULUM_CLASS_METHOD( World, get_entity_position )
+	DILUCULUM_CLASS_METHOD( World, set_block )
 DILUCULUM_END_CLASS( World )
 
 void World::register_class( Diluculum::LuaVariable target ) {
@@ -186,9 +187,9 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 	std::string cls = args[0].asString();
 
 	WorldGate::EntityPosition position(
-		position_table[1].asNumber(),
-		position_table[2].asNumber(),
-		position_table[3].asNumber()
+		static_cast<float>( position_table[1].asNumber() ),
+		static_cast<float>( position_table[2].asNumber() ),
+		static_cast<float>( position_table[3].asNumber() )
 	);
 
 	std::string planet = args[2].asString();
@@ -225,6 +226,40 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 	}
 
 	return Diluculum::LuaValueList();
+}
+
+Diluculum::LuaValueList World::get_entity_position( const Diluculum::LuaValueList& args ) {
+	// Check arguments.
+	if( args.size() != 1 ) {
+		throw Diluculum::LuaError( "Wrong number of arguments." );
+	}
+
+	if( args[0].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for entity." );
+	}
+
+	uint32_t entity_id = static_cast<uint32_t>( args[0].asNumber() );
+	Diluculum::LuaValueList ret;
+
+	try {
+		WorldGate::EntityPosition position;
+		std::string planet_id;
+
+		m_gate->get_entity_position( entity_id, position, planet_id );
+
+		Diluculum::LuaValueMap l_pos;
+		l_pos[1] = position.x;
+		l_pos[2] = position.y;
+		l_pos[3] = position.z;
+
+		ret.push_back( l_pos );
+		ret.push_back( planet_id );
+	}
+	catch( const std::runtime_error& e ) {
+		throw Diluculum::LuaError( e.what() );
+	}
+
+	return ret;
 }
 
 }

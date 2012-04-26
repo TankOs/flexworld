@@ -58,6 +58,13 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"foo/bar\", {11, 22, 33}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {0, 0, 0}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid entity position." ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {11, 22, 33}, \"meow\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+
+		BOOST_CHECK_NO_THROW( state.doString( "local pos, planet = flex.world:get_entity_position( 0 ); assert( pos[1] == 1 and pos[2] == 2 and pos[3] == 3 and planet == \"planet\" )" ) );
+		BOOST_CHECK_EXCEPTION(
+			state.doString( "flex.world:get_entity_position( 88 )" ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity ID." )
+		);
 	}
 
 	// Call functions with invalid arguments.
@@ -129,5 +136,11 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 
 		BOOST_CHECK( check_error( "Expected string for planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, 123 )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, \"\" )", state ) == true );
+
+		// get_entity_position
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:get_entity_position()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:get_entity_position( 1, 2 )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected number for entity.", "flex.world:get_entity_position( \"123\" )", state ) == true );
 	}
 }

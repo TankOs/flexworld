@@ -49,6 +49,12 @@ class World {
 		 */
 		Diluculum::LuaValueList create_entity( const Diluculum::LuaValueList& args );
 
+		/** Get entity position (Lua function).
+		 * @param args entity:number
+		 * @return x,y,z:table, planet:string
+		 */
+		Diluculum::LuaValueList get_entity_position( const Diluculum::LuaValueList& args );
+
 	private:
 		WorldGate* m_gate;
 };

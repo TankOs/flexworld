@@ -169,6 +169,8 @@ class SessionHost :
 		 */
 		void create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id );
 
+		void get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id );
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 		typedef std::set<std::string> StringSet;

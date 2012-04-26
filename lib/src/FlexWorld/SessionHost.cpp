@@ -925,7 +925,11 @@ void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& pos
 	}
 
 	// Create entity.
-	const Entity& entity = m_world.create_entity( cls->get_id() );
+	Entity& entity = m_world.create_entity( cls->get_id() );
+
+	// Set entity's properties and link to planet.
+	entity.set_position( position );
+	m_world.link_entity_to_planet( entity.get_id(), planet_id );
 
 	// Remember properties.
 	Entity::ID ent_id = entity.get_id();
@@ -963,6 +967,32 @@ uint32_t SessionHost::get_client_entity_id( uint32_t client_id ) const {
 	m_lock_facility.lock_world( false );
 
 	return entity_id;
+}
+
+void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id ) {
+	m_lock_facility.lock_world( true );
+
+	// Check for entity.
+	const Entity* ent = m_world.find_entity( entity_id );
+
+	if( ent == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Entity not found." );
+	}
+
+	// Get linked planet.
+	const Planet* planet = m_world.find_linked_planet( entity_id );
+
+	if( planet == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Entity not linked to a planet." );
+	}
+
+	// Apply position info.
+	position = ent->get_position();
+	planet_id = planet->get_id();
+
+	m_lock_facility.lock_world( false );
 }
 
 }

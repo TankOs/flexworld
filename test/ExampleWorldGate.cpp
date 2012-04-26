@@ -49,3 +49,12 @@ void ExampleWorldGate::create_entity( const flex::FlexID& cls_id, const EntityPo
 		throw std::runtime_error( "Invalid planet." );
 	}
 }
+
+void ExampleWorldGate::get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id ) {
+	if( entity_id != 0 ) {
+		throw std::runtime_error( "Invalid entity ID." );
+	}
+
+	position = EntityPosition( 1, 2, 3 );
+	planet_id = "planet";
+}

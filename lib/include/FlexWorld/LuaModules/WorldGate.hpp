@@ -43,6 +43,14 @@ class WorldGate {
 		 * @throws std::runtime_error in case of any error.
 		 */
 		virtual void create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) = 0;
+
+		/** Get an entity's position.
+		 * @param entity_id Entity ID.
+		 * @param position Filled with entity's position in planet coordinates.
+		 * @param planet_id Filled with the planet ID the entity is at.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual void get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id ) = 0;
 };
 
 }

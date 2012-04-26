@@ -845,12 +845,14 @@ void PlayState::prepare_objects() {
 				const flex::Entity* entity = get_shared().world->find_entity( next_entity_id );
 				assert( entity );
 
-				// Give to entity drawable.
-				assert( m_entity_group_node );
+				if( entity ) {
+					// Give to entity drawable.
+					assert( m_entity_group_node );
 
-				{
-					boost::lock_guard<boost::mutex> ed_lock( m_entity_group_node_mutex );
-					m_entity_group_node->add_entity( *entity );
+					{
+						boost::lock_guard<boost::mutex> ed_lock( m_entity_group_node_mutex );
+						m_entity_group_node->add_entity( *entity );
+					}
 				}
 
 				get_shared().lock_facility->lock_world( false );
