@@ -46,6 +46,7 @@ set(
 	${INC_DIR}/FlexWorld/Math.inl
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
+	${INC_DIR}/FlexWorld/Messages/AttachEntity.hpp
 	${INC_DIR}/FlexWorld/Messages/Beam.hpp
 	${INC_DIR}/FlexWorld/Messages/BlockAction.hpp
 	${INC_DIR}/FlexWorld/Messages/Chat.hpp
@@ -106,6 +107,7 @@ set(
 	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
+	${SRC_DIR}/FlexWorld/Messages/AttachEntity.cpp
 	${SRC_DIR}/FlexWorld/Messages/Beam.cpp
 	${SRC_DIR}/FlexWorld/Messages/BlockAction.cpp
 	${SRC_DIR}/FlexWorld/Messages/Chat.cpp

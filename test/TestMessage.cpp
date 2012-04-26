@@ -14,6 +14,7 @@
 #include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/Messages/BlockAction.hpp>
 #include <FlexWorld/Messages/SetBlock.hpp>
+#include <FlexWorld/Messages/AttachEntity.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1494,4 +1495,146 @@ BOOST_AUTO_TEST_CASE( TestSetBlockMessage ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
 		}
 	}
+}
+
+BOOST_AUTO_TEST_CASE( TestAttachEntity ) {
+	using namespace flex;
+
+	static const uint32_t SOURCE_ENTITY_ID = 11;
+	static const uint32_t TARGET_ENTITY_ID = 22;
+	static const std::string HOOK_ID = "hook";
+	static const uint8_t HOOK_ID_SIZE = static_cast<uint8_t>( HOOK_ID.size() );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &SOURCE_ENTITY_ID ), reinterpret_cast<const char*>( &SOURCE_ENTITY_ID ) + sizeof( SOURCE_ENTITY_ID ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &TARGET_ENTITY_ID ), reinterpret_cast<const char*>( &TARGET_ENTITY_ID ) + sizeof( TARGET_ENTITY_ID ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &HOOK_ID_SIZE ), reinterpret_cast<const char*>( &HOOK_ID_SIZE ) + sizeof( HOOK_ID_SIZE ) );
+	source.insert( source.end(), HOOK_ID.begin(), HOOK_ID.end() );
+
+	// Initial state.
+	{
+		msg::AttachEntity msg;
+
+		BOOST_CHECK( msg.get_source_entity_id() == 0 );
+		BOOST_CHECK( msg.get_target_entity_id() == 0 );
+		BOOST_CHECK( msg.get_hook_id().empty() == true );
+	}
+
+	// Basic properties.
+	{
+		msg::AttachEntity msg;
+
+		msg.set_source_entity_id( SOURCE_ENTITY_ID );
+		msg.set_target_entity_id( TARGET_ENTITY_ID );
+		msg.set_hook_id( HOOK_ID );
+
+		BOOST_CHECK( msg.get_source_entity_id() == SOURCE_ENTITY_ID );
+		BOOST_CHECK( msg.get_target_entity_id() == TARGET_ENTITY_ID );
+		BOOST_CHECK( msg.get_hook_id() == HOOK_ID );
+	}
+
+	// Serialize.
+	{
+		msg::AttachEntity msg;
+
+		msg.set_source_entity_id( SOURCE_ENTITY_ID );
+		msg.set_target_entity_id( TARGET_ENTITY_ID );
+		msg.set_hook_id( HOOK_ID );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Serialize with empty hook ID.
+	{
+		msg::AttachEntity msg;
+
+		// Don't set hook, so it's empty.
+		msg.set_source_entity_id( SOURCE_ENTITY_ID );
+		msg.set_target_entity_id( TARGET_ENTITY_ID );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::AttachEntity::InvalidDataException, ExceptionChecker<msg::AttachEntity::InvalidDataException>( "Invalid hook ID." ) );
+	}
+
+	// Serialize with too long hook ID.
+	{
+		msg::AttachEntity msg;
+
+		std::string hook_id( 256, ' ' );
+
+		msg.set_source_entity_id( SOURCE_ENTITY_ID );
+		msg.set_target_entity_id( TARGET_ENTITY_ID );
+		msg.set_hook_id( hook_id );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::AttachEntity::InvalidDataException, ExceptionChecker<msg::AttachEntity::InvalidDataException>( "Invalid hook ID." ) );
+	}
+
+	// Deserialize.
+	{
+		msg::AttachEntity msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( msg.get_source_entity_id() == SOURCE_ENTITY_ID );
+		BOOST_CHECK( msg.get_target_entity_id() == TARGET_ENTITY_ID );
+		BOOST_CHECK( msg.get_hook_id() == HOOK_ID );
+
+		BOOST_CHECK( eaten == source.size() );
+	}
+
+	// Deserialize with invalid hook ID length.
+	{
+		ServerProtocol::Buffer invalid_source = source;
+		invalid_source[8] = 0;
+
+		msg::AttachEntity msg;
+
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION(
+			eaten = msg.deserialize( &invalid_source[0], invalid_source.size() ),
+			msg::AttachEntity::BogusDataException,
+			ExceptionChecker<msg::AttachEntity::BogusDataException>( "Invalid hook ID length." )
+		);
+
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	/*
+	// Deserialize with invalid class ID length.
+	{
+		ServerProtocol::Buffer invalid_source = source;
+
+		invalid_source[sizeof( BLOCK_POS )] = 0;
+
+		msg::SetBlock msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION(
+			eaten = msg.deserialize(
+				&invalid_source[0],
+				invalid_source.size()
+			),
+			msg::SetBlock::BogusDataException,
+			ExceptionChecker<msg::BlockAction::BogusDataException>( "Invalid class ID length." )
+		);
+
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::SetBlock msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+	*/
 }
