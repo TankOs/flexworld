@@ -20,7 +20,7 @@
 #include <sstream>
 #include <iostream>
 
-static const float MAX_WALK_SPEED = 1.5f; // [m/s] TODO: Replace by class' walk speed.
+static const float MAX_WALK_SPEED = 2.0f; // [m/s] TODO: Replace by class' walk speed.
 static const float MAX_RUN_SPEED = 4.0f; // [m/s] TODO: Replace by class' walk speed.
 static const float WALK_ACCELERATION = 15.0f; // x/s². TODO: Replace by class' acceleration.
 
