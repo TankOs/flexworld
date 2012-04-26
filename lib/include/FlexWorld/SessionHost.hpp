@@ -160,6 +160,14 @@ class SessionHost :
 		 */
 		void set_block( const WorldGate::BlockPosition& block_position, const std::string& planet_id, const FlexID& cls_id );
 
+		/** Create entity.
+		 * @param cls_id Class ID.
+		 * @param position Block position.
+		 * @param planet_id Planet ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		void create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id );
+
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;
 		typedef std::set<std::string> StringSet;

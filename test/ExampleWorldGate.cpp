@@ -35,3 +35,17 @@ void ExampleWorldGate::set_block( const BlockPosition& block_position, const std
 		throw std::runtime_error( "Invalid planet." );
 	}
 }
+
+void ExampleWorldGate::create_entity( const flex::FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) {
+	if( cls_id.get() != "some/class" ) {
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	if( position != EntityPosition( 11, 22, 33 ) ) {
+		throw std::runtime_error( "Invalid entity position." );
+	}
+
+	if( planet_id != "planet" ) {
+		throw std::runtime_error( "Invalid planet." );
+	}
+}

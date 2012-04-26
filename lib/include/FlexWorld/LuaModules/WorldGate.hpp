@@ -15,6 +15,7 @@ namespace lua {
 class WorldGate {
 	public:
 		typedef sf::Vector3<uint32_t> BlockPosition; ///< Block position type.
+		typedef sf::Vector3<float> EntityPosition; ///< Entity position type.
 
 		/** Dtor.
 		 */
@@ -34,6 +35,14 @@ class WorldGate {
 		 * @throws std::runtime_error in case of any error.
 		 */
 		virtual void set_block( const BlockPosition& block_position, const std::string& planet, const FlexID& cls ) = 0;
+
+		/** Create entity.
+		 * @param cls_id Class ID.
+		 * @param position Block position.
+		 * @param planet_id Planet ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual void create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) = 0;
 };
 
 }

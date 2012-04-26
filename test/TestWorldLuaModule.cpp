@@ -1,6 +1,7 @@
 #include "Config.hpp"
 #include "LuaUtils.hpp"
 #include "ExampleWorldGate.hpp"
+#include "ExceptionChecker.hpp"
 
 #include <FlexWorld/LuaModules/World.hpp>
 #include <FlexWorld/LuaModules/Test.hpp>
@@ -45,7 +46,18 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		world.register_object( state["flex"]["world"] );
 
 		BOOST_CHECK_NO_THROW( state.doString( "flex.world:destroy_block( {1, 2, 3}, \"foobar\" )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:destroy_block( {0, 0, 0}, \"foobar\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid block position." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:destroy_block( {1, 2, 3}, \"meow\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+
 		BOOST_CHECK_NO_THROW( state.doString( "flex.world:set_block( {10, 20, 30}, \"planet\", \"some/class\" )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:set_block( {0, 0, 0}, \"planet\", \"some/class\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid block position." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:set_block( {10, 20, 30}, \"foobar\", \"some/class\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:set_block( {10, 20, 30}, \"planet\", \"some/lass\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+
+		BOOST_CHECK_NO_THROW( state.doString( "flex.world:create_entity( \"some/class\", {11, 22, 33}, \"planet\" )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"foo/bar\", {11, 22, 33}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {0, 0, 0}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid entity position." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {11, 22, 33}, \"meow\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
 	}
 
 	// Call functions with invalid arguments.
@@ -88,11 +100,34 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 
 		BOOST_CHECK( check_error( "Expected string for planet.", "flex.world:set_block( {1, 2, 3}, 0, \"some/class\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid planet.", "flex.world:set_block( {1, 2, 3}, \"\", \"some/class\" )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid planet.", "flex.world:set_block( {1, 2, 3}, \"___\", \"some/class\" )", state ) == true );
 
 		BOOST_CHECK( check_error( "Expected string for class.", "flex.world:set_block( {1, 2, 3}, \"planet\", 123 )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:set_block( {1, 2, 3}, \"planet\", \"\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:set_block( {1, 2, 3}, \"planet\", \"package\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:set_block( {1, 2, 3}, \"planet\", \"faulty/class!\" )", state ) == true );
+
+		// create_entity
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\" )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\", {1, 2, 3} )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, \"planet\", 123 )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected string for class.", "flex.world:create_entity( 123, {1, 2, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"\", {1, 2, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"package\", {1, 2, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"faulty/class!\", {1, 2, 3}, \"planet\" )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected table for position.", "flex.world:create_entity( \"some/class\", 123, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of elements in position table.", "flex.world:create_entity( \"some/class\", {1, 2}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of elements in position table.", "flex.world:create_entity( \"some/class\", {1, 2, 3, 4}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for x position.", "flex.world:create_entity( \"some/class\", {\"a\", 2, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for y position.", "flex.world:create_entity( \"some/class\", {1, \"a\", 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for z position.", "flex.world:create_entity( \"some/class\", {1, 2, \"a\"}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid x position.", "flex.world:create_entity( \"some/class\", {-1, 2, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid y position.", "flex.world:create_entity( \"some/class\", {1, -1, 3}, \"planet\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid z position.", "flex.world:create_entity( \"some/class\", {1, 2, -1}, \"planet\" )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected string for planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, 123 )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, \"\" )", state ) == true );
 	}
 }

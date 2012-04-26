@@ -230,12 +230,17 @@ void MenuState::handle_event( const sf::Event& event ) {
 		leave();
 	}
 
-	if( (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) ) {
-		if( m_fade_main_menu_out ) {
-			m_fade_main_menu_out = false;
+	if( event.type == sf::Event::KeyPressed ) {
+		if( event.key.code == sf::Keyboard::Escape ) {
+			if( m_fade_main_menu_out ) {
+				m_fade_main_menu_out = false;
+			}
+			else {
+				leave();
+			}
 		}
-		else {
-			leave();
+		else if( event.key.code == sf::Keyboard::Return ) { // XXX
+			on_insta_click();
 		}
 	}
 }

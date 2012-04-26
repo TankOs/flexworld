@@ -130,6 +130,10 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 			m_last_set_block_message = msg;
 		}
 
+		void handle_message( const flex::msg::CreateEntity& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+			m_last_create_entity_message = msg;
+		}
+
 		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
@@ -139,6 +143,7 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 		flex::msg::Chat m_last_chat_message;
 		flex::msg::DestroyBlock m_last_destroy_block_message;
 		flex::msg::SetBlock m_last_set_block_message;
+		flex::msg::CreateEntity m_last_create_entity_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
@@ -458,6 +463,164 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "", CLASS_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
 		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), PLANET_ID, FlexID::make( "package" ) ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
 		BOOST_CHECK_EXCEPTION( host.set_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), PLANET_ID, FlexID::make( "no/exist" ) ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Class not found." ) );
+	}
+
+	// create_entity
+	{
+		static const FlexID CLASS_ID = FlexID::make( "some/class" );
+		static const Planet::Coordinate ENTITY_POS( 1, 2, 3 );
+		static const std::string PLANET_ID = "construct";
+
+		// Create class.
+		World world;
+
+		{
+			Class cls( CLASS_ID );
+			world.add_class( cls );
+		}
+
+		const Class *cls = world.find_class( CLASS_ID );
+		BOOST_REQUIRE( cls != nullptr );
+
+		// Setup host.
+		boost::asio::io_service io_service;
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		host.set_ip( "127.0.0.1" );
+		host.set_port( 2593 );
+		host.set_player_limit( 1 );
+		host.add_search_path( DATA_DIRECTORY + std::string( "/packages" ) );
+		host.set_auth_mode( SessionHost::OPEN_AUTH );
+
+		BOOST_REQUIRE( host.start() );
+
+		// Get planet.
+		Planet* planet = world.find_planet( PLANET_ID );
+		BOOST_REQUIRE( planet != nullptr );
+
+		// Make sure entity doesn't exist yet.
+		BOOST_REQUIRE( world.find_entity( 0 ) == nullptr );
+
+		// Connect client.
+		TestSessionHostGateClientHandler handler;
+		Client client( io_service, handler );
+
+		client.start( host.get_ip(), host.get_port() );
+
+		// Poll until client is connected.
+		{
+			sf::Clock timer;
+
+			while( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) && host.get_num_connected_clients() != 1 ) {
+				io_service.poll();
+			}
+
+			BOOST_REQUIRE( timer.getElapsedTime() < sf::milliseconds( TIMEOUT ) );
+			BOOST_REQUIRE( host.get_num_connected_clients() == 1 );
+		}
+
+		// Create entity.
+		BOOST_CHECK_NO_THROW(
+			host.create_entity(
+				CLASS_ID,
+				ENTITY_POS,
+				PLANET_ID
+			)
+		);
+
+		// Verify.
+		const Entity* entity = world.find_entity( 0 );
+
+		BOOST_REQUIRE( entity != nullptr );
+		BOOST_CHECK( entity->get_class().get_id() == CLASS_ID );
+
+		// Poll IO service.
+		io_service.poll();
+
+		// Check that client received set block message.
+		BOOST_CHECK( handler.m_last_create_entity_message.get_id() == 0 );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_heading() == 0 );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_class() == CLASS_ID.get() );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_position() == ENTITY_POS );
+
+		// Check invalid calls.
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( FlexID::make( "package" ), ENTITY_POS, PLANET_ID ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid class ID." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( FlexID::make( "no/exist" ), ENTITY_POS, PLANET_ID ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Class not found." )
+		);
+
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( CLASS_ID, lua::WorldGate::EntityPosition( -1, 0, 0 ), PLANET_ID ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( CLASS_ID, lua::WorldGate::EntityPosition( 0, -1, 0 ), PLANET_ID ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( CLASS_ID, lua::WorldGate::EntityPosition( 0, 0, -1 ), PLANET_ID ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity(
+				CLASS_ID,
+				lua::WorldGate::EntityPosition(
+					static_cast<float>( planet->get_size().x * planet->get_chunk_size().x ),
+					0.0f,
+					0.0f
+				),
+				PLANET_ID
+			),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity(
+				CLASS_ID,
+				lua::WorldGate::EntityPosition(
+					0.0f,
+					static_cast<float>( planet->get_size().y * planet->get_chunk_size().y ),
+					0.0f
+				),
+				PLANET_ID
+			),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity(
+				CLASS_ID,
+				lua::WorldGate::EntityPosition(
+					0.0f,
+					0.0f,
+					static_cast<float>( planet->get_size().z * planet->get_chunk_size().z )
+				),
+				PLANET_ID
+			),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid entity position." )
+		);
+
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( CLASS_ID, ENTITY_POS, "" ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Invalid planet ID." )
+		);
+		BOOST_CHECK_EXCEPTION(
+			host.create_entity( CLASS_ID, ENTITY_POS, "ficki" ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Planet not found." )
+		);
 	}
 
 	Log::Logger.set_min_level( Log::DEBUG );

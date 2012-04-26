@@ -157,7 +157,7 @@ bool SessionHost::start() {
 				}
 
 				for( block_pos.x = 0; block_pos.x < DEFAULT_CHUNK_SIZE.x; ++block_pos.x ) {
-					for( block_pos.y = DEFAULT_CHUNK_SIZE.y - 2; block_pos.y < DEFAULT_CHUNK_SIZE.y; ++block_pos.y ) {
+					for( block_pos.y = static_cast<Chunk::ScalarType>( DEFAULT_CHUNK_SIZE.y - 2 ); block_pos.y < DEFAULT_CHUNK_SIZE.y; ++block_pos.y ) {
 						for( block_pos.z = 0; block_pos.z < DEFAULT_CHUNK_SIZE.z; ++block_pos.z ) {
 							planet->set_block( chunk_pos, block_pos, *grass_cls );
 						}
@@ -878,6 +878,76 @@ void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::Connec
 
 	m_lock_facility.lock_planet( *info.planet, false );
 	m_lock_facility.lock_world( false );
+}
+
+void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) {
+	// Check class ID.
+	if( cls_id.is_valid_resource() == false ) {
+		throw std::runtime_error( "Invalid class ID." );
+	}
+
+	// Get class.
+	m_lock_facility.lock_world( true );
+
+	const Class* cls = get_or_load_class( cls_id );
+
+	if( cls == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Class not found." );
+	}
+
+	// Check planet.
+	if( planet_id.empty() ) {
+		throw std::runtime_error( "Invalid planet ID." );
+	}
+
+	const Planet* planet = m_world.find_planet( planet_id );
+
+	if( planet == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Planet not found." );
+	}
+
+	m_lock_facility.lock_planet( *planet, true );
+
+	// Check position.
+	if(
+		position.x < 0.0f ||
+		position.y < 0.0f ||
+		position.z < 0.0f ||
+		position.x >= static_cast<float>( planet->get_size().x * planet->get_chunk_size().x ) ||
+		position.y >= static_cast<float>( planet->get_size().y * planet->get_chunk_size().y ) ||
+		position.z >= static_cast<float>( planet->get_size().z * planet->get_chunk_size().z )
+	) {
+		m_lock_facility.lock_planet( *planet, false );
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Invalid entity position." );
+	}
+
+	// Create entity.
+	const Entity& entity = m_world.create_entity( cls->get_id() );
+
+	// Remember properties.
+	Entity::ID ent_id = entity.get_id();
+	float heading = entity.get_rotation().y;
+
+	m_lock_facility.lock_planet( *planet, false );
+	m_lock_facility.lock_world( false );
+
+	// Notify clients. TODO: Only for specific planet.
+	msg::CreateEntity msg;
+
+	msg.set_class( cls_id.get() );
+	msg.set_heading( heading );
+	msg.set_id( ent_id );
+	msg.set_position( position );
+
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected ) {
+			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );
+		}
+	}
+
 }
 
 }
