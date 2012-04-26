@@ -1606,35 +1606,12 @@ BOOST_AUTO_TEST_CASE( TestAttachEntity ) {
 		BOOST_CHECK( eaten == 0 );
 	}
 
-	/*
-	// Deserialize with invalid class ID length.
-	{
-		ServerProtocol::Buffer invalid_source = source;
-
-		invalid_source[sizeof( BLOCK_POS )] = 0;
-
-		msg::SetBlock msg;
-		std::size_t eaten = 0;
-
-		BOOST_CHECK_EXCEPTION(
-			eaten = msg.deserialize(
-				&invalid_source[0],
-				invalid_source.size()
-			),
-			msg::SetBlock::BogusDataException,
-			ExceptionChecker<msg::BlockAction::BogusDataException>( "Invalid class ID length." )
-		);
-
-		BOOST_CHECK( eaten == 0 );
-	}
-
 	// Deserialize with too less data.
 	{
-		msg::SetBlock msg;
+		msg::AttachEntity msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
 		}
 	}
-	*/
 }
