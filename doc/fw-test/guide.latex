@@ -1,0 +1,186 @@
+\documentclass[a4paper, 12pt]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[dvips, bookmarks, bookmarksnumbered, colorlinks=false, linkbordercolor={1 1 1}]{hyperref}
+
+\hypersetup{
+	pdfauthor = {flexworld-game.com},
+	pdftitle = {Testing Team Guide},
+	pdfsubject = {Testing Team Guide},
+	pdfcreator = {LaTeX with hyperref package},
+}
+
+\parskip 12pt
+\parindent 0pt
+
+\title{Testing Team Guide}
+\author{flexworld-game.com}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{About this document}
+
+This document gives some brief information about workflows, requirements and
+account info for FlexWorld testing team members.
+
+\section{Tasks and requirements}
+
+The testing team's tasks are:
+
+\begin{itemize}
+	\item Ensuring FlexWorld runs on each target platform.
+	\item Checking that new features and bugfixes are working properly.
+	\item Reporting bugs at the Redmine bug tracker.
+	\item Reporting ideas/wishes for new features.
+	\item Giving appropriate feedback to release mails as requested.
+	\item Actively taking part on the mailing list/in discussions.
+\end{itemize}
+
+Please be aware that being a tester does \textbf{not} mean to only get access to
+regular testing releases and play around. Instead you play an important role in
+the development process.
+
+It's required to give appropriate feedback, whether if it's explicitely
+requested or not. That also includes taking part in discussions on the mailing
+list aswell as on Redmine by commenting on tickets (primarily confirming that a
+bug also happens on your system, or by commenting on ideas of others).
+
+In case you don't have enough time or aren't interested anymore please be honest
+and talk to us.
+
+\textbf{Users who don't actively take part will be sooner or later dropped from the
+team.}
+
+\section{Tools and Accounts}
+
+Development of FlexWorld is organized in several tools. Collecting ideas and bug
+reports happens mostly in \textit{Redmine}, a web-based bug and task tracker.
+General discussions also take place there, but also on the mailing list.
+
+\subsection{Redmine}
+
+The Redmine instance can be accessed at \url{http://redmine.boxbox.org}. Please
+register an account there and send a mail to the project maintainer containing
+your username. You will then be added to the proper groups to get access.
+
+FlexWorld is organized in sub-projects. The parent project is called
+\textit{FlexWorld (Scrum)}. The sub-projects that are interesting for testers
+are:
+
+\begin{itemize}
+	\item \textbf{Ideas:} Collecting and discussing new ideas/feature requests.
+	\item \textbf{Testing:} Reporting and discussing bug reports/problems.
+\end{itemize}
+
+Just click on \textit{Projects} at the top to get to the proper projects.
+
+Before you create a new ticket (called \textit{issues} in Redmine), make sure
+the same idea/bug hasn't been reported yet.
+
+Each project also contains a Wiki with additional and important information.
+Make sure you read it!
+
+\subsection{Sprint releases}
+
+FlexWorld follows the \textit{Scrum workflow} and our sprint interval is set to
+one week. That means if nothing bad happens, a sprint release is made every
+week, mostly either on Saturday or Sunday.
+
+You can find the packaged files in the \textit{Testing} project in Redmine.
+Click on \textit{Files} in the menu.
+
+\subsection{Mailing list}
+
+General communication and announcing new sprint releases (often together with
+request for feedback) happens on the \textit{fw-test mailing list}. Each testing
+team member has a subscription to it and can therefore be reached there.
+
+Keep in mind that sending an e-mail to the mailing list will be delivered to
+\textbf{all} members. If you want to reach a single member, check the wiki page
+at the testing project.
+
+When feedback is requested for sprint releases, always reply to the list, so
+that all testers can read it.
+
+The address of the mailing list is \texttt{fw-test@boxbox.org}.
+
+\subsection{IRC}
+
+For more interactive and faster communications you can join FlexWorld's IRC
+channel. Connect your IRC client to \texttt{irc.boxbox.org}, port 6667 or 6697
+(SSL-enabled), channel \texttt{\#flexworld}.
+
+\subsection{FTP}
+
+To exchange files there exists an FTP site for testing team members. It can be
+reached at \texttt{boxbox.org}, port 21.
+
+For username and password information please contact the project maintainer.
+
+\section{Creating content}
+
+As a tester you mostly have access to the newest bleeding-edge features. We
+highly encourage every tester to \textit{play around with them}, e.g.
+
+\begin{itemize}
+	\item writing Lua scripts,
+	\item creating and importing 3D models,
+	\item adding/modifying textures,
+	\item building landscapes, buildings etc.
+	\item creating screenshots
+\end{itemize}
+
+and many more.
+
+If you created anything interesting, feel free to upload it to the FTP site.
+
+\section{Reward}
+
+As soon as FlexWorld is sold, every single person contributing to the project
+will be paid.
+
+The amount of the reward depends on several factors and we'd like to talk to
+each of you to discuss yours.
+
+Please \textbf{do not} take part in FlexWorld development if you can't accept
+that fact. We perfectly understand that working for the project without getting
+something in return in the beginning might be demotivating.
+
+Just talk to us if there's anything unclear in that regard.
+
+\section{Contact}
+
+\subsection{Developers}
+
+\begin{itemize}
+	\item Stefan »Tank« Schindler \texttt{<stefan@flexworld-game.com>}
+\end{itemize}
+
+\subsection{Web developers}
+
+\begin{itemize}
+	\item Sven »resident-uhlig« Uhlig \texttt{<sven@flexworld-game.com>}
+\end{itemize}
+
+\subsection{Testing team}
+
+The testing team is coordinated by \textit{eXpl0it3r}
+\texttt{<eXpl0it3r@my-gate.net>}. If you have any questions or comments, feel
+free to contact him.
+
+For a full list of all members see
+\footnote{\url{http://redmine.boxbox.org/projects/fw-main-testing/wiki/Testing\_team\_members}}.
+
+\section{Conclusion}
+
+Thanks for taking part in the development process of FlexWorld. It's highly
+appreciated and we'd like to tell all of you that all your work is very valuable
+for the whole project.
+
+If you have any questions, feedback or criticism, please contact the project
+maintainer or the testing team coordinator.
+
+\end{document}
