@@ -1,0 +1,8 @@
+ID: "fw.tools/shovel"
+Name: "Shovel"
+Origin: [75.0, 0.0, 15.0]
+Scale: [0.0025, 0.0025, 0.0025]
+Textures:
+  - "fw.base.metal/red_iron.png"
+  - "fw.base.nature/wood.png"
+Model: "fw.tools/shovel.fwm"

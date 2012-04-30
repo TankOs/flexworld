@@ -1,0 +1,2 @@
+fw.base.nature/wood.png: http://www.geeksucks.com/freebies/innovative-wood-texture-pack-from-geeksucks.htm
+fw.base.metal/red_iron.png: http://dreamtextures.com/category/dreamtextures/metal/ (CC-SA 3.0)
