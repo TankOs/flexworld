@@ -150,6 +150,11 @@ Class ClassDriver::load( const std::string& path ) {
 			for( ; hook_iter != hook_iter_end; ++hook_iter ) {
 				hook_iter.first() >> hook_name;
 
+				// Check for reserved name.
+				if( hook_name.size() > 1 && hook_name[0] == '_' && hook_name[1] == '_' ) {
+					throw LoadException( "Invalid use of reserved hook name." );
+				}
+
 				if( hook_iter.second().Type() != YAML::NodeType::Sequence ) {
 					throw LoadException( "Hook not a sequence (" + hook_name + ")." );
 				}

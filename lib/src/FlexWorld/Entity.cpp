@@ -19,28 +19,6 @@ Entity::Entity( const Class& cls ) :
 {
 }
 
-/*Entity::Entity( const Entity& other ) :
-	m_position( other.m_position ),
-	m_rotation( other.m_rotation ),
-	m_id( other.m_id ),
-	m_amount( other.m_amount ),
-	m_class( other.m_class ),
-	m_parent( nullptr )
-{
-	delete m_name;
-	m_name = nullptr;
-
-	if( other.m_name ) {
-		m_name = new std::string( *other.m_name );
-	}
-
-#if !defined( NDEBUG )
-	if( other.m_parent != nullptr ) {
-		std::cout << "WARNING: Copied entity in attached state." << std::endl;
-	}
-#endif
-}*/
-
 Entity::~Entity() {
 	delete m_children;
 	delete m_name;
@@ -88,30 +66,6 @@ const sf::Vector3f& Entity::get_position() const {
 void Entity::set_position( const sf::Vector3f& position ) {
 	m_position = position;
 }
-
-/*Entity& Entity::operator=( const Entity& other ) {
-	delete m_name;
-	m_name = nullptr;
-
-	m_position = other.m_position;
-	m_rotation = other.m_rotation;
-	m_id = other.m_id;
-	m_amount = other.m_amount;
-	m_class = other.m_class;
-	m_parent = nullptr;
-
-#if !defined( NDEBUG )
-	if( other.m_parent != nullptr ) {
-		std::cout << "WARNING: Copied entity in attached state." << std::endl;
-	}
-#endif
-
-	if( other.m_name ) {
-		m_name = new std::string( *other.m_name );
-	}
-
-	return *this;
-}*/
 
 void Entity::set_rotation( const sf::Vector3f& rotation ) {
 	m_rotation = rotation;

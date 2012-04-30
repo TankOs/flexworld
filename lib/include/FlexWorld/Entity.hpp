@@ -13,7 +13,11 @@ namespace flex {
 class Class;
 
 /** Entity.
+ *
  * An entity is a dynamic object in FlexWorld: They can move, collide, rotate etc.
+ *
+ * Entities can be attached using hooks specified in the class file. Every hook
+ * can have multiple entities attached.
  */
 class Entity : public NonCopyable {
 	public:
@@ -24,11 +28,6 @@ class Entity : public NonCopyable {
 		 * @param cls Class.
 		 */
 		Entity( const Class& cls );
-
-		/** Copy ctor.
-		 * @param other Other entity.
-		 */
-		//Entity( const Entity& other );
 
 		/** Dtor.
 		 */
@@ -158,12 +157,6 @@ class Entity : public NonCopyable {
 	private:
 		typedef std::vector<Entity*> EntityPtrArray;
 		typedef std::map<const std::string, EntityPtrArray> HookEntityMap;
-
-		/** Assignment.
-		 * @param other Other entity.
-		 * @return *this.
-		 */
-		Entity& operator=( const Entity& other );
 
 		sf::Vector3f m_position;
 		sf::Vector3f m_rotation;

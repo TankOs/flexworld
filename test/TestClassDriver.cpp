@@ -1,5 +1,7 @@
-#include <FlexWorld/ClassDriver.hpp>
 #include "Config.hpp"
+#include "ExceptionChecker.hpp"
+
+#include <FlexWorld/ClassDriver.hpp>
 
 #include <boost/test/unit_test.hpp>
 
@@ -31,5 +33,14 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 		BOOST_CHECK( cls.get_texture( 0 ).get_id().get() == "test/grass.png" );
 
 		BOOST_CHECK( cls.has_model() && cls.get_model().get_id().get() == "test/cube.fwm" );
+	}
+
+	// Load class with reserved hook names.
+	{
+		BOOST_CHECK_EXCEPTION(
+			ClassDriver::load( DATA_DIRECTORY + "/packages/test/reserved_hook.yml" ),
+			ClassDriver::LoadException,
+			ExceptionChecker<ClassDriver::LoadException>( "Invalid use of reserved hook name." )
+		);
 	}
 }

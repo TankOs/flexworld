@@ -11,7 +11,20 @@
 namespace flex {
 
 /** FlexWorld class.
+ *
  * A class describes properties for objects (blocks and entities) in FlexWorld.
+ * Objects can be created by Lua scripts either by setting blocks or spawning
+ * entities.
+ *
+ * Hooks can be used to be able to attach entities to another entity at a
+ * specified position. Hooks beginning with __ (two underscores) are reserved
+ * names and can only be used internally. The following reserved names exist:
+ *
+ *   * __container: Stowed away entities, e.g. for inventory entities.
+ *
+ * Entities that are attached to reserved hooks are not sent to the client.
+ * They're mostly being used for special behaviour, like showing a container's
+ * contents (__container hook).
  */
 class Class {
 	public:
