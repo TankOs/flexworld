@@ -4,8 +4,6 @@
 #include <FlexWorld/Entity.hpp>
 #include <FlexWorld/Class.hpp>
 
-#include <iostream> // XXX 
-
 EntityGroupNode::Ptr EntityGroupNode::create( ResourceManager& resource_manager, sg::Renderer& renderer ) {
 	Ptr ptr( new EntityGroupNode( resource_manager, renderer ) );
 	return ptr;
@@ -30,8 +28,6 @@ void EntityGroupNode::add_entity( const flex::Entity& entity ) {
 	// Attach to myself.
 	attach( drw );
 
-	std::cout << "Entity added: " << entity.get_id() << std::endl;
-
 	// Update entity to set initial stuff.
 	update_entity( entity );
 }
@@ -48,10 +44,7 @@ void EntityGroupNode::update_entity( const flex::Entity& entity ) {
 			entity.get_class().get_origin()
 		)
 	);
-
-	std::cout << "Entity updated: " << entity.get_id() << std::endl;
 }
 
-void EntityGroupNode::remove_entity( const flex::Entity& entity ) {
-	std::cout << "Entity removed: " << entity.get_id() << std::endl;
+void EntityGroupNode::remove_entity( const flex::Entity& /*entity*/ ) {
 }
