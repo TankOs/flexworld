@@ -4,7 +4,6 @@
 
 #include <SFML/System/Vector3.hpp>
 #include <string>
-#include <memory>
 #include <vector>
 #include <map>
 #include <cstdint>
@@ -16,7 +15,7 @@ class Class;
 /** Entity.
  * An entity is a dynamic object in FlexWorld: They can move, collide, rotate etc.
  */
-class Entity {
+class Entity : public NonCopyable {
 	public:
 		typedef uint32_t ID; ///< Entity ID type.
 		typedef uint32_t AmountType; ///< Amount type.
@@ -29,13 +28,11 @@ class Entity {
 		/** Copy ctor.
 		 * @param other Other entity.
 		 */
-		Entity( const Entity& other );
+		//Entity( const Entity& other );
 
-		/** Assignment.
-		 * @param other Other entity.
-		 * @return *this.
+		/** Dtor.
 		 */
-		Entity& operator=( const Entity& other );
+		~Entity();
 
 		/** Get ID.
 		 * @return ID.
@@ -162,13 +159,20 @@ class Entity {
 		typedef std::vector<Entity*> EntityPtrArray;
 		typedef std::map<const std::string, EntityPtrArray> HookEntityMap;
 
-		HookEntityMap m_children;
+		/** Assignment.
+		 * @param other Other entity.
+		 * @return *this.
+		 */
+		Entity& operator=( const Entity& other );
 
 		sf::Vector3f m_position;
 		sf::Vector3f m_rotation;
-		std::unique_ptr<std::string> m_name;
+
 		ID m_id;
 		AmountType m_amount;
+
+		HookEntityMap* m_children;
+		std::string* m_name;
 		const Class* m_class;
 		const Entity* m_parent;
 };

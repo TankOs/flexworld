@@ -12,12 +12,14 @@ Entity::Entity( const Class& cls ) :
 	m_rotation( 0, 0, 0 ),
 	m_id( 0 ),
 	m_amount( 1 ),
+	m_children( nullptr ),
+	m_name( nullptr ),
 	m_class( &cls ),
 	m_parent( nullptr )
 {
 }
 
-Entity::Entity( const Entity& other ) :
+/*Entity::Entity( const Entity& other ) :
 	m_position( other.m_position ),
 	m_rotation( other.m_rotation ),
 	m_id( other.m_id ),
@@ -25,8 +27,11 @@ Entity::Entity( const Entity& other ) :
 	m_class( other.m_class ),
 	m_parent( nullptr )
 {
+	delete m_name;
+	m_name = nullptr;
+
 	if( other.m_name ) {
-		m_name.reset( new std::string( *other.m_name ) );
+		m_name = new std::string( *other.m_name );
 	}
 
 #if !defined( NDEBUG )
@@ -34,6 +39,11 @@ Entity::Entity( const Entity& other ) :
 		std::cout << "WARNING: Copied entity in attached state." << std::endl;
 	}
 #endif
+}*/
+
+Entity::~Entity() {
+	delete m_children;
+	delete m_name;
 }
 
 Entity::ID Entity::get_id() const {
@@ -53,11 +63,13 @@ const std::string& Entity::get_name() const {
 }
 
 void Entity::set_name( const std::string& name ) {
-	m_name.reset( new std::string( name ) );
+	delete m_name;
+	m_name = new std::string( name );
 }
 
 void Entity::reset_name() {
-	m_name.reset();
+	delete m_name;
+	m_name = nullptr;
 }
 
 Entity::AmountType Entity::get_amount() const {
@@ -77,7 +89,10 @@ void Entity::set_position( const sf::Vector3f& position ) {
 	m_position = position;
 }
 
-Entity& Entity::operator=( const Entity& other ) {
+/*Entity& Entity::operator=( const Entity& other ) {
+	delete m_name;
+	m_name = nullptr;
+
 	m_position = other.m_position;
 	m_rotation = other.m_rotation;
 	m_id = other.m_id;
@@ -91,15 +106,12 @@ Entity& Entity::operator=( const Entity& other ) {
 	}
 #endif
 
-	if( !other.m_name ) {
-		m_name.reset();
-	}
-	else {
-		m_name.reset( new std::string( *other.m_name ) );
+	if( other.m_name ) {
+		m_name = new std::string( *other.m_name );
 	}
 
 	return *this;
-}
+}*/
 
 void Entity::set_rotation( const sf::Vector3f& rotation ) {
 	m_rotation = rotation;
@@ -121,19 +133,24 @@ void Entity::attach( Entity& child, const std::string& hook_id ) {
 	assert( child.get_parent() == nullptr );
 	assert( m_class->find_hook( hook_id ) != nullptr );
 
-	m_children[hook_id].push_back( &child );
+	if( !m_children ) {
+		m_children = new HookEntityMap;
+	}
+
+	(*m_children)[hook_id].push_back( &child );
 	child.set_parent( this );
 }
 
 void Entity::detach( Entity& child ) {
 	assert( child.get_parent() == this );
+	assert( m_children );
 
 #if !defined( NDEBUG )
 	bool found = false;
 #endif
 
-	HookEntityMap::iterator hook_iter( m_children.begin() );
-	HookEntityMap::iterator hook_iter_end( m_children.end() );
+	HookEntityMap::iterator hook_iter( m_children->begin() );
+	HookEntityMap::iterator hook_iter_end( m_children->end() );
 	
 	for( ; hook_iter != hook_iter_end; ++hook_iter ) {
 		EntityPtrArray& ents = hook_iter->second;
@@ -146,7 +163,7 @@ void Entity::detach( Entity& child ) {
 
 			// Check if no children left for hook.
 			if( ents.size() == 0 ) {
-				m_children.erase( hook_iter );
+				m_children->erase( hook_iter );
 			}
 
 #if !defined( NDEBUG )
@@ -158,13 +175,23 @@ void Entity::detach( Entity& child ) {
 	}
 
 	assert( found == true );
+
+	// If no hook has an attached children, remove container.
+	if( m_children->size() == 0 ) {
+		delete m_children;
+		m_children = nullptr;
+	}
 }
 
 std::size_t Entity::get_num_children() const {
+	if( !m_children ) {
+		return 0;
+	}
+
 	std::size_t num = 0;
 
-	HookEntityMap::const_iterator hook_iter = m_children.begin();
-	HookEntityMap::const_iterator hook_iter_end = m_children.end();
+	HookEntityMap::const_iterator hook_iter = m_children->begin();
+	HookEntityMap::const_iterator hook_iter_end = m_children->end();
 	
 	for( ; hook_iter != hook_iter_end; ++hook_iter ) {
 		num += hook_iter->second.size();
@@ -176,32 +203,41 @@ std::size_t Entity::get_num_children() const {
 std::size_t Entity::get_num_children( const std::string& hook_id ) const {
 	assert( m_class->find_hook( hook_id ) != nullptr );
 
-	HookEntityMap::const_iterator hook_iter = m_children.find( hook_id );
+	if( !m_children ) {
+		return 0;
+	}
 
-	return (hook_iter != m_children.end()) ? hook_iter->second.size() : 0;
+	HookEntityMap::const_iterator hook_iter = m_children->find( hook_id );
+
+	return (hook_iter != m_children->end()) ? hook_iter->second.size() : 0;
 }
 
 bool Entity::has_child( const Entity& child ) const {
-	return child.get_parent() == this;
+	return m_children && child.get_parent() == this;
 }
 
 bool Entity::has_child( const Entity& child, const std::string& hook_id ) const {
 	assert( m_class->find_hook( hook_id ) != nullptr );
 
-	if( child.get_parent() != this ) {
+	if( !m_children || child.get_parent() != this ) {
 		return false;
 	}
 
-	HookEntityMap::const_iterator hook_iter = m_children.find( hook_id );
+	HookEntityMap::const_iterator hook_iter = m_children->find( hook_id );
+
+	if( hook_iter == m_children->end() ) {
+		return false;
+	}
 
 	return std::find( hook_iter->second.begin(), hook_iter->second.end(), &child ) != hook_iter->second.end();
 }
 
 Entity& Entity::get_child( const std::string& hook_id, std::size_t index ) const {
 	assert( m_class->find_hook( hook_id ) != nullptr );
+	assert( m_children );
 
-	HookEntityMap::const_iterator hook_iter = m_children.find( hook_id );
-	assert( hook_iter != m_children.end() );
+	HookEntityMap::const_iterator hook_iter = m_children->find( hook_id );
+	assert( hook_iter != m_children->end() );
 	assert( index < hook_iter->second.size() );
 
 	return *hook_iter->second[index];
