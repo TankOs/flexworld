@@ -132,7 +132,7 @@ void PlayState::init() {
 	gluPerspective(
 		m_camera.get_fov(),
 		m_camera.get_aspect_ratio(),
-		0.1f,
+		0.01f,
 		150.0f
 	);
 	
