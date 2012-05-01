@@ -333,8 +333,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 				case Controls::PRIMARY_ACTION:
 				case Controls::SECONDARY_ACTION:
+				case Controls::USE:
 					{
 						if( pressed ) {
+							bool is_action = (action != Controls::USE);
 							bool primary = (action == Controls::PRIMARY_ACTION);
 
 							// Calc forward vector.
@@ -382,19 +384,26 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 							get_shared().lock_facility->lock_planet( *planet, false );
 
-							if( result.m_type == ColorPicker::Result::NONE ) {
-							}
-							else if( result.m_type == ColorPicker::Result::BLOCK ) {
-								// Send block action msg.
-								flex::msg::BlockAction ba_msg;
+							if( is_action ) {
+								if( result.m_type == ColorPicker::Result::BLOCK ) {
+									// Send block action msg.
+									flex::msg::BlockAction ba_msg;
 
-								ba_msg.set_block_position( result.m_block_position );
-								ba_msg.set_facing( result.m_facing );
-								ba_msg.set_primary( primary );
+									ba_msg.set_block_position( result.m_block_position );
+									ba_msg.set_facing( result.m_facing );
+									ba_msg.set_primary( primary );
 
-								get_shared().client->send_message( ba_msg );
+									get_shared().client->send_message( ba_msg );
+								}
+								else if( result.m_type == ColorPicker::Result::ENTITY ) {
+								}
 							}
-							else if( result.m_type == ColorPicker::Result::ENTITY ) {
+							else {
+								if( result.m_type == ColorPicker::Result::ENTITY ) {
+								}
+								else {
+									std::cout << "NOTHING TO USE THERE" << std::endl;
+								}
 							}
 						}
 					}
