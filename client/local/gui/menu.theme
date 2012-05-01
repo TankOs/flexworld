@@ -20,7 +20,6 @@ Button {
 	BackgroundColor: #ffffff22;
 	BorderColor: #ffffff00;
 	Padding: 8;
-	FontName: local/gui/orbitron_bold.ttf;
 	FontSize: 18;
 }
 
@@ -34,7 +33,6 @@ Window#menu Label {
 }
 
 Label#title {
-	FontName: local/gui/orbitron_bold.ttf;
 	FontSize: 30;
 	Color:#ffffffff;
 }
@@ -94,7 +92,6 @@ ComboBox:ACTIVE {
 
 Label#title {
 	FontSize: 36;
-	FontName: local/gui/orbitron_bold.ttf;
 }
 
 Window {
@@ -109,7 +106,6 @@ Window#menu {
 
 Window#menu * {
 	FontSize: 12;
-	FontName: local/gui/orbitron_bold.ttf;
 }
 
 Button {

@@ -153,7 +153,6 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 	GameMode mode;
 	AccountManager account_manager;
-	LockFacility lock_facility;
 
 	mode.set_default_entity_class_id( FlexID::make( "fw.base.nature/grass" ) );
 	mode.add_package( FlexID::make( "sessionhostscripts" ) );
@@ -165,6 +164,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 	{
 		// Setup host.
 		boost::asio::io_service io_service;
+		LockFacility lock_facility;
 		World world;
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
@@ -298,6 +298,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		static const Chunk::Vector BLOCK_POS( 2, 3, 4 );
 		static const std::string PLANET_ID = "construct";
 
+		LockFacility lock_facility;
+
 		// Create class.
 		World world;
 
@@ -404,6 +406,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		// Setup host.
 		boost::asio::io_service io_service;
+		LockFacility lock_facility;
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
 		host.set_ip( "127.0.0.1" );
@@ -501,6 +504,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		// Setup host.
 		boost::asio::io_service io_service;
+		LockFacility lock_facility;
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
 		host.set_ip( "127.0.0.1" );
@@ -646,6 +650,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 	{
 		// Setup host.
 		boost::asio::io_service io_service;
+		LockFacility lock_facility;
 		World world;
 		SessionHost host( io_service, lock_facility, account_manager, world, mode );
 
@@ -655,6 +660,8 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		Class cls( cls_id );
 		world.add_class( cls );
 		world.create_planet( "foobar", Planet::Vector( 1, 1, 1 ), Chunk::Vector( 16, 16, 16 ) );
+
+		lock_facility.create_planet_lock( *world.find_planet( "foobar" ) );
 
 		Entity& entity = world.create_entity( cls_id );
 		entity.set_position( sf::Vector3f( 1, 10, 100 ) );

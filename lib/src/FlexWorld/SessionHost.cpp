@@ -898,6 +898,7 @@ void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& pos
 
 	// Check planet.
 	if( planet_id.empty() ) {
+		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "Invalid planet ID." );
 	}
 
@@ -988,10 +989,13 @@ void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& posit
 		throw std::runtime_error( "Entity not linked to a planet." );
 	}
 
+	m_lock_facility.lock_planet( *planet, true );
+
 	// Apply position info.
 	position = ent->get_position();
 	planet_id = planet->get_id();
 
+	m_lock_facility.lock_planet( *planet, false );
 	m_lock_facility.lock_world( false );
 }
 
