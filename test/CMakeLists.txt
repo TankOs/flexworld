@@ -30,6 +30,7 @@ set(
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestLockFacility.cpp
+	TestLooseOctree.cpp
 	TestMath.cpp
 	TestMesh.cpp
 	TestMessage.cpp

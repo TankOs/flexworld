@@ -36,6 +36,8 @@ set(
 	${INC_DIR}/FlexWorld/LockFacility.hpp
 	${INC_DIR}/FlexWorld/Log.hpp
 	${INC_DIR}/FlexWorld/Log.inl
+	${INC_DIR}/FlexWorld/LooseOctree.hpp
+	${INC_DIR}/FlexWorld/LooseOctree.inl
 	${INC_DIR}/FlexWorld/LuaModules/Event.hpp
 	${INC_DIR}/FlexWorld/LuaModules/Server.hpp
 	${INC_DIR}/FlexWorld/LuaModules/ServerGate.hpp
