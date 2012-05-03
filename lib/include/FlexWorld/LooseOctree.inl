@@ -256,6 +256,17 @@ const typename LooseOctree<DT>::DataList& LooseOctree<DT>::get_data() const {
 	return *m_data;
 }
 
+template <class DT>
+void LooseOctree<DT>::search( const Cuboid& cuboid, ResultArray& /*results*/ ) const {
+	assert( cuboid.x >= m_position.x );
+	assert( cuboid.y >= m_position.y );
+	assert( cuboid.z >= m_position.z );
+	assert( cuboid.x + cuboid.width <= m_position.x + m_size );
+	assert( cuboid.y + cuboid.height <= m_position.y + m_size );
+	assert( cuboid.z + cuboid.depth <= m_position.z + m_size );
+
+}
+
 ///// DataInfo //////
 
 template <class DT>

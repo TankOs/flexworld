@@ -1,10 +1,11 @@
 #pragma once
 
 #include <FlexWorld/Exception.hpp>
+#include <FlexWorld/Cuboid.hpp>
 
 #include <SFML/System/Vector3.hpp>
-#include <map>
 #include <list>
+#include <vector>
 #include <cstdint>
 
 namespace flex {
@@ -41,6 +42,7 @@ class LooseOctree {
 		};
 
 		typedef uint32_t Size; ///< Size type.
+		typedef flex::Cuboid<Size> Cuboid; ///< Cuboid.
 		typedef sf::Vector3<Size> Vector; ///< Tree location vector.
 
 		/** Data info.
@@ -56,6 +58,7 @@ class LooseOctree {
 		};
 
 		typedef std::list<DataInfo> DataList; ///< List of data.
+		typedef std::vector<const DataInfo*> ResultArray; ///< Results.
 
 		/** Ctor.
 		 * Position is initialized to 0, 0, 0.
@@ -116,6 +119,13 @@ class LooseOctree {
 		 * @return Node the data has been added to.
 		 */
 		LooseOctree& insert( const DT& data, const Vector& center, Size size );
+
+		/** Search the tree for data in a specific cuboid.
+		 * Undefined behaviour if cuboid is invalid.
+		 * @param cuboid Cuboid.
+		 * @param results Array for results (not cleared).
+		 */
+		void search( const Cuboid& cuboid, ResultArray& results ) const;
 
 	private:
 		LooseOctree( const Vector& position, Size size );

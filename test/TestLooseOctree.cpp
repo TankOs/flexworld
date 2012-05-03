@@ -190,4 +190,22 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		BOOST_CHECK( data_iter->size == 4 );
 		++data_iter;
 	}
+
+	// Search tree for single data in root node.
+	{
+		static const IntOctree::Vector POSITION( 1, 2, 3 );
+		static const IntOctree::Size SIZE = 3;
+		static const int DATA = 1337;
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+
+		tree.insert( DATA, POSITION, SIZE );
+
+		IntOctree::ResultArray results;
+
+		tree.search( IntOctree::Cuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+
+		//BOOST_CHECK( results.size() == 1 );
+	}
 }

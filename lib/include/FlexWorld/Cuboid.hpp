@@ -18,6 +18,13 @@ struct Cuboid {
 	 */
 	Cuboid( T x_ = 0, T y_ = 0, T z_ = 0, T width_ = 0, T height_ = 0, T depth_ = 0 );
 
+	/** Calculate intersection of two cuboids.
+	 * @param first First cuboid.
+	 * @param second Second cuboid.
+	 * @return Intersection (width = height = depth = 0 if cuboids do not intersect).
+	 */
+	static Cuboid<T> calc_intersection( const Cuboid<T>& first, const Cuboid<T>& second );
+
 	T x; ///< X.
 	T y; ///< Y.
 	T z; ///< Z.
