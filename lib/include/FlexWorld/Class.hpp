@@ -1,6 +1,7 @@
 #pragma once
 
 #include <FlexWorld/Resource.hpp>
+#include <FlexWorld/Cuboid.hpp>
 
 #include <SFML/System/Vector3.hpp>
 #include <string>
@@ -136,17 +137,42 @@ class Class {
 		 */
 		const sf::Vector3f& get_scale() const;
 
+		/** Set bounding box.
+		 * Width, height and depth must be greater than 0.
+		 * zero, thus disabling it.
+		 * @param cuboid Cuboid.
+		 * @see disable_bounding_box to disable.
+		 */
+		void set_bounding_box( const FloatCuboid& cuboid );
+
+		/** Get bounding box.
+		 * Undefined behaviour if no bounding box was set.
+		 * @return Bounding box cuboid (everything zero'd if disabled).
+		 * @see has_bounding_box to check if there's a bounding box.
+		 */
+		const FloatCuboid& get_bounding_box() const;
+
+		/** Disable bounding box.
+		 */
+		void disable_bounding_box();
+
+		/** Check if a bounding box is set.
+		 * @return true if set.
+		 */
+		bool has_bounding_box() const;
+
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
 
 		HookMap m_hooks;
 		ResourceVector m_textures;
-		FlexID m_id;
-		std::unique_ptr<Resource> m_model;
 		std::string m_name;
+		std::unique_ptr<Resource> m_model;
+		std::unique_ptr<FloatCuboid> m_bounding_box;
 		sf::Vector3f m_origin;
 		sf::Vector3f m_scale;
+		FlexID m_id;
 };
 
 }

@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 	// Create class and check initial state.
 	{
 		FlexID id;
-		id.parse( "fw.weapons/sword.yml" );
+		id.parse( "fw.weapons/sword" );
 		Class cls( id );
 
 		BOOST_CHECK( cls.get_id() == id );
@@ -21,12 +21,13 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		BOOST_CHECK( cls.get_num_textures() == 0 );
 		BOOST_CHECK( cls.get_num_hooks() == 0 );
 		BOOST_CHECK( cls.has_model() == false );
+		BOOST_CHECK( cls.has_bounding_box() == false );
 	}
 
 	// Check basic properties.
 	{
 		FlexID id;
-		id.parse( "fw.weapons/sword.yml" );
+		id.parse( "fw.weapons/sword" );
 		Class cls( id );
 
 		cls.set_name( "Sword" );
@@ -40,10 +41,32 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 5, 6, 7 ) );
 	}
 
+	// Bounding box.
+	{
+		FlexID id;
+		id.parse( "fw.weapons/sword" );
+		Class cls( id );
+
+		BOOST_CHECK( cls.has_bounding_box() == false );
+
+		cls.set_bounding_box( FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+
+		BOOST_CHECK( cls.has_bounding_box() == true );
+		BOOST_CHECK( cls.get_bounding_box() == FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+
+		cls.set_bounding_box( FloatCuboid( 6, 5, 4, 3, 2, 1 ) );
+
+		BOOST_CHECK( cls.has_bounding_box() == true );
+		BOOST_CHECK( cls.get_bounding_box() == FloatCuboid( 6, 5, 4, 3, 2, 1 ) );
+
+		cls.disable_bounding_box();
+		BOOST_CHECK( cls.has_bounding_box() == false );
+	}
+
 	// Check adding textures.
 	{
 		FlexID class_id;
-		class_id.parse( "fw.weapons/sword.yml" );
+		class_id.parse( "fw.weapons/sword" );
 		Class cls( class_id );
 
 		FlexID tex_id;
@@ -66,7 +89,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 	// Check setting hooks.
 	{
 		FlexID class_id;
-		class_id.parse( "fw.weapons/sword.yml" );
+		class_id.parse( "fw.weapons/sword" );
 		Class cls( class_id );
 
 		sf::Vector3f vector( 1, 2, 3 );
@@ -81,7 +104,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 
 	// Assignment and copy ctor.
 	{
-		Class cls( FlexID::make( "fw.weapons/sword.yml" ) );
+		Class cls( FlexID::make( "fw.weapons/sword" ) );
 
 		cls.set_name( "Sword" );
 		cls.set_origin( sf::Vector3f( 1, 2, 3 ) );

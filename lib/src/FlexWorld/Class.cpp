@@ -5,11 +5,12 @@
 namespace flex {
 
 Class::Class( const FlexID& id ) :
-	m_id( id ),
-	m_model( nullptr ),
 	m_name( "" ),
+	m_model( nullptr ),
+	m_bounding_box( nullptr ),
 	m_origin( 0, 0, 0 ),
-	m_scale( 1, 1, 1 )
+	m_scale( 1, 1, 1 ),
+	m_id( id )
 {
 	assert( m_id.is_valid_resource() );
 }
@@ -31,6 +32,13 @@ const Class& Class::operator=( const Class& other ) {
 	}
 	else {
 		m_model.reset();
+	}
+
+	if( other.m_bounding_box ) {
+		m_bounding_box.reset( new FloatCuboid( *other.m_bounding_box ) );
+	}
+	else {
+		m_bounding_box.reset();
 	}
 
 	return *this;
@@ -105,6 +113,30 @@ void Class::set_scale( const sf::Vector3f& scale ) {
 
 const sf::Vector3f& Class::get_scale() const {
 	return m_scale;
+}
+
+void Class::set_bounding_box( const FloatCuboid& cuboid ) {
+	assert( cuboid.width > 0 );
+	assert( cuboid.height > 0 );
+	assert( cuboid.depth > 0 );
+
+	m_bounding_box.reset( new FloatCuboid( cuboid ) );
+}
+
+const FloatCuboid& Class::get_bounding_box() const {
+	assert( m_bounding_box != nullptr );
+
+	return *m_bounding_box;
+}
+
+void Class::disable_bounding_box() {
+	assert( m_bounding_box != nullptr );
+
+	m_bounding_box.reset();
+}
+
+bool Class::has_bounding_box() const {
+	return m_bounding_box != nullptr;
 }
 
 }
