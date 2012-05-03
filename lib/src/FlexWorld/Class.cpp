@@ -7,7 +7,7 @@ namespace flex {
 Class::Class( const FlexID& id ) :
 	m_name( "" ),
 	m_model( nullptr ),
-	m_bounding_box( nullptr ),
+	m_bounding_box( 0, 0, 0, 1, 1, 1 ),
 	m_origin( 0, 0, 0 ),
 	m_scale( 1, 1, 1 ),
 	m_id( id )
@@ -26,19 +26,13 @@ const Class& Class::operator=( const Class& other ) {
 	m_name = other.m_name;
 	m_origin = other.m_origin;
 	m_scale = other.m_scale;
+	m_bounding_box = other.m_bounding_box;
 
 	if( other.m_model ) {
 		m_model.reset( new Resource( *other.m_model ) );
 	}
 	else {
 		m_model.reset();
-	}
-
-	if( other.m_bounding_box ) {
-		m_bounding_box.reset( new FloatCuboid( *other.m_bounding_box ) );
-	}
-	else {
-		m_bounding_box.reset();
 	}
 
 	return *this;
@@ -120,23 +114,11 @@ void Class::set_bounding_box( const FloatCuboid& cuboid ) {
 	assert( cuboid.height > 0 );
 	assert( cuboid.depth > 0 );
 
-	m_bounding_box.reset( new FloatCuboid( cuboid ) );
+	m_bounding_box = cuboid;
 }
 
 const FloatCuboid& Class::get_bounding_box() const {
-	assert( m_bounding_box != nullptr );
-
-	return *m_bounding_box;
-}
-
-void Class::disable_bounding_box() {
-	assert( m_bounding_box != nullptr );
-
-	m_bounding_box.reset();
-}
-
-bool Class::has_bounding_box() const {
-	return m_bounding_box != nullptr;
+	return m_bounding_box;
 }
 
 }

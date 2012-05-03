@@ -134,6 +134,37 @@ Class ClassDriver::load( const std::string& path ) {
 		cls->set_scale( scale );
 	}
 
+	// Read bounding box.
+	const YAML::Node* b_box_node = doc.FindValue( "BoundingBox" );
+	if( b_box_node ) {
+		if( b_box_node->Type() != YAML::NodeType::Sequence ) {
+			throw LoadException( "BoundingBox not a sequence." );
+		}
+		else if( b_box_node->size() != 6 ) {
+			throw LoadException( "Invalid bounding box." );
+		}
+
+		FloatCuboid box( 0, 0, 0, 0, 0, 0 );
+
+		try {
+			(*b_box_node)[0] >> box.x;
+			(*b_box_node)[1] >> box.y;
+			(*b_box_node)[2] >> box.z;
+			(*b_box_node)[3] >> box.width;
+			(*b_box_node)[4] >> box.height;
+			(*b_box_node)[5] >> box.depth;
+		}
+		catch( const YAML::Exception& /*e*/ ) {
+			throw LoadException( "Invalid BoundingBox value(s)." );
+		}
+
+		if( box.width <= 0 || box.height <= 0 || box.depth <= 0 ) {
+			throw LoadException( "Invalid width, height and/or depth for BoundingBox." );
+		}
+
+		cls->set_bounding_box( box );
+	}
+
 	// Read hooks.
 	{
 		const YAML::Node* hooks_node = doc.FindValue( "Hooks" );
