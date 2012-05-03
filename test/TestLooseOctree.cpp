@@ -196,20 +196,64 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		++data_iter;
 	}
 
-	// Search tree for single data in root node.
+	// Search tree for multiple data in root node.
 	{
-		static const IntOctree::DataInfo::Cuboid CUBOID( 0, 1, 2, 4, 3, 2 );
-		static const int DATA = 1337;
 		static const IntOctree::Size TREE_SIZE = 4;
 
 		IntOctree tree( TREE_SIZE );
-
-		tree.insert( DATA, CUBOID );
+		tree.insert( 1, IntOctree::DataInfo::Cuboid( 0, 1, 2, 4, 3, 2 ) );
+		tree.insert( 2, IntOctree::DataInfo::Cuboid( 1, 0, 2, 3, 4, 2 ) );
+		tree.insert( 3, IntOctree::DataInfo::Cuboid( 2, 1, 0, 2, 3, 4 ) );
 
 		IntOctree::ResultArray results;
 
 		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
 
-		//BOOST_CHECK( results.size() == 1 );
+		BOOST_REQUIRE( results.size() == 3 );
+		BOOST_CHECK( results[0]->data == 1 );
+		BOOST_CHECK( results[1]->data == 2 );
+		BOOST_CHECK( results[2]->data == 3 );
+	}
+
+	// Search tree for data in child nodes (data aligned to node sizes).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+
+		tree.insert( 1, IntOctree::DataInfo::Cuboid(             0,             0,             0, 1, 1, 1 ) );
+		tree.insert( 2, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1,             0,             0, 1, 1, 1 ) );
+		tree.insert( 3, IntOctree::DataInfo::Cuboid(             0,             0, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 4, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1,             0, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 5, IntOctree::DataInfo::Cuboid(             0, TREE_SIZE - 1,             0, 1, 1, 1 ) );
+		tree.insert( 6, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1, TREE_SIZE - 1,             0, 1, 1, 1 ) );
+		tree.insert( 7, IntOctree::DataInfo::Cuboid(             0, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 8, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
+
+		IntOctree::ResultArray results;
+		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+
+		BOOST_REQUIRE( results.size() == 8 );
+		BOOST_CHECK( results[0]->data == 1 );
+		BOOST_CHECK( results[1]->data == 2 );
+		BOOST_CHECK( results[2]->data == 3 );
+		BOOST_CHECK( results[3]->data == 4 );
+		BOOST_CHECK( results[4]->data == 5 );
+		BOOST_CHECK( results[5]->data == 6 );
+		BOOST_CHECK( results[6]->data == 7 );
+		BOOST_CHECK( results[7]->data == 8 );
+	}
+
+	// Search outside the tree.
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataInfo::Cuboid( 2, 2, 2, 2, 2, 2 ) );
+
+		IntOctree::ResultArray results;
+
+		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, 2, 2, 2 ), results );
+		BOOST_CHECK( results.size() == 0 );
 	}
 }

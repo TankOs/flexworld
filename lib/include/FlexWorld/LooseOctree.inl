@@ -1,8 +1,43 @@
 #include <cassert>
 #include <cstring>
-#include <iostream> // XXX 
 
 namespace flex {
+
+template <class T, class DVS>
+inline void continue_search(
+	const LooseOctree<T, DVS>* child,
+	const typename LooseOctree<T, DVS>::DataInfo::Cuboid& cuboid,
+	typename LooseOctree<T, DVS>::ResultArray& results
+) {
+	if( !child ) {
+		return;
+	}
+
+	if(
+		LooseOctree<T, DVS>::DataInfo::Cuboid::calc_intersection(
+			typename LooseOctree<T, DVS>::DataInfo::Cuboid(
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().x ) -
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+				),
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().y ) -
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+				),
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().z ) -
+					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+				),
+				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 )
+			),
+			cuboid
+		).width > 0
+	) {
+		child->search( cuboid, results );
+	}
+}
 
 template <class T, class DVS>
 LooseOctree<T, DVS>::LooseOctree( Size size ) :
@@ -271,13 +306,8 @@ const typename LooseOctree<T, DVS>::DataList& LooseOctree<T, DVS>::get_data() co
 }
 
 template <class T, class DVS>
-void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, ResultArray& /*results*/ ) const {
-	assert( cuboid.x >= m_position.x );
-	assert( cuboid.y >= m_position.y );
-	assert( cuboid.z >= m_position.z );
-	assert( cuboid.x + cuboid.width <= m_position.x + m_size );
-	assert( cuboid.y + cuboid.height <= m_position.y + m_size );
-	assert( cuboid.z + cuboid.depth <= m_position.z + m_size );
+void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, ResultArray& results ) const {
+	// No checks for cuboid needed here, as we're testing for intersections anyways.
 
 	// If this node contains data, check for collision.
 	if( m_data && m_data->size() > 0 ) {
@@ -286,9 +316,34 @@ void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, Resul
 		
 		// Check each data entry for collision with the cuboid.
 		for( ; data_iter != data_iter_end; ++data_iter ) {
-			//const DataInfo& info = *data_iter;
+			const DataInfo& info = *data_iter;
+			typename DataInfo::Cuboid intersection = DataInfo::Cuboid::calc_intersection( info.cuboid, cuboid );
+
+			if(
+				intersection.width > 0 &&
+				intersection.height > 0 &&
+				intersection.depth > 0
+			) {
+				results.push_back( &info );
+			}
 		}
 	}
+
+	// Find out which children the cuboid intersects with. Continue searching for
+	// data in those nodes.
+	if( !m_children ) {
+		// No children, nothing to do.
+		return;
+	}
+
+	continue_search( m_children[LEFT_BOTTOM_FAR], cuboid, results );
+	continue_search( m_children[RIGHT_BOTTOM_FAR], cuboid, results );
+	continue_search( m_children[LEFT_BOTTOM_NEAR], cuboid, results );
+	continue_search( m_children[RIGHT_BOTTOM_NEAR], cuboid, results );
+	continue_search( m_children[LEFT_TOP_FAR], cuboid, results );
+	continue_search( m_children[RIGHT_TOP_FAR], cuboid, results );
+	continue_search( m_children[LEFT_TOP_NEAR], cuboid, results );
+	continue_search( m_children[RIGHT_TOP_NEAR], cuboid, results );
 }
 
 ///// DataInfo //////

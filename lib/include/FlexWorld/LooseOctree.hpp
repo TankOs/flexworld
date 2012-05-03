@@ -122,8 +122,7 @@ class LooseOctree {
 		LooseOctree& insert( const T& data, const typename DataInfo::Cuboid& cuboid );
 
 		/** Search the tree for data in a specific cuboid.
-		 * Undefined behaviour if cuboid is invalid.
-		 * @param cuboid Cuboid.
+		 * @param cuboid Cuboid (may be out of bounds).
 		 * @param results Array for results (not cleared).
 		 */
 		void search( const typename DataInfo::Cuboid& cuboid, ResultArray& results ) const;
