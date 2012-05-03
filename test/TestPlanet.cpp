@@ -1,6 +1,7 @@
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Class.hpp>
 #include <FlexWorld/Entity.hpp>
+#include <FlexWorld/Cuboid.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <sstream>
@@ -219,6 +220,50 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		planet.remove_entity( ent2 );
 		BOOST_CHECK( planet.get_num_entities() == 0 );
 		BOOST_CHECK( planet.has_entity( ent2 ) == false );
+	}
+
+	// Searching for entities (octree operations).
+	{
+		FlexID id;
+		id.parse( "fw.weapons/sword" );
+
+		Class cls( id );
+		Entity ent( cls );
+		ent.set_id( 1 );
+
+		Entity ent2( cls );
+		ent2.set_id( 2 );
+
+		// Set initial positions.
+		ent.set_position( sf::Vector3f( 0, 0, 0 ) );
+		ent2.set_position(
+			sf::Vector3f(
+				static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x - 1 ),
+				static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y - 1 ),
+				static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z - 1 )
+			)
+		);
+
+		Planet planet( "construct", PLANET_SIZE, CHUNK_SIZE );
+		planet.add_entity( ent );
+		planet.add_entity( ent2 );
+
+		// Search for entities.
+		Planet::EntityIDArray results;
+
+		/*planet.search_entities(
+			FloatCuboid(
+				0, 0, 0,
+				static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x ),
+				static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y ),
+				static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z )
+			),
+			results
+		);
+
+		BOOST_REQUIRE( results.size() == 2 );
+		BOOST_CHECK( results[0] == 1 );
+		BOOST_CHECK( results[1] == 2 );*/
 	}
 
 	// Clear planet.

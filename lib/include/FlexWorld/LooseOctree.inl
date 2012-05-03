@@ -6,31 +6,31 @@ namespace flex {
 template <class T, class DVS>
 inline void continue_search(
 	const LooseOctree<T, DVS>* child,
-	const typename LooseOctree<T, DVS>::DataInfo::Cuboid& cuboid,
-	typename LooseOctree<T, DVS>::ResultArray& results
+	const typename LooseOctree<T, DVS>::DataCuboid& cuboid,
+	typename LooseOctree<T, DVS>::DataArray& results
 ) {
 	if( !child ) {
 		return;
 	}
 
 	if(
-		LooseOctree<T, DVS>::DataInfo::Cuboid::calc_intersection(
-			typename LooseOctree<T, DVS>::DataInfo::Cuboid(
+		LooseOctree<T, DVS>::DataCuboid::calc_intersection(
+			typename LooseOctree<T, DVS>::DataCuboid(
 				(
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().x ) -
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().x ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
 				),
 				(
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().y ) -
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().y ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
 				),
 				(
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_position().z ) -
-					static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() / 2 )
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().z ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
 				),
-				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 ),
-				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 ),
-				static_cast<typename LooseOctree<T, DVS>::DataInfo::Scalar>( child->get_size() * 2 )
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 )
 			),
 			cuboid
 		).width > 0
@@ -98,7 +98,7 @@ void LooseOctree<T, DVS>::ensure_data() {
 }
 
 template <class T, class DVS>
-LooseOctree<T, DVS>& LooseOctree<T, DVS>::insert( const T& data, const typename DataInfo::Cuboid& cuboid ) {
+LooseOctree<T, DVS>& LooseOctree<T, DVS>::insert( const T& data, const DataCuboid& cuboid ) {
 	assert( cuboid.width <= m_size );
 	assert( cuboid.height <= m_size );
 	assert( cuboid.depth <= m_size );
@@ -207,13 +207,13 @@ void LooseOctree<T, DVS>::create_child( Quadrant quadrant ) {
 }
 
 template <class T, class DVS>
-typename LooseOctree<T, DVS>::Quadrant LooseOctree<T, DVS>::determine_quadrant( const typename DataInfo::Cuboid& cuboid ) {
+typename LooseOctree<T, DVS>::Quadrant LooseOctree<T, DVS>::determine_quadrant( const DataCuboid& cuboid ) {
 	assert( cuboid.width <= m_size );
 	assert( cuboid.height <= m_size );
 	assert( cuboid.depth <= m_size );
 
 	// Calculate center point.
-	typename DataInfo::Vector center(
+	DataVector center(
 		cuboid.x + cuboid.width / 2,
 		cuboid.y + cuboid.height / 2,
 		cuboid.z + cuboid.depth / 2
@@ -299,14 +299,25 @@ LooseOctree<T, DVS>& LooseOctree<T, DVS>::get_child( Quadrant quadrant ) const {
 }
 
 template <class T, class DVS>
-const typename LooseOctree<T, DVS>::DataList& LooseOctree<T, DVS>::get_data() const {
-	assert( m_data != nullptr );
+typename LooseOctree<T, DVS>::DataArray LooseOctree<T, DVS>::get_data() const {
+	if( !m_data ) {
+		return DataArray();
+	}
 
-	return *m_data;
+	DataArray data;
+
+	typename DataList::const_iterator data_iter( m_data->begin() );
+	typename DataList::const_iterator data_iter_end( m_data->end() );
+	
+	for( ; data_iter != data_iter_end; ++data_iter ) {
+		data.push_back( data_iter->data );
+	}
+
+	return data;
 }
 
 template <class T, class DVS>
-void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, ResultArray& results ) const {
+void LooseOctree<T, DVS>::search( const DataCuboid& cuboid, DataArray& results ) const {
 	// No checks for cuboid needed here, as we're testing for intersections anyways.
 
 	// If this node contains data, check for collision.
@@ -317,14 +328,14 @@ void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, Resul
 		// Check each data entry for collision with the cuboid.
 		for( ; data_iter != data_iter_end; ++data_iter ) {
 			const DataInfo& info = *data_iter;
-			typename DataInfo::Cuboid intersection = DataInfo::Cuboid::calc_intersection( info.cuboid, cuboid );
+			DataCuboid intersection = DataCuboid::calc_intersection( info.cuboid, cuboid );
 
 			if(
 				intersection.width > 0 &&
 				intersection.height > 0 &&
 				intersection.depth > 0
 			) {
-				results.push_back( &info );
+				results.push_back( info.data );
 			}
 		}
 	}

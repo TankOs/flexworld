@@ -4,6 +4,7 @@
 #include <FlexWorld/Chunk.hpp>
 #include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/Entity.hpp>
+#include <FlexWorld/LooseOctree.hpp>
 
 #include <SFML/System/Vector3.hpp>
 #include <string>
@@ -13,13 +14,23 @@
 namespace flex {
 
 /** Planet.
- * Contains chunks and class cache.
+ * 
+ * A planet in FlexWorld is a fixed-size map. It contains chunks of block data
+ * and entities.
+ *
+ * Block data is stored as cached class IDs to lower the memory footprint.
+ *
+ * The planet also keeps track of entities and manages a loose octree to
+ * provide fast searches (e.g. for collision detection). When an entity's
+ * transformation is changed make sure to call update_entity() so that proper
+ * node in the octree is updated.
  */
 class Planet : public NonCopyable {
 	public:
 		typedef uint16_t ScalarType; ///< Scalar type for planet size/chunk positions.
 		typedef sf::Vector3<ScalarType> Vector; ///< Vector for planet size/chunk positions.
 		typedef sf::Vector3<float> Coordinate; ///< Vector for positions in absolute planet coordinates.
+		typedef std::vector<Entity::ID> EntityIDArray; ///< Array of entity IDs.
 
 		/** Ctor.
 		 * @param id ID.
@@ -140,17 +151,24 @@ class Planet : public NonCopyable {
 		 */
 		const Chunk::Block* get_raw_chunk_data( const Planet::Vector& position ) const;
 
+		/** Search for entities in a cuboid.
+		 * @param cuboid Cuboid.
+		 * @param results Array being filled with found entity IDs (not cleared!).
+		 */
+		void search_entities( const FloatCuboid& cuboid, EntityIDArray& results ) const;
+
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
-		typedef std::vector<Entity::ID> EntityIDVector;
 
 		Vector m_size;
 		Chunk::Vector m_chunk_size;
 		std::string m_id;
 
 		ChunkMap m_chunks;
-		EntityIDVector m_entities;
+		EntityIDArray m_entities;
 		ClassCache m_class_cache;
+
+		LooseOctree<Entity::ID, float> m_octree;
 };
 
 }

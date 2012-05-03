@@ -33,7 +33,8 @@ namespace flex {
 Planet::Planet( const std::string& id, const Vector& size, const Chunk::Vector& chunk_size ) :
 	m_size( size ),
 	m_chunk_size( chunk_size ),
-	m_id( id )
+	m_id( id ),
+	m_octree( std::max( size.x, std::max( size.y, size.z ) ) * std::max( chunk_size.x, std::max( chunk_size.y, chunk_size.z ) ) )
 {
 }
 
@@ -174,12 +175,20 @@ void Planet::add_entity( const Entity& entity ) {
 
 	m_entities.push_back( entity.get_id() );
 
-	// Sort to make searched with lower_bound possible.
+	// Sort to make searches with lower_bound possible.
 	std::sort( m_entities.begin(), m_entities.end() );
+
+	// Add to octree.
+	/*m_octree.insert(
+		entity.get_id(),
+		FloatCuboid cuboid(
+			entity.get_boun
+		)
+	);*/
 }
 
 bool Planet::has_entity( const Entity& entity ) const {
-	EntityIDVector::const_iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
+	EntityIDArray::const_iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
 
 	return iter != m_entities.end() && *iter == entity.get_id();
 }
@@ -187,11 +196,13 @@ bool Planet::has_entity( const Entity& entity ) const {
 void Planet::remove_entity( const Entity& entity ) {
 	assert( has_entity( entity ) == true );
 
-	EntityIDVector::iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
+	EntityIDArray::iterator iter = std::lower_bound( m_entities.begin(), m_entities.end(), entity.get_id() );
 
 	if( iter != m_entities.end() && *iter == entity.get_id() ) {
 		m_entities.erase( iter );
 	}
+
+	std::cout << "WARNING: Entity not removed from octree." << std::endl;
 }
 
 const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position ) const {
@@ -208,6 +219,10 @@ Entity::ID Planet::get_entity_id( std::size_t index ) const {
 	assert( index < m_entities.size() );
 
 	return m_entities[index];
+}
+
+void Planet::search_entities( const FloatCuboid& cuboid, EntityIDArray& results ) const {
+	m_octree.search( cuboid, results );
 }
 
 }

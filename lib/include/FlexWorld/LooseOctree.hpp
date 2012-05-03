@@ -44,24 +44,9 @@ class LooseOctree {
 
 		typedef uint32_t Size; ///< Size type.
 		typedef sf::Vector3<Size> Vector; ///< Tree location vector.
-
-		/** Data info.
-		 */
-		struct DataInfo {
-			typedef sf::Vector3<DVS> Vector; ///< Vector.
-			typedef flex::Cuboid<DVS> Cuboid; ///< Cuboid.
-			typedef DVS Scalar; ///< Scalar.
-
-			/** Ctor.
-			 */
-			DataInfo();
-
-			T data; ///< Data.
-			Cuboid cuboid; ///< Cuboid.
-		};
-
-		typedef std::list<DataInfo> DataList; ///< List of data.
-		typedef std::vector<const DataInfo*> ResultArray; ///< Results.
+		typedef Cuboid<DVS> DataCuboid; ///< Data cuboid.
+		typedef sf::Vector3<DVS> DataVector; ///< Data vector.
+		typedef std::vector<T> DataArray; ///< Data array.
 
 		/** Ctor.
 		 * Position is initialized to 0, 0, 0.
@@ -107,11 +92,10 @@ class LooseOctree {
 		LooseOctree<T, DVS>& get_child( Quadrant quadrant ) const;
 
 		/** Get data.
-		 * Undefined behaviour if there's no data.
 		 * @return Data.
 		 * @see get_num_data
 		 */
-		const DataList& get_data() const;
+		DataArray get_data() const;
 
 		/** Insert data.
 		 * Undefined behaviour if cuboid is invalid (out of bounds, too big etc.).
@@ -119,18 +103,27 @@ class LooseOctree {
 		 * @param cuboid Cuboid.
 		 * @return Node the data has been added to.
 		 */
-		LooseOctree& insert( const T& data, const typename DataInfo::Cuboid& cuboid );
+		LooseOctree& insert( const T& data, const DataCuboid& cuboid );
 
 		/** Search the tree for data in a specific cuboid.
 		 * @param cuboid Cuboid (may be out of bounds).
 		 * @param results Array for results (not cleared).
 		 */
-		void search( const typename DataInfo::Cuboid& cuboid, ResultArray& results ) const;
+		void search( const DataCuboid& cuboid, DataArray& results ) const;
 
 	private:
+		struct DataInfo {
+			DataInfo();
+
+			T data;
+			DataCuboid cuboid;
+		};
+
+		typedef std::list<DataInfo> DataList;
+
 		LooseOctree( const Vector& position, Size size );
 
-		Quadrant determine_quadrant( const typename DataInfo::Cuboid& cuboid );
+		Quadrant determine_quadrant( const DataCuboid& cuboid );
 		void ensure_data();
 		void subdivide();
 		void create_child( Quadrant quadrant );

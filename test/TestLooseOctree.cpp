@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 	{
 		IntOctree tree( 32 );
 
-		BOOST_CHECK( &tree.insert( 1337, IntOctree::DataInfo::Cuboid( 0, 0, 0, 32, 32, 32 ) ) == &tree );
+		BOOST_CHECK( &tree.insert( 1337, IntOctree::DataCuboid( 0, 0, 0, 32, 32, 32 ) ) == &tree );
 
 		BOOST_CHECK( tree.is_subdivided() == false );
 		BOOST_CHECK( tree.get_num_data() == 1 );
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 
 	struct SingleDataQuadrantInfo {
 		SingleDataQuadrantInfo(
-			const IntOctree::DataInfo::Cuboid& cuboid_,
+			const IntOctree::DataCuboid& cuboid_,
 			IntOctree::Quadrant quadrant_,
 			int data_
 		) :
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		{
 		}
 
-		IntOctree::DataInfo::Cuboid cuboid;
+		IntOctree::DataCuboid cuboid;
 		IntOctree::Quadrant quadrant;
 		int data;
 	};
@@ -65,18 +65,18 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 	// Add single data to each quadrant, forcing subdivision.
 	{
 		static const std::size_t TREE_SIZE = 32;
-		static const IntOctree::DataInfo::Scalar DATA_SIZE = TREE_SIZE / 2;
+		static const IntOctree::DataCuboid::Type DATA_SIZE = TREE_SIZE / 2;
 
 		std::vector<SingleDataQuadrantInfo> infos;
 
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid(  0,  0,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_BOTTOM_FAR, 1 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 16,  0,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_BOTTOM_FAR, 2 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid(  0,  0, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_BOTTOM_NEAR, 3 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 16,  0, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_BOTTOM_NEAR, 4 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid(  0, 16,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_TOP_FAR, 1 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 16, 16,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_TOP_FAR, 2 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid(  0, 16, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_TOP_NEAR, 3 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 16, 16, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_TOP_NEAR, 4 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid(  0,  0,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_BOTTOM_FAR, 1 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 16,  0,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_BOTTOM_FAR, 2 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid(  0,  0, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_BOTTOM_NEAR, 3 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 16,  0, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_BOTTOM_NEAR, 4 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid(  0, 16,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_TOP_FAR, 1 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 16, 16,  0, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_TOP_FAR, 2 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid(  0, 16, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::LEFT_TOP_NEAR, 3 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 16, 16, 16, DATA_SIZE, DATA_SIZE, DATA_SIZE ), IntOctree::RIGHT_TOP_NEAR, 4 ) );
 
 		for( std::size_t idx = 0; idx < infos.size(); ++idx ) {
 			IntOctree tree( TREE_SIZE );
@@ -101,8 +101,7 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 			BOOST_CHECK( child.is_subdivided() == false );
 
 			BOOST_REQUIRE( child.get_num_data() == 1 );
-			BOOST_CHECK( child.get_data().front().data == info.data );
-			BOOST_CHECK( child.get_data().front().cuboid == info.cuboid );
+			BOOST_CHECK( child.get_data()[0] == info.data );
 
 			BOOST_CHECK( tree.has_child( IntOctree::LEFT_BOTTOM_FAR ) == (info.quadrant == IntOctree::LEFT_BOTTOM_FAR) );
 			BOOST_CHECK( tree.has_child( IntOctree::RIGHT_BOTTOM_FAR ) == (info.quadrant == IntOctree::RIGHT_BOTTOM_FAR) );
@@ -119,18 +118,18 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 	// maximum number of subdivisions.
 	{
 		static const IntOctree::Size TREE_SIZE = 8;
-		static const IntOctree::DataInfo::Scalar MAX_POS = TREE_SIZE - 1;
+		static const IntOctree::DataCuboid::Type MAX_POS = TREE_SIZE - 1;
 
 		std::vector<SingleDataQuadrantInfo> infos;
 
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 0, 0, 0, 1, 1, 1 ), IntOctree::LEFT_BOTTOM_FAR, 1 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( MAX_POS, 0, 0, 1, 1, 1 ), IntOctree::RIGHT_BOTTOM_FAR, 2 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 0, 0, MAX_POS, 1, 1, 1 ), IntOctree::LEFT_BOTTOM_NEAR, 3 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( MAX_POS, 0, MAX_POS, 1, 1, 1 ), IntOctree::RIGHT_BOTTOM_NEAR, 4 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 0, MAX_POS, 0, 1, 1, 1 ), IntOctree::LEFT_TOP_FAR, 1 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( MAX_POS, MAX_POS, 0, 1, 1, 1 ), IntOctree::RIGHT_TOP_FAR, 2 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( 0, MAX_POS, MAX_POS, 1, 1, 1 ), IntOctree::LEFT_TOP_NEAR, 3 ) );
-		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataInfo::Cuboid( MAX_POS, MAX_POS, MAX_POS, 1, 1, 1 ), IntOctree::RIGHT_TOP_NEAR, 4 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 0, 0, 0, 1, 1, 1 ), IntOctree::LEFT_BOTTOM_FAR, 1 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( MAX_POS, 0, 0, 1, 1, 1 ), IntOctree::RIGHT_BOTTOM_FAR, 2 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 0, 0, MAX_POS, 1, 1, 1 ), IntOctree::LEFT_BOTTOM_NEAR, 3 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( MAX_POS, 0, MAX_POS, 1, 1, 1 ), IntOctree::RIGHT_BOTTOM_NEAR, 4 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 0, MAX_POS, 0, 1, 1, 1 ), IntOctree::LEFT_TOP_FAR, 1 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( MAX_POS, MAX_POS, 0, 1, 1, 1 ), IntOctree::RIGHT_TOP_FAR, 2 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( 0, MAX_POS, MAX_POS, 1, 1, 1 ), IntOctree::LEFT_TOP_NEAR, 3 ) );
+		infos.push_back( SingleDataQuadrantInfo( IntOctree::DataCuboid( MAX_POS, MAX_POS, MAX_POS, 1, 1, 1 ), IntOctree::RIGHT_TOP_NEAR, 4 ) );
 
 		for( std::size_t idx = 0; idx < infos.size(); ++idx ) {
 			SingleDataQuadrantInfo& info = infos[idx];
@@ -165,8 +164,7 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 			BOOST_CHECK( current->get_position() == tree_position );
 			BOOST_CHECK( current->is_subdivided() == false );
 
-			BOOST_CHECK( current->get_data().front().data == info.data );
-			BOOST_CHECK( current->get_data().front().cuboid == info.cuboid );
+			BOOST_CHECK( current->get_data()[0] == info.data );
 		}
 	}
 
@@ -174,26 +172,19 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 	{
 		IntOctree tree( 4 );
 
-		tree.insert( 1, IntOctree::DataInfo::Cuboid( 0, 0, 0, 4, 3, 2 ) );
-		tree.insert( 2, IntOctree::DataInfo::Cuboid( 1, 0, 0, 3, 1, 3 ) );
-		tree.insert( 3, IntOctree::DataInfo::Cuboid( 0, 0, 1, 1, 2, 3 ) );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, 4, 3, 2 ) );
+		tree.insert( 2, IntOctree::DataCuboid( 1, 0, 0, 3, 1, 3 ) );
+		tree.insert( 3, IntOctree::DataCuboid( 0, 0, 1, 1, 2, 3 ) );
 
 		BOOST_CHECK( tree.get_num_data() == 3 );
 		BOOST_CHECK( tree.is_subdivided() == false );
 
-		IntOctree::DataList::const_iterator data_iter = tree.get_data().begin();
+		IntOctree::DataArray data = tree.get_data();
 
-		BOOST_CHECK( data_iter->data == 1 );
-		BOOST_CHECK( data_iter->cuboid == IntOctree::DataInfo::Cuboid( 0, 0, 0, 4, 3, 2 ) );
-		++data_iter;
-
-		BOOST_CHECK( data_iter->data == 2 );
-		BOOST_CHECK( data_iter->cuboid == IntOctree::DataInfo::Cuboid( 1, 0, 0, 3, 1, 3 ) );
-		++data_iter;
-
-		BOOST_CHECK( data_iter->data == 3 );
-		BOOST_CHECK( data_iter->cuboid == IntOctree::DataInfo::Cuboid( 0, 0, 1, 1, 2, 3 ) );
-		++data_iter;
+		BOOST_REQUIRE( data.size() == 3 );
+		BOOST_CHECK( data[0] == 1 );
+		BOOST_CHECK( data[1] == 2 );
+		BOOST_CHECK( data[2] == 3 );
 	}
 
 	// Search tree for multiple data in root node.
@@ -201,18 +192,18 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		static const IntOctree::Size TREE_SIZE = 4;
 
 		IntOctree tree( TREE_SIZE );
-		tree.insert( 1, IntOctree::DataInfo::Cuboid( 0, 1, 2, 4, 3, 2 ) );
-		tree.insert( 2, IntOctree::DataInfo::Cuboid( 1, 0, 2, 3, 4, 2 ) );
-		tree.insert( 3, IntOctree::DataInfo::Cuboid( 2, 1, 0, 2, 3, 4 ) );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 1, 2, 4, 3, 2 ) );
+		tree.insert( 2, IntOctree::DataCuboid( 1, 0, 2, 3, 4, 2 ) );
+		tree.insert( 3, IntOctree::DataCuboid( 2, 1, 0, 2, 3, 4 ) );
 
-		IntOctree::ResultArray results;
+		IntOctree::DataArray results;
 
-		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+		tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
 
 		BOOST_REQUIRE( results.size() == 3 );
-		BOOST_CHECK( results[0]->data == 1 );
-		BOOST_CHECK( results[1]->data == 2 );
-		BOOST_CHECK( results[2]->data == 3 );
+		BOOST_CHECK( results[0] == 1 );
+		BOOST_CHECK( results[1] == 2 );
+		BOOST_CHECK( results[2] == 3 );
 	}
 
 	// Search tree for data in child nodes (data aligned to node sizes).
@@ -221,27 +212,27 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 
 		IntOctree tree( TREE_SIZE );
 
-		tree.insert( 1, IntOctree::DataInfo::Cuboid(             0,             0,             0, 1, 1, 1 ) );
-		tree.insert( 2, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1,             0,             0, 1, 1, 1 ) );
-		tree.insert( 3, IntOctree::DataInfo::Cuboid(             0,             0, TREE_SIZE - 1, 1, 1, 1 ) );
-		tree.insert( 4, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1,             0, TREE_SIZE - 1, 1, 1, 1 ) );
-		tree.insert( 5, IntOctree::DataInfo::Cuboid(             0, TREE_SIZE - 1,             0, 1, 1, 1 ) );
-		tree.insert( 6, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1, TREE_SIZE - 1,             0, 1, 1, 1 ) );
-		tree.insert( 7, IntOctree::DataInfo::Cuboid(             0, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
-		tree.insert( 8, IntOctree::DataInfo::Cuboid( TREE_SIZE - 1, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 1, IntOctree::DataCuboid(             0,             0,             0, 1, 1, 1 ) );
+		tree.insert( 2, IntOctree::DataCuboid( TREE_SIZE - 1,             0,             0, 1, 1, 1 ) );
+		tree.insert( 3, IntOctree::DataCuboid(             0,             0, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 4, IntOctree::DataCuboid( TREE_SIZE - 1,             0, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 5, IntOctree::DataCuboid(             0, TREE_SIZE - 1,             0, 1, 1, 1 ) );
+		tree.insert( 6, IntOctree::DataCuboid( TREE_SIZE - 1, TREE_SIZE - 1,             0, 1, 1, 1 ) );
+		tree.insert( 7, IntOctree::DataCuboid(             0, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
+		tree.insert( 8, IntOctree::DataCuboid( TREE_SIZE - 1, TREE_SIZE - 1, TREE_SIZE - 1, 1, 1, 1 ) );
 
-		IntOctree::ResultArray results;
-		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+		IntOctree::DataArray results;
+		tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
 
 		BOOST_REQUIRE( results.size() == 8 );
-		BOOST_CHECK( results[0]->data == 1 );
-		BOOST_CHECK( results[1]->data == 2 );
-		BOOST_CHECK( results[2]->data == 3 );
-		BOOST_CHECK( results[3]->data == 4 );
-		BOOST_CHECK( results[4]->data == 5 );
-		BOOST_CHECK( results[5]->data == 6 );
-		BOOST_CHECK( results[6]->data == 7 );
-		BOOST_CHECK( results[7]->data == 8 );
+		BOOST_CHECK( results[0] == 1 );
+		BOOST_CHECK( results[1] == 2 );
+		BOOST_CHECK( results[2] == 3 );
+		BOOST_CHECK( results[3] == 4 );
+		BOOST_CHECK( results[4] == 5 );
+		BOOST_CHECK( results[5] == 6 );
+		BOOST_CHECK( results[6] == 7 );
+		BOOST_CHECK( results[7] == 8 );
 	}
 
 	// Search outside the tree.
@@ -249,11 +240,11 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		static const IntOctree::Size TREE_SIZE = 4;
 
 		IntOctree tree( TREE_SIZE );
-		tree.insert( 1, IntOctree::DataInfo::Cuboid( 2, 2, 2, 2, 2, 2 ) );
+		tree.insert( 1, IntOctree::DataCuboid( 2, 2, 2, 2, 2, 2 ) );
 
-		IntOctree::ResultArray results;
+		IntOctree::DataArray results;
 
-		tree.search( IntOctree::DataInfo::Cuboid( 0, 0, 0, 2, 2, 2 ), results );
+		tree.search( IntOctree::DataCuboid( 0, 0, 0, 2, 2, 2 ), results );
 		BOOST_CHECK( results.size() == 0 );
 	}
 }
