@@ -1,10 +1,11 @@
 #include <cassert>
 #include <cstring>
+#include <iostream> // XXX 
 
 namespace flex {
 
-template <class DT>
-LooseOctree<DT>::LooseOctree( Size size ) :
+template <class T, class DVS>
+LooseOctree<T, DVS>::LooseOctree( Size size ) :
 	m_position( 0, 0, 0 ),
 	m_data( nullptr ),
 	m_children( nullptr ),
@@ -12,8 +13,8 @@ LooseOctree<DT>::LooseOctree( Size size ) :
 {
 }
 
-template <class DT>
-LooseOctree<DT>::LooseOctree( const Vector& position, Size size ) :
+template <class T, class DVS>
+LooseOctree<T, DVS>::LooseOctree( const Vector& position, Size size ) :
 	m_position( position ),
 	m_data( nullptr ),
 	m_children( nullptr ),
@@ -21,8 +22,8 @@ LooseOctree<DT>::LooseOctree( const Vector& position, Size size ) :
 {
 }
 
-template <class DT>
-LooseOctree<DT>::~LooseOctree() {
+template <class T, class DVS>
+LooseOctree<T, DVS>::~LooseOctree() {
 	delete m_data;
 
 	if( m_children ) {
@@ -34,45 +35,49 @@ LooseOctree<DT>::~LooseOctree() {
 	delete[] m_children;
 }
 
-template <class DT>
-typename LooseOctree<DT>::Size LooseOctree<DT>::get_size() const {
+template <class T, class DVS>
+typename LooseOctree<T, DVS>::Size LooseOctree<T, DVS>::get_size() const {
 	return m_size;
 }
 
-template <class DT>
-const typename LooseOctree<DT>::Vector& LooseOctree<DT>::get_position() const {
+template <class T, class DVS>
+const typename LooseOctree<T, DVS>::Vector& LooseOctree<T, DVS>::get_position() const {
 	return m_position;
 }
 
-template <class DT>
-bool LooseOctree<DT>::is_subdivided() const {
+template <class T, class DVS>
+bool LooseOctree<T, DVS>::is_subdivided() const {
 	return m_children != nullptr;
 }
 
-template <class DT>
-std::size_t LooseOctree<DT>::get_num_data() const {
+template <class T, class DVS>
+std::size_t LooseOctree<T, DVS>::get_num_data() const {
 	return m_data != nullptr ? m_data->size() : 0;
 }
 
-template <class DT>
-void LooseOctree<DT>::ensure_data() {
+template <class T, class DVS>
+void LooseOctree<T, DVS>::ensure_data() {
 	if( !m_data ) {
 		m_data = new DataList;
 	}
 }
 
-template <class DT>
-LooseOctree<DT>& LooseOctree<DT>::insert( const DT& data, const Vector& center, Size size ) {
-	assert( size <= m_size );
-	assert( center.x >= m_position.x );
-	assert( center.y >= m_position.y );
-	assert( center.z >= m_position.z );
-	assert( center.x < m_position.x + m_size );
-	assert( center.y < m_position.y + m_size );
-	assert( center.z < m_position.z + m_size );
+template <class T, class DVS>
+LooseOctree<T, DVS>& LooseOctree<T, DVS>::insert( const T& data, const typename DataInfo::Cuboid& cuboid ) {
+	assert( cuboid.width <= m_size );
+	assert( cuboid.height <= m_size );
+	assert( cuboid.depth <= m_size );
+
+	assert( cuboid.x >= m_position.x );
+	assert( cuboid.y >= m_position.y );
+	assert( cuboid.z >= m_position.z );
+
+	assert( cuboid.x + cuboid.width <= m_position.x + m_size );
+	assert( cuboid.y + cuboid.height <= m_position.y + m_size );
+	assert( cuboid.z + cuboid.depth <= m_position.z + m_size );
 
 	// Determine which quadrant the data belongs to.
-	Quadrant quadrant = determine_quadrant( center, size );
+	Quadrant quadrant = determine_quadrant( cuboid );
 	assert( quadrant != INVALID_QUADRANT );
 
 	// If same quadrant, just add data to list.
@@ -82,8 +87,7 @@ LooseOctree<DT>& LooseOctree<DT>::insert( const DT& data, const Vector& center, 
 		// Push back first so data doesn't get copied 2 times.
 		m_data->push_back( DataInfo() );
 
-		m_data->back().position = center;
-		m_data->back().size = size;
+		m_data->back().cuboid = cuboid;
 		m_data->back().data = data;
 
 		return *this;
@@ -100,20 +104,20 @@ LooseOctree<DT>& LooseOctree<DT>::insert( const DT& data, const Vector& center, 
 	}
 
 	// Insert data at child.
-	return m_children[quadrant]->insert( data, center, size );
+	return m_children[quadrant]->insert( data, cuboid );
 }
 
-template <class DT>
-void LooseOctree<DT>::subdivide() {
+template <class T, class DVS>
+void LooseOctree<T, DVS>::subdivide() {
 	assert( !is_subdivided() );
 	assert( m_size > 1 );
 
-	m_children = new LooseOctree<DT>*[8];
-	std::memset( m_children, 0, 8 * sizeof( LooseOctree<DT>* ) );
+	m_children = new LooseOctree<T, DVS>*[8];
+	std::memset( m_children, 0, 8 * sizeof( LooseOctree<T, DVS>* ) );
 }
 
-template <class DT>
-void LooseOctree<DT>::create_child( Quadrant quadrant ) {
+template <class T, class DVS>
+void LooseOctree<T, DVS>::create_child( Quadrant quadrant ) {
 	assert( quadrant < SAME_QUADRANT );
 	assert( is_subdivided() );
 	assert( m_size > 1 );
@@ -164,24 +168,34 @@ void LooseOctree<DT>::create_child( Quadrant quadrant ) {
 			break;
 	}
 
-	m_children[quadrant] = new LooseOctree<DT>( position, size );
+	m_children[quadrant] = new LooseOctree<T, DVS>( position, size );
 }
 
-template <class DT>
-typename LooseOctree<DT>::Quadrant LooseOctree<DT>::determine_quadrant( const Vector& center, Size size ) {
-	assert( size <= m_size );
+template <class T, class DVS>
+typename LooseOctree<T, DVS>::Quadrant LooseOctree<T, DVS>::determine_quadrant( const typename DataInfo::Cuboid& cuboid ) {
+	assert( cuboid.width <= m_size );
+	assert( cuboid.height <= m_size );
+	assert( cuboid.depth <= m_size );
+
+	// Calculate center point.
+	typename DataInfo::Vector center(
+		cuboid.x + cuboid.width / 2,
+		cuboid.y + cuboid.height / 2,
+		cuboid.z + cuboid.depth / 2
+	);
+
 	assert( center.x >= m_position.x );
 	assert( center.y >= m_position.y );
 	assert( center.z >= m_position.z );
-	assert( center.x < m_position.x + m_size );
-	assert( center.y < m_position.y + m_size );
-	assert( center.z < m_position.z + m_size );
+	assert( center.x <= m_position.x + m_size );
+	assert( center.y <= m_position.y + m_size );
+	assert( center.z <= m_position.z + m_size );
 
 	// If size is higher than half of any dimension, it belongs to the same node.
 	if(
-		size > m_size / 2 ||
-		size > m_size / 2 ||
-		size > m_size / 2
+		cuboid.width > m_size / 2 ||
+		cuboid.height > m_size / 2 ||
+		cuboid.depth > m_size / 2
 	) {
 		return SAME_QUADRANT;
 	}
@@ -230,8 +244,8 @@ typename LooseOctree<DT>::Quadrant LooseOctree<DT>::determine_quadrant( const Ve
 	return INVALID_QUADRANT;
 }
 
-template <class DT>
-bool LooseOctree<DT>::has_child( Quadrant quadrant ) const {
+template <class T, class DVS>
+bool LooseOctree<T, DVS>::has_child( Quadrant quadrant ) const {
 	assert( quadrant < SAME_QUADRANT );
 
 	if( !is_subdivided() ) {
@@ -241,23 +255,23 @@ bool LooseOctree<DT>::has_child( Quadrant quadrant ) const {
 	return m_children[quadrant] != nullptr;
 }
 
-template <class DT>
-LooseOctree<DT>& LooseOctree<DT>::get_child( Quadrant quadrant ) const {
+template <class T, class DVS>
+LooseOctree<T, DVS>& LooseOctree<T, DVS>::get_child( Quadrant quadrant ) const {
 	assert( quadrant < SAME_QUADRANT );
 	assert( has_child( quadrant ) );
 
 	return *m_children[quadrant];
 }
 
-template <class DT>
-const typename LooseOctree<DT>::DataList& LooseOctree<DT>::get_data() const {
+template <class T, class DVS>
+const typename LooseOctree<T, DVS>::DataList& LooseOctree<T, DVS>::get_data() const {
 	assert( m_data != nullptr );
 
 	return *m_data;
 }
 
-template <class DT>
-void LooseOctree<DT>::search( const Cuboid& cuboid, ResultArray& /*results*/ ) const {
+template <class T, class DVS>
+void LooseOctree<T, DVS>::search( const typename DataInfo::Cuboid& cuboid, ResultArray& /*results*/ ) const {
 	assert( cuboid.x >= m_position.x );
 	assert( cuboid.y >= m_position.y );
 	assert( cuboid.z >= m_position.z );
@@ -279,10 +293,9 @@ void LooseOctree<DT>::search( const Cuboid& cuboid, ResultArray& /*results*/ ) c
 
 ///// DataInfo //////
 
-template <class DT>
-LooseOctree<DT>::DataInfo::DataInfo() :
-	position( 0, 0, 0 ),
-	size( 1 )
+template <class T, class DVS>
+LooseOctree<T, DVS>::DataInfo::DataInfo() :
+	cuboid( 0, 0, 0, 0, 0, 0 )
 {
 }
 

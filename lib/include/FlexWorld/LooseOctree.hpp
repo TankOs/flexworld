@@ -21,9 +21,10 @@ namespace flex {
  * copied into the tree. If you're storing complex data using pointers to the
  * data may be easier on the memory footprint.
  *
- * DT: Data type.
+ *   * T: Data type.
+ *   * DVS: Data vector scalar.
  */
-template <class DT>
+template <class T, class DVS = float>
 class LooseOctree {
 	public:
 		/** Quadrant.
@@ -42,19 +43,21 @@ class LooseOctree {
 		};
 
 		typedef uint32_t Size; ///< Size type.
-		typedef flex::Cuboid<Size> Cuboid; ///< Cuboid.
 		typedef sf::Vector3<Size> Vector; ///< Tree location vector.
 
 		/** Data info.
 		 */
 		struct DataInfo {
+			typedef sf::Vector3<DVS> Vector; ///< Vector.
+			typedef flex::Cuboid<DVS> Cuboid; ///< Cuboid.
+			typedef DVS Scalar; ///< Scalar.
+
 			/** Ctor.
 			 */
 			DataInfo();
 
-			DT data; ///< Data.
-			Vector position; ///< Position (center point).
-			Size size; ///< Size.
+			T data; ///< Data.
+			Cuboid cuboid; ///< Cuboid.
 		};
 
 		typedef std::list<DataInfo> DataList; ///< List of data.
@@ -101,7 +104,7 @@ class LooseOctree {
 		 * @param quadrant Quadrant.
 		 * @see has_child
 		 */
-		LooseOctree<DT>& get_child( Quadrant quadrant ) const;
+		LooseOctree<T, DVS>& get_child( Quadrant quadrant ) const;
 
 		/** Get data.
 		 * Undefined behaviour if there's no data.
@@ -111,26 +114,24 @@ class LooseOctree {
 		const DataList& get_data() const;
 
 		/** Insert data.
-		 * Undefined behaviour if either center point is out of bounds or size is
-		 * bigger than node's size.
+		 * Undefined behaviour if cuboid is invalid (out of bounds, too big etc.).
 		 * @param data Data.
-		 * @param center Center point.
-		 * @param size Size.
+		 * @param cuboid Cuboid.
 		 * @return Node the data has been added to.
 		 */
-		LooseOctree& insert( const DT& data, const Vector& center, Size size );
+		LooseOctree& insert( const T& data, const typename DataInfo::Cuboid& cuboid );
 
 		/** Search the tree for data in a specific cuboid.
 		 * Undefined behaviour if cuboid is invalid.
 		 * @param cuboid Cuboid.
 		 * @param results Array for results (not cleared).
 		 */
-		void search( const Cuboid& cuboid, ResultArray& results ) const;
+		void search( const typename DataInfo::Cuboid& cuboid, ResultArray& results ) const;
 
 	private:
 		LooseOctree( const Vector& position, Size size );
 
-		Quadrant determine_quadrant( const Vector& center, Size size );
+		Quadrant determine_quadrant( const typename DataInfo::Cuboid& cuboid );
 		void ensure_data();
 		void subdivide();
 		void create_child( Quadrant quadrant );
