@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SFML/System/Vector3.hpp>
+
 namespace flex {
 
 /** Cuboid.
@@ -7,6 +9,13 @@ namespace flex {
 template <class T>
 struct Cuboid {
 	typedef T Type; ///< Value type.
+
+	/** Calculate intersection of two cuboids.
+	 * @param first First cuboid.
+	 * @param second Second cuboid.
+	 * @return Intersection (width = height = depth = 0 if cuboids do not intersect).
+	 */
+	static Cuboid<T> calc_intersection( const Cuboid<T>& first, const Cuboid<T>& second );
 
 	/** Ctor.
 	 * @param x_ X.
@@ -18,12 +27,11 @@ struct Cuboid {
 	 */
 	Cuboid( T x_ = 0, T y_ = 0, T z_ = 0, T width_ = 0, T height_ = 0, T depth_ = 0 );
 
-	/** Calculate intersection of two cuboids.
-	 * @param first First cuboid.
-	 * @param second Second cuboid.
-	 * @return Intersection (width = height = depth = 0 if cuboids do not intersect).
+	/** Check if cuboid contains a point.
+	 * @param point Point.
+	 * @return true if cuboid contains point.
 	 */
-	static Cuboid<T> calc_intersection( const Cuboid<T>& first, const Cuboid<T>& second );
+	bool contains( const sf::Vector3<T>& point ) const;
 
 	T x; ///< X.
 	T y; ///< Y.

@@ -147,4 +147,21 @@ BOOST_AUTO_TEST_CASE( TestCuboid ) {
 			BOOST_CHECK( intersection == FloatCuboid( 0, 0, 0, 0, 0, 0 ) );
 		}
 	}
+
+	// Contains.
+	{
+		FloatCuboid cuboid( 0, 0, 0, 5, 5, 5 );
+
+		for( float x = 0; x < 5; x += 1 ) {
+			for( float y = 0; y < 5; y += 1 ) {
+				for( float z = 0; z < 5; z += 1 ) {
+					BOOST_CHECK( cuboid.contains( sf::Vector3f( x, y, z ) ) == true );
+				}
+			}
+		}
+
+		BOOST_CHECK( cuboid.contains( sf::Vector3f( 5, 0, 0 ) ) == false );
+		BOOST_CHECK( cuboid.contains( sf::Vector3f( 0, 5, 0 ) ) == false );
+		BOOST_CHECK( cuboid.contains( sf::Vector3f( 0, 0, 5 ) ) == false );
+	}
 }

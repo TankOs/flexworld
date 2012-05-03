@@ -42,6 +42,22 @@ Cuboid<T>::Cuboid( T x_, T y_, T z_, T width_, T height_, T depth_ ) :
 }
 
 template <class T>
+bool Cuboid<T>::contains( const sf::Vector3<T>& point ) const {
+	if(
+		point.x < x ||
+		point.y < y ||
+		point.z < z ||
+		point.x >= x + width ||
+		point.y >= y + height ||
+		point.z >= z + depth
+	) {
+		return false;
+	}
+
+	return true;
+}
+
+template <class T>
 bool operator==( const Cuboid<T>& first, const Cuboid<T>& second ) {
 	return (
 		first.x == second.x &&

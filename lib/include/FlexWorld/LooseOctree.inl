@@ -265,6 +265,16 @@ void LooseOctree<DT>::search( const Cuboid& cuboid, ResultArray& /*results*/ ) c
 	assert( cuboid.y + cuboid.height <= m_position.y + m_size );
 	assert( cuboid.z + cuboid.depth <= m_position.z + m_size );
 
+	// If this node contains data, check for collision.
+	if( m_data && m_data->size() > 0 ) {
+		typename DataList::const_iterator data_iter( (*m_data).begin() );
+		typename DataList::const_iterator data_iter_end( (*m_data).end() );
+		
+		// Check each data entry for collision with the cuboid.
+		for( ; data_iter != data_iter_end; ++data_iter ) {
+			//const DataInfo& info = *data_iter;
+		}
+	}
 }
 
 ///// DataInfo //////
