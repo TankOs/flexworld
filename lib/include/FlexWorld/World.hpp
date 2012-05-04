@@ -82,6 +82,12 @@ class World {
 		 */
 		Entity* find_entity( Entity::ID id );
 
+		/** Find entity by ID.
+		 * @param id ID.
+		 * @return Entity or nullptr if not found.
+		 */
+		const Entity* find_entity( Entity::ID id ) const;
+
 		/** Delete entity.
 		 * @param id ID (must be valid).
 		 */

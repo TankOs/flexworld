@@ -3,13 +3,23 @@
 
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Class.hpp>
+#include <FlexWorld/Entity.hpp>
+#include <FlexWorld/World.hpp>
 
 #include <FWSG/Renderer.hpp>
 #include <FWSG/TriangleGeometry.hpp>
 #include <FWSG/BufferObject.hpp>
 #include <FWSG/Transform.hpp>
+#include <FWSG/Program.hpp>
+#include <FWSG/ProgramCommand.hpp>
 #include <map>
+#include <memory>
 #include <iostream>
+
+struct EntityStepInfo {
+	std::list<sg::StepProxy::Ptr> steps;
+	sg::Transform transform;
+};
 
 namespace sf {
 
@@ -44,8 +54,28 @@ ColorPicker::Result ColorPicker::pick(
 	const sg::Transform& transform,
 	const sf::Vector2i& pixel_pos,
 	const flex::Planet& planet,
+	const flex::World& world,
+	const std::set<uint32_t>& skip_entity_ids,
 	ResourceManager& resource_manager
 ) {
+	static sg::Program::Ptr shader_program;
+
+	// Init shader if not done before.
+	if( !shader_program ) {
+		shader_program.reset( new sg::Program );
+
+		shader_program->add_shader(
+			"uniform vec4 color; void main() { gl_FragColor = color; }",
+			sg::Program::FRAGMENT_SHADER
+		);
+
+		bool result = shader_program->link();
+		assert( result );
+
+		result = shader_program->register_uniform( "color" );
+		assert( result );
+	}
+
 	// Shoot ray and collect blocks of interest.
 	typedef std::map<Result::BlockPosition, const flex::Class*> BlockMap;
 	BlockMap blocks;
@@ -146,17 +176,18 @@ ColorPicker::Result ColorPicker::pick(
 	sf::Vector3f geo_position;
 
 	std::vector<const Result::BlockPosition*> color_blocks( blocks.size() );
+
 	uint32_t color_index = 0;
-	sf::Color block_color;
+	sf::Color frag_color;
 
 	for( ; block_iter != block_iter_end; ++block_iter ) {
 		// Save color -> block mapping and set color.
 		color_blocks[color_index] = &block_iter->first;
 
 		// TODO Endianness?
-		block_color.r = static_cast<uint8_t>( (color_index & 0xff0000) >> 16 );
-		block_color.g = static_cast<uint8_t>( (color_index & 0x00ff00) >> 8 );
-		block_color.b = static_cast<uint8_t>( (color_index & 0x0000ff) );
+		frag_color.r = static_cast<uint8_t>( (color_index & 0xff0000) >> 16 );
+		frag_color.g = static_cast<uint8_t>( (color_index & 0x00ff00) >> 8 );
+		frag_color.b = static_cast<uint8_t>( (color_index & 0x0000ff) );
 
 		++color_index;
 
@@ -171,15 +202,9 @@ ColorPicker::Result ColorPicker::pick(
 
 		std::shared_ptr<const flex::Model> model = resource_manager.find_model( model_id );
 
-		// If not found try to load.
+		// If model not found cancel picking. Picking only works on visible data.
 		if( !model ) {
-			if( !resource_manager.load_model( model_id ) ) {
-				std::cerr << "ERROR: Failed to load model " << model_id.get() << " (color picker)." << std::endl;
-				return Result();
-			}
-
-			model = resource_manager.find_model( model_id );
-			assert( model != nullptr );
+			return Result();
 		}
 
 		// Iterate over meshes and add geometry.
@@ -205,16 +230,113 @@ ColorPicker::Result ColorPicker::pick(
 				vectors[2] += geo_position;
 
 				geometry.add_triangle(
-					sg::Vertex( vectors[0], sf::Vector3f(), sf::Vector2f(), block_color ),
-					sg::Vertex( vectors[1], sf::Vector3f(), sf::Vector2f(), block_color ),
-					sg::Vertex( vectors[2], sf::Vector3f(), sf::Vector2f(), block_color ),
+					sg::Vertex( vectors[0], sf::Vector3f(), sf::Vector2f(), frag_color ),
+					sg::Vertex( vectors[1], sf::Vector3f(), sf::Vector2f(), frag_color ),
+					sg::Vertex( vectors[2], sf::Vector3f(), sf::Vector2f(), frag_color ),
 					false
 				);
 			}
 		}
 	}
 
-	// Create buffer object.
+	// Fetch entities.
+	flex::FloatCuboid entity_pick_cuboid(
+		origin.x - distance,
+		origin.y - distance,
+		origin.z - distance,
+		distance * 2.0f,
+		distance * 2.0f,
+		distance * 2.0f
+	);
+
+	// Fetch from planet. The array of fetched IDs also works as the color -> ID
+	// mapping.
+	std::vector<flex::Entity::ID> fetched_entity_ids;
+
+	planet.search_entities( entity_pick_cuboid, fetched_entity_ids );
+
+	// For each entity create a render step with a separate shader program
+	// command that sets the appropriate color.
+	color_index = static_cast<uint32_t>( color_blocks.size() ); // Reset color index.
+
+	// Create list for holding entity render step infos.
+	std::list<EntityStepInfo> ent_render_steps;
+
+	// Create renderer.
+	sg::Renderer renderer;
+	sg::Transform local_transform;
+	std::size_t num_checked_entities = 0;
+
+	for( std::size_t ent_idx = 0; ent_idx < fetched_entity_ids.size(); ++ent_idx ) {
+		// Fetch entity.
+		const flex::Entity* ent = world.find_entity( fetched_entity_ids[ent_idx] );
+		assert( ent );
+
+		if( !ent ) {
+			std::cerr << "Color picker retrieved invalid entity." << std::endl;
+			return Result();
+		}
+
+		// Get buffer object group.
+		BufferObjectGroup::PtrConst bo_group = resource_manager.find_buffer_object_group(
+			ent->get_class().get_model().get_id()
+		);
+
+		// Continue only if the entity has been fully loaded and it's not in the
+		// list of to be skipped entities.
+		if( bo_group && skip_entity_ids.find( fetched_entity_ids[ent_idx] ) == skip_entity_ids.end() ) {
+			++num_checked_entities;
+
+			// Set color.
+			frag_color.r = static_cast<uint8_t>( (color_index & 0xff0000) >> 16 );
+			frag_color.g = static_cast<uint8_t>( (color_index & 0x00ff00) >> 8 );
+			frag_color.b = static_cast<uint8_t>( (color_index & 0x0000ff) );
+
+			// Create the shader program command.
+			sg::ProgramCommand::Ptr command( new sg::ProgramCommand( shader_program ) );
+			command->set_argument(
+				"color",
+				static_cast<float>( frag_color.r / 255.0f ),
+				static_cast<float>( frag_color.g / 255.0f ),
+				static_cast<float>( frag_color.b / 255.0f ),
+				1.0f
+			);
+
+			// Setup render state.
+			sg::RenderState r_state;
+			r_state.wireframe = false;
+			r_state.depth_test = true;
+			r_state.backface_culling = true;
+			r_state.program_command = command;
+
+			// Setup entity render step info.
+			ent_render_steps.push_back( EntityStepInfo() );
+
+			EntityStepInfo& info = ent_render_steps.back();
+
+			// Setup transform.
+			info.transform.set_translation( ent->get_position() );
+			info.transform.set_rotation( ent->get_rotation() );
+			info.transform.set_origin( ent->get_class().get_origin() );
+			info.transform.set_scale( ent->get_class().get_scale() );
+
+			// For each buffer object create a render step.
+			for( std::size_t bo_idx = 0; bo_idx < bo_group->get_num_buffer_objects(); ++bo_idx ) {
+				sg::StepProxy::Ptr proxy = renderer.create_step(
+					r_state,
+					transform,
+					info.transform,
+					bo_group->get_buffer_object( bo_idx )
+				);
+
+				info.steps.push_back( proxy );
+			}
+		}
+
+		++color_index;
+	}
+
+	// Create blocks buffer object.
 	sg::BufferObject::Ptr bo( new sg::BufferObject( sg::BufferObject::COLORS, false ) );
 	bo->load( geometry );
 
@@ -224,10 +346,7 @@ ColorPicker::Result ColorPicker::pick(
 	r_state.depth_test = true;
 	r_state.backface_culling = true;
 
-	// Create renderer and step.
-	sg::Renderer renderer;
-	sg::Transform local_transform;
-
+	// Create blocks render step.
 	sg::StepProxy::Ptr step = renderer.create_step(
 		r_state,
 		transform,
@@ -250,8 +369,9 @@ ColorPicker::Result ColorPicker::pick(
 
 	renderer.render();
 
-	// Release render step.
+	// Release render steps.
 	step.reset();
+	ent_render_steps.clear();
 
 	// Read pixel.
 	sf::Color read_color;
@@ -277,11 +397,21 @@ ColorPicker::Result ColorPicker::pick(
 		read_color.b * 0x000001
 	;
 
-	if( read_index >= color_blocks.size() ) {
+	// Check for invalid color.
+	if( read_index >= color_blocks.size() + fetched_entity_ids.size() ) {
 		std::cerr << "WARNING: Invalid color index read by picker." << std::endl;
 		return Result();
 	}
+	else if( read_index >= color_blocks.size() ) { // Index belongs to entity.
+		Result result;
+		result.m_type = Result::ENTITY;
+		result.m_entity_id = fetched_entity_ids[read_index - static_cast<uint32_t>( color_blocks.size() )];
 
+		return result;
+	}
+
+	// Picked object is a block, so determine clicked face of bounding box in
+	// another render pass.
 	Result result;
 	result.m_type = Result::BLOCK;
 	result.m_block_position = *color_blocks[read_index];

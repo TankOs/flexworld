@@ -359,7 +359,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 								1.0f
 							);
 
-							float distance = 15.0f; // TODO Take distance from server?
+							float distance = 7.0f; // TODO Take distance from server?
 							sf::Vector3f origin = m_camera.get_position() + m_camera.get_eye_offset();
 
 							// Get planet.
@@ -369,7 +369,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 							assert( planet != nullptr );
 
 							get_shared().lock_facility->lock_planet( *planet, true );
-							get_shared().lock_facility->lock_world( false );
+
+							// Build list of entities to be skipped.
+							std::set<flex::Entity::ID> skip_entity_ids;
+							skip_entity_ids.insert( get_shared().entity_id );
 
 							ColorPicker::Result result = ColorPicker::pick(
 								origin,
@@ -392,10 +395,13 @@ void PlayState::handle_event( const sf::Event& event ) {
 									get_render_target().getSize().y / 2
 								),
 								*planet,
+								*get_shared().world,
+								skip_entity_ids,
 								m_resource_manager
 							);
 
 							get_shared().lock_facility->lock_planet( *planet, false );
+							get_shared().lock_facility->lock_world( false );
 
 							if( is_action ) {
 								if( result.m_type == ColorPicker::Result::BLOCK ) {
@@ -632,6 +638,58 @@ void PlayState::render() const {
 
 	glDisable( GL_LIGHTING );
 	glDisable( GL_LIGHT0 );
+
+						/*if( m_current_planet_id.empty() == false ) {
+							sf::Vector3f forward = flex::polar_to_vector(
+								flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
+								flex::deg_to_rad( -m_camera.get_rotation().y ),
+								1.0f
+							);
+
+							float distance = 7.0f; // TODO Take distance from server?
+							sf::Vector3f origin = m_camera.get_position() + m_camera.get_eye_offset();
+
+							// Get planet.
+							get_shared().lock_facility->lock_world( true );
+
+							const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+							assert( planet != nullptr );
+
+							get_shared().lock_facility->lock_planet( *planet, true );
+
+							// Build list of entities to be skipped.
+							std::set<flex::Entity::ID> skip_entity_ids;
+							skip_entity_ids.insert( get_shared().entity_id );
+
+							ColorPicker::Result result = ColorPicker::pick(
+								origin,
+								forward,
+								distance,
+								sg::Transform(
+									sf::Vector3f(
+										-m_camera.get_position().x - m_camera.get_eye_offset().x,
+										-m_camera.get_position().y - m_camera.get_eye_offset().y,
+										-m_camera.get_position().z - m_camera.get_eye_offset().z
+									),
+									sf::Vector3f(
+										m_camera.get_rotation().x,
+										m_camera.get_rotation().y,
+										m_camera.get_rotation().z
+									)
+								),
+								sf::Vector2i(
+									get_render_target().getSize().x / 2,
+									get_render_target().getSize().y / 2
+								),
+								*planet,
+								*get_shared().world,
+								skip_entity_ids,
+								m_resource_manager
+							);
+
+							get_shared().lock_facility->lock_planet( *planet, false );
+							get_shared().lock_facility->lock_world( false );
+						}*/
 
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );

@@ -4,12 +4,14 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
+#include <set>
 #include <cstdint>
 
 class ResourceManager;
 
 namespace flex {
 class Planet;
+class World;
 }
 
 namespace sg {
@@ -59,6 +61,8 @@ class ColorPicker {
 		 * @param transform Transform.
 		 * @param pixel_pos Pixel position for picking.
 		 * @param planet Planet with data of interest.
+		 * @param world World, used for getting entities.
+		 * @param skip_entity_ids Entity IDs to skip (e.g. own player entity).
 		 * @param resource_manager Resource manager for loading models.
 		 * @return Result object with picking results.
 		 */
@@ -69,6 +73,8 @@ class ColorPicker {
 			const sg::Transform& transform,
 			const sf::Vector2i& pixel_pos,
 			const flex::Planet& planet,
+			const flex::World& world,
+			const std::set<uint32_t>& skip_entity_ids,
 			ResourceManager& resource_manager
 		);
 

@@ -108,6 +108,20 @@ Entity* World::find_entity( Entity::ID id ) {
 	return ent_iter->second;
 }
 
+const Entity* World::find_entity( Entity::ID id ) const {
+	if( id >= m_next_entity_id ) {
+		return nullptr;
+	}
+
+	EntityMap::const_iterator ent_iter = m_entities.find( id );
+
+	if( ent_iter == m_entities.end() ) {
+		return nullptr;
+	}
+
+	return ent_iter->second;
+}
+
 void World::delete_entity( Entity::ID id ) {
 	assert( find_entity( id ) != nullptr );
 
