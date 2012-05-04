@@ -6,6 +6,7 @@
 #include "Shared.hpp"
 #include "PlanetDrawable.hpp"
 #include "EntityGroupNode.hpp"
+#include "DebugWindow.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -101,6 +102,14 @@ void PlayState::init() {
 	m_chat_window->AddMessage( "*** FlexWorld (c) Stefan Schindler, do not distribute.", "Status" );
 
 	m_chat_window->Show( false );
+
+	// Setup debug window.
+	m_debug_window = DebugWindow::Create();
+	m_debug_window->Show( false );
+
+	m_debug_window->OnClassIDChange.Connect( &PlayState::on_debug_class_id_change, this );
+
+	m_desktop.Add( m_debug_window );
 
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
@@ -240,6 +249,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 		if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
 			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
+		}
+		else if( event.key.code == sf::Keyboard::F1 ) { // Toggle debug window.
+			m_debug_window->Show( !m_debug_window->IsGloballyVisible() );
+			update_gui_mode();
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
 			m_chat_window->AddMessage( "*** Screenshot saved.", "Status" );
@@ -555,8 +568,8 @@ void PlayState::update( const sf::Time& delta ) {
 
 		m_fps_text.setString( sstr.str() );
 		m_fps_text.setPosition(
-			static_cast<float>( get_render_target().getSize().x ) - m_fps_text.getGlobalBounds().width,
-			static_cast<float>( get_render_target().getSize().y ) - m_fps_text.getGlobalBounds().height
+			static_cast<float>( get_render_target().getSize().x ) - m_fps_text.getGlobalBounds().width - 10.0f,
+			static_cast<float>( get_render_target().getSize().y ) - m_fps_text.getGlobalBounds().height - 10.0f
 		);
 
 		elapsed = sf::Time::Zero;
@@ -944,6 +957,9 @@ void PlayState::update_gui_mode() {
 	if( m_chat_window->IsGloballyVisible() ) {
 		new_mode = true;
 	}
+	else if( m_debug_window->IsGloballyVisible() ) {
+		new_mode = true;
+	}
 	else {
 		new_mode = false;
 	}
@@ -974,6 +990,7 @@ void PlayState::enable_gui_mode( bool enable ) {
 	else {
 		// Hide windows.
 		m_chat_window->Show( false );
+		m_debug_window->Show( false );
 
 		reset_mouse();
 	}
@@ -1103,4 +1120,14 @@ void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::Co
 
 	// Notify thread.
 	m_prepare_objects_condition.notify_one();
+}
+
+void PlayState::on_debug_class_id_change() {
+	flex::msg::Chat chat_msg;
+
+	chat_msg.set_message( "/set_next " + m_debug_window->GetCurrentID() );
+	chat_msg.set_channel( "Status" );
+	chat_msg.set_sender( "-" );
+
+	get_shared().client->send_message( chat_msg );
 }

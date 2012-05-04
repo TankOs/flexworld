@@ -18,6 +18,7 @@
 
 class PlanetDrawable;
 class EntityGroupNode;
+class DebugWindow;
 
 /** Play state.
  */
@@ -47,6 +48,7 @@ class PlayState : public State, flex::Client::Handler {
 
 		void on_chat_message_ready();
 		void on_chat_close_click();
+		void on_debug_class_id_change();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
@@ -60,6 +62,7 @@ class PlayState : public State, flex::Client::Handler {
 		// UI.
 		sfg::Desktop m_desktop;
 		ChatWindow::Ptr m_chat_window;
+		sfg::SharedPtr<DebugWindow> m_debug_window;
 
 		bool m_gui_mode;
 		bool m_has_focus;
