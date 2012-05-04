@@ -101,6 +101,7 @@ void PlayState::init() {
 
 	m_chat_window->AddMessage( "*** Press F12 to save a screenshot.", "Status" );
 	m_chat_window->AddMessage( "*** Press F3 for wireframe mode.", "Status" );
+	m_chat_window->AddMessage( "*** Press F1 for debug window.", "Status" );
 	m_chat_window->AddMessage( "*** FlexWorld (c) Stefan Schindler, do not distribute.", "Status" );
 
 	m_chat_window->Show( false );
