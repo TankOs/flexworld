@@ -22,7 +22,13 @@ class DebugWindow : public sfg::Window {
 		 */
 		const std::string& GetCurrentID() const;
 
+		/** Get current spawn ID.
+		 * @return Current spawn ID.
+		 */
+		const std::string& GetCurrentSpawnID() const;
+
 		sfg::Signal OnClassIDChange; ///< Fired when class ID changed.
+		sfg::Signal OnSpawnIDChange; ///< Fired when spawn class ID changed.
 
 	private:
 		typedef std::map<sfg::SharedPtr<sfg::Button>, std::string> ButtonStringMap;
@@ -30,7 +36,10 @@ class DebugWindow : public sfg::Window {
 		DebugWindow();
 
 		void HandleClassClick();
+		void HandleSpawnClick();
 
 		ButtonStringMap m_buttons;
+		ButtonStringMap m_spawn_buttons;
 		std::string m_current_id;
+		std::string m_current_spawn_id;
 };

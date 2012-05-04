@@ -49,6 +49,7 @@ class PlayState : public State, flex::Client::Handler {
 		void on_chat_message_ready();
 		void on_chat_close_click();
 		void on_debug_class_id_change();
+		void on_debug_spawn_id_change();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
@@ -121,8 +122,11 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_strafe_left;
 		bool m_strafe_right;
 		bool m_run;
+		bool m_use;
 		bool m_fly_up; // XXX
 		bool m_fly_down; // XXX
+
+		sf::Clock m_use_timer;
 
 		// State.
 		bool m_my_entity_received;

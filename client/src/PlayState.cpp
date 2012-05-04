@@ -23,7 +23,8 @@
 
 static const float MAX_WALK_SPEED = 2.0f; // [m/s] TODO: Replace by class' walk speed.
 static const float MAX_RUN_SPEED = 4.0f; // [m/s] TODO: Replace by class' walk speed.
-static const float WALK_ACCELERATION = 15.0f; // x/s². TODO: Replace by class' acceleration.
+static const float WALK_ACCELERATION = 24.0f; // x/s². TODO: Replace by class' acceleration.
+static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -42,6 +43,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_strafe_left( false ),
 	m_strafe_right( false ),
 	m_run( false ),
+	m_use( false ),
 	m_fly_up( false ),
 	m_fly_down( false ),
 	m_my_entity_received( false )
@@ -108,6 +110,7 @@ void PlayState::init() {
 	m_debug_window->Show( false );
 
 	m_debug_window->OnClassIDChange.Connect( &PlayState::on_debug_class_id_change, this );
+	m_debug_window->OnSpawnIDChange.Connect( &PlayState::on_debug_spawn_id_change, this );
 
 	m_desktop.Add( m_debug_window );
 
@@ -348,10 +351,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 				case Controls::SECONDARY_ACTION:
 				case Controls::USE:
 					{
-						if( pressed ) {
-							bool is_action = (action != Controls::USE);
-							bool primary = (action == Controls::PRIMARY_ACTION);
+						bool is_action = (action != Controls::USE);
+						bool primary = (action == Controls::PRIMARY_ACTION);
 
+						if( pressed ) {
 							// Calc forward vector.
 							sf::Vector3f forward = flex::polar_to_vector(
 								flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
@@ -419,10 +422,21 @@ void PlayState::handle_event( const sf::Event& event ) {
 							}
 							else {
 								if( result.m_type == ColorPicker::Result::ENTITY ) {
+									// Start use timer.
+									m_use = true;
+									m_use_timer.restart();
 								}
 								else {
 									std::cout << "NOTHING TO USE THERE" << std::endl;
 								}
+							}
+						}
+						else {
+							// If use key was depressed and the use key flag is still true,
+							// execute use event.
+							if( !is_action && m_use ) {
+								std::cout << "USE" << std::endl;
+								m_use = false;
 							}
 						}
 					}
@@ -557,6 +571,12 @@ void PlayState::update( const sf::Time& delta ) {
 
 			m_update_eyepoint = false;
 		}
+	}
+
+	// If use key is pressed and timer expired, execute pick up event.
+	if( m_use && m_use_timer.getElapsedTime() >= PICK_UP_TIME ) {
+		m_use = false;
+		std::cout << "PICK UP" << std::endl;
 	}
 
 	// Update FPS string.
@@ -1184,6 +1204,16 @@ void PlayState::on_debug_class_id_change() {
 	flex::msg::Chat chat_msg;
 
 	chat_msg.set_message( "/set_next " + m_debug_window->GetCurrentID() );
+	chat_msg.set_channel( "Status" );
+	chat_msg.set_sender( "-" );
+
+	get_shared().client->send_message( chat_msg );
+}
+
+void PlayState::on_debug_spawn_id_change() {
+	flex::msg::Chat chat_msg;
+
+	chat_msg.set_message( "/spawn " + m_debug_window->GetCurrentSpawnID() );
 	chat_msg.set_channel( "Status" );
 	chat_msg.set_sender( "-" );
 
