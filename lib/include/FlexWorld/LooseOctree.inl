@@ -99,17 +99,28 @@ void LooseOctree<T, DVS>::ensure_data() {
 
 template <class T, class DVS>
 LooseOctree<T, DVS>& LooseOctree<T, DVS>::insert( const T& data, const DataCuboid& cuboid ) {
+#if !defined( NDEBUG )
+	FloatCuboid node_cuboid(
+		static_cast<float>( m_position.x ) - (static_cast<float>( m_size ) / 2.0f),
+		static_cast<float>( m_position.y ) - (static_cast<float>( m_size ) / 2.0f),
+		static_cast<float>( m_position.z ) - (static_cast<float>( m_size ) / 2.0f),
+		static_cast<float>( m_position.x ) + (static_cast<float>( m_size ) * 2.0f),
+		static_cast<float>( m_position.y ) + (static_cast<float>( m_size ) * 2.0f),
+		static_cast<float>( m_position.z ) + (static_cast<float>( m_size ) * 2.0f)
+	);
+
 	assert( cuboid.width <= m_size );
 	assert( cuboid.height <= m_size );
 	assert( cuboid.depth <= m_size );
 
-	assert( cuboid.x >= m_position.x );
-	assert( cuboid.y >= m_position.y );
-	assert( cuboid.z >= m_position.z );
+	assert( cuboid.x >= node_cuboid.x );
+	assert( cuboid.y >= node_cuboid.y );
+	assert( cuboid.z >= node_cuboid.z );
 
-	assert( cuboid.x + cuboid.width <= m_position.x + m_size );
-	assert( cuboid.y + cuboid.height <= m_position.y + m_size );
-	assert( cuboid.z + cuboid.depth <= m_position.z + m_size );
+	assert( cuboid.x + cuboid.width <= node_cuboid.x + node_cuboid.width );
+	assert( cuboid.y + cuboid.height <= node_cuboid.y + node_cuboid.height );
+	assert( cuboid.z + cuboid.depth <= node_cuboid.z + node_cuboid.depth );
+#endif
 
 	// Determine which quadrant the data belongs to.
 	Quadrant quadrant = determine_quadrant( cuboid );

@@ -1,4 +1,5 @@
 #include <FlexWorld/Planet.hpp>
+#include <FlexWorld/Class.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -178,13 +179,40 @@ void Planet::add_entity( const Entity& entity ) {
 	// Sort to make searches with lower_bound possible.
 	std::sort( m_entities.begin(), m_entities.end() );
 
-	// Add to octree.
-	/*m_octree.insert(
+	// Calculate the absolute bounding box.
+	const Class& cls = entity.get_class();
+
+	FloatCuboid cuboid(
+		entity.get_position().x - (cls.get_scale().x * cls.get_origin().x ),
+		entity.get_position().y - (cls.get_scale().y * cls.get_origin().y ),
+		entity.get_position().z - (cls.get_scale().z * cls.get_origin().z ),
+		cls.get_scale().x * entity.get_class().get_bounding_box().width,
+		cls.get_scale().y * entity.get_class().get_bounding_box().height,
+		cls.get_scale().z * entity.get_class().get_bounding_box().depth
+	);
+
+	// Respect planet bounds.
+	cuboid.x = std::max( 0.0f, cuboid.x );
+	cuboid.y = std::max( 0.0f, cuboid.y );
+	cuboid.z = std::max( 0.0f, cuboid.z );
+
+	cuboid.width = std::min(
+		static_cast<float>( m_size.x * m_chunk_size.x ) - cuboid.x,
+		cuboid.width
+	);
+	cuboid.height = std::min(
+		static_cast<float>( m_size.y * m_chunk_size.y ) - cuboid.y,
+		cuboid.height
+	);
+	cuboid.depth = std::min(
+		static_cast<float>( m_size.z * m_chunk_size.z ) - cuboid.z,
+		cuboid.depth
+	);
+
+	m_octree.insert(
 		entity.get_id(),
-		FloatCuboid cuboid(
-			entity.get_boun
-		)
-	);*/
+		cuboid
+	);
 }
 
 bool Planet::has_entity( const Entity& entity ) const {
@@ -202,7 +230,7 @@ void Planet::remove_entity( const Entity& entity ) {
 		m_entities.erase( iter );
 	}
 
-	std::cout << "WARNING: Entity not removed from octree." << std::endl;
+	std::cout << "*** WARNING *** Entity not removed from octree." << std::endl;
 }
 
 const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position ) const {

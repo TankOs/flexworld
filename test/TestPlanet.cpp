@@ -248,22 +248,58 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 		planet.add_entity( ent );
 		planet.add_entity( ent2 );
 
-		// Search for entities.
-		Planet::EntityIDArray results;
+		// Search for all entities.
+		{
+			Planet::EntityIDArray results;
 
-		/*planet.search_entities(
-			FloatCuboid(
-				0, 0, 0,
-				static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x ),
-				static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y ),
-				static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z )
-			),
-			results
-		);
+			planet.search_entities(
+				FloatCuboid(
+					0, 0, 0,
+					static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x ),
+					static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y ),
+					static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z )
+				),
+				results
+			);
 
-		BOOST_REQUIRE( results.size() == 2 );
-		BOOST_CHECK( results[0] == 1 );
-		BOOST_CHECK( results[1] == 2 );*/
+			BOOST_REQUIRE( results.size() == 2 );
+			BOOST_CHECK( results[0] == 1 );
+			BOOST_CHECK( results[1] == 2 );
+		}
+
+		// Search for single entity.
+		{
+			Planet::EntityIDArray results;
+
+			planet.search_entities(
+				FloatCuboid(
+					0, 0, 0,
+					1, 1, 1
+				),
+				results
+			);
+
+			BOOST_REQUIRE( results.size() == 1 );
+			BOOST_CHECK( results[0] == 1 );
+		}
+
+		// Search for single entity.
+		{
+			Planet::EntityIDArray results;
+
+			planet.search_entities(
+				FloatCuboid(
+					static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x - 1 ),
+					static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y - 1 ),
+					static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z - 1 ),
+					1, 1, 1
+				),
+				results
+			);
+
+			BOOST_REQUIRE( results.size() == 1 );
+			BOOST_CHECK( results[0] == 2 );
+		}
 	}
 
 	// Clear planet.

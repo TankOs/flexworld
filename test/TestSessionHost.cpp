@@ -664,7 +664,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		lock_facility.create_planet_lock( *world.find_planet( "foobar" ) );
 
 		Entity& entity = world.create_entity( cls_id );
-		entity.set_position( sf::Vector3f( 1, 10, 100 ) );
+		entity.set_position( sf::Vector3f( 1, 5, 10 ) );
 		world.link_entity_to_planet( entity.get_id(), "foobar" );
 
 		// Check.
@@ -673,7 +673,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		host.get_entity_position( entity.get_id(), ent_pos, planet_id );
 
-		BOOST_CHECK( ent_pos == sf::Vector3f( 1, 10, 100 ) );
+		BOOST_CHECK( ent_pos == sf::Vector3f( 1, 5, 10 ) );
 		BOOST_CHECK( planet_id == "foobar" );
 
 		// Create entity without linking to planet.
