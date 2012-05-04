@@ -28,6 +28,7 @@ static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
+	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
 	m_gui_mode( false ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
@@ -99,10 +100,10 @@ void PlayState::init() {
 		)
 	);
 
-	m_chat_window->AddMessage( "*** Press F12 to save a screenshot.", "Status" );
-	m_chat_window->AddMessage( "*** Press F3 for wireframe mode.", "Status" );
-	m_chat_window->AddMessage( "*** Press F1 for debug window.", "Status" );
-	m_chat_window->AddMessage( "*** FlexWorld (c) Stefan Schindler, do not distribute.", "Status" );
+	m_text_scroller.add_text( "*** Press F12 to save a screenshot." );
+	m_text_scroller.add_text( "*** Press F3 for wireframe mode." );
+	m_text_scroller.add_text( "*** Press F1 for debug window." );
+	m_text_scroller.add_text( "*** FlexWorld (c) Stefan Schindler, do not distribute." );
 
 	m_chat_window->Show( false );
 
@@ -610,6 +611,9 @@ void PlayState::update( const sf::Time& delta ) {
 	if( m_scene_graph ) {
 		m_scene_graph->update();
 	}
+
+	// Update text scroller.
+	m_text_scroller.update();
 }
 
 void PlayState::render() const {
@@ -660,58 +664,6 @@ void PlayState::render() const {
 	glDisable( GL_LIGHTING );
 	glDisable( GL_LIGHT0 );
 
-						/*if( m_current_planet_id.empty() == false ) {
-							sf::Vector3f forward = flex::polar_to_vector(
-								flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
-								flex::deg_to_rad( -m_camera.get_rotation().y ),
-								1.0f
-							);
-
-							float distance = 7.0f; // TODO Take distance from server?
-							sf::Vector3f origin = m_camera.get_position() + m_camera.get_eye_offset();
-
-							// Get planet.
-							get_shared().lock_facility->lock_world( true );
-
-							const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
-							assert( planet != nullptr );
-
-							get_shared().lock_facility->lock_planet( *planet, true );
-
-							// Build list of entities to be skipped.
-							std::set<flex::Entity::ID> skip_entity_ids;
-							skip_entity_ids.insert( get_shared().entity_id );
-
-							ColorPicker::Result result = ColorPicker::pick(
-								origin,
-								forward,
-								distance,
-								sg::Transform(
-									sf::Vector3f(
-										-m_camera.get_position().x - m_camera.get_eye_offset().x,
-										-m_camera.get_position().y - m_camera.get_eye_offset().y,
-										-m_camera.get_position().z - m_camera.get_eye_offset().z
-									),
-									sf::Vector3f(
-										m_camera.get_rotation().x,
-										m_camera.get_rotation().y,
-										m_camera.get_rotation().z
-									)
-								),
-								sf::Vector2i(
-									get_render_target().getSize().x / 2,
-									get_render_target().getSize().y / 2
-								),
-								*planet,
-								*get_shared().world,
-								skip_entity_ids,
-								m_resource_manager
-							);
-
-							get_shared().lock_facility->lock_planet( *planet, false );
-							get_shared().lock_facility->lock_world( false );
-						}*/
-
 	//////////////// WARNING! SFML CODE MAY BEGIN HERE, SO SAVE OUR STATES //////////////////////
 	glDisable( GL_CULL_FACE );
 	glDisable( GL_DEPTH_TEST );
@@ -733,6 +685,11 @@ void PlayState::render() const {
 
 	// Crosshair.
 	target.draw( m_crosshair_sprite );
+
+	// Text scroller.
+	if( m_chat_window->IsGloballyVisible() == false ) {
+		m_text_scroller.render( target );
+	}
 
 	// FPS.
 	target.draw( m_fps_text );
@@ -1106,6 +1063,7 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 	message += msg.get_message();
 
 	m_chat_window->AddMessage( message, msg.get_channel() );
+	m_text_scroller.add_text( "[" + msg.get_channel() + "] " + message );
 }
 
 void PlayState::on_chat_close_click() {

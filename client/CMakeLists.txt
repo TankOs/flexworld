@@ -28,6 +28,7 @@ set(
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
+	${INC_DIR}/TextScroller.hpp
 	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
@@ -52,6 +53,7 @@ set(
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
+	${SRC_DIR}/TextScroller.cpp
 	${SRC_DIR}/UserSettings.hpp
 )
 
