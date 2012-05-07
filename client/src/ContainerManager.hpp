@@ -5,6 +5,7 @@
 #include <map>
 #include <list>
 #include <memory>
+#include <cstdint>
 
 namespace sf {
 class RenderTarget;

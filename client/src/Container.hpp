@@ -5,6 +5,7 @@
 #include <SFML/System/String.hpp>
 #include <memory>
 #include <map>
+#include <cstdint>
 
 namespace sf {
 class RenderTarget;
