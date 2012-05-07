@@ -14,6 +14,14 @@ namespace flex {
  * Please use this classes methods over children's methods if applicable. For
  * example to add an entity to a planet, use link_entity_to_planet() instead of
  * calling Planet::add_entity() yourself.
+ *
+ * Attached entities are automagically managed by World, that means you're not
+ * allowed to call link_entity_to_planet() and unlink_entity_from_planet() for
+ * them. Make sure to use the World's attach/detach functions instead of the
+ * Entity's to ensure valid data. This is required to drop attached entities
+ * from the planet octrees. Attached entities are also not linked to planets.
+ * One always has to check the link of the uppermost parent of the attached
+ * entity.
  */
 class World {
 	public:
@@ -95,6 +103,7 @@ class World {
 
 		/** Create link between entity and planet.
 		 * If the entity has been linked before, that link will be overwritten.
+		 * Entity must be in a detached state.
 		 * @param entity_id Entity ID (must exist).
 		 * @param planet_id Planet ID (must exist).
 		 */
@@ -107,10 +116,32 @@ class World {
 		Planet* find_linked_planet( Entity::ID entity_id );
 
 		/** Unlink entity from planet.
-		 * Undefined behaviour if link doesn't exist.
+		 * Undefined behaviour if link doesn't exist or entity is in an attached
+		 * state.
 		 * @param entity_id Entity ID (must exist).
 		 */
 		void unlink_entity_from_planet( Entity::ID entity_id );
+
+		/** Attach an entity to another entity.
+		 * Undefined behaviour if one of the entities weren't added or hook is
+		 * invalid. It's perfectly sane to reattach entities to another parent.
+		 * Attached entities lose their planet link. Position is reset to (0; 0;
+		 * 0).
+		 * @param source_id ID of entity to attach.
+		 * @param target_id ID of entity to attach to.
+		 * @param hook_id ID of hook.
+		 */
+		void attach_entity( Entity::ID source_id, Entity::ID target_id, const std::string& hook_id );
+
+		/** Detach an entity.
+		 * After detaching the entity will be positioned at the exact parent's
+		 * location (same goes for rotation). Also a link to the paren't planet (if
+		 * any) will be created.
+		 *
+		 * Undefined behaviour if entity is not attached.
+		 * @param entity_id ID of entity to detach from parent.
+		 */
+		void detach_entity( Entity::ID entity_id );
 
 		/** Get iterator to first planet.
 		 * If there's no planet, this iterator is equal to planets_end().

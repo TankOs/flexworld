@@ -133,6 +133,7 @@ void World::link_entity_to_planet( Entity::ID entity_id, const std::string& plan
 	Planet* planet = find_planet( planet_id );
 
 	assert( ent );
+	assert( ent->get_parent() == nullptr );
 	assert( planet );
 
 	// Get previous link (if any).
@@ -162,6 +163,7 @@ void World::unlink_entity_from_planet( Entity::ID entity_id ) {
 
 	Entity* ent = find_entity( entity_id );
 	assert( ent != nullptr );
+	assert( ent->get_parent() == nullptr );
 
 	LinkMap::iterator link_iter = m_links.find( entity_id );
 
@@ -177,6 +179,62 @@ World::PlanetConstIterator World::planets_begin() const {
 
 World::PlanetConstIterator World::planets_end() const {
 	return m_planets.end();
+}
+
+void World::attach_entity( Entity::ID source_id, Entity::ID target_id, const std::string& hook_id ) {
+	Entity* source = find_entity( source_id );
+	Entity* target = find_entity( target_id );
+
+	assert( source != nullptr );
+	assert( target != nullptr );
+	assert( target->get_class().find_hook( hook_id ) != nullptr );
+
+	// Detach entity if already attached.
+	if( source->get_parent() != nullptr ) {
+		Entity* parent_entity = find_entity( source->get_parent()->get_id() );
+		assert( parent_entity );
+
+		parent_entity->detach( *source );
+	}
+
+	// Find source entity's planet.
+	Planet* source_planet = find_linked_planet( source_id );
+
+	// Remove and unlink from current planet (if any).
+	if( source_planet ) {
+		unlink_entity_from_planet( source_id );
+	}
+
+	// Attach.
+	target->attach( *source, hook_id );
+
+	// Reset position.
+	source->set_position( sf::Vector3f( 0, 0, 0 ) );
+}
+
+void World::detach_entity( Entity::ID entity_id ) {
+	Entity* entity = find_entity( entity_id );
+
+	assert( entity != nullptr );
+	assert( entity->get_parent() != nullptr );
+
+	// Detach from parent.
+	Entity* parent = find_entity( entity->get_parent()->get_id() );
+
+	assert( parent != nullptr );
+
+	parent->detach( *entity );
+
+	// Reset entity's position + rotation.
+	entity->set_position( parent->get_position() );
+	entity->set_rotation( parent->get_rotation() );
+
+	// Link entity to parent's planet (if any).
+	Planet* parent_planet = find_linked_planet( parent->get_id() );
+
+	if( parent_planet ) {
+		link_entity_to_planet( entity->get_id(), parent_planet->get_id() );
+	}
 }
 
 }

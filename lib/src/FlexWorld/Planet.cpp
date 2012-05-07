@@ -209,10 +209,13 @@ void Planet::add_entity( const Entity& entity ) {
 		cuboid.depth
 	);
 
-	m_octree.insert(
+	// Add to octree and remember ID -> node mapping.
+	EntityOctree* node = &m_octree.insert(
 		entity.get_id(),
 		cuboid
 	);
+
+	m_entity_nodes[entity.get_id()] = node;
 }
 
 bool Planet::has_entity( const Entity& entity ) const {
@@ -230,7 +233,14 @@ void Planet::remove_entity( const Entity& entity ) {
 		m_entities.erase( iter );
 	}
 
-	std::cout << "*** WARNING *** Entity not removed from octree." << std::endl;
+	// Remove from octree.
+	EntityNodeMap::iterator node_iter = m_entity_nodes.find( entity.get_id() );
+	assert( node_iter != m_entity_nodes.end() );
+
+	node_iter->second->erase( entity.get_id() );
+
+	// Drop ID -> node mapping.
+	m_entity_nodes.erase( node_iter );
 }
 
 const Chunk::Block* Planet::get_raw_chunk_data( const Planet::Vector& position ) const {

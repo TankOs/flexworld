@@ -159,6 +159,8 @@ class Planet : public NonCopyable {
 
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
+		typedef LooseOctree<Entity::ID, float> EntityOctree;
+		typedef std::map<Entity::ID, EntityOctree*> EntityNodeMap;
 
 		Vector m_size;
 		Chunk::Vector m_chunk_size;
@@ -168,6 +170,7 @@ class Planet : public NonCopyable {
 		EntityIDArray m_entities;
 		ClassCache m_class_cache;
 
+		EntityNodeMap m_entity_nodes;
 		LooseOctree<Entity::ID, float> m_octree;
 };
 

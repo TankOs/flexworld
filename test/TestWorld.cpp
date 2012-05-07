@@ -186,4 +186,174 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 		BOOST_CHECK( world.find_planet( "foobar" )->has_entity( ent ) == true );
 		BOOST_CHECK( world.find_linked_planet( 0 ) == world.find_planet( "foobar" ) );
 	}
+
+	// Attach & detach entities.
+	{
+		static const FlexID CLASS_ID = FlexID::make( "some/class" );
+		static const std::string PLANET_ID = "foo";
+
+		// Attach after adding parent to world.
+		{
+			// Setup world.
+			Class cls( CLASS_ID );
+			cls.set_hook( "hook", sf::Vector3f( 0, 0, 0 ) );
+
+			World world;
+
+			world.add_class( cls );
+			world.create_planet( PLANET_ID, Planet::Vector( 2, 2, 2 ), Chunk::Vector( 16, 16, 16 ) );
+
+			// Setup entities.
+			Entity& parent_entity = world.create_entity( CLASS_ID );
+			Entity& child_entity = world.create_entity( CLASS_ID );
+
+			child_entity.set_position( sf::Vector3f( 1, 2, 3 ) );
+
+			// Link parent.
+			world.link_entity_to_planet( parent_entity.get_id(), PLANET_ID );
+
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 1 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() ) == nullptr );
+
+			// Attach child.
+			world.attach_entity( child_entity.get_id(), parent_entity.get_id(), "hook" );
+
+			BOOST_CHECK( child_entity.get_parent() == &parent_entity );
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 0, 0, 0 ) );
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 1 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() ) == nullptr );
+			BOOST_CHECK( parent_entity.get_num_children() == 1 );
+		}
+
+		// Attach after adding both parent and child to world.
+		{
+			// Setup world.
+			Class cls( CLASS_ID );
+			cls.set_hook( "hook", sf::Vector3f( 0, 0, 0 ) );
+
+			World world;
+
+			world.add_class( cls );
+			world.create_planet( PLANET_ID, Planet::Vector( 2, 2, 2 ), Chunk::Vector( 16, 16, 16 ) );
+
+			// Setup entities.
+			Entity& parent_entity = world.create_entity( CLASS_ID );
+			Entity& child_entity = world.create_entity( CLASS_ID );
+
+			child_entity.set_position( sf::Vector3f( 1, 2, 3 ) );
+
+			// Link entities.
+			world.link_entity_to_planet( parent_entity.get_id(), PLANET_ID );
+			world.link_entity_to_planet( child_entity.get_id(), PLANET_ID );
+
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 2 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() )->get_id() == PLANET_ID );
+
+			// Attach child.
+			world.attach_entity( child_entity.get_id(), parent_entity.get_id(), "hook" );
+
+			BOOST_CHECK( child_entity.get_parent() == &parent_entity );
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 0, 0, 0 ) );
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 1 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() ) == nullptr );
+			BOOST_CHECK( parent_entity.get_num_children() == 1 );
+		}
+
+		// Reattach to another entity.
+		{
+			// Setup world.
+			Class cls( CLASS_ID );
+			cls.set_hook( "hook", sf::Vector3f( 0, 0, 0 ) );
+
+			World world;
+
+			world.add_class( cls );
+			world.create_planet( PLANET_ID, Planet::Vector( 2, 2, 2 ), Chunk::Vector( 16, 16, 16 ) );
+
+			// Setup entities.
+			Entity& parent_entity = world.create_entity( CLASS_ID );
+			Entity& new_parent_entity = world.create_entity( CLASS_ID );
+			Entity& child_entity = world.create_entity( CLASS_ID );
+
+			child_entity.set_position( sf::Vector3f( 1, 2, 3 ) );
+
+			// Link entities.
+			world.link_entity_to_planet( parent_entity.get_id(), PLANET_ID );
+			world.link_entity_to_planet( new_parent_entity.get_id(), PLANET_ID );
+			world.link_entity_to_planet( child_entity.get_id(), PLANET_ID );
+
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 3 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( new_parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() )->get_id() == PLANET_ID );
+
+			// Attach child.
+			world.attach_entity( child_entity.get_id(), parent_entity.get_id(), "hook" );
+
+			BOOST_CHECK( child_entity.get_parent() == &parent_entity );
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 0, 0, 0 ) );
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 2 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( new_parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() ) == nullptr );
+			BOOST_CHECK( parent_entity.get_num_children() == 1 );
+			BOOST_CHECK( new_parent_entity.get_num_children() == 0 );
+
+			// Reattach.
+			world.attach_entity( child_entity.get_id(), new_parent_entity.get_id(), "hook" );
+
+			BOOST_CHECK( child_entity.get_parent() == &new_parent_entity );
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 0, 0, 0 ) );
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 2 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( new_parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() ) == nullptr );
+			BOOST_CHECK( parent_entity.get_num_children() == 0 );
+			BOOST_CHECK( new_parent_entity.get_num_children() == 1 );
+		}
+
+		// Detach entity.
+		{
+			// Setup world.
+			Class cls( CLASS_ID );
+			cls.set_hook( "hook", sf::Vector3f( 0, 0, 0 ) );
+
+			World world;
+
+			world.add_class( cls );
+			world.create_planet( PLANET_ID, Planet::Vector( 2, 2, 2 ), Chunk::Vector( 16, 16, 16 ) );
+
+			// Setup entities.
+			Entity& parent_entity = world.create_entity( CLASS_ID );
+			Entity& child_entity = world.create_entity( CLASS_ID );
+
+			parent_entity.set_position( sf::Vector3f( 1, 2, 3 ) );
+			parent_entity.set_rotation( sf::Vector3f( 10, 20, 30 ) );
+			child_entity.set_position( sf::Vector3f( 4, 5, 6 ) );
+
+			// Link entities.
+			world.link_entity_to_planet( parent_entity.get_id(), PLANET_ID );
+			world.link_entity_to_planet( child_entity.get_id(), PLANET_ID );
+
+			// Attach child.
+			world.attach_entity( child_entity.get_id(), parent_entity.get_id(), "hook" );
+
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 0, 0, 0 ) );
+
+			// Detach.
+			world.detach_entity( child_entity.get_id() );
+
+			BOOST_CHECK( child_entity.get_parent() == nullptr );
+			BOOST_CHECK( world.find_planet( PLANET_ID )->get_num_entities() == 2 );
+			BOOST_CHECK( world.find_linked_planet( parent_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( world.find_linked_planet( child_entity.get_id() )->get_id() == PLANET_ID );
+			BOOST_CHECK( parent_entity.get_num_children() == 0 );
+			BOOST_CHECK( child_entity.get_position() == sf::Vector3f( 1, 2, 3 ) );
+			BOOST_CHECK( child_entity.get_rotation() == sf::Vector3f( 10, 20, 30 ) );
+		}
+	}
 }
