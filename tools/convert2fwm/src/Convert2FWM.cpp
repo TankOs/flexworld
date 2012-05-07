@@ -268,11 +268,23 @@ int main( int argc, char** argv ) {
 		}
 
 		// Only materials beginning with "slot:" are treated as texture slot definitions.
-		if( material_name.substr( 0, 5 ) == "slot:" ) {
-			std::stringstream sstr( material_name.substr( 5 ) );
-			uint16_t texture_slot( 0 );
+		if( material_name.substr( 0, 4 ) == "slot" ) {
+			// Extract digits.
+			std::string digits;
+
+			for( std::size_t char_idx = 4; char_idx < material_name.size(); ++char_idx ) {
+				char ch = material_name[char_idx];
+
+				if( ch >= '0' && ch <= '9' ) {
+					digits += ch;
+				}
+			}
+
+			std::stringstream sstr( digits );
+			uint16_t texture_slot = 0;
 
 			sstr >> texture_slot;
+
 			if( !sstr || texture_slot > 255 ) {
 				std::cerr << "Invalid texture slot for mesh " << mesh_index << ", material " << material_name << "." << std::endl;
 				return -1;
