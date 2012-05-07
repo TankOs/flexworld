@@ -247,4 +247,274 @@ BOOST_AUTO_TEST_CASE( TestLooseOctree ) {
 		tree.search( IntOctree::DataCuboid( 0, 0, 0, 2, 2, 2 ), results );
 		BOOST_CHECK( results.size() == 0 );
 	}
+
+	// Remove data where data occupies whole octree (no subdivision).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 1 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 2, 2, 2, 1, 1, 1 ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+	}
+
+	// Remove data where data occupies whole octree (no subdivision) and multiple SAME data exists.
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 2, 2, 2, 1, 1, 1 ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+	}
+
+	// Remove data where data occupies whole octree (no subdivision) and multiple DIFFERENT data exists.
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+		tree.insert( 2, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 2, 2, 2, 1, 1, 1 ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 1 );
+		}
+	}
+
+	// Remove data where data is inserted at depth 1 (multiple data, same).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2 ) );
+		tree.insert( 1, IntOctree::DataCuboid( TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2 ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == false );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+
+		BOOST_CHECK( tree.is_subdivided() == false );
+	}
+
+	// Remove data where data is inserted at depth 1 (multiple data, different).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2 ) );
+		tree.insert( 2, IntOctree::DataCuboid( TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2, TREE_SIZE / 2 ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == false );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 1 );
+		}
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.has_child( IntOctree::LEFT_BOTTOM_FAR ) == false );
+		BOOST_REQUIRE( tree.has_child( IntOctree::RIGHT_TOP_NEAR ) == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).is_subdivided() == false );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).get_num_data() == 1 );
+	}
+
+	// Remove data where data is inserted at depth 2 (multiple data, same).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+		tree.insert( 1, IntOctree::DataCuboid( TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == false );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+
+		BOOST_CHECK( tree.is_subdivided() == false );
+	}
+
+	// Remove data where data is inserted at depth 2 (multiple data, different).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+		tree.insert( 2, IntOctree::DataCuboid( TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == false );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 2 );
+		}
+
+		tree.erase( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 1 );
+		}
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.has_child( IntOctree::LEFT_BOTTOM_FAR ) == false );
+		BOOST_REQUIRE( tree.has_child( IntOctree::RIGHT_TOP_NEAR ) == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).has_child( IntOctree::RIGHT_TOP_NEAR ) == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).get_child( IntOctree::RIGHT_TOP_NEAR ).is_subdivided() == false );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).get_child( IntOctree::RIGHT_TOP_NEAR ).get_num_data() == 1 );
+	}
+
+	// Remove data from specific node (single data, full tree coverage).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		IntOctree& node = tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == false );
+
+		node.erase( 1 );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+
+		BOOST_CHECK( tree.is_subdivided() == false );
+	}
+
+	// Remove data from specific node (multi SAME data).
+	{
+		static const IntOctree::Size TREE_SIZE = 4;
+
+		IntOctree tree( TREE_SIZE );
+		IntOctree& node0 = tree.insert( 1, IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+		IntOctree& node1 = tree.insert( 1, IntOctree::DataCuboid( TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE - TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2, TREE_SIZE / 2 / 2 ) );
+
+		BOOST_REQUIRE( tree.is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::LEFT_BOTTOM_FAR ).get_child( IntOctree::LEFT_BOTTOM_FAR ).is_subdivided() == false );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).is_subdivided() == true );
+		BOOST_REQUIRE( tree.get_child( IntOctree::RIGHT_TOP_NEAR ).get_child( IntOctree::RIGHT_TOP_NEAR ).is_subdivided() == false );
+
+		node0.erase( 1 );
+
+		// Verify.
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 1 );
+		}
+
+		node1.erase( 1 );
+
+		{
+			IntOctree::DataArray results;
+
+			tree.search( IntOctree::DataCuboid( 0, 0, 0, TREE_SIZE, TREE_SIZE, TREE_SIZE ), results );
+			BOOST_REQUIRE( results.size() == 0 );
+		}
+
+		BOOST_CHECK( tree.is_subdivided() == false );
+	}
 }

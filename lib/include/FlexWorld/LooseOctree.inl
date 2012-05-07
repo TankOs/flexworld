@@ -40,18 +40,56 @@ inline void continue_search(
 }
 
 template <class T, class DVS>
+inline void continue_erase(
+	LooseOctree<T, DVS>* child,
+	const T& data,
+	const typename LooseOctree<T, DVS>::DataCuboid& cuboid
+) {
+	if( !child ) {
+		return;
+	}
+
+	if(
+		LooseOctree<T, DVS>::DataCuboid::calc_intersection(
+			typename LooseOctree<T, DVS>::DataCuboid(
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().x ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
+				),
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().y ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
+				),
+				(
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_position().z ) -
+					static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() / 2 )
+				),
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 ),
+				static_cast<typename LooseOctree<T, DVS>::DataCuboid::Type>( child->get_size() * 2 )
+			),
+			cuboid
+		).width > 0
+	) {
+		child->erase( data, cuboid );
+	}
+}
+
+template <class T, class DVS>
 LooseOctree<T, DVS>::LooseOctree( Size size ) :
 	m_position( 0, 0, 0 ),
 	m_data( nullptr ),
+	m_parent( nullptr ),
 	m_children( nullptr ),
 	m_size( size )
 {
 }
 
 template <class T, class DVS>
-LooseOctree<T, DVS>::LooseOctree( const Vector& position, Size size ) :
+LooseOctree<T, DVS>::LooseOctree( const Vector& position, Size size, LooseOctree<T, DVS>* parent ) :
 	m_position( position ),
 	m_data( nullptr ),
+	m_parent( parent ),
 	m_children( nullptr ),
 	m_size( size )
 {
@@ -214,7 +252,7 @@ void LooseOctree<T, DVS>::create_child( Quadrant quadrant ) {
 			break;
 	}
 
-	m_children[quadrant] = new LooseOctree<T, DVS>( position, size );
+	m_children[quadrant] = new LooseOctree<T, DVS>( position, size, this );
 }
 
 template <class T, class DVS>
@@ -374,6 +412,106 @@ template <class T, class DVS>
 LooseOctree<T, DVS>::DataInfo::DataInfo() :
 	cuboid( 0, 0, 0, 0, 0, 0 )
 {
+}
+
+template <class T, class DVS>
+void LooseOctree<T, DVS>::erase( const T& data, const DataCuboid& cuboid ) {
+	// Traverse to children at first.
+	if( m_children ) {
+		continue_erase( m_children[LEFT_BOTTOM_FAR], data, cuboid );
+		continue_erase( m_children[RIGHT_BOTTOM_FAR], data, cuboid );
+		continue_erase( m_children[LEFT_BOTTOM_NEAR], data, cuboid );
+		continue_erase( m_children[RIGHT_BOTTOM_NEAR], data, cuboid );
+		continue_erase( m_children[LEFT_TOP_FAR], data, cuboid );
+		continue_erase( m_children[RIGHT_TOP_FAR], data, cuboid );
+		continue_erase( m_children[LEFT_TOP_NEAR], data, cuboid );
+		continue_erase( m_children[RIGHT_TOP_NEAR], data, cuboid );
+	}
+
+	// If this node contains data, check for collision.
+	if( m_data && m_data->size() > 0 ) {
+		typename DataList::iterator data_iter( m_data->begin() );
+		
+		// Check each data entry for collision with the cuboid.
+		while( data_iter != m_data->end() ) {
+			const DataInfo& info = *data_iter;
+			DataCuboid intersection = DataCuboid::calc_intersection( info.cuboid, cuboid );
+
+			if(
+				intersection.width > 0 &&
+				intersection.height > 0 &&
+				intersection.depth > 0 &&
+				info.data == data
+			) {
+				// Hit, erase.
+				data_iter = m_data->erase( data_iter );
+			}
+			else {
+				++data_iter;
+			}
+		}
+	}
+
+	cleanup( false );
+}
+
+template <class T, class DVS>
+void LooseOctree<T, DVS>::erase( const T& data ) {
+	if( !m_data || m_data->size() < 1 ) {
+		return;
+	}
+
+	typename DataList::iterator data_iter( m_data->begin() );
+	
+	// Check each data entry if it's the one being requested to be erased.
+	while( data_iter != m_data->end() ) {
+		if( data_iter->data == data ) {
+			// Hit, erase.
+			data_iter = m_data->erase( data_iter );
+		}
+		else {
+			++data_iter;
+		}
+	}
+
+	cleanup( true );
+}
+
+template <class T, class DVS>
+void LooseOctree<T, DVS>::cleanup( bool recursive ) {
+	if( m_children ) {
+		// Check each child if it isn't subdivided and doesn't hold data anymore, so
+		// it can be destroyed.
+		std::size_t num_empty_children = 0;
+		std::size_t num_total_children = 0;
+
+		for( std::size_t child_idx = 0; child_idx < SAME_QUADRANT; ++child_idx ) {
+			if( m_children[child_idx] ) {
+				++num_total_children;
+
+				if(
+					!m_children[child_idx]->is_subdivided() &&
+					!m_children[child_idx]->get_num_data()
+				) {
+					delete m_children[child_idx];
+					m_children[child_idx] = nullptr;
+
+					++num_empty_children;
+				}
+			}
+		}
+
+		// Clean up memory if all children are empty.
+		if( num_empty_children == num_total_children ) {
+			delete[] m_children;
+			m_children = nullptr;
+		}
+	}
+
+	// Continue cleanup at parent if requested.
+	if( recursive && m_parent && !m_children && (!m_data || m_data->size() == 0) ) {
+		m_parent->cleanup( true );
+	}
 }
 
 }

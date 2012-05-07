@@ -112,6 +112,26 @@ class LooseOctree {
 		 */
 		void search( const DataCuboid& cuboid, DataArray& results ) const;
 
+		/** Erase all data occurences in a specific cuboid.
+		 * @param data Data.
+		 * @param cuboid Cuboid.
+		 */
+		void erase( const T& data, const DataCuboid& cuboid );
+
+		/** Erase data from this node.
+		 * The node isn't traversed. If the specified data isn't found, nothing
+		 * happens.
+		 * @param data Data.
+		 * @param node Node.
+		 */
+		void erase( const T& data );
+
+		/** Deletes empty children.
+		 * Called internally.
+		 * @param recursive If cleaning up, proceed at parent.
+		 */
+		void cleanup( bool recursive );
+
 	private:
 		struct DataInfo {
 			DataInfo();
@@ -122,7 +142,7 @@ class LooseOctree {
 
 		typedef std::list<DataInfo> DataList;
 
-		LooseOctree( const Vector& position, Size size );
+		LooseOctree( const Vector& position, Size size, LooseOctree<T, DVS>* parent = nullptr );
 
 		Quadrant determine_quadrant( const DataCuboid& cuboid );
 		void ensure_data();
@@ -132,6 +152,7 @@ class LooseOctree {
 		Vector m_position;
 
 		DataList* m_data;
+		LooseOctree* m_parent;
 		LooseOctree** m_children;
 
 		Size m_size;
