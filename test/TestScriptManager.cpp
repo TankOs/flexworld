@@ -109,7 +109,6 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 		bool result = false;
 
-
 		BOOST_REQUIRE( result = manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
 		BOOST_REQUIRE( result == true );
 
@@ -147,6 +146,34 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
+	}
+
+	// Trigger use class event.
+	{
+		ScriptManager manager( server_gate, world_gate );
+
+		BOOST_REQUIRE( manager.execute_string( "function on_use( entity_id, actor_id, client_id ) assert( entity_id == 11 and actor_id == 22 and client_id == 33 ); flex.test:set_value( \"use_ok\", \"yes\" ) end" ) );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", on_use )" ) == true );
+
+		Class cls( FlexID::make( "some/class" ) );
+
+		Entity object( cls );
+		object.set_id( 11 );
+
+		Entity actor( cls );
+		actor.set_id( 22 );
+
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+		BOOST_CHECK(
+			manager.trigger_use_class_event(
+				object,
+				actor,
+				33
+			) == true
+		);
+		BOOST_CHECK( manager.get_last_error().empty() == true );
+
+		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:find_value( \"use_ok\" ) == \"yes\" )" ) );
 	}
 
 	// Trigger block action class event.

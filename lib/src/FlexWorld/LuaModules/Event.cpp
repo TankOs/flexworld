@@ -226,13 +226,14 @@ void Event::call_class_event_callbacks( ClassEvent event, const std::string& cls
 	}
 }
 
-void Event::trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state ) {
+void Event::trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state ) {
 	Diluculum::LuaValueList args;
 
 	args.push_back( entity.get_id() );
 	args.push_back( actor.get_id() );
+	args.push_back( client_id );
 
-	call_class_event_callbacks( USE_EVENT, cls.get_id().get(), args, state );
+	call_class_event_callbacks( USE_EVENT, actor.get_class().get_id().get(), args, state );
 }
 
 void Event::trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender, Diluculum::LuaState& state ) {

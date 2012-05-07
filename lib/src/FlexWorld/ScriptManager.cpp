@@ -148,6 +148,22 @@ bool ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
 	return true;
 }
 
+bool ScriptManager::trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id ) {
+	m_last_error.clear();
+
+	try {
+		m_event_module->trigger_use_class_event( entity, actor, client_id, *m_state );
+	}
+	catch( const Diluculum::LuaError& e ) {
+		m_last_error = e.what();
+		Log::Logger( Log::ERR ) << "USE class event error: " << m_last_error << Log::endl;
+
+		return false;
+	}
+
+	return true;
+}
+
 bool ScriptManager::trigger_block_action_class_event(
 	const sf::Vector3<uint32_t>& block_pos,
 	const sf::Vector3<uint32_t>& next_block_pos,

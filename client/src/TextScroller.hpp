@@ -25,7 +25,7 @@ class TextScroller {
 		void set_sustain_duration( const sf::Time& duration );
 
 		/** Set fade duration.
-		 * @param duration Duration.
+		 * @param fade_duration Duration.
 		 */
 		void set_fade_duration( const sf::Time& fade_duration );
 

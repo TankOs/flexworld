@@ -1,6 +1,6 @@
 INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../lib/ @CMAKE_CURRENT_SOURCE_DIR@/../client/ @CMAKE_CURRENT_SOURCE_DIR@/../server/
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@
-FILE_PATTERNS          = *.hpp *.cpp *.inl
+FILE_PATTERNS          = *.hpp
 
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = FlexWorld

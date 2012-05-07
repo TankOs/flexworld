@@ -121,12 +121,12 @@ class Event {
 		void trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state );
 
 		/** Trigger use class event.
-		 * @param cls Class.
 		 * @param entity Entity being used.
 		 * @param actor Actor entity.
+		 * @param client_id Client ID.
 		 * @param state Lua state.
 		 */
-		void trigger_use_class_event( const Class& cls, const Entity& entity, const Entity& actor, Diluculum::LuaState& state );
+		void trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state );
 
 		/** Trigger block action class event.
 		 * @param block_pos Block position of block the action is performed on.

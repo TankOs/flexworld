@@ -1,5 +1,6 @@
 #include "Config.hpp"
 #include "LuaUtils.hpp"
+#include "ExceptionChecker.hpp"
 
 #include <FlexWorld/LuaModules/Event.hpp>
 #include <FlexWorld/LuaModules/Test.hpp>
@@ -122,12 +123,15 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 	// Trigger class events.
 	{
 		// Create test data.
+		Class cls_actor( FlexID::make( "class/actor" ) );
 		Class cls_a( FlexID::make( "class/a" ) );
 		Class cls_b( FlexID::make( "class/b" ) );
 
+		Entity ent_actor( cls_actor );
 		Entity ent_a( cls_a );
 		Entity ent_b( cls_b );
 
+		ent_actor.set_id( 1337 );
 		ent_a.set_id( 100 );
 		ent_b.set_id( 200 );
 
@@ -144,18 +148,13 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/class_events.lua" ) ) );
 
 		// Trigger use event.
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == nil )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == nil )" ) );
 
-		event.trigger_use_class_event( cls_a, ent_a, ent_b, state );
+		event.trigger_use_class_event( ent_a, ent_actor, 111, state );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"100,1337,111\" )" ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == \"100,200\" )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == nil )" ) );
-
-		event.trigger_use_class_event( cls_b, ent_b, ent_a, state );
-
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"a_use\" ) == \"100,200\" )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"b_use\" ) == \"200,100\" )" ) );
+		event.trigger_use_class_event( ent_b, ent_actor, 222, state );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"200,1337,222\" )" ) );
 
 		// Trigger block action event.
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == nil )" ) );

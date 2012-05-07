@@ -16,10 +16,14 @@
 #include <memory>
 #include <iostream>
 
+/** Ignore.
+ * @cond NEVER
+ */
 struct EntityStepInfo {
 	std::list<sg::StepProxy::Ptr> steps;
 	sg::Transform transform;
 };
+// @endcond
 
 namespace sf {
 

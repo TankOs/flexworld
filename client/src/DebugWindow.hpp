@@ -7,6 +7,8 @@ namespace sfg {
 class Button;
 }
 
+/** Debug window for setting block types and spawning entities.
+ */
 class DebugWindow : public sfg::Window {
 	public:
 		typedef sfg::SharedPtr<DebugWindow> Ptr; ///< Shared pointer.

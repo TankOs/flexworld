@@ -806,6 +806,42 @@ void SessionHost::set_block( const WorldGate::BlockPosition& block_position, con
 	}
 }
 
+void SessionHost::handle_message( const msg::Use& use_msg, Server::ConnectionID conn_id ) {
+	assert( conn_id < m_player_infos.size() );
+
+	const PlayerInfo& info = m_player_infos[conn_id];
+	assert( info.connected == true );
+	assert( info.entity != nullptr );
+	assert( info.planet != nullptr );
+
+	// Get used entity.
+	m_lock_facility.lock_world( true );
+
+	const Entity* object = m_world.find_entity( use_msg.get_entity_id() );
+
+	if( object == nullptr ) {
+		Log::Logger( Log::ERR ) << info.username << " tried to use entity #" << use_msg.get_entity_id() << " which doesn't exist." << Log::endl;
+		m_lock_facility.lock_world( false );
+		return;
+	}
+
+	// Entity must be on same planet.
+	const Planet* linked_planet = m_world.find_linked_planet( use_msg.get_entity_id() );
+
+	if( linked_planet != info.planet ) {
+		Log::Logger( Log::ERR ) << info.username << " tried to use entity #" << use_msg.get_entity_id() << " which is at another planet." << Log::endl;
+		m_lock_facility.lock_world( false );
+		return;
+	}
+
+	// TODO Distance/range check.
+
+	// Hand over to script.
+	m_script_manager->trigger_use_class_event( *object, *info.entity, conn_id );
+
+	m_lock_facility.lock_world( false );
+}
+
 void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::ConnectionID conn_id ) {
 	assert( conn_id < m_player_infos.size() );
 

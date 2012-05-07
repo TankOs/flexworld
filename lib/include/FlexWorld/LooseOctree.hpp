@@ -87,6 +87,7 @@ class LooseOctree {
 		/** Get child.
 		 * Undefined behaviour if child doesn't exist.
 		 * @param quadrant Quadrant.
+		 * @return Child.
 		 * @see has_child
 		 */
 		LooseOctree<T, DVS>& get_child( Quadrant quadrant ) const;

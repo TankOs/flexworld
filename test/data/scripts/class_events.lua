@@ -3,12 +3,16 @@
 --
 
 -- USE event.
-function on_a_use( entity, actor )
-	flex.test:set_value( "a_use", entity .. "," .. actor )
-end
+function on_actor_use( entity, actor, client_id )
+	if entity == 100 then
+		assert( client_id == 111 )
+	elseif entity == 200 then
+		assert( client_id == 222 )
+	else
+		assert( "Invalid entity ID." )
+	end
 
-function on_b_use( entity, actor )
-	flex.test:set_value( "b_use", entity .. "," .. actor )
+	flex.test:set_value( "use", entity .. "," .. actor .. "," .. client_id )
 end
 
 -- BLOCK_ACTION event
@@ -22,6 +26,5 @@ function on_block_action_event( block, next_block, primary, actor, client_id )
 	flex.test:set_value( "block_action", "called" )
 end
 
-flex.event:hook_class_event( flex.Event.Class.USE, "class/a", on_a_use )
-flex.event:hook_class_event( flex.Event.Class.USE, "class/b", on_b_use )
+flex.event:hook_class_event( flex.Event.Class.USE, "class/actor", on_actor_use )
 flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, "class/a", on_block_action_event )

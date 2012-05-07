@@ -129,6 +129,8 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_fly_up; // XXX
 		bool m_fly_down; // XXX
 
+		uint32_t m_last_picked_entity_id;
+
 		sf::Clock m_use_timer;
 
 		// State.

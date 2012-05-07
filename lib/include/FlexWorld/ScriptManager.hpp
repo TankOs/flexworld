@@ -85,6 +85,14 @@ class ScriptManager {
 		 */
 		bool trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
 
+		/** Trigger use class event.
+		 * @param entity Entity being used.
+		 * @param actor Actor entity.
+		 * @param client_id Client ID.
+		 * @return false if error occured.
+		 */
+		bool trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id );
+
 		/** Trigger block action class event.
 		 * @param block_pos Block position of block the action is performed on.
 		 * @param next_block_pos Block position of block's neighbour (depending on which face the player clicked on).

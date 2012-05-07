@@ -11,6 +11,7 @@
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
+#include <FlexWorld/Messages/Use.hpp>
 #include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
 
@@ -47,6 +48,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_use( false ),
 	m_fly_up( false ),
 	m_fly_down( false ),
+	m_last_picked_entity_id( 0 ),
 	m_my_entity_received( false )
 {
 }
@@ -411,6 +413,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 							get_shared().lock_facility->lock_planet( *planet, false );
 							get_shared().lock_facility->lock_world( false );
 
+							if( result.m_type == ColorPicker::Result::ENTITY ) {
+								m_last_picked_entity_id = result.m_entity_id;
+							}
+
 							if( is_action ) {
 								if( result.m_type == ColorPicker::Result::BLOCK ) {
 									// Send block action msg.
@@ -421,8 +427,6 @@ void PlayState::handle_event( const sf::Event& event ) {
 									ba_msg.set_primary( primary );
 
 									get_shared().client->send_message( ba_msg );
-								}
-								else if( result.m_type == ColorPicker::Result::ENTITY ) {
 								}
 							}
 							else {
@@ -440,7 +444,12 @@ void PlayState::handle_event( const sf::Event& event ) {
 							// If use key was depressed and the use key flag is still true,
 							// execute use event.
 							if( !is_action && m_use ) {
-								std::cout << "USE" << std::endl;
+								flex::msg::Use use_msg;
+
+								use_msg.set_entity_id( m_last_picked_entity_id );
+
+								get_shared().client->send_message( use_msg );
+
 								m_use = false;
 							}
 						}
