@@ -215,9 +215,12 @@ void PlayState::handle_event( const sf::Event& event ) {
 	static bool skip_next_text_event = false;
 	bool give_gui = m_gui_mode;
 
-	if(
-		event.type == sf::Event::Closed ||
-		(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+	if( event.type == sf::Event::Closed ) {
+		leave();
+	}
+	else if(
+		event.type == sf::Event::KeyPressed &&
+		event.key.code == sf::Keyboard::Escape
 	) {
 		// If in GUI mode just leave it.
 		if( m_gui_mode ) {
