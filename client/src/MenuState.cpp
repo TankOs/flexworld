@@ -267,12 +267,14 @@ void MenuState::update( const sf::Time& delta ) {
 	m_desktop.Update( seconds );
 
 	// Slide windows.
+	float abs_fade_speed = FADE_SPEED + static_cast<float>( get_render_target().getSize().x ) / 2.0f;
+
 	if( m_fade_main_menu_out ) {
 		m_window->SetPosition(
 			sf::Vector2f(
 				std::max(
 					-m_window->GetAllocation().width,
-					m_window->GetAllocation().left - (seconds * FADE_SPEED)
+					m_window->GetAllocation().left - (seconds * abs_fade_speed)
 				),
 				m_window->GetAllocation().top
 			)
@@ -284,7 +286,7 @@ void MenuState::update( const sf::Time& delta ) {
 					sf::Vector2f(
 						std::max(
 							SLIDE_TARGET_X,
-							m_sliding_widget->GetAllocation().left - (FADE_SPEED * seconds)
+							m_sliding_widget->GetAllocation().left - (abs_fade_speed * seconds)
 						),
 						m_sliding_widget->GetAllocation().top
 					)
@@ -297,7 +299,7 @@ void MenuState::update( const sf::Time& delta ) {
 			sf::Vector2f(
 				std::min(
 					50.f,
-					m_window->GetAllocation().left + (seconds * FADE_SPEED)
+					m_window->GetAllocation().left + (seconds * abs_fade_speed)
 				),
 				m_window->GetAllocation().top
 			)
@@ -309,7 +311,7 @@ void MenuState::update( const sf::Time& delta ) {
 					sf::Vector2f(
 						std::min(
 							static_cast<float>( get_render_target().getSize().x ),
-							m_sliding_widget->GetAllocation().left + (FADE_SPEED * seconds)
+							m_sliding_widget->GetAllocation().left + (abs_fade_speed * seconds)
 						),
 						m_sliding_widget->GetAllocation().top
 					)
