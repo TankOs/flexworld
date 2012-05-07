@@ -174,6 +174,10 @@ void PlayState::init() {
 
 	// Disable GUI mode for initial settings.
 	enable_gui_mode( false );
+
+	// XXX CONTAINER TEST XXX
+	m_resource_manager.load_texture( flex::FlexID::make( "fw.containers/uo_backpack.png" ) );
+
 }
 
 void PlayState::cleanup() {
@@ -261,8 +265,10 @@ void PlayState::handle_event( const sf::Event& event ) {
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 		else if( event.key.code == sf::Keyboard::F1 ) { // Toggle debug window.
-			m_debug_window->Show( !m_debug_window->IsGloballyVisible() );
-			update_gui_mode();
+			if( !m_gui_mode ) {
+				m_debug_window->Show( !m_debug_window->IsGloballyVisible() );
+				update_gui_mode();
+			}
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
 			m_chat_window->AddMessage( "*** Screenshot saved.", "Status" );
@@ -333,7 +339,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 
 				case Controls::CHAT:
-					if( pressed ) {
+					if( pressed && !m_gui_mode ) {
 						m_chat_window->Show( !m_chat_window->IsGloballyVisible() );
 						update_gui_mode();
 
@@ -352,6 +358,26 @@ void PlayState::handle_event( const sf::Event& event ) {
 						}
 					}
 
+					break;
+
+				case Controls::INVENTORY:
+					{
+						if( m_container_manager.get_num_containers() == 0 ) {
+							if( !m_gui_mode ) {
+								Container& cont = m_container_manager.create_container( 0 );
+								cont.set_background_texture( m_resource_manager.find_texture( flex::FlexID::make( "fw.containers/uo_backpack.png" ) ) );
+
+								update_gui_mode();
+								give_gui = false;
+							}
+						}
+						else {
+							m_container_manager.clear();
+							update_gui_mode();
+							give_gui = false;
+						}
+
+					}
 					break;
 
 				case Controls::PRIMARY_ACTION:
@@ -467,6 +493,19 @@ void PlayState::handle_event( const sf::Event& event ) {
 	if( event.type == sf::Event::TextEntered && skip_next_text_event ) {
 		give_gui = false;
 		skip_next_text_event = false;
+	}
+
+	// Containers.
+	if( give_gui && m_container_manager.get_num_containers() > 0 ) {
+		m_container_manager.handle_event( event );
+
+		// If clicked outside, close containers.
+		if( event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && m_container_manager.was_event_eaten() == false ) {
+			m_container_manager.clear();
+			update_gui_mode();
+
+			give_gui = false;
+		}
 	}
 
 	if( give_gui ) {
@@ -705,6 +744,9 @@ void PlayState::render() const {
 
 	// FPS.
 	target.draw( m_fps_text );
+
+	// Containers.
+	m_container_manager.render( target );
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( target );
@@ -1008,6 +1050,9 @@ void PlayState::update_gui_mode() {
 	else if( m_debug_window->IsGloballyVisible() ) {
 		new_mode = true;
 	}
+	else if( m_container_manager.get_num_containers() > 0 ) {
+		new_mode = true;
+	}
 	else {
 		new_mode = false;
 	}
@@ -1033,12 +1078,14 @@ void PlayState::enable_gui_mode( bool enable ) {
 		m_strafe_right = false;
 		m_fly_up = false;
 		m_fly_down = false;
+		m_run = false;
 		m_update_velocity = true;
 	}
 	else {
 		// Hide windows.
 		m_chat_window->Show( false );
 		m_debug_window->Show( false );
+		m_container_manager.clear();
 
 		reset_mouse();
 	}
@@ -1065,6 +1112,9 @@ void PlayState::on_chat_message_ready() {
 	msg.set_sender( "-" );
 
 	get_shared().client->send_message( msg );
+
+	m_chat_window->Show( false );
+	update_gui_mode();
 }
 
 void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID /*conn_id*/ ) {
@@ -1179,6 +1229,9 @@ void PlayState::on_debug_class_id_change() {
 	chat_msg.set_sender( "-" );
 
 	get_shared().client->send_message( chat_msg );
+
+	m_debug_window->Show( false );
+	update_gui_mode();
 }
 
 void PlayState::on_debug_spawn_id_change() {
@@ -1189,4 +1242,7 @@ void PlayState::on_debug_spawn_id_change() {
 	chat_msg.set_sender( "-" );
 
 	get_shared().client->send_message( chat_msg );
+
+	m_debug_window->Show( false );
+	update_gui_mode();
 }

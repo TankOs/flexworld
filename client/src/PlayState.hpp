@@ -5,6 +5,7 @@
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
 #include "TextScroller.hpp"
+#include "ContainerManager.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
@@ -67,6 +68,8 @@ class PlayState : public State, flex::Client::Handler {
 		sfg::Desktop m_desktop;
 		ChatWindow::Ptr m_chat_window;
 		sfg::SharedPtr<DebugWindow> m_debug_window;
+
+		ContainerManager m_container_manager;
 
 		bool m_gui_mode;
 		bool m_has_focus;

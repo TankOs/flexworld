@@ -15,6 +15,8 @@ set(
 	${INC_DIR}/ColorMorpher.cpp
 	${INC_DIR}/ColorPicker.hpp
 	${INC_DIR}/ConnectState.hpp
+	${INC_DIR}/Container.hpp
+	${INC_DIR}/ContainerManager.hpp
 	${INC_DIR}/Controls.hpp
 	${INC_DIR}/DebugWindow.hpp
 	${INC_DIR}/EntityGroupNode.hpp
@@ -39,6 +41,8 @@ set(
 	${SRC_DIR}/ColorMorpher.cpp
 	${SRC_DIR}/ColorPicker.cpp
 	${SRC_DIR}/ConnectState.cpp
+	${SRC_DIR}/Container.cpp
+	${SRC_DIR}/ContainerManager.cpp
 	${SRC_DIR}/Controls.cpp
 	${SRC_DIR}/DebugWindow.cpp
 	${SRC_DIR}/EntityGroupNode.cpp
