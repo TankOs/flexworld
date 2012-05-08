@@ -83,21 +83,29 @@ void ContainerManager::handle_event( const sf::Event& event ) {
 	}
 
 	// Process left button presses.
-	if( event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left ) {
-		// If hit container isn't active, make it active.
-		if( hit_container != m_stacked_containers.front() ) {
-			// Bring to front.
-			ContainerPtrList::iterator new_active_iter = std::find( m_stacked_containers.begin(), m_stacked_containers.end(), hit_container );
-			assert( new_active_iter != m_stacked_containers.end() );
+	if( event.type == sf::Event::MouseButtonPressed ) {
+		if( event.mouseButton.button == sf::Mouse::Left ) {
+			// If hit container isn't active, make it active.
+			if( hit_container != m_stacked_containers.front() ) {
+				// Bring to front.
+				ContainerPtrList::iterator new_active_iter = std::find( m_stacked_containers.begin(), m_stacked_containers.end(), hit_container );
+				assert( new_active_iter != m_stacked_containers.end() );
 
-			m_stacked_containers.erase( new_active_iter );
-			m_stacked_containers.push_front( hit_container );
+				m_stacked_containers.erase( new_active_iter );
+				m_stacked_containers.push_front( hit_container );
+			}
+
+			// Prepare dragging.
+			m_prepare_dragging = true;
+
+			m_event_eaten = true;
 		}
-
-		// Prepare dragging.
-		m_prepare_dragging = true;
-
-		m_event_eaten = true;
+		else {
+			// Close container is not dragging.
+			if( !m_dragging && !m_prepare_dragging ) {
+				destroy_container( hit_container->get_id() );
+			}
+		}
 	}
 
 	// Process button releases.
@@ -144,6 +152,23 @@ void ContainerManager::handle_event( const sf::Event& event ) {
 
 }
 
+void ContainerManager::destroy_container( uint32_t id ) {
+	ContainerMap::iterator cont_iter = m_containers.find( id );
+	assert( cont_iter != m_containers.end() );
+
+	ContainerPtrList::iterator stacked_iter = std::find(
+		m_stacked_containers.begin(),
+		m_stacked_containers.end(),
+		&cont_iter->second
+	);
+	assert( stacked_iter != m_stacked_containers.end() );
+
+	m_stacked_containers.erase( stacked_iter );
+	m_containers.erase( cont_iter );
+
+	on_container_destroy();
+}
+
 bool ContainerManager::was_event_eaten() const {
 	return m_event_eaten;
 }
@@ -165,4 +190,10 @@ void ContainerManager::clear() {
 	m_dragging = false;
 	m_prepare_dragging = false;
 	m_event_eaten = false;
+}
+
+Container& ContainerManager::get_active_container() {
+	assert( m_containers.size() > 0 );
+
+	return *m_stacked_containers.front();
 }

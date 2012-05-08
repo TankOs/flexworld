@@ -2,6 +2,8 @@
 
 #include "Container.hpp"
 
+#include <SFGUI/Signal.hpp>
+
 #include <map>
 #include <list>
 #include <memory>
@@ -30,6 +32,18 @@ class ContainerManager {
 		 * @return Created container.
 		 */
 		Container& create_container( uint32_t id );
+
+		/** Destroy container.
+		 * Undefined behaviour if container with ID doesn't exist.
+		 * @param id Container ID.
+		 */
+		void destroy_container( uint32_t id );
+
+		/** Get active container.
+		 * Undefined behaviour if there're no containers.
+		 * @return Active container.
+		 */
+		Container& get_active_container();
 
 		/** Find container.
 		 * @param id ID.
@@ -61,6 +75,8 @@ class ContainerManager {
 		 * All containers are removed. Saved positions remain.
 		 */
 		void clear();
+
+		sfg::Signal on_container_destroy; ///< Fired when a container is destroyed.
 
 	private:
 		typedef std::map<uint32_t, Container> ContainerMap;

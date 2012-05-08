@@ -1,3 +1,5 @@
 fw.base.nature/wood.png: http://www.geeksucks.com/freebies/innovative-wood-texture-pack-from-geeksucks.htm
 fw.base.metal/red_iron.png: http://dreamtextures.com/category/dreamtextures/metal/ (CC-SA 3.0)
 fw.animals/horse.jpg/.fwm: http://www.turbosquid.com/3d-models/free-horse-3d-model/614720
+
+client/local/sfx/chat.wav: CC BY 3.0 (http://www.freesound.org/people/junggle/sounds/30341/)

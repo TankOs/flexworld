@@ -16,6 +16,8 @@
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/Audio/SoundBuffer.hpp>
+#include <SFML/Audio/Sound.hpp>
 #include <boost/thread.hpp>
 
 class PlanetDrawable;
@@ -52,6 +54,7 @@ class PlayState : public State, flex::Client::Handler {
 		void on_chat_close_click();
 		void on_debug_class_id_change();
 		void on_debug_spawn_id_change();
+		void on_container_destroy();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
@@ -81,6 +84,9 @@ class PlayState : public State, flex::Client::Handler {
 
 		sf::Texture m_crosshair_texture;
 		sf::Sprite m_crosshair_sprite;
+
+		sf::SoundBuffer m_chat_buffer;
+		sf::Sound m_chat_sound;
 
 		// Resources.
 		mutable ResourceManager m_resource_manager;

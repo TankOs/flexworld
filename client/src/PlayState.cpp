@@ -54,10 +54,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 }
 
 void PlayState::init() {
-	// Init GLEW.
-	//glewInit();
-
-	// If vsync is enabled, due to set an FPS limit.
+	// If vsync is enabled disable FPS limiter.
 	if( get_shared().user_settings.is_vsync_enabled() ) {
 		set_render_fps( 0 );
 	}
@@ -128,6 +125,10 @@ void PlayState::init() {
 		static_cast<float>( get_render_target().getSize().y ) / 2.0f - m_crosshair_sprite.getLocalBounds().height / 2.0f
 	);
 
+	// Setup local sounds.
+	m_chat_buffer.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sfx/chat.wav" ) );
+	m_chat_sound.setBuffer( m_chat_buffer );
+
 	// Setup scene.
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
@@ -174,6 +175,9 @@ void PlayState::init() {
 
 	// Disable GUI mode for initial settings.
 	enable_gui_mode( false );
+
+	// Setup container manager.
+	m_container_manager.on_container_destroy.Connect( &PlayState::on_container_destroy, this );
 
 	// XXX CONTAINER TEST XXX
 	m_resource_manager.load_texture( flex::FlexID::make( "fw.containers/uo_backpack.png" ) );
@@ -268,6 +272,15 @@ void PlayState::handle_event( const sf::Event& event ) {
 			if( !m_gui_mode ) {
 				m_debug_window->Show( !m_debug_window->IsGloballyVisible() );
 				update_gui_mode();
+
+				// Center mouse on window.
+				sf::Mouse::setPosition(
+					sf::Vector2i(
+						static_cast<int>( m_debug_window->GetAllocation().left + m_debug_window->GetAllocation().width / 2.0f ),
+						static_cast<int>( m_debug_window->GetAllocation().top + m_debug_window->GetAllocation().height / 2.0f )
+					),
+					get_render_target()
+				);
 			}
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
@@ -362,21 +375,20 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 				case Controls::INVENTORY:
 					{
-						if( m_container_manager.get_num_containers() == 0 ) {
-							if( !m_gui_mode ) {
-								Container& cont = m_container_manager.create_container( 0 );
-								cont.set_background_texture( m_resource_manager.find_texture( flex::FlexID::make( "fw.containers/uo_backpack.png" ) ) );
+						Container& cont = m_container_manager.create_container( 0 );
+						cont.set_background_texture( m_resource_manager.find_texture( flex::FlexID::make( "fw.containers/uo_backpack.png" ) ) );
 
-								update_gui_mode();
-								give_gui = false;
-							}
-						}
-						else {
-							m_container_manager.clear();
-							update_gui_mode();
-							give_gui = false;
-						}
+						// Set mouse to container's center.
+						sf::Mouse::setPosition(
+							sf::Vector2i(
+								static_cast<int>( cont.get_position().x + cont.get_size().x / 2.0f ),
+								static_cast<int>( cont.get_position().y + cont.get_size().y / 2.0f )
+							),
+							get_render_target()
+						);
 
+						update_gui_mode();
+						give_gui = false;
 					}
 					break;
 
@@ -498,14 +510,6 @@ void PlayState::handle_event( const sf::Event& event ) {
 	// Containers.
 	if( give_gui && m_container_manager.get_num_containers() > 0 ) {
 		m_container_manager.handle_event( event );
-
-		// If clicked outside, close containers.
-		if( event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left && m_container_manager.was_event_eaten() == false ) {
-			m_container_manager.clear();
-			update_gui_mode();
-
-			give_gui = false;
-		}
 	}
 
 	if( give_gui ) {
@@ -1126,6 +1130,9 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 
 	m_chat_window->AddMessage( message, msg.get_channel() );
 	m_text_scroller.add_text( "[" + msg.get_channel() + "] " + message );
+
+	// Play sound.
+	m_chat_sound.play();
 }
 
 void PlayState::on_chat_close_click() {
@@ -1245,4 +1252,11 @@ void PlayState::on_debug_spawn_id_change() {
 
 	m_debug_window->Show( false );
 	update_gui_mode();
+}
+
+void PlayState::on_container_destroy() {
+	// If no more containers leave GUI mode.
+	if( m_container_manager.get_num_containers() == 0 ) {
+		update_gui_mode();
+	}
 }
