@@ -41,7 +41,7 @@ struct ClipRegion
 	{
 	}
 
-	ClipRegion(const Vector2i& origin, const Vector2i& dimensions) : origin(origin), dimensions(dimensions)
+	ClipRegion(const Vector2i& origin_, const Vector2i& dimensions_) : origin(origin_), dimensions(dimensions_)
 	{
 	}
 
@@ -207,11 +207,11 @@ int ElementUtilities::GetLineHeight(Element* element)
 	// If the property is a straight number or an em measurement, then it scales the line height.
 	if (line_height_property->unit == Property::NUMBER ||
 		line_height_property->unit == Property::EM)
-		return Math::Round(line_height_property->value.Get< float >() * line_height);
+		return Math::Round(line_height_property->value.Get< float >() * static_cast<float>( line_height ));
 
 	// If the property is a percentage, then it scales the line height.
 	else if (line_height_property->unit == Property::PERCENT)
-		return Math::Round(line_height_property->value.Get< float >() * line_height * 0.01f);
+		return Math::Round(line_height_property->value.Get< float >() * static_cast<float>( line_height ) * 0.01f);
 
 	// Otherwise, we're a px measurement.
 	else if (line_height_property->unit == Property::PX)
@@ -294,11 +294,11 @@ bool ElementUtilities::GetClippingRegion(Vector2i& clip_origin, Vector2i& clip_d
 
 			// Determine how many clip regions this ancestor ignores, and inherit the value. If this region ignores all
 			// clipping regions, then we do too.
-			int num_ignored_clips = 0;
-			const Property* clip_property = clipping_element->GetProperty(CLIP);
-			if (clip_property->unit == Property::NUMBER)
-				num_ignored_clips = Math::Max(num_ignored_clips, clip_property->Get< int >());
-			else if (clip_property->Get< int >() == CLIP_NONE)
+			int num_ignored_clips_2 = 0;
+			const Property* clip_property_2 = clipping_element->GetProperty(CLIP);
+			if (clip_property_2->unit == Property::NUMBER)
+				num_ignored_clips_2 = Math::Max(num_ignored_clips_2, clip_property_2->Get< int >());
+			else if (clip_property_2->Get< int >() == CLIP_NONE)
 				break;
 
 			// Climb the tree to this region's parent.

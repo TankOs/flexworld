@@ -203,12 +203,32 @@ void MenuState::init() {
 	// Prepare background.
 	float width = static_cast<float>( get_render_target().getSize().x );
 	float height = static_cast<float>( get_render_target().getSize().y );
-	sf::Uint8 alpha = 255;
 
-	m_background_varray[0] = sf::Vertex( sf::Vector2f( 0, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
-	m_background_varray[1] = sf::Vertex( sf::Vector2f( 0, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
-	m_background_varray[2] = sf::Vertex( sf::Vector2f( width, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
-	m_background_varray[3] = sf::Vertex( sf::Vector2f( width, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
+	m_background_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/bg.png" ) );
+
+	sf::Vector2f texture_size(
+		static_cast<float>( m_background_texture.getSize().x ),
+		static_cast<float>( m_background_texture.getSize().y )
+	);
+
+	m_background_varray.resize(
+		static_cast<unsigned int>( std::ceil( width / texture_size.x ) ) *
+		static_cast<unsigned int>( std::ceil( height / texture_size.y ) )
+	);
+
+	/*std::cout << m_background_varray.getSize() << std::endl;
+
+	unsigned int varray_idx = 0;
+
+	for( float y = 0.0f; y < height; y += texture_size.y ) {
+		for( float x = 0.0f; x < width; x += texture_size.x ) {
+			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x, y ), sf::Vector2f( 0.0f, 0.0f ) );
+			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x, y + texture_size.y ), sf::Vector2f( 0.0f, texture_size.y ) );
+			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x + texture_size.x, y + texture_size.y ), sf::Vector2f( texture_size.x, texture_size.y ) );
+			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x + texture_size.x, y ), sf::Vector2f( texture_size.x, 0.0f ) );
+		}
+	}*/
+
 
 	// Setup Rocket.
 	m_render_interface.reset( new RocketRenderInterface( get_render_target() ) );
@@ -385,7 +405,12 @@ void MenuState::render() const {
 
 	window.clear( sf::Color( 0x66, 0x9c, 0xff ) );
 
-	window.draw( m_background_varray, sf::BlendMultiply );
+	{
+		sf::RenderStates states;
+		states.texture = &m_background_texture;
+
+		window.draw( m_background_varray, states );
+	}
 
 	// Clouds.
 	for( std::size_t cloud_idx = 0; cloud_idx < m_cloud_sprites.size(); ++cloud_idx ) {

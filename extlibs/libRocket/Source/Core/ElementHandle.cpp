@@ -35,7 +35,7 @@
 namespace Rocket {
 namespace Core {
 
-ElementHandle::ElementHandle(const String& tag) : Element(tag), drag_start(0, 0)
+ElementHandle::ElementHandle(const String& tag_) : Element(tag_), drag_start(0, 0)
 {
 	// Make sure we can be dragged!
 	SetProperty(DRAG, DRAG);
@@ -107,8 +107,8 @@ void ElementHandle::ProcessEvent(Event& event)
 			// Update the move and size objects
 			if (move_target)
 			{
-				move_target->SetProperty(LEFT, Property(Math::RealToInteger(move_original_position.x + x), Property::PX));
-				move_target->SetProperty(TOP, Property(Math::RealToInteger(move_original_position.y + y), Property::PX));
+				move_target->SetProperty(LEFT, Property(Math::RealToInteger(move_original_position.x + static_cast<float>( x )), Property::PX));
+				move_target->SetProperty(TOP, Property(Math::RealToInteger(move_original_position.y + static_cast<float>( y )), Property::PX));
 			}
 
 			if (size_target)
@@ -123,8 +123,8 @@ void ElementHandle::ProcessEvent(Event& event)
 				if (size_target->GetProperty(MARGIN_LEFT)->unit == Property::KEYWORD)
 					size_target->SetProperty(MARGIN_LEFT, Property((float) Math::RealToInteger(size_target->GetBox().GetEdge(Box::MARGIN, Box::LEFT)), Property::PX));
 
-				int new_x = Math::RealToInteger(size_original_size.x + x);
-				int new_y = Math::RealToInteger(size_original_size.y + y);
+				int new_x = Math::RealToInteger(size_original_size.x + static_cast<float>( x ));
+				int new_y = Math::RealToInteger(size_original_size.y + static_cast<float>( y ));
 
 				size_target->SetProperty(WIDTH, Property(Math::Max< float >((float) new_x, 0), Property::PX));
 				size_target->SetProperty(HEIGHT, Property(Math::Max< float >((float) new_y, 0), Property::PX));

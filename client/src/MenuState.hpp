@@ -65,6 +65,7 @@ class MenuState : public State {
 		SpriteVector m_cloud_sprites;
 
 		sf::VertexArray m_background_varray;
+		sf::Texture m_background_texture;
 
 		std::unique_ptr<RocketRenderInterface> m_render_interface;
 		std::unique_ptr<RocketSystemInterface> m_system_interface;

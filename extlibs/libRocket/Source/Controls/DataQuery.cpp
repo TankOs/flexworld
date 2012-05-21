@@ -51,9 +51,9 @@ class DataQuerySort
 
 
 
-DataQuery::DataQuery(DataSource* data_source, const Rocket::Core::String& table, const Rocket::Core::String& _fields, int offset, int limit, const Rocket::Core::String& order)
+DataQuery::DataQuery(DataSource* data_source_, const Rocket::Core::String& table_, const Rocket::Core::String& _fields, int offset_, int limit_, const Rocket::Core::String& order)
 {
-	ExecuteQuery(data_source, table, _fields, offset, limit, order);
+	ExecuteQuery(data_source_, table_, _fields, offset_, limit_, order);
 }
 
 
@@ -133,7 +133,7 @@ bool DataQuery::NextRow()
 bool DataQuery::IsFieldSet(const Rocket::Core::String& field) const
 {
 	FieldIndices::const_iterator itr = field_indices.find(field);
-	if (itr == field_indices.end() || (*itr).second >= (int)rows[current_row].size())
+	if (itr == field_indices.end() || (*itr).second >= (unsigned int)rows[current_row].size())
 	{
 		return false;
 	}

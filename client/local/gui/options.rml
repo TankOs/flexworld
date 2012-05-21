@@ -5,7 +5,6 @@
 				font-family:MenuFont;
 				font-size:18;
 				background-color:#000;
-				display:none;
 			}
 
 			h1, p {

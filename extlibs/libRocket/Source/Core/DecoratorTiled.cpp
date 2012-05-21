@@ -80,14 +80,14 @@ void DecoratorTiled::Tile::CalculateDimensions(Element* element, const Texture& 
 
 			if (texcoords_absolute[i][0] &&
 				texture_dimensions.x > 0)
-				new_data.texcoords[i].x /= texture_dimensions.x;
+				new_data.texcoords[i].x /= static_cast<float>( texture_dimensions.x );
 			if (texcoords_absolute[i][1] &&
 				texture_dimensions.y > 0)
-				new_data.texcoords[i].y /= texture_dimensions.y;
+				new_data.texcoords[i].y /= static_cast<float>( texture_dimensions.y );
 		}
 
-		new_data.dimensions.x = Math::AbsoluteValue((new_data.texcoords[1].x * texture_dimensions.x) - (new_data.texcoords[0].x * texture_dimensions.x));
-		new_data.dimensions.y = Math::AbsoluteValue((new_data.texcoords[1].y * texture_dimensions.y) - (new_data.texcoords[0].y * texture_dimensions.y));
+		new_data.dimensions.x = Math::AbsoluteValue((new_data.texcoords[1].x * static_cast<float>( texture_dimensions.x )) - (new_data.texcoords[0].x * static_cast<float>( texture_dimensions.x )));
+		new_data.dimensions.y = Math::AbsoluteValue((new_data.texcoords[1].y * static_cast<float>( texture_dimensions.y )) - (new_data.texcoords[0].y * static_cast<float>( texture_dimensions.y )));
 
 		data[render_interface] = new_data;
 	}
@@ -112,7 +112,7 @@ void DecoratorTiled::Tile::GenerateGeometry(std::vector< Vertex >& vertices, std
 	if (data_iterator == data.end())
 		return;
 
-	const TileData& data = data_iterator->second;
+	const TileData& data_ = data_iterator->second;
 
 	int num_tiles[2];
 	Vector2f final_tile_dimensions;
@@ -121,8 +121,8 @@ void DecoratorTiled::Tile::GenerateGeometry(std::vector< Vertex >& vertices, std
 	Vector2f scaled_texcoords[2];
 	for (int i = 0; i < 2; i++)
 	{
-		scaled_texcoords[i].x = data.texcoords[0].x + oriented_texcoords[orientation][i].x * (data.texcoords[1].x - data.texcoords[0].x);
-		scaled_texcoords[i].y = data.texcoords[0].y + oriented_texcoords[orientation][i].y * (data.texcoords[1].y - data.texcoords[0].y);
+		scaled_texcoords[i].x = data_.texcoords[0].x + oriented_texcoords[orientation][i].x * (data_.texcoords[1].x - data_.texcoords[0].x);
+		scaled_texcoords[i].y = data_.texcoords[0].y + oriented_texcoords[orientation][i].y * (data_.texcoords[1].y - data_.texcoords[0].y);
 	}
 
 	// Resize the dimensions (if necessary) to fit this tile's repeat mode.
@@ -165,7 +165,7 @@ void DecoratorTiled::Tile::GenerateGeometry(std::vector< Vertex >& vertices, std
 					num_tiles[i] = Math::RealToInteger((surface_dimensions[i] + (tile_dimensions[i] - 1)) / tile_dimensions[i]);
 					num_tiles[i] = Math::Max(0, num_tiles[i]);
 
-					final_tile_dimensions[i] = surface_dimensions[i] - (num_tiles[i] - 1) * tile_dimensions[i];
+					final_tile_dimensions[i] = surface_dimensions[i] - static_cast<float>(num_tiles[i] - 1) * tile_dimensions[i];
 					if (final_tile_dimensions[i] <= 0)
 						final_tile_dimensions[i] = tile_dimensions[i];
 
@@ -195,10 +195,10 @@ void DecoratorTiled::Tile::GenerateGeometry(std::vector< Vertex >& vertices, std
 	for (int y = 0; y < num_tiles[1]; y++)
 	{
 		Vector2f tile_position;
-		tile_position.y = surface_origin.y + (float) tile_dimensions.y * y;
+		tile_position.y = surface_origin.y + (float) tile_dimensions.y * (float)y;
 
 		Vector2f tile_size;
-		tile_size.y = (float) (y < num_tiles[1] - 1 ? data.dimensions.y : final_tile_dimensions.y);
+		tile_size.y = (float) (y < static_cast<float>( num_tiles[1] - 1 ) ? data_.dimensions.y : final_tile_dimensions.y);
 
 		// Squish the texture coordinates in the y if we're clamping and this is the last in a double-tile.
 		Vector2f tile_texcoords[2];
@@ -233,7 +233,7 @@ void DecoratorTiled::Tile::GenerateGeometry(std::vector< Vertex >& vertices, std
 				tile_texcoords[1].x = scaled_texcoords[1].x;
 			}
 
-			tile_position.x = surface_origin.x + (float) tile_dimensions.x * x;
+			tile_position.x = surface_origin.x + (float) tile_dimensions.x * static_cast<float>( x );
 			tile_size.x = (float) (x < num_tiles[0] - 1 ? tile_dimensions.x : final_tile_dimensions.x);
 
 			GeometryUtilities::GenerateQuad(new_vertices, new_indices, tile_position, tile_size, Colourb(255, 255, 255), tile_texcoords[0], tile_texcoords[1], index_offset);
