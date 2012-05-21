@@ -128,6 +128,12 @@ endif()
 if( FW_BUILD_CLIENT )
 	find_package( OpenGL REQUIRED )
 	find_package( SFGUI REQUIRED )
+
+	# Build libRocket.
+	set( BUILD_SHARED_LIBS false CACHE BOOL "" )
+	set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/extlibs/libRocket/Build/cmake" )
+
+	add_subdirectory( "${PROJECT_SOURCE_DIR}/extlibs/libRocket/Build/" )
 endif()
 
 #

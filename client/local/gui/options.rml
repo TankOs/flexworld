@@ -1,0 +1,62 @@
+<rml>
+	<head>
+		<style>
+			body {
+				font-family:MenuFont;
+				font-size:18;
+				background-color:#000;
+				display:none;
+			}
+
+			h1, p {
+				display:block;
+			}
+
+			.window {
+				color:#fff;
+				background-color:#ff000055;
+				width:400px;
+			}
+
+			tabset tab {
+				display:inline-block;
+				width:100px;
+				height:54px;
+				line-height:48px;
+				text-align:center;
+
+				bg-decorator:tiled-horizontal;
+				bg-left-image:wooden_button.png 0px 0px 11px 54px;
+				bg-center-image:wooden_button.png repeat-truncate 13px 0px 82px 54px;
+				bg-right-image:wooden_button.png 83px 0px 101px 54px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="window">
+			<h1>Options</h1>
+
+			<tabset>
+				<tab>Account</tab>
+				<panel>
+					Account...
+				</panel>
+
+				<tab>Controls</tab>
+				<panel>
+					Controls...
+				</panel>
+
+				<tab>Video</tab>
+				<panel>
+					Video...
+				</panel>
+
+				<tab>Audio</tab>
+				<panel>
+					Audio...
+				</panel>
+			</tabset>
+		</div>
+	</body>
+</rml>

@@ -1,6 +1,9 @@
 #include "MenuState.hpp"
 #include "ConnectState.hpp"
 #include "Shared.hpp"
+#include "RocketRenderInterface.hpp"
+#include "RocketSystemInterface.hpp"
+#include "RocketEventDispatcher.hpp"
 
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/GameModeDriver.hpp>
@@ -8,6 +11,9 @@
 #include <FlexWorld/ClassDriver.hpp>
 #include <FlexWorld/Log.hpp>
 
+#include <Rocket/Core.h>
+#include <Rocket/Debugger.h>
+#include <Rocket/Controls.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <boost/filesystem.hpp>
@@ -22,7 +28,8 @@ static const float SLIDE_TARGET_X = 50.f;
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
 	m_fade_main_menu_out( false ),
-	m_background_varray( sf::Quads, 4 )
+	m_background_varray( sf::Quads, 4 ),
+	m_rocket_context( nullptr )
 {
 }
 
@@ -203,6 +210,43 @@ void MenuState::init() {
 	m_background_varray[2] = sf::Vertex( sf::Vector2f( width, height ), sf::Color( 0xff, 0xff, 0xff, alpha ) );
 	m_background_varray[3] = sf::Vertex( sf::Vector2f( width, 0 ), sf::Color( 0x88, 0x88, 0x88, alpha ) );
 
+	// Setup Rocket.
+	m_render_interface.reset( new RocketRenderInterface( get_render_target() ) );
+	m_system_interface.reset( new RocketSystemInterface );
+
+	Rocket::Core::SetRenderInterface( &*m_render_interface );
+	Rocket::Core::SetSystemInterface( &*m_system_interface );
+
+	Rocket::Core::Initialise();
+
+	Rocket::Core::FontDatabase::LoadFontFace(
+		(flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/Economica-Bold.ttf" )).c_str(),
+		"MenuFont",
+		Rocket::Core::Font::STYLE_NORMAL,
+		Rocket::Core::Font::WEIGHT_NORMAL
+	);
+
+	m_rocket_context = Rocket::Core::CreateContext(
+		"default",
+		Rocket::Core::Vector2i(
+			get_render_target().getSize().x,
+			get_render_target().getSize().y
+		)
+	);
+
+	Rocket::Debugger::Initialise( m_rocket_context );
+	Rocket::Controls::Initialise();
+
+	const std::string filename = flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/main_menu.rml" );
+	Rocket::Core::ElementDocument* document = m_rocket_context->LoadDocument( filename.c_str() );
+
+	document->Show();
+	document->RemoveReference();
+
+	document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
+	document->Show();
+	document->RemoveReference();
+
 	// Cleanup the backend.
 	get_shared().account_manager.reset();
 	get_shared().host.reset();
@@ -216,6 +260,11 @@ void MenuState::cleanup() {
 	// Save window position.
 	get_shared().user_settings.set_window_position( get_render_target().getPosition() );
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
+
+	// Cleanup Rocket.
+	m_rocket_context->RemoveReference();
+
+	Rocket::Core::Shutdown();
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
@@ -243,6 +292,8 @@ void MenuState::handle_event( const sf::Event& event ) {
 			on_insta_click();
 		}
 	}
+
+	RocketEventDispatcher::dispatch_event( event, *m_rocket_context );
 }
 
 void MenuState::update( const sf::Time& delta ) {
@@ -265,6 +316,9 @@ void MenuState::update( const sf::Time& delta ) {
 
 	// Update desktop.
 	m_desktop.Update( seconds );
+
+	// Update rocket.
+	m_rocket_context->Update();
 
 	// Slide windows.
 	float abs_fade_speed = FADE_SPEED + static_cast<float>( get_render_target().getSize().x ) / 2.0f;
@@ -340,6 +394,10 @@ void MenuState::render() const {
 
 	// Render GUI.
 	sfg::Renderer::Get().Display( window );
+
+	window.pushGLStates();
+	m_rocket_context->Render();
+	window.popGLStates();
 
 	window.display();
 }

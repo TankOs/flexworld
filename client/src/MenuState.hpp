@@ -7,6 +7,16 @@
 #include <SFGUI/SFGUI.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <vector>
+#include <memory>
+
+class RocketRenderInterface;
+class RocketSystemInterface;
+
+namespace Rocket {
+namespace Core {
+class Context;
+}
+}
 
 /** Menu state.
  */
@@ -55,4 +65,8 @@ class MenuState : public State {
 		SpriteVector m_cloud_sprites;
 
 		sf::VertexArray m_background_varray;
+
+		std::unique_ptr<RocketRenderInterface> m_render_interface;
+		std::unique_ptr<RocketSystemInterface> m_system_interface;
+		Rocket::Core::Context* m_rocket_context;
 };

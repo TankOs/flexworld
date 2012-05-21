@@ -27,6 +27,9 @@ set(
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
 	${INC_DIR}/ResourceManager.hpp
+	${INC_DIR}/RocketEventDispatcher.hpp
+	${INC_DIR}/RocketRenderInterface.hpp
+	${INC_DIR}/RocketSystemInterface.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
@@ -54,6 +57,9 @@ set(
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
 	${SRC_DIR}/ResourceManager.cpp
+	${SRC_DIR}/RocketEventDispatcher.cpp
+	${SRC_DIR}/RocketRenderInterface.cpp
+	${SRC_DIR}/RocketSystemInterface.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
@@ -64,6 +70,7 @@ set(
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/SFML/extlibs/headers/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/libRocket/Include/ )
 include_directories( ${SFGUI_INCLUDE_DIR} )
 include_directories( ${OPENGL_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
@@ -79,6 +86,9 @@ add_executable( flexworld-client ${SOURCES} )
 
 target_link_libraries( flexworld-client flexworld )
 target_link_libraries( flexworld-client fwsg )
+target_link_libraries( flexworld-client RocketControls )
+target_link_libraries( flexworld-client RocketDebugger )
+target_link_libraries( flexworld-client RocketCore )
 target_link_libraries( flexworld-client ${SFGUI_LIBRARY} )
 target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
