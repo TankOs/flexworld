@@ -36,7 +36,7 @@ button:active {
 	position: absolute;
 	min-width: 50px;
 	min-height: 50px;
-	padding: 80px 40px 40px 40px;
+	padding: 65px 40px 40px 40px;
 
 	bg-decorator:tiled-box;
 
@@ -53,9 +53,18 @@ button:active {
 	bg-center-image:forms.png repeat-truncate 85px 217px 404px 254px;
 }
 
-.window h1 {
-	font-size: 30;
-	text-align: center;
+.window title {
+	color:#fff;
+	position:absolute;
+	text-align:center;
+	left:30px;
+	top:7px;
+	width:88%;
+
+	bg-decorator:tiled-horizontal;
+	bg-left-image:forms.png 0px 50px 52px 81px;
+	bg-center-image:forms.png repeat-truncate 52px 50px 118px 81px;
+	bg-right-image:forms.png 118px 50px 181px 81px;
 }
 
 tabset tab {
@@ -92,17 +101,100 @@ tabset tab:active {
 
 tabset panel {
 	margin-top: 0px;
-	background:#ffffff33;
-	padding:15px;
 }
 
 input.text {
-	background-color: #000a;
-	height: 25px;
-	padding: 5px 5px 0 5px;
-	font-size: 14;
+	height: 32px;
+	padding: 7px 7px 0 7px;
+	/*font-size: 14;*/
 	margin-bottom: 5px;
-	color: #fff;
+
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     224px 17px 231px 24px;
+	bg-top-right-image:forms.png    234px 17px 241px 24px;
+	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
+	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
+
+	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
+	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
+	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
+	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
+
+	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
+}
+
+input.text:focus {
+	color:#fff;
+
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     241px 17px 248px 24px;
+	bg-top-right-image:forms.png    251px 17px 258px 24px;
+	bg-bottom-right-image:forms.png 251px 27px 258px 34px;
+	bg-bottom-left-image:forms.png  241px 27px 248px 34px;
+
+	bg-top-image:forms.png repeat-stretch    248px 17px 251px 24px;
+	bg-right-image:forms.png repeat-stretch  251px 24px 258px 27px;
+	bg-bottom-image:forms.png repeat-stretch 248px 27px 251px 34px;
+	bg-left-image:forms.png repeat-stretch   241px 24px 248px 27px;
+
+	bg-center-image:forms.png repeat-truncate 248px 24px 251px 27px;
+}
+
+select {
+	height: 32px;
+	padding: 7px 7px 0 7px;
+	/*font-size: 14;*/
+	margin-bottom: 5px;
+
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     224px 17px 231px 24px;
+	bg-top-right-image:forms.png    234px 17px 241px 24px;
+	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
+	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
+
+	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
+	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
+	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
+	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
+
+	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
+}
+
+select:focus {
+	color:#fff;
+
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     241px 17px 248px 24px;
+	bg-top-right-image:forms.png    251px 17px 258px 24px;
+	bg-bottom-right-image:forms.png 251px 27px 258px 34px;
+	bg-bottom-left-image:forms.png  241px 27px 248px 34px;
+
+	bg-top-image:forms.png repeat-stretch    248px 17px 251px 24px;
+	bg-right-image:forms.png repeat-stretch  251px 24px 258px 27px;
+	bg-bottom-image:forms.png repeat-stretch 248px 27px 251px 34px;
+	bg-left-image:forms.png repeat-stretch   241px 24px 248px 27px;
+
+	bg-center-image:forms.png repeat-truncate 248px 24px 251px 27px;
+}
+
+select selectarrow {
+	width:18px;
+	height:18px;
+
+	img-decorator:image;
+	img-image:forms.png 192px 20px 207px 35px;
+}
+
+select selectbox {
+	background:#00000055;
+	color:#fff;
+	padding:7px;
+	max-height:150px;
+	overflow-y:auto;
 }
 
 input.checkbox {

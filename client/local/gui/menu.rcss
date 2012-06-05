@@ -4,6 +4,11 @@ body {
 	font-size: 14;
 }
 
+h1 {
+	text-align:center;
+	margin-top:20px;
+}
+
 .window p {
 	text-align:center;
 }

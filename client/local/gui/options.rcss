@@ -4,8 +4,9 @@ body {
 	color: #000;
 }
 
-h1 {
-	margin-bottom: 20px;
+tabset {
+	display:block;
+	margin-top:20px;
 }
 
 tab {
@@ -16,17 +17,36 @@ tab {
 label {
 	display:inline-block;
 	vertical-align:top;
-	width:70px;
+	width:100px;
 	text-align:right;
 	margin-right:10px;
 }
 
-datagrid {
-	display:block;
+label, input {
+	margin-bottom:0.5em;
 }
 
-datagridbody {
-	max-height:200px;
+#bindings {
+	display:block;
 	overflow:scroll;
-	font-size:14;
+	height:200px;
+	padding:10px;
+	background:#00000011;
+}
+
+#bindings action {
+	display:inline-block;
+	width:150px;
+}
+
+#bindings button {
+	width:200px;
+	position:relative;
+	top:5px;
+	height:25px;
+	line-height:21px;
+}
+
+input.range, select {
+	width:250px;
 }

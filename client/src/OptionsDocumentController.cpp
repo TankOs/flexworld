@@ -7,6 +7,8 @@
 #include <sstream>
 #include <iomanip>
 #include <cmath>
+#include <vector>
+#include <map>
 #include <iostream> // XXX 
 
 OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& root ) :
@@ -16,18 +18,33 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	m_invert_mouse_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "invert_mouse" ) ) ),
 	m_sensitivity_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "sensitivity" ) ) ),
 	m_sensitivity_number_element( dynamic_cast<Rocket::Core::Element*>( root.GetElementById( "sensitivity_number" ) ) ),
-	m_bindings_data_grid( dynamic_cast<Rocket::Controls::ElementDataGrid*>( root.GetElementById( "bindings" ) ) )
+	m_bindings_element( root.GetElementById( "bindings" ) )
 {
 	assert( m_username_element );
 	assert( m_serial_element );
 	assert( m_invert_mouse_element );
 	assert( m_sensitivity_element );
 	assert( m_sensitivity_number_element );
-	assert( m_bindings_data_grid );
+
+	// Create binding labels + buttons.
+	create_binding_elements( "Walk forward", Controls::WALK_FORWARD );
+	create_binding_elements( "Walk backward", Controls::WALK_BACKWARD );
+	create_binding_elements( "Strafe left", Controls::STRAFE_LEFT );
+	create_binding_elements( "Strafe right", Controls::STRAFE_RIGHT );
+	create_binding_elements( "Run", Controls::RUN );
+	create_binding_elements( "Jump", Controls::JUMP );
+	create_binding_elements( "Crouch", Controls::CROUCH );
+	create_binding_elements();
+	create_binding_elements( "Primary action", Controls::PRIMARY_ACTION );
+	create_binding_elements( "Secondary action", Controls::SECONDARY_ACTION );
+	create_binding_elements( "Use (hold to pick up)", Controls::USE );
+	create_binding_elements( "Drop", Controls::DROP );
+	create_binding_elements();
+	create_binding_elements( "Toggle desk", Controls::INVENTORY );
+	create_binding_elements( "Chat", Controls::CHAT );
 
 	// Events.
 	m_sensitivity_element->AddEventListener( "change", this );
-	m_bindings_data_grid->AddEventListener( "click", this );
 }
 
 OptionsDocumentController::~OptionsDocumentController() {
@@ -36,9 +53,6 @@ OptionsDocumentController::~OptionsDocumentController() {
 }
 
 void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
-	// Setup data source.
-	m_bindings_data_source.reset( new BindingDataSource( user_settings.get_controls() ) );
-
 	// Store local copy.
 	m_user_settings = user_settings;
 
@@ -55,7 +69,6 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 
 	update_sensitivity_number();
 	m_sensitivity_element->SetValue( std::to_string( std::ceil( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
-	m_bindings_data_grid->SetDataSource( "bindings.we" );
 }
 
 void OptionsDocumentController::update_sensitivity_number() {
@@ -86,7 +99,29 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 			update_timer.restart();
 		}
 	}
-	else if( element->GetId() == "bindings" ) {
-		std::cout << "Clicked" << std::endl;
+}
+
+void OptionsDocumentController::create_binding_elements( const std::string& description, Controls::Action action ) {
+	using Rocket::Core::Element;
+
+	assert( m_bindings_element );
+
+	if( !description.empty() && action != Controls::UNMAPPED ) {
+		Element* action_element = m_bindings_element->GetOwnerDocument()->CreateElement( "action" );
+		action_element->SetInnerRML( description.c_str() );
+
+		Element* button_element = m_bindings_element->GetOwnerDocument()->CreateElement( "button" );
+		button_element->SetInnerRML( "Not assigned" );
+
+		m_bindings_element->AppendChild( action_element );
+		m_bindings_element->AppendChild( button_element );
+
+		action_element->RemoveReference();
+		button_element->RemoveReference();
 	}
+
+	Element* br_element = m_bindings_element->GetOwnerDocument()->CreateElement( "br" );
+
+	m_bindings_element->AppendChild( br_element );
+	br_element->RemoveReference();
 }

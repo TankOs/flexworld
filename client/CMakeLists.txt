@@ -7,7 +7,6 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
-	${INC_DIR}/BindingDataSource.hpp
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
 	${INC_DIR}/ChatWindow.hpp
@@ -38,7 +37,6 @@ set(
 	${INC_DIR}/TextScroller.hpp
 	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserSettings.cpp
-	${SRC_DIR}/BindingDataSource.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/ChatWindow.cpp

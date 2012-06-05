@@ -8,14 +8,13 @@
 		</style>
 	</head>
 	<body>
-		<div class="window" style="width: 400px; min-height: 400px;">
-			<h1><handle move_target="#document">Options</handle></h1>
-
+		<div class="window" style="width: 400px;">
+			<title><handle move_target="#document">Options</handle></title>
 			<tabset>
 				<tab style="margin-left:50px;">Account</tab>
 				<panel>
-					<label>Username:</label><input name="username" id="username" type="text" size="20"/><br/>
-					<label>Serial:</label><input name="serial" id="serial" type="text" size="20"/>
+					<label>Username:</label><input name="username" id="username" type="text" size="30"/><br/>
+					<label>Serial:</label><input name="serial" id="serial" type="text" size="30"/>
 
 					<p style="margin-top:15px;">You received your personal serial number when you purchased the game. If you lost it visit flexworld-game.com, log into your account and check your purchased products.</p>
 					<p>The username is used when you connect to any multiplayer server. The serial is only used when you connect to servers running in official mode.</p>
@@ -28,17 +27,52 @@
 					<label>Sensitivity</label><input type="range" id="sensitivity" min="1" max="50" step="1" value="1"/> <span id="sensitivity_number" style="margin-left:5px;">3.4</span>
 
 					<h2>Bindings</h2>
-					<p>Click on an action to bind a new key or mouse button to it.</p>
-
-					<datagrid id="bindings">
-						<col fields="function" width="50%"></col>
-						<col fields="binding" width="50%"></col>
-					</datagrid>
+					<div id="bindings">
+					</div>
 				</panel>
 
 				<tab>Video</tab>
 				<panel>
-					Video...
+					<h2 style="margin-top:0;">Performance &amp; View</h2>
+					<label style="vertical-align:middle;">Vertical sync</label><input type="checkbox" id="vsync"/><br/>
+					<label>FPS limit</label><input type="range" id="fps" min="20" max="500" step="1" value="200"/><span id="fps_number" style="margin-left:5px;">200</span>
+					<label>Field of view</label><input type="range" id="fov" min="1" max="140" step="5" value="70"/> <span id="fov_number" style="margin-left:5px;">70</span>
+
+					<h2>Display</h2>
+
+					<label style="vertical-align:middle;">Fullscreen</label><input type="checkbox" id="fullscreen"/><br/>
+					<label>Resolution</label><select id="resolution">
+						<option value="whatever" selected="selected">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+						<option value="whatever">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+						<option value="whatever">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+						<option value="whatever">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+						<option value="whatever">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+						<option value="whatever">1920 x 1080</option>
+						<option value="whatever">1024 x 768</option>
+					</select>
+
+					<h2>Advanced</h2>
+
+					<label>Anti-aliasing</label><select id="aa" style="width:5em;">
+						<option value="whatever" selected="selected">1x</option>
+						<option value="whatever">2x</option>
+						<option value="whatever">4x</option>
+						<option value="whatever">8x</option>
+						<option value="whatever">16x</option>
+					</select><br/>
+
+					<label>Anisotropic filter</label><select id="af" style="width:5em;">
+						<option value="whatever" selected="selected">1x</option>
+						<option value="whatever">2x</option>
+						<option value="whatever">4x</option>
+						<option value="whatever">8x</option>
+						<option value="whatever">16x</option>
+					</select>
 				</panel>
 
 				<tab>Audio</tab>

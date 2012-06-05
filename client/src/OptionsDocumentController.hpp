@@ -1,7 +1,6 @@
 #pragma once
 
 #include "UserSettings.hpp"
-#include "BindingDataSource.hpp"
 
 #include <Rocket/Core/EventListener.h>
 #include <memory>
@@ -12,7 +11,6 @@ class Element;
 }
 namespace Controls {
 class ElementFormControlInput;
-class ElementDataGrid;
 }
 }
 
@@ -38,9 +36,9 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		void ProcessEvent( Rocket::Core::Event& event );
 
 		void update_sensitivity_number();
+		void create_binding_elements( const std::string& description = "", Controls::Action action = Controls::UNMAPPED );
 
 		UserSettings m_user_settings;
-		std::unique_ptr<BindingDataSource> m_bindings_data_source;
 
 		Rocket::Core::Element& m_root;
 
@@ -50,5 +48,5 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		Rocket::Controls::ElementFormControlInput* m_invert_mouse_element;
 		Rocket::Controls::ElementFormControlInput* m_sensitivity_element;
 		Rocket::Core::Element* m_sensitivity_number_element;
-		Rocket::Controls::ElementDataGrid* m_bindings_data_grid;
+		Rocket::Core::Element* m_bindings_element;
 };
