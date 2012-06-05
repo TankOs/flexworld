@@ -43,6 +43,11 @@ class UserSettings {
 		 */
 		Controls& get_controls();
 
+		/** Get controls.
+		 * @return Controls.
+		 */
+		const Controls& get_controls() const;
+
 		/** Set username.
 		 * @param username Username.
 		 */

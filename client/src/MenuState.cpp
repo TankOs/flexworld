@@ -1,6 +1,7 @@
 #include "MenuState.hpp"
 #include "ConnectState.hpp"
 #include "Shared.hpp"
+#include "OptionsDocumentController.hpp"
 #include "RocketRenderInterface.hpp"
 #include "RocketSystemInterface.hpp"
 #include "RocketEventDispatcher.hpp"
@@ -11,7 +12,6 @@
 #include <FlexWorld/ClassDriver.hpp>
 #include <FlexWorld/Log.hpp>
 
-#include <Rocket/Core.h>
 #include <Rocket/Debugger.h>
 #include <Rocket/Controls.h>
 #include <SFML/Graphics.hpp>
@@ -29,7 +29,8 @@ MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
 	m_fade_main_menu_out( false ),
 	m_background_varray( sf::Quads, 4 ),
-	m_rocket_context( nullptr )
+	m_rocket_context( nullptr ),
+	m_options_document( nullptr )
 {
 }
 
@@ -100,10 +101,10 @@ void MenuState::init() {
 	m_desktop.Add( m_window );
 
 	// Signals.
-	m_insta_button->OnLeftClick.Connect( &MenuState::on_insta_click, this );
-	m_start_game_button->OnLeftClick.Connect( &MenuState::on_start_game_click, this );
-	options_button->OnLeftClick.Connect( &MenuState::on_options_click, this );
-	quit_button->OnLeftClick.Connect( &MenuState::on_quit_click, this );
+	m_insta_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_insta_click, this );
+	m_start_game_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_start_game_click, this );
+	options_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_options_click, this );
+	quit_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_quit_click, this );
 
 	// Init.
 	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
@@ -168,38 +169,6 @@ void MenuState::init() {
 		}
 	}
 
-	// Init clouds.
-	sf::Image image;
-	image.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/cloud.png" ) );
-	m_cloud_texture.loadFromImage( image );
-
-	for( uint8_t cloud_index = 0; cloud_index < 25; ++cloud_index ) {
-		sf::Vector2f cloud_position(
-			static_cast<float>( std::rand() % get_render_target().getSize().x ),
-			static_cast<float>( std::rand() % get_render_target().getSize().y )
-		);
-
-		float scale( static_cast<float>( std::rand() % (100 - 9) + 10 ) / 100.f );
-
-		sf::Sprite cloud_sprite( m_cloud_texture );
-		cloud_sprite.setOrigin( static_cast<float>( m_cloud_texture.getSize().x / 2 ), static_cast<float>( m_cloud_texture.getSize().y / 2 ) );
-		cloud_sprite.setPosition( cloud_position.x, cloud_position.y );
-		cloud_sprite.setScale( scale, scale );
-		cloud_sprite.setColor( sf::Color( 255, 255, 255, 160 ) );
-
-		// Bigger clouds get added to the buffer behind smaller ones to prevent
-		// being overdrawn by farer objects.
-		std::size_t insert_idx = 0;
-
-		for( insert_idx = 0; insert_idx < m_cloud_sprites.size(); ++insert_idx ) {
-			if( cloud_sprite.getScale().x <= m_cloud_sprites[insert_idx].getScale().x ) {
-				break;
-			}
-		}
-
-		m_cloud_sprites.insert( m_cloud_sprites.begin() + insert_idx, cloud_sprite );
-	}
-
 	// Prepare background.
 	float width = static_cast<float>( get_render_target().getSize().x );
 	float height = static_cast<float>( get_render_target().getSize().y );
@@ -213,10 +182,9 @@ void MenuState::init() {
 
 	m_background_varray.resize(
 		static_cast<unsigned int>( std::ceil( width / texture_size.x ) ) *
-		static_cast<unsigned int>( std::ceil( height / texture_size.y ) )
+		static_cast<unsigned int>( std::ceil( height / texture_size.y ) ) *
+		4
 	);
-
-	/*std::cout << m_background_varray.getSize() << std::endl;
 
 	unsigned int varray_idx = 0;
 
@@ -227,17 +195,21 @@ void MenuState::init() {
 			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x + texture_size.x, y + texture_size.y ), sf::Vector2f( texture_size.x, texture_size.y ) );
 			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x + texture_size.x, y ), sf::Vector2f( texture_size.x, 0.0f ) );
 		}
-	}*/
+	}
 
 
 	// Setup Rocket.
-	m_render_interface.reset( new RocketRenderInterface( get_render_target() ) );
-	m_system_interface.reset( new RocketSystemInterface );
+	RocketRenderInterface* render_interface = new RocketRenderInterface( get_render_target() );
+	RocketSystemInterface* system_interface = new RocketSystemInterface;
 
-	Rocket::Core::SetRenderInterface( &*m_render_interface );
-	Rocket::Core::SetSystemInterface( &*m_system_interface );
+	Rocket::Core::SetRenderInterface( render_interface );
+	Rocket::Core::SetSystemInterface( system_interface );
 
 	Rocket::Core::Initialise();
+	Rocket::Controls::Initialise();
+
+	render_interface->RemoveReference();
+	system_interface->RemoveReference();
 
 	Rocket::Core::FontDatabase::LoadFontFace(
 		(flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/Economica-Bold.ttf" )).c_str(),
@@ -255,17 +227,28 @@ void MenuState::init() {
 	);
 
 	Rocket::Debugger::Initialise( m_rocket_context );
-	Rocket::Controls::Initialise();
+	//Rocket::Debugger::SetVisible( true );
 
 	const std::string filename = flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/main_menu.rml" );
 	Rocket::Core::ElementDocument* document = m_rocket_context->LoadDocument( filename.c_str() );
 
+	document->AddEventListener( "click", this );
+
 	document->Show();
 	document->RemoveReference();
 
-	document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
-	document->Show();
-	document->RemoveReference();
+	// Setup options document + controller.
+	m_options_document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
+	m_options_controller.reset( new OptionsDocumentController( *m_options_document ) );
+
+	// Music. XXX
+	std::string music_path = flex::ROOT_DATA_DIRECTORY + std::string( "/local/music/kevin_macleod_-_cambodean_odessy.ogg" );
+
+	if( boost::filesystem::exists( music_path ) ) {
+		m_music.openFromFile( music_path );
+		m_music.setLoop( true );
+		//m_music.play();
+	}
 
 	// Cleanup the backend.
 	get_shared().account_manager.reset();
@@ -282,13 +265,15 @@ void MenuState::cleanup() {
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	// Cleanup Rocket.
+	m_options_document->RemoveReference();
 	m_rocket_context->RemoveReference();
 
-	Rocket::Core::Shutdown();
+	//Rocket::Core::Shutdown();
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
-	m_desktop.HandleEvent( event );
+	RocketEventDispatcher::dispatch_event( event, *m_rocket_context );
+	//m_desktop.HandleEvent( event );
 
 	// Check if options window ate the event.
 	if( m_options_window && m_options_window->is_event_processed() ) {
@@ -313,26 +298,10 @@ void MenuState::handle_event( const sf::Event& event ) {
 		}
 	}
 
-	RocketEventDispatcher::dispatch_event( event, *m_rocket_context );
 }
 
 void MenuState::update( const sf::Time& delta ) {
 	float seconds = delta.asSeconds();
-
-	// Move clouds.
-	for( std::size_t cloud_idx = 0; cloud_idx < m_cloud_sprites.size(); ++cloud_idx ) {
-		sf::Sprite& cloud = m_cloud_sprites[cloud_idx];
-
-		cloud.move( seconds * (20.f * cloud.getScale().x), 0.f /*seconds * -5.f*/ );
-
-		if( cloud.getGlobalBounds().left >= static_cast<float>( get_render_target().getSize().x ) ) {
-			cloud.move( -static_cast<float>( get_render_target().getSize().x ) - cloud.getGlobalBounds().width, 0.f );
-		}
-
-		if( cloud.getGlobalBounds().top + cloud.getGlobalBounds().height <= 0.f ) {
-			cloud.move( 0.f, static_cast<float>( get_render_target().getSize().y ) + cloud.getGlobalBounds().height );
-		}
-	}
 
 	// Update desktop.
 	m_desktop.Update( seconds );
@@ -412,13 +381,8 @@ void MenuState::render() const {
 		window.draw( m_background_varray, states );
 	}
 
-	// Clouds.
-	for( std::size_t cloud_idx = 0; cloud_idx < m_cloud_sprites.size(); ++cloud_idx ) {
-		window.draw( m_cloud_sprites[cloud_idx], sf::BlendAlpha );
-	}
-
 	// Render GUI.
-	sfg::Renderer::Get().Display( window );
+	//sfg::Renderer::Get().Display( window );
 
 	window.pushGLStates();
 	m_rocket_context->Render();
@@ -428,22 +392,14 @@ void MenuState::render() const {
 }
 
 void MenuState::on_options_click() {
-	if( m_sliding_widget ) {
+	if( m_options_document->IsVisible() ) {
 		return;
 	}
 
-	m_options_window->SetPosition(
-		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ),
-			m_window->GetAllocation().top
-		)
-	);
+	// Serialize current settings.
+	m_options_controller->serialize( get_shared().user_settings );
 
-	m_options_window->refresh_user_settings( get_shared().user_settings );
-	m_options_window->Show( true );
-
-	m_fade_main_menu_out = true;
-	m_sliding_widget = m_options_window;
+	m_options_document->Show();
 }
 
 void MenuState::on_start_game_click() {
@@ -619,4 +575,19 @@ void MenuState::check_required_settings() {
 
 void MenuState::on_insta_click() {
 	on_start_game_accept();
+}
+
+void MenuState::ProcessEvent( Rocket::Core::Event& event ) {
+	Rocket::Core::Element* element = event.GetTargetElement();
+
+	if( element->GetId() == "quickstart" ) {
+		on_insta_click();
+	}
+	else if( element->GetId() == "quit" ) {
+		on_quit_click();
+	}
+	else if( element->GetId() == "options" ) {
+		on_options_click();
+	}
+
 }

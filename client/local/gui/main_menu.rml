@@ -1,96 +1,24 @@
 <rml>
 	<head>
-		<style>
-			body {
-				font-family:MenuFont;
-				font-size:18;
-				color:#fff;
-				width:350px;
-				margin:auto;
-
-				display:block;
-				padding:10px;
-
-				bg-decorator:tiled-box;
-
-				bg-top-left-image:window_bg.png 0px 0px 40px 40px;
-				bg-top-right-image:window_bg.png 80px 0px 120px 40px;
-				bg-bottom-right-image:window_bg.png 80px 80px 120px 120px;
-				bg-bottom-left-image:window_bg.png 0px 80px 40px 120px;
-
-				bg-top-image:window_bg.png repeat-stretch 40px 0px 80px 40px;
-				bg-right-image:window_bg.png repeat-stretch 80px 40px 120px 80px;
-				bg-bottom-image:window_bg.png repeat-stretch 40px 80px 80px 120px;
-				bg-left-image:window_bg.png repeat-stretch 0px 40px 40px 80px;
-
-				bg-center-image:window_bg.png repeat-truncate 40px 40px 80px 80px;
-			}
-
-			h1 {
-				display:block;
-				font-size:36;
-				text-align:center;
-			}
-
-			.version {
-				font-size:12;
-			}
-
-			p {
-				display:block;
-				margin:0 0 0.2em 0;
-				line-height:1.5em;
-				font-size:14;
-				text-align:center;
-
-				shadow-font-effect:shadow;
-				shadow-offset:1px 1px;
-				shadow-color:#000;
-			}
-
-			button {
-				display:block;
-				height:54px;
-				line-height:48px;
-				text-align:center;
-				margin:0.2em 0;
-
-				bg-decorator:tiled-horizontal;
-				bg-left-image:wooden_button.png 0px 0px 11px 54px;
-				bg-center-image:wooden_button.png repeat-truncate 13px 0px 82px 54px;
-				bg-right-image:wooden_button.png 83px 0px 101px 54px;
-
-				color:#fff;
-				shadow-font-effect:shadow;
-				shadow-offset:2px 2px;
-				shadow-color:#00000088;
-			}
-
-			button:hover {
-				outline-font-effect:outline;
-				outline-width:2px;
-				outline-color:#00000066;
-			}
-
-			button:active {
-				shadow-color:transparent;
-				outline-font-effect:outline;
-				outline-width:2px;
-				outline-color:#00000033;
-			}
-		</style>
+		<link type="text/rcss" href="basic.rcss"/>
+		<link type="text/rcss" href="menu.rcss"/>
+		<link type="text/rcss" href="forms.rcss"/>
 	</head>
-	<body>
-		<h1>FlexWorld</h1>
-		<p id="version">Version X.Y.Z-R</p>
+	<body id="foo_body">
+		<div id="main_menu" class="window" style="width: 400px; margin: 0 auto; top: 50px;">
+			<h1><img src="banner.png"/></h1>
+			<p class="subtitle">Version X.Y.Z-R</p>
 
-		<button>Insta!</button>
-		<button>Play</button>
-		<button>Options</button>
-		<button>Quit</button>
+			<div style="display: block; padding: 20px 0;">
+				<button id="quickstart">Quickstart</button>
+				<button id="play">Play</button>
+				<button id="options">Options</button>
+				<button id="quit">Quit</button>
+			</div>
 
-		<p>This version of FlexWorld is for internal use only. Do not distribute!</p>
-		<p>(c) Stefan Schindler, 2012</p>
-		<p>http://flexworld-game.com/</p>
+			<p>This version of FlexWorld is for internal use only. Do not distribute!</p>
+			<p>(c) Stefan Schindler, 2012</p>
+			<p>http://flexworld-game.com/</p>
+		</div>
 	</body>
 </rml>

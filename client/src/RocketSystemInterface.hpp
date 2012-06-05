@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rocket/Core/SystemInterface.h>
+#include <Rocket/Core.h>
 #include <SFML/System/Clock.hpp>
 
 /** System interface for libRocket.

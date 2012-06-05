@@ -1,0 +1,16 @@
+p, h1, h2 {
+	display: block;
+}
+
+p {
+	line-height: 1.5em;
+}
+
+h1 {
+	font-size:200%;
+}
+
+h2 {
+	font-size:130%;
+	margin:15px 0 5px 0;
+}

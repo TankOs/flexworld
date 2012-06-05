@@ -1,0 +1,14 @@
+body {
+	font-family: MenuFont;
+	color: #000;
+	font-size: 14;
+}
+
+.window p {
+	text-align:center;
+}
+
+.window .subtitle {
+	font-size: 18;
+	text-align: center;
+}

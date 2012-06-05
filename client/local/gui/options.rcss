@@ -1,0 +1,32 @@
+body {
+	font-family: MenuFont;
+	font-size: 16;
+	color: #000;
+}
+
+h1 {
+	margin-bottom: 20px;
+}
+
+tab {
+	width: 70px;
+	margin-bottom: 20px;
+}
+
+label {
+	display:inline-block;
+	vertical-align:top;
+	width:70px;
+	text-align:right;
+	margin-right:10px;
+}
+
+datagrid {
+	display:block;
+}
+
+datagridbody {
+	max-height:200px;
+	overflow:scroll;
+	font-size:14;
+}

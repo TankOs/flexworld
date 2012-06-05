@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rocket/Core/RenderInterface.h>
+#include <Rocket/Core.h>
 #include <memory>
 
 namespace sf {

@@ -1,0 +1,196 @@
+button {
+	display:inline-block;
+	height:30px;
+	line-height:24px;
+	text-align:center;
+	margin:5px 0;
+	font-size: 14;
+
+	bg-decorator:tiled-horizontal;
+	bg-left-image:forms.png 0px 0px 51px 24px;
+	bg-center-image:forms.png repeat-truncate 52px 0px 117px 24px;
+	bg-right-image:forms.png 118px 0px 180px 24px;
+
+	color:#000;
+}
+
+button:hover {
+	shadow-font-effect:shadow;
+	shadow-offset:2px 2px;
+	shadow-color:#00000033;
+}
+
+button:active {
+	shadow-font-effect:shadow;
+	shadow-offset:2px 2px;
+	shadow-color: transparent;
+
+	bg-decorator:tiled-horizontal;
+	bg-left-image:forms.png 0px 25px 51px 49px;
+	bg-center-image:forms.png repeat-truncate 52px 25px 117px 49px;
+	bg-right-image:forms.png 118px 25px 180px 49px;
+}
+
+.window {
+	display: block;
+	position: absolute;
+	min-width: 50px;
+	min-height: 50px;
+	padding: 80px 40px 40px 40px;
+
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png 0px 128px 40px 216px;
+	bg-top-right-image:forms.png 405px 128px 498px 216px;
+	bg-bottom-right-image:forms.png 405px 255px 498px 308px;
+	bg-bottom-left-image:forms.png 0px 255px 84px 308px;
+
+	bg-top-image:forms.png repeat-stretch 85px 128px 404px 216px;
+	bg-right-image:forms.png repeat-stretch 405px 217px 498px 254px;
+	bg-bottom-image:forms.png repeat-stretch 85px 255px 404px 308px;
+	bg-left-image:forms.png repeat-stretch 0px 217px 84px 254px;
+
+	bg-center-image:forms.png repeat-truncate 85px 217px 404px 254px;
+}
+
+.window h1 {
+	font-size: 30;
+	text-align: center;
+}
+
+tabset tab {
+	display:inline-block;
+	height:30px;
+	line-height:25px;
+	text-align:center;
+	color:#000;
+
+	margin-right:5px;
+
+	bg-decorator:tiled-horizontal;
+	bg-left-image:forms.png 0px 0px 51px 24px;
+	bg-center-image:forms.png repeat-truncate 52px 0px 117px 24px;
+	bg-right-image:forms.png 118px 0px 180px 24px;
+}
+
+tabset tab:hover {
+	shadow-font-effect:shadow;
+	shadow-offset:2px 2px;
+	shadow-color:#00000033;
+}
+
+tabset tab:active {
+	shadow-font-effect:shadow;
+	shadow-offset:2px 2px;
+	shadow-color: transparent;
+
+	bg-decorator:tiled-horizontal;
+	bg-left-image:forms.png 0px 25px 51px 49px;
+	bg-center-image:forms.png repeat-truncate 52px 25px 117px 49px;
+	bg-right-image:forms.png 118px 25px 180px 49px;
+}
+
+tabset panel {
+	margin-top: 0px;
+	background:#ffffff33;
+	padding:15px;
+}
+
+input.text {
+	background-color: #000a;
+	height: 25px;
+	padding: 5px 5px 0 5px;
+	font-size: 14;
+	margin-bottom: 5px;
+	color: #fff;
+}
+
+input.checkbox {
+	width:10px;
+	height:10px;
+	margin-right:5px;
+
+	icon-decorator:image;
+	icon-image:forms.png 181px 0px 192px 11px;
+}
+
+input.checkbox:hover {
+	background-color:#fff3;
+}
+
+input.checkbox:checked {
+	icon-decorator:image;
+	icon-image:forms.png 192px 0px 203px 11px;
+}
+
+input.range {
+	display:inline-block;
+	height:17px;
+}
+
+input.range sliderarrowdec {
+	display:none;
+	width:0;
+}
+
+input.range sliderarrowinc {
+	display:none;
+	width:0;
+}
+
+input.range slidertrack {
+	height:17px;
+
+	img-decorator:tiled-horizontal;
+	img-left-image:forms.png 224px 0px 241px 17px;
+	img-center-image:forms.png repeat-truncate 239px 0px 243px 17px;
+	img-right-image:forms.png 241px 0px 258px 17px;
+}
+
+input.range sliderbar {
+	width:17px;
+	height:17px;
+	img-decorator:image;
+	img-image:forms.png 192px 20px 207px 35px;
+}
+
+scrollbarvertical {
+	width:17px;
+}
+
+scrollbarvertical sliderarrowdec {
+	display:none;
+	width:9px;
+	height:0;
+	margin-left:4px;
+	img-decorator:image;
+	img-image:forms.png 181px 11px 190px 20px;
+}
+
+scrollbarvertical sliderarrowinc {
+	display:none;
+	width:9px;
+	height:0;
+	margin-left:4px;
+	img-decorator:image;
+	img-image:forms.png 181px 11px 190px 20px;
+}
+
+scrollbarvertical sliderbar {
+	width:17px;
+	height:17px;
+	img-decorator:image;
+	img-image:forms.png 192px 20px 207px 35px;
+}
+
+scrollbarvertical slidertrack {
+	width:17px;
+
+	img-decorator:tiled-vertical;
+	/*img-top-image:forms.png 207px 15px 224px 19px;
+	img-center-image:forms.png repeat-truncate 207px 15px 224px 19px;
+	img-bottom-image:forms.png 207px 15px 224px 19px;*/
+	img-top-image:forms.png 207px 0px 224px 17px;
+	img-center-image:forms.png repeat-truncate 207px 15px 224px 19px;
+	img-bottom-image:forms.png 207px 17px 224px 34px;
+}

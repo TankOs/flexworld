@@ -41,7 +41,7 @@ DebugWindow::Ptr DebugWindow::Create() {
 	for( std::size_t idx = 0; idx < buttons.size(); ++idx ) {
 		buttons_box->Pack( buttons[idx].first, false, true );
 
-		buttons[idx].first->OnLeftClick.Connect( &DebugWindow::HandleClassClick, &*window );
+		buttons[idx].first->GetSignal( sfg::Button::OnLeftClick ).Connect( &DebugWindow::HandleClassClick, &*window );
 		window->m_buttons[buttons[idx].first] = buttons[idx].second;
 	}
 
@@ -50,7 +50,7 @@ DebugWindow::Ptr DebugWindow::Create() {
 	for( std::size_t idx = 0; idx < spawn_buttons.size(); ++idx ) {
 		spawn_buttons_box->Pack( spawn_buttons[idx].first, false, true );
 
-		spawn_buttons[idx].first->OnLeftClick.Connect( &DebugWindow::HandleSpawnClick, &*window );
+		spawn_buttons[idx].first->GetSignal( sfg::Button::OnLeftClick ).Connect( &DebugWindow::HandleSpawnClick, &*window );
 		window->m_spawn_buttons[spawn_buttons[idx].first] = spawn_buttons[idx].second;
 	}
 

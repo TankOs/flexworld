@@ -1,49 +1,39 @@
 <rml>
 	<head>
+		<link type="text/rcss" href="basic.rcss"/>
+		<link type="text/rcss" href="options.rcss"/>
+		<link type="text/rcss" href="forms.rcss"/>
+
 		<style>
-			body {
-				font-family:MenuFont;
-				font-size:18;
-				background-color:#000;
-			}
-
-			h1, p {
-				display:block;
-			}
-
-			.window {
-				color:#fff;
-				background-color:#ff000055;
-				width:400px;
-			}
-
-			tabset tab {
-				display:inline-block;
-				width:100px;
-				height:54px;
-				line-height:48px;
-				text-align:center;
-
-				bg-decorator:tiled-horizontal;
-				bg-left-image:wooden_button.png 0px 0px 11px 54px;
-				bg-center-image:wooden_button.png repeat-truncate 13px 0px 82px 54px;
-				bg-right-image:wooden_button.png 83px 0px 101px 54px;
-			}
 		</style>
 	</head>
 	<body>
-		<div class="window">
-			<h1>Options</h1>
+		<div class="window" style="width: 400px; min-height: 400px;">
+			<h1><handle move_target="#document">Options</handle></h1>
 
 			<tabset>
-				<tab>Account</tab>
+				<tab style="margin-left:50px;">Account</tab>
 				<panel>
-					Account...
+					<label>Username:</label><input name="username" id="username" type="text" size="20"/><br/>
+					<label>Serial:</label><input name="serial" id="serial" type="text" size="20"/>
+
+					<p style="margin-top:15px;">You received your personal serial number when you purchased the game. If you lost it visit flexworld-game.com, log into your account and check your purchased products.</p>
+					<p>The username is used when you connect to any multiplayer server. The serial is only used when you connect to servers running in official mode.</p>
 				</panel>
 
 				<tab>Controls</tab>
 				<panel>
-					Controls...
+					<h2 style="margin-top:0;">Mouse</h2>
+					<label style="vertical-align:middle;">Invert Y</label><input type="checkbox" id="invert_mouse"/><br/>
+					<label>Sensitivity</label><input type="range" id="sensitivity" min="1" max="50" step="1" value="1"/> <span id="sensitivity_number" style="margin-left:5px;">3.4</span>
+
+					<h2>Bindings</h2>
+					<p>Click on an action to bind a new key or mouse button to it.</p>
+
+					<datagrid id="bindings">
+						<col fields="function" width="50%"></col>
+						<col fields="binding" width="50%"></col>
+					</datagrid>
 				</panel>
 
 				<tab>Video</tab>
@@ -56,6 +46,11 @@
 					Audio...
 				</panel>
 			</tabset>
+
+			<div style="display:block; padding-top:20px;">
+				<button style="width:130px; float:right;">Save &amp; close</button>
+				<button style="width:130px; float:right;">Cancel</button>
+			</div>
 		</div>
 	</body>
 </rml>

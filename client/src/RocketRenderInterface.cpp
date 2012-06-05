@@ -188,7 +188,12 @@ void RocketRenderInterface::EnableScissorRegion( bool enable ) {
 }
 
 void RocketRenderInterface::SetScissorRegion( int x, int y, int width, int height ) {
-	glScissor( x, y, width, height );
+	glScissor(
+		x,
+		m_render_target.getSize().y - (y + height),
+		width,
+		height
+	);
 }
 
 RocketRenderInterface::GeometryInfo::GeometryInfo() :

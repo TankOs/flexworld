@@ -319,6 +319,10 @@ Controls& UserSettings::get_controls() {
 	return m_controls;
 }
 
+const Controls& UserSettings::get_controls() const {
+	return m_controls;
+}
+
 void UserSettings::set_username( const std::string& username ) {
 	m_username = username;
 }

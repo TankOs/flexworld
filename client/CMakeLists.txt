@@ -7,6 +7,7 @@ set( SRC_DIR "src" )
 
 set(
 	SOURCES
+	${INC_DIR}/BindingDataSource.hpp
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
 	${INC_DIR}/ChatWindow.hpp
@@ -23,6 +24,7 @@ set(
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
+	${INC_DIR}/OptionsDocumentController.hpp
 	${INC_DIR}/OptionsWindow.hpp
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
@@ -36,6 +38,7 @@ set(
 	${INC_DIR}/TextScroller.hpp
 	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserSettings.cpp
+	${SRC_DIR}/BindingDataSource.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/ChatWindow.cpp
@@ -53,6 +56,7 @@ set(
 	${SRC_DIR}/KeyNames.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
+	${SRC_DIR}/OptionsDocumentController.cpp
 	${SRC_DIR}/OptionsWindow.cpp
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
