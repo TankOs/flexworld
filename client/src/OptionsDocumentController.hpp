@@ -13,6 +13,7 @@ class Element;
 }
 namespace Controls {
 class ElementFormControlInput;
+class ElementFormControlSelect;
 }
 }
 
@@ -69,6 +70,7 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 
 		UserSettings m_user_settings;
 		ActionElementMap m_action_elements;
+		std::vector<sf::VideoMode> m_video_modes;
 
 		Rocket::Core::Element& m_root;
 
@@ -80,7 +82,8 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		Rocket::Core::Element* m_sensitivity_number_element;
 		Rocket::Core::Element* m_bindings_element;
 
-		Rocket::Core::Element* m_resolution_element;
+		Rocket::Core::Element* m_fullscreen_element;
+		Rocket::Controls::ElementFormControlSelect* m_resolution_element;
 
 		Rocket::Core::Element* m_close_element;
 		Rocket::Core::Element* m_save_element;

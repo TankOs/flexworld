@@ -8,9 +8,10 @@
 #include <cassert>
 #include <sstream>
 #include <iomanip>
-#include <cmath>
 #include <vector>
 #include <map>
+#include <cmath>
+#include <cstring>
 #include <iostream> // XXX 
 
 OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& root ) :
@@ -21,7 +22,8 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	m_sensitivity_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "sensitivity" ) ) ),
 	m_sensitivity_number_element( dynamic_cast<Rocket::Core::Element*>( root.GetElementById( "sensitivity_number" ) ) ),
 	m_bindings_element( root.GetElementById( "bindings" ) ),
-	m_resolution_element( root.GetElementById( "resolution" ) ),
+	m_fullscreen_element( root.GetElementById( "fullscreen" ) ),
+	m_resolution_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "resolution" ) ) ),
 	m_close_element( root.GetElementById( "close" ) ),
 	m_save_element( root.GetElementById( "save" ) ),
 	m_current_action_id( Controls::UNMAPPED ),
@@ -65,11 +67,8 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	for( std::size_t idx = 0; idx < modes.size(); ++idx ) {
 		const sf::VideoMode& mode = modes[idx];
 
-		// Skip too low resolutions and those that are above the desktop
-		// resolution. BPP must also match.
+		// Skip too low resolutions and where BPP does not match.
 		if(
-			mode.width > desktop_mode.width ||
-			mode.height > desktop_mode.height  ||
 			mode.bitsPerPixel != desktop_mode.bitsPerPixel ||
 			mode.width < 800 ||
 			mode.height < 600
@@ -77,16 +76,14 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 			continue;
 		}
 
+		// Remember video mode.
+		m_video_modes.push_back( mode );
+
+		// Add <select> option.
 		std::stringstream sstr;
 		sstr << mode.width << " x " << mode.height;
 
-		// Add to <select> element.
-		Rocket::Core::Element* option_element = m_resolution_element->GetOwnerDocument()->CreateElement( "option" );
-		option_element->SetAttribute( "value", "whatever" );
-		option_element->SetInnerRML( sstr.str().c_str() );
-
-		m_resolution_element->AppendChild( option_element );
-		option_element->RemoveReference();
+		m_resolution_element->Add( sstr.str().c_str(), std::to_string( m_video_modes.size() - 1 ).c_str() );
 	}
 
 	// Enumerate anisotropic filter levels.
@@ -103,10 +100,11 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 	// Store local copy.
 	m_user_settings = user_settings;
 
-	// Set values in GUI.
+	// Account.
 	m_username_element->SetValue( m_user_settings.get_username().c_str() );
 	m_serial_element->SetValue( m_user_settings.get_serial().c_str() );
 
+	// Controls.
 	if( m_user_settings.get_controls().is_mouse_inverted() ) {
 		m_invert_mouse_element->SetAttribute( "checked", "checked" );
 	}
@@ -118,6 +116,33 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 	m_sensitivity_element->SetValue( std::to_string( std::ceil( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
 
 	update_binding_labels();
+
+	// Video.
+
+	// Pick video mode.
+	int new_mode_idx = 0;
+
+	for( std::size_t mode_idx = 0; mode_idx < m_video_modes.size(); ++mode_idx ) {
+		const sf::VideoMode& mode = m_video_modes[mode_idx];
+
+		if(
+			mode.width == m_user_settings.get_video_mode().width &&
+			mode.height == m_user_settings.get_video_mode().height
+		) {
+			new_mode_idx = static_cast<int>( mode_idx );
+			break;
+		}
+	}
+
+	// Fullscreen.
+	if( m_user_settings.is_fullscreen_enabled() ) {
+		m_fullscreen_element->SetAttribute( "checked", "checked" );
+	}
+	else {
+		m_fullscreen_element->RemoveAttribute( "checked" );
+	}
+
+	m_resolution_element->SetSelection( new_mode_idx );
 }
 
 void OptionsDocumentController::update_sensitivity_number() {
@@ -154,6 +179,14 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 		}
 	}
 	else if( element->GetId() == "save" ) {
+		// Deserialize.
+		m_user_settings.set_username( std::string( m_username_element->GetValue().CString() ) );
+
+		m_user_settings.get_controls().set_mouse_inverted( m_invert_mouse_element->HasAttribute( "checked" ) );
+
+		m_user_settings.enable_fullscreen( m_fullscreen_element->HasAttribute( "checked" ) );
+		m_user_settings.set_video_mode( m_video_modes[m_resolution_element->GetSelection()] );
+
 		if( on_accept ) {
 			on_accept();
 		}

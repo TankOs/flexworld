@@ -1,3 +1,9 @@
+# LateX stuff.
+*.aux
+*.log
+*.out
+*.toc
+
 /doc/html/*
 /lib/include/FlexWorld/Config.hpp
 /dist/debian/control

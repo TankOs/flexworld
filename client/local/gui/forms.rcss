@@ -37,6 +37,7 @@ button:active {
 	min-height: 50px;
 	padding: 65px 40px 40px 40px;
 	margin-top:-65px;
+	margin-left:-40px;
 
 	bg-decorator:tiled-box;
 
