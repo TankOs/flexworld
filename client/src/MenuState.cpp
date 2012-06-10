@@ -28,7 +28,6 @@ static const float SLIDE_TARGET_X = 50.f;
 
 MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
-	m_fade_main_menu_out( false ),
 	m_background_varray( sf::Quads, 4 ),
 	m_rocket_context( nullptr ),
 	m_options_document( nullptr )
@@ -109,7 +108,6 @@ void MenuState::init() {
 
 	// Init.
 	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
-	check_required_settings();
 
 	m_window->SetPosition(
 		sf::Vector2f(
@@ -244,13 +242,30 @@ void MenuState::init() {
 		)
 	);
 
+	// Set version string.
+	{
+		std::stringstream sstr;
+		sstr
+			<< "Version "
+			<< static_cast<int>( flex::VERSION.get_major() ) << "."
+			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
+			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
+			<< flex::VERSION_SUFFIX
+		;
+
+		Rocket::Core::Element* version_element = document->GetElementById( "version" );
+		assert( version_element );
+		version_element->SetInnerRML( sstr.str().c_str() );
+	}
+
 	document->RemoveReference();
 
 	// Setup options document + controller.
 	m_options_document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
 	m_options_controller.reset( new OptionsDocumentController( *m_options_document ) );
 
-	m_options_controller->on_close = std::bind( &MenuState::on_options_reject, this );
+	m_options_controller->on_reject = std::bind( &MenuState::on_options_reject, this );
+	m_options_controller->on_accept = std::bind( &MenuState::on_options_accept, this );
 
 	// Music. XXX
 	std::string music_path = flex::ROOT_DATA_DIRECTORY + std::string( "/local/music/kevin_macleod_-_cambodean_odessy.ogg" );
@@ -283,6 +298,13 @@ void MenuState::cleanup() {
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
+	// If options window is visible and waiting for a key/button, give event to
+	// it and don't process it any further.
+	if( m_options_document->IsVisible() && m_options_controller->is_waiting_for_press() ) {
+		m_options_controller->handle_event( event );
+		return;
+	}
+
 	RocketEventDispatcher::dispatch_event( event, *m_rocket_context );
 	//m_desktop.HandleEvent( event );
 
@@ -297,12 +319,7 @@ void MenuState::handle_event( const sf::Event& event ) {
 
 	if( event.type == sf::Event::KeyPressed ) {
 		if( event.key.code == sf::Keyboard::Escape ) {
-			if( m_fade_main_menu_out ) {
-				m_fade_main_menu_out = false;
-			}
-			else {
-				leave();
-			}
+			leave();
 		}
 		else if( event.key.code == sf::Keyboard::Return ) { // XXX
 			on_insta_click();
@@ -319,65 +336,6 @@ void MenuState::update( const sf::Time& delta ) {
 
 	// Update rocket.
 	m_rocket_context->Update();
-
-	// Slide windows.
-	float abs_fade_speed = FADE_SPEED + static_cast<float>( get_render_target().getSize().x ) / 2.0f;
-
-	if( m_fade_main_menu_out ) {
-		m_window->SetPosition(
-			sf::Vector2f(
-				std::max(
-					-m_window->GetAllocation().width,
-					m_window->GetAllocation().left - (seconds * abs_fade_speed)
-				),
-				m_window->GetAllocation().top
-			)
-		);
-
-		if( m_sliding_widget ) {
-			if( m_sliding_widget->GetAllocation().left > SLIDE_TARGET_X ) {
-				m_sliding_widget->SetPosition(
-					sf::Vector2f(
-						std::max(
-							SLIDE_TARGET_X,
-							m_sliding_widget->GetAllocation().left - (abs_fade_speed * seconds)
-						),
-						m_sliding_widget->GetAllocation().top
-					)
-				);
-			}
-		}
-	}
-	else {
-		m_window->SetPosition(
-			sf::Vector2f(
-				std::min(
-					50.f,
-					m_window->GetAllocation().left + (seconds * abs_fade_speed)
-				),
-				m_window->GetAllocation().top
-			)
-		);
-
-		if( m_sliding_widget ) {
-			if( m_sliding_widget->GetAllocation().left < static_cast<float>( get_render_target().getSize().x ) ) {
-				m_sliding_widget->SetPosition(
-					sf::Vector2f(
-						std::min(
-							static_cast<float>( get_render_target().getSize().x ),
-							m_sliding_widget->GetAllocation().left + (abs_fade_speed * seconds)
-						),
-						m_sliding_widget->GetAllocation().top
-					)
-				);
-			}
-
-			if( m_sliding_widget->GetAllocation().left >= static_cast<float>( get_render_target().getSize().x ) ) {
-				m_sliding_widget->Show( false );
-				m_sliding_widget.reset();
-			}
-		}
-	}
 }
 
 void MenuState::render() const {
@@ -426,10 +384,6 @@ void MenuState::on_options_click() {
 }
 
 void MenuState::on_start_game_click() {
-	if( m_sliding_widget ) {
-		return;
-	}
-
 	m_start_game_window->SetPosition(
 		sf::Vector2f(
 			static_cast<float>( get_render_target().getSize().x ),
@@ -437,29 +391,26 @@ void MenuState::on_start_game_click() {
 		)
 	);
 
-	m_fade_main_menu_out = true;
-	m_sliding_widget = m_start_game_window;
 	m_start_game_window->Show( true );
 }
 
 void MenuState::on_options_accept() {
+	// Get new settings.
+	UserSettings new_settings = m_options_controller->get_user_settings();
+
 	// Do we need to reinitialize the window?
 	bool reinit_window =
-		get_shared().user_settings.get_video_mode().width != m_options_window->get_user_settings().get_video_mode().width ||
-		get_shared().user_settings.get_video_mode().height != m_options_window->get_user_settings().get_video_mode().height ||
-		get_shared().user_settings.get_video_mode().bitsPerPixel != m_options_window->get_user_settings().get_video_mode().bitsPerPixel ||
-		get_shared().user_settings.is_fullscreen_enabled() != m_options_window->get_user_settings().is_fullscreen_enabled()
+		get_shared().user_settings.get_video_mode().width != new_settings.get_video_mode().width ||
+		get_shared().user_settings.get_video_mode().height != new_settings.get_video_mode().height ||
+		get_shared().user_settings.get_video_mode().bitsPerPixel != new_settings.get_video_mode().bitsPerPixel ||
+		get_shared().user_settings.is_fullscreen_enabled() != new_settings.is_fullscreen_enabled()
 	;
 
 	// Remember old fullscreen state.
 	bool was_fullscreen = get_shared().user_settings.is_fullscreen_enabled();
 
 	// Apply user settings.
-	get_shared().user_settings = m_options_window->get_user_settings();
-
-	m_fade_main_menu_out = false;
-
-	check_required_settings();
+	get_shared().user_settings = new_settings;
 
 	// Apply vsync setting.
 	get_render_target().setVerticalSyncEnabled( get_shared().user_settings.is_vsync_enabled() );
@@ -503,6 +454,9 @@ void MenuState::on_options_accept() {
 
 	// Save settings.
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
+
+	m_options_document->Show( Rocket::Core::ElementDocument::FOCUS );
+	m_options_document->Hide();
 }
 
 void MenuState::on_options_reject() {
@@ -578,23 +532,6 @@ void MenuState::on_start_game_accept() {
 }
 
 void MenuState::on_start_game_reject() {
-	m_fade_main_menu_out = false;
-}
-
-void MenuState::check_required_settings() {
-	bool valid( true );
-
-	if(
-		get_shared().user_settings.get_username().empty() ||
-		get_shared().user_settings.get_serial().empty()
-	) {
-		valid = false;
-	}
-
-	m_insta_button->Show( valid );
-	m_start_game_button->Show( valid );
-	m_join_game_button->Show( valid );
-	m_settings_hint_label->Show( !valid );
 }
 
 void MenuState::on_insta_click() {

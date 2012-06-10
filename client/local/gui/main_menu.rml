@@ -7,7 +7,7 @@
 	<body id="foo_body">
 		<div id="main_menu" class="window" style="width: 400px;">
 			<h1><img src="banner.png"/></h1>
-			<p class="subtitle">Version X.Y.Z-R</p>
+			<p class="subtitle">Version <span id="version">X.Y.Z-R</span></p>
 
 			<div style="display: block; padding: 20px 0;">
 				<button id="quickstart">Quickstart</button>

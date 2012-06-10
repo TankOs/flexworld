@@ -24,7 +24,7 @@ std::string get_key_name( int keycode ) {
 		key_names[sf::Keyboard::M] = "M";
 		key_names[sf::Keyboard::N] = "N";
 		key_names[sf::Keyboard::O] = "O";
-		key_names[sf::Keyboard::O] = "O";
+		key_names[sf::Keyboard::P] = "P";
 		key_names[sf::Keyboard::Q] = "Q";
 		key_names[sf::Keyboard::R] = "R";
 		key_names[sf::Keyboard::S] = "S";

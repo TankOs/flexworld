@@ -197,6 +197,11 @@ select selectbox {
 	overflow-y:auto;
 }
 
+select option:hover {
+	background:#ffffffbb;
+	color:#000;
+}
+
 input.checkbox {
 	width:10px;
 	height:10px;

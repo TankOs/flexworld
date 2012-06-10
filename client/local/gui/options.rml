@@ -9,7 +9,7 @@
 	</head>
 	<body>
 		<div class="window" style="width: 400px;" id="window">
-			<title><handle move_target="#document">Options</handle></title>
+			<handle move_target="#document"><title>Options</title></handle>
 			<tabset>
 				<tab style="margin-left:50px;">Account</tab>
 				<panel>
@@ -39,50 +39,23 @@
 					<label>Field of view</label><input type="range" id="fov" min="1" max="140" step="5" value="70"/> <span id="fov_number" style="margin-left:5px;">70</span>
 
 					<h2>Display</h2>
-
 					<label style="vertical-align:middle;">Fullscreen</label><input type="checkbox" id="fullscreen"/><br/>
-					<label>Resolution</label><select id="resolution">
-						<option value="whatever" selected="selected">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-						<option value="whatever">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-						<option value="whatever">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-						<option value="whatever">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-						<option value="whatever">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-						<option value="whatever">1920 x 1080</option>
-						<option value="whatever">1024 x 768</option>
-					</select>
+					<label>Resolution</label><select id="resolution"></select>
 
 					<h2>Advanced</h2>
-
-					<label>Anti-aliasing</label><select id="aa" style="width:5em;">
-						<option value="whatever" selected="selected">1x</option>
-						<option value="whatever">2x</option>
-						<option value="whatever">4x</option>
-						<option value="whatever">8x</option>
-						<option value="whatever">16x</option>
-					</select><br/>
-
 					<label>Anisotropic filter</label><select id="af" style="width:5em;">
-						<option value="whatever" selected="selected">1x</option>
-						<option value="whatever">2x</option>
-						<option value="whatever">4x</option>
-						<option value="whatever">8x</option>
-						<option value="whatever">16x</option>
+						<option value="0" selected="selected">Off</option>
 					</select>
 				</panel>
 
 				<tab>Audio</tab>
 				<panel>
-					Audio...
+					No settings here, yet.
 				</panel>
 			</tabset>
 
 			<div style="display:block; padding-top:20px;">
-				<button style="width:130px; float:right;">Save &amp; close</button>
+				<button style="width:130px; float:right;" id="save">Save &amp; close</button>
 				<button style="width:130px; float:right;" id="close">Cancel</button>
 			</div>
 		</div>

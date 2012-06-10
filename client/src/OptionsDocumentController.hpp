@@ -5,6 +5,7 @@
 #include <Rocket/Core/EventListener.h>
 #include <memory>
 #include <functional>
+#include <map>
 
 namespace Rocket {
 namespace Core {
@@ -13,6 +14,10 @@ class Element;
 namespace Controls {
 class ElementFormControlInput;
 }
+}
+
+namespace sf {
+class Event;
 }
 
 /** Controller for libRocket options document.
@@ -45,15 +50,25 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		 */
 		void handle_event( const sf::Event& event );
 
-		std::function<void()> on_close; ///< Called when window is closed and settings are NOT saved.
+		/** Get user settings.
+		 * @return User settings.
+		 */
+		const UserSettings& get_user_settings() const;
+
+		std::function<void()> on_reject; ///< Called when window is closed and settings are NOT saved.
+		std::function<void()> on_accept; ///< Called when window is closed and settings ARE saved.
 
 	private:
+		typedef std::map<Controls::Action, Rocket::Core::Element*> ActionElementMap;
+
 		void ProcessEvent( Rocket::Core::Event& event );
 
 		void update_sensitivity_number();
+		void update_binding_labels();
 		void create_binding_elements( const std::string& description = "", Controls::Action action = Controls::UNMAPPED );
 
 		UserSettings m_user_settings;
+		ActionElementMap m_action_elements;
 
 		Rocket::Core::Element& m_root;
 
@@ -65,7 +80,11 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		Rocket::Core::Element* m_sensitivity_number_element;
 		Rocket::Core::Element* m_bindings_element;
 
-		Rocket::Core::Element* m_close_element;
+		Rocket::Core::Element* m_resolution_element;
 
+		Rocket::Core::Element* m_close_element;
+		Rocket::Core::Element* m_save_element;
+
+		Controls::Action m_current_action_id;
 		bool m_is_waiting_for_press;
 };

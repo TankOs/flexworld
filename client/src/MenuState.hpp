@@ -49,8 +49,6 @@ class MenuState : public State, public Rocket::Core::EventListener {
 		void on_options_reject();
 		void on_quit_click();
 
-		void check_required_settings();
-
 		sfg::Desktop m_desktop;
 		sfg::Window::Ptr m_window;
 		sfg::Button::Ptr m_insta_button;
@@ -60,10 +58,6 @@ class MenuState : public State, public Rocket::Core::EventListener {
 
 		OptionsWindow::Ptr m_options_window;
 		StartGameWindow::Ptr m_start_game_window;
-
-		sfg::Widget::Ptr m_sliding_widget;
-
-		bool m_fade_main_menu_out;
 
 		sf::VertexArray m_background_varray;
 		sf::Texture m_background_texture;
