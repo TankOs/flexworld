@@ -8,7 +8,7 @@
 		</style>
 	</head>
 	<body>
-		<div class="window" style="width: 400px;">
+		<div class="window" style="width: 400px;" id="window">
 			<title><handle move_target="#document">Options</handle></title>
 			<tabset>
 				<tab style="margin-left:50px;">Account</tab>
@@ -83,7 +83,7 @@
 
 			<div style="display:block; padding-top:20px;">
 				<button style="width:130px; float:right;">Save &amp; close</button>
-				<button style="width:130px; float:right;">Cancel</button>
+				<button style="width:130px; float:right;" id="close">Cancel</button>
 			</div>
 		</div>
 	</body>

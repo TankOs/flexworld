@@ -32,11 +32,11 @@ button:active {
 }
 
 .window {
-	display: block;
 	position: absolute;
 	min-width: 50px;
 	min-height: 50px;
 	padding: 65px 40px 40px 40px;
+	margin-top:-65px;
 
 	bg-decorator:tiled-box;
 

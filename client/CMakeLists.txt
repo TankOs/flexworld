@@ -31,6 +31,7 @@ set(
 	${INC_DIR}/RocketEventDispatcher.hpp
 	${INC_DIR}/RocketRenderInterface.hpp
 	${INC_DIR}/RocketSystemInterface.hpp
+	${INC_DIR}/RocketUtils.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
@@ -62,6 +63,7 @@ set(
 	${SRC_DIR}/RocketEventDispatcher.cpp
 	${SRC_DIR}/RocketRenderInterface.cpp
 	${SRC_DIR}/RocketSystemInterface.cpp
+	${SRC_DIR}/RocketUtils.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp

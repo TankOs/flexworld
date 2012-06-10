@@ -7,6 +7,7 @@ fw.animals/horse.jpg & .fwm: http://www.turbosquid.com/3d-models/free-horse-3d-m
 Sounds
 ------
 client/local/sfx/chat.wav: CC BY 3.0 (http://www.freesound.org/people/junggle/sounds/30341/)
+client/local/sfx/lick.wav: CC BY 3.0 (http://www.freesound.org/people/TicTacShutUp/sounds/406/)
 
 Fonts
 -----

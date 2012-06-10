@@ -18,13 +18,16 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	m_invert_mouse_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "invert_mouse" ) ) ),
 	m_sensitivity_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "sensitivity" ) ) ),
 	m_sensitivity_number_element( dynamic_cast<Rocket::Core::Element*>( root.GetElementById( "sensitivity_number" ) ) ),
-	m_bindings_element( root.GetElementById( "bindings" ) )
+	m_bindings_element( root.GetElementById( "bindings" ) ),
+	m_close_element( root.GetElementById( "close" ) ),
+	m_is_waiting_for_press( false )
 {
 	assert( m_username_element );
 	assert( m_serial_element );
 	assert( m_invert_mouse_element );
 	assert( m_sensitivity_element );
 	assert( m_sensitivity_number_element );
+	assert( m_close_element );
 
 	// Create binding labels + buttons.
 	create_binding_elements( "Walk forward", Controls::WALK_FORWARD );
@@ -45,11 +48,13 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 
 	// Events.
 	m_sensitivity_element->AddEventListener( "change", this );
+	m_close_element->AddEventListener( "click", this );
 }
 
 OptionsDocumentController::~OptionsDocumentController() {
 	// Detach event listener.
 	m_sensitivity_element->RemoveEventListener( "change", this );
+	m_close_element->RemoveEventListener( "close", this );
 }
 
 void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
@@ -99,6 +104,21 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 			update_timer.restart();
 		}
 	}
+	else if( element->GetId() == "close" ) {
+		if( on_close ) {
+			on_close();
+		}
+	}
+	else {
+		// Check for binding button.
+		if( element->IsClassSet( "binding_button" ) ) {
+			if( !m_is_waiting_for_press ) {
+				element->SetInnerRML( "Press button or key..." );
+
+				m_is_waiting_for_press = true;
+			}
+		}
+	}
 }
 
 void OptionsDocumentController::create_binding_elements( const std::string& description, Controls::Action action ) {
@@ -112,6 +132,8 @@ void OptionsDocumentController::create_binding_elements( const std::string& desc
 
 		Element* button_element = m_bindings_element->GetOwnerDocument()->CreateElement( "button" );
 		button_element->SetInnerRML( "Not assigned" );
+		button_element->SetClass( "binding_button", true );
+		button_element->AddEventListener( "click", this );
 
 		m_bindings_element->AppendChild( action_element );
 		m_bindings_element->AppendChild( button_element );
@@ -124,4 +146,11 @@ void OptionsDocumentController::create_binding_elements( const std::string& desc
 
 	m_bindings_element->AppendChild( br_element );
 	br_element->RemoveReference();
+}
+
+bool OptionsDocumentController::is_waiting_for_press() const {
+	return m_is_waiting_for_press;
+}
+
+void OptionsDocumentController::handle_event( const sf::Event& event ) {
 }

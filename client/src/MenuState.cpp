@@ -5,6 +5,7 @@
 #include "RocketRenderInterface.hpp"
 #include "RocketSystemInterface.hpp"
 #include "RocketEventDispatcher.hpp"
+#include "RocketUtils.hpp"
 
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/GameModeDriver.hpp>
@@ -233,13 +234,23 @@ void MenuState::init() {
 	Rocket::Core::ElementDocument* document = m_rocket_context->LoadDocument( filename.c_str() );
 
 	document->AddEventListener( "click", this );
-
 	document->Show();
+
+	center_element(
+		*document->GetElementById( "main_menu" ),
+		sf::Vector2f(
+			static_cast<float>( get_render_target().getSize().x ) / 2.0f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.0f
+		)
+	);
+
 	document->RemoveReference();
 
 	// Setup options document + controller.
 	m_options_document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
 	m_options_controller.reset( new OptionsDocumentController( *m_options_document ) );
+
+	m_options_controller->on_close = std::bind( &MenuState::on_options_reject, this );
 
 	// Music. XXX
 	std::string music_path = flex::ROOT_DATA_DIRECTORY + std::string( "/local/music/kevin_macleod_-_cambodean_odessy.ogg" );
@@ -399,7 +410,19 @@ void MenuState::on_options_click() {
 	// Serialize current settings.
 	m_options_controller->serialize( get_shared().user_settings );
 
-	m_options_document->Show();
+	m_options_document->Show( Rocket::Core::ElementDocument::MODAL );
+
+	// Get window and center it.
+	Rocket::Core::Element* window_element = m_options_document->GetElementById( "window" );
+	assert( window_element );
+
+	center_element(
+		*window_element,
+		sf::Vector2f(
+			static_cast<float>( get_render_target().getSize().x ) / 2.0f,
+			static_cast<float>( get_render_target().getSize().y ) / 2.0f
+		)
+	);
 }
 
 void MenuState::on_start_game_click() {
@@ -483,7 +506,8 @@ void MenuState::on_options_accept() {
 }
 
 void MenuState::on_options_reject() {
-	m_fade_main_menu_out = false;
+	m_options_document->Show( Rocket::Core::ElementDocument::FOCUS );
+	m_options_document->Hide();
 }
 
 void MenuState::on_quit_click() {

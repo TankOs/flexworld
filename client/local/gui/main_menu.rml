@@ -5,7 +5,7 @@
 		<link type="text/rcss" href="forms.rcss"/>
 	</head>
 	<body id="foo_body">
-		<div id="main_menu" class="window" style="width: 400px; margin: 0 auto; top: 50px;">
+		<div id="main_menu" class="window" style="width: 400px;">
 			<h1><img src="banner.png"/></h1>
 			<p class="subtitle">Version X.Y.Z-R</p>
 
