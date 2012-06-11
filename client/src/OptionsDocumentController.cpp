@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+
 #include "OptionsDocumentController.hpp"
 #include "KeyNames.hpp"
 
@@ -31,6 +33,7 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	m_fullscreen_element( root.GetElementById( "fullscreen" ) ),
 	m_resolution_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "resolution" ) ) ),
 	m_texture_filter_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "texture_filter" ) ) ),
+	m_anisotropic_filter_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "af" ) ) ),
 	m_close_element( root.GetElementById( "close" ) ),
 	m_save_element( root.GetElementById( "save" ) ),
 	m_current_action_id( Controls::UNMAPPED ),
@@ -50,8 +53,11 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	assert( m_fullscreen_element );
 	assert( m_resolution_element );
 	assert( m_texture_filter_element );
+	assert( m_anisotropic_filter_element );
 	assert( m_close_element );
 	assert( m_save_element );
+
+	m_root.AddReference();
 
 	// Create binding labels + buttons.
 	create_binding_elements( "Walk forward", Controls::WALK_FORWARD );
@@ -105,17 +111,40 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	}
 
 	// Enumerate anisotropic filter levels.
+	float max_af_level = 0.0f;
 
+	glGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_af_level );
+
+	for( float level = 1.0f; level <= max_af_level; level *= 2.0f ) {
+		std::stringstream sstr;
+		sstr << static_cast<int>( level ) << "x";
+
+		m_anisotropic_filter_element->Add( sstr.str().c_str(), std::to_string( static_cast<int>( level ) ).c_str() );
+	}
 }
 
 OptionsDocumentController::~OptionsDocumentController() {
-	// Detach event listener.
+	// Remove binding button event listener.
+	Rocket::Core::ElementList buttons;
+
+	m_bindings_element->GetElementsByTagName( buttons, "button" );
+
+	Rocket::Core::ElementList::iterator button_iter( buttons.begin() );
+	Rocket::Core::ElementList::iterator button_iter_end( buttons.end() );
+	
+	for( ; button_iter != button_iter_end; ++button_iter ) {
+		(*button_iter)->RemoveEventListener( "click", this );
+	}
+
+
 	m_sensitivity_element->RemoveEventListener( "change", this );
 	m_vsync_element->RemoveEventListener( "change", this );
 	m_fps_element->RemoveEventListener( "change", this );
 	m_fov_element->RemoveEventListener( "change", this );
-	m_close_element->RemoveEventListener( "close", this );
+	m_close_element->RemoveEventListener( "click", this );
 	m_save_element->RemoveEventListener( "click", this );
+
+	m_root.RemoveReference();
 }
 
 void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
@@ -178,8 +207,9 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 
 	m_resolution_element->SetSelection( new_mode_idx );
 
-	// Texture filter.
+	// Texture & anisotropic filter.
 	m_texture_filter_element->SetSelection( static_cast<int>( m_user_settings.get_texture_filter() ) );
+	m_anisotropic_filter_element->SetSelection( static_cast<int>( m_user_settings.get_anisotropy_level() ) );
 }
 
 void OptionsDocumentController::update_range_numbers() {
@@ -269,6 +299,7 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 		m_user_settings.enable_fullscreen( m_fullscreen_element->HasAttribute( "checked" ) );
 		m_user_settings.set_video_mode( m_video_modes[m_resolution_element->GetSelection()] );
 		m_user_settings.set_texture_filter( static_cast<TextureFilter>( m_texture_filter_element->GetSelection() ) );
+		m_user_settings.set_anisotropy_level( static_cast<uint8_t>( m_anisotropic_filter_element->GetSelection() ) );
 
 		if( on_accept ) {
 			on_accept();

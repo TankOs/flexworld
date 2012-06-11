@@ -111,7 +111,6 @@ void MenuState::init() {
 	{
 		std::stringstream sstr;
 		sstr
-			<< "Version "
 			<< static_cast<int>( flex::VERSION.get_major() ) << "."
 			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
 			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
@@ -151,15 +150,19 @@ void MenuState::init() {
 }
 
 void MenuState::cleanup() {
+
 	// Save window position.
 	get_shared().user_settings.set_window_position( get_render_target().getPosition() );
 	get_shared().user_settings.save( UserSettings::get_profile_path() + "/settings.yml" );
 
 	// Cleanup Rocket.
+	m_options_controller.reset();
+
 	m_options_document->RemoveReference();
 	m_rocket_context->RemoveReference();
 
-	//Rocket::Core::Shutdown();
+	Rocket::Core::ReleaseTextures();
+	Rocket::Core::ReleaseCompiledGeometries();
 }
 
 void MenuState::handle_event( const sf::Event& event ) {

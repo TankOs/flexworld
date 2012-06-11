@@ -7,6 +7,7 @@
 #include <FlexWorld/Log.hpp>
 
 #include <SFGUI/SFGUI.hpp>
+#include <Rocket/Core.h>
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
@@ -116,4 +117,7 @@ void Client::run() {
 		delete state;
 		state = next_state;
 	}
+
+	// Shutdown libRocket.
+	Rocket::Core::Shutdown();
 }

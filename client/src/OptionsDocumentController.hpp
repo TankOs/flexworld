@@ -91,6 +91,7 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		Rocket::Core::Element* m_fullscreen_element;
 		Rocket::Controls::ElementFormControlSelect* m_resolution_element;
 		Rocket::Controls::ElementFormControlSelect* m_texture_filter_element;
+		Rocket::Controls::ElementFormControlSelect* m_anisotropic_filter_element;
 
 		Rocket::Core::Element* m_close_element;
 		Rocket::Core::Element* m_save_element;
