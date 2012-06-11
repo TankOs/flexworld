@@ -1,6 +1,5 @@
 #include "ConnectState.hpp"
-#include "MenuState.hpp"
-#include "PlayState.hpp"
+#include "StateFactory.hpp"
 #include "Shared.hpp"
 
 #include <iostream>
@@ -70,7 +69,7 @@ void ConnectState::cleanup() {
 void ConnectState::handle_event( const sf::Event& event ) {
 	if( event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape ) {
 		m_canceled = true;
-		leave( new MenuState( get_render_target() ) );
+		leave( StateFactory::create_menu_state( get_render_target() ) );
 	}
 	else {
 		m_desktop.HandleEvent( event );
@@ -100,7 +99,7 @@ void ConnectState::update( const sf::Time& delta ) {
 	m_desktop.Update( delta.asSeconds() );
 
 	if( m_go_on ) {
-		leave( new PlayState( get_render_target() ) );
+		leave( StateFactory::create_play_state( get_render_target() ) );
 	}
 }
 

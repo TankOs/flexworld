@@ -24,7 +24,6 @@ set(
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/OptionsDocumentController.hpp
-	${INC_DIR}/OptionsWindow.hpp
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
 	${INC_DIR}/ResourceManager.hpp
@@ -33,8 +32,8 @@ set(
 	${INC_DIR}/RocketSystemInterface.hpp
 	${INC_DIR}/RocketUtils.hpp
 	${INC_DIR}/Shared.cpp
-	${INC_DIR}/StartGameWindow.hpp
 	${INC_DIR}/State.hpp
+	${INC_DIR}/StateFactory.hpp
 	${INC_DIR}/TextScroller.hpp
 	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserSettings.cpp
@@ -56,7 +55,6 @@ set(
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/OptionsDocumentController.cpp
-	${SRC_DIR}/OptionsWindow.cpp
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
 	${SRC_DIR}/ResourceManager.cpp
@@ -65,8 +63,8 @@ set(
 	${SRC_DIR}/RocketSystemInterface.cpp
 	${SRC_DIR}/RocketUtils.cpp
 	${SRC_DIR}/Shared.hpp
-	${SRC_DIR}/StartGameWindow.cpp
 	${SRC_DIR}/State.cpp
+	${SRC_DIR}/StateFactory.cpp
 	${SRC_DIR}/TextScroller.cpp
 	${SRC_DIR}/UserSettings.hpp
 )

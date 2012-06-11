@@ -1,5 +1,5 @@
 #include "IntroState.hpp"
-#include "MenuState.hpp"
+#include "StateFactory.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -20,7 +20,7 @@ void IntroState::handle_event( const sf::Event& event ) {
 		event.type == sf::Event::Closed ||
 		(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
 	) {
-		leave( new MenuState( get_render_target() ) );
+		leave( StateFactory::create_menu_state( get_render_target() ) );
 	}
 }
 
@@ -28,7 +28,7 @@ void IntroState::update( const sf::Time& delta ) {
 	m_elapsed += delta;
 
 	if( m_elapsed.asMilliseconds() >= 100 ) {
-		leave( new MenuState( get_render_target() ) );
+		leave( StateFactory::create_menu_state( get_render_target() ) );
 	}
 }
 

@@ -1,5 +1,6 @@
 #include "Client.hpp"
-#include "IntroState.hpp"
+#include "StateFactory.hpp"
+#include "State.hpp"
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
@@ -107,7 +108,7 @@ void Client::run() {
 	sfg::SFGUI sfgui_guard;
 
 	// Launch first state.
-	State* state( new IntroState( m_window ) );
+	State* state( StateFactory::create_menu_state( m_window ) );
 
 	while( state ) {
 		State* next_state = state->run();

@@ -1,5 +1,5 @@
 #include "MenuState.hpp"
-#include "ConnectState.hpp"
+#include "StateFactory.hpp"
 #include "Shared.hpp"
 #include "OptionsDocumentController.hpp"
 #include "RocketRenderInterface.hpp"
@@ -9,18 +9,12 @@
 
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/GameModeDriver.hpp>
-#include <FlexWorld/PackageEnumerator.hpp>
-#include <FlexWorld/ClassDriver.hpp>
-#include <FlexWorld/Log.hpp>
 
 #include <Rocket/Debugger.h>
 #include <Rocket/Controls.h>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <boost/filesystem.hpp>
-#include <fstream>
-#include <ctime>
-#include <cstdlib>
 
 static const bool SHOW_NOTICES = false;
 static const float FADE_SPEED = 3000.0f;
@@ -38,135 +32,6 @@ void MenuState::init() {
 	srand( static_cast<unsigned int>( time( nullptr ) ) );
 
 	set_render_fps( 60 );
-
-	// Widgets.
-	sfg::Label::Ptr title_label( sfg::Label::Create( L"FlexWorld" ) );
-	title_label->SetId( "title" );
-
-	sfg::Label::Ptr version_label( sfg::Label::Create( L"FlexWorld" ) );
-	{
-		std::stringstream sstr;
-		sstr
-			<< "Version "
-			<< static_cast<int>( flex::VERSION.get_major() ) << "."
-			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
-			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
-			<< flex::VERSION_SUFFIX
-		;
-
-		version_label->SetText( sstr.str() );
-	}
-
-	m_insta_button = sfg::Button::Create( L"INSTA!!!" );
-	m_start_game_button = sfg::Button::Create( L"Start game" );
-	m_join_game_button = sfg::Button::Create( L"Join game" );
-	sfg::Button::Ptr options_button( sfg::Button::Create( L"Options" ) );
-	sfg::Button::Ptr quit_button( sfg::Button::Create( L"Quit" ) );
-
-	sfg::Label::Ptr notice0( sfg::Label::Create( L"This is an \"in-development version\". You're not allowed" ) );
-	sfg::Label::Ptr notice1( sfg::Label::Create( L"to distribute it in any way, talk about it or show any related" ) );
-	sfg::Label::Ptr notice2( sfg::Label::Create( L"material without explicit permission!!!" ) );
-
-	m_settings_hint_label = sfg::Label::Create( L"Please set your username and serial in the options dialog." );
-	m_settings_hint_label->Show( false );
-
-	notice0->SetClass( "important" );
-	notice1->SetClass( "important" );
-	notice2->SetClass( "important" );
-
-	// Layout.
-	sfg::Box::Ptr vbox( sfg::Box::Create( sfg::Box::VERTICAL, 10.f ) );
-	vbox->Pack( title_label, false );
-	vbox->Pack( version_label, false );
-	vbox->Pack( sfg::Label::Create( L"http://flexworld-game.com/" ), false );
-	vbox->Pack( m_insta_button, false );
-	vbox->Pack( m_start_game_button, false );
-	//vbox->Pack( m_join_game_button, false );
-	vbox->Pack( options_button, false );
-	vbox->Pack( quit_button, false );
-	vbox->Pack( m_settings_hint_label, false );
-
-	if( SHOW_NOTICES ) {
-		vbox->Pack( notice0, false );
-		vbox->Pack( notice1, false );
-		vbox->Pack( notice2, false );
-	}
-
-	m_window = sfg::Window::Create();
-	m_window->SetId( "menu" );
-	m_window->SetTitle( L"FlexWorld" );
-	m_window->SetStyle( sfg::Window::BACKGROUND );
-	m_window->Add( vbox );
-
-	m_desktop.Add( m_window );
-
-	// Signals.
-	m_insta_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_insta_click, this );
-	m_start_game_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_start_game_click, this );
-	options_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_options_click, this );
-	quit_button->GetSignal( sfg::Button::OnLeftClick ).Connect( &MenuState::on_quit_click, this );
-
-	// Init.
-	m_desktop.LoadThemeFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/menu.theme" ) );
-
-	m_window->SetPosition(
-		sf::Vector2f(
-			SLIDE_TARGET_X,
-			SLIDE_TARGET_X
-		)
-	);
-
-	// Create options and start game windows.
-	m_options_window = OptionsWindow::Create( get_shared().user_settings );
-	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnAccept.Connect( &MenuState::on_options_accept, this );
-	sfg::DynamicPointerCast<OptionsWindow>( m_options_window )->OnReject.Connect( &MenuState::on_options_reject, this );
-
-	m_start_game_window = StartGameWindow::Create();
-	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnAccept.Connect( &MenuState::on_start_game_accept, this );
-	sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->OnReject.Connect( &MenuState::on_start_game_reject, this );
-
-	m_desktop.Add( m_options_window );
-	m_desktop.Add( m_start_game_window );
-
-	m_options_window->Show( false );
-	m_start_game_window->Show( false );
-
-	// Load and add game modes to dialog.
-	using namespace boost::filesystem;
-
-	directory_iterator dir_iter_end;
-	directory_iterator dir_iter( flex::ROOT_DATA_DIRECTORY + std::string( "/modes/" ) );
-
-	for( ; dir_iter != dir_iter_end; ++dir_iter ) {
-		path bpath( *dir_iter );
-
-		// Skip directories and files not ending with .yml.
-		if( !is_regular( bpath ) || bpath.extension() != ".yml" ) {
-			continue;
-		}
-
-		// Open file and read everything.
-		std::ifstream in( bpath.c_str() );
-		if( !in.is_open() ) {
-			// Failed to open, skip.
-			continue;
-		}
-
-		std::stringstream sstr;
-		sstr << in.rdbuf();
-
-		// Try to deserialize game mode.
-		try {
-			flex::GameMode mode = flex::GameModeDriver::deserialize( sstr.str() );
-
-			// Worked, add to dialog.
-			sfg::DynamicPointerCast<StartGameWindow>( m_start_game_window )->add_game_mode( mode );
-		}
-		catch( const flex::GameModeDriver::DeserializeException& /*e*/ ) {
-			// Skip.
-			continue;
-		}
-	}
 
 	// Prepare background.
 	float width = static_cast<float>( get_render_target().getSize().x );
@@ -195,7 +60,6 @@ void MenuState::init() {
 			m_background_varray[varray_idx++] = sf::Vertex( sf::Vector2f( x + texture_size.x, y ), sf::Vector2f( texture_size.x, 0.0f ) );
 		}
 	}
-
 
 	// Setup Rocket.
 	RocketRenderInterface* render_interface = new RocketRenderInterface( get_render_target() );
@@ -298,6 +162,10 @@ void MenuState::cleanup() {
 }
 
 void MenuState::handle_event( const sf::Event& event ) {
+	if( event.type == sf::Event::Closed ) {
+		leave();
+	}
+
 	// If options window is visible and waiting for a key/button, give event to
 	// it and don't process it any further.
 	if( m_options_document->IsVisible() && m_options_controller->is_waiting_for_press() ) {
@@ -306,20 +174,17 @@ void MenuState::handle_event( const sf::Event& event ) {
 	}
 
 	RocketEventDispatcher::dispatch_event( event, *m_rocket_context );
-	//m_desktop.HandleEvent( event );
-
-	// Check if options window ate the event.
-	if( m_options_window && m_options_window->is_event_processed() ) {
-		return;
-	}
-
-	if( event.type == sf::Event::Closed ) {
-		leave();
-	}
 
 	if( event.type == sf::Event::KeyPressed ) {
 		if( event.key.code == sf::Keyboard::Escape ) {
-			leave();
+			// If options window visible, close it.
+			if( m_options_document->IsVisible() ) {
+				on_options_reject();
+			}
+			else {
+				// No GUI active, leave game. TODO: Confirmation dialog/couple with Quit button.
+				on_quit_click();
+			}
 		}
 		else if( event.key.code == sf::Keyboard::Return ) { // XXX
 			on_insta_click();
@@ -328,12 +193,7 @@ void MenuState::handle_event( const sf::Event& event ) {
 
 }
 
-void MenuState::update( const sf::Time& delta ) {
-	float seconds = delta.asSeconds();
-
-	// Update desktop.
-	m_desktop.Update( seconds );
-
+void MenuState::update( const sf::Time& /*delta*/ ) {
 	// Update rocket.
 	m_rocket_context->Update();
 }
@@ -349,9 +209,6 @@ void MenuState::render() const {
 
 		window.draw( m_background_varray, states );
 	}
-
-	// Render GUI.
-	//sfg::Renderer::Get().Display( window );
 
 	window.pushGLStates();
 	m_rocket_context->Render();
@@ -381,17 +238,6 @@ void MenuState::on_options_click() {
 			static_cast<float>( get_render_target().getSize().y ) / 2.0f
 		)
 	);
-}
-
-void MenuState::on_start_game_click() {
-	m_start_game_window->SetPosition(
-		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ),
-			m_window->GetAllocation().top
-		)
-	);
-
-	m_start_game_window->Show( true );
 }
 
 void MenuState::on_options_accept() {
@@ -468,74 +314,69 @@ void MenuState::on_quit_click() {
 	leave();
 }
 
-void MenuState::on_start_game_accept() {
-	if( m_start_game_window->is_game_mode_selected() ) {
-		// Create IO service.
-		get_shared().io_service.reset( new boost::asio::io_service );
+void MenuState::on_insta_click() {
+	// TODO: Use 'start game' window.
 
-		// Get selected game mode.
-		const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
+	// Create IO service.
+	get_shared().io_service.reset( new boost::asio::io_service );
 
-		// Prepare backend and session host.
-		get_shared().account_manager.reset( new flex::AccountManager );
-		get_shared().lock_facility.reset( new flex::LockFacility );
-		get_shared().world.reset( new flex::World );
+	// Get selected game mode. TODO
+	//const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
+	flex::GameMode game_mode = flex::GameModeDriver::deserialize(
+		flex::ROOT_DATA_DIRECTORY + std::string( "modes/sandbox.yml" )
+	);
 
-		get_shared().host.reset(
-			new flex::SessionHost(
-				*get_shared().io_service,
-				*get_shared().lock_facility,
-				*get_shared().account_manager,
-				*get_shared().world,
-				game_mode
-			)
+	// Prepare backend and session host.
+	get_shared().account_manager.reset( new flex::AccountManager );
+	get_shared().lock_facility.reset( new flex::LockFacility );
+	get_shared().world.reset( new flex::World );
+
+	get_shared().host.reset(
+		new flex::SessionHost(
+			*get_shared().io_service,
+			*get_shared().lock_facility,
+			*get_shared().account_manager,
+			*get_shared().world,
+			game_mode
+		)
+	);
+
+	// Add search path.
+	get_shared().host->add_search_path( flex::ROOT_DATA_DIRECTORY + std::string( "packages" ) );
+
+	// Set auth mode.
+	get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
+
+	// Set endpoint.
+	get_shared().host->set_ip( "127.0.0.1" );
+
+	// Find free port.
+	bool in_use = true;
+	unsigned short port = 2593;
+	boost::asio::io_service io_service;
+
+	while( in_use ) {
+		boost::asio::ip::tcp::socket prober( io_service );
+		boost::asio::ip::tcp::endpoint endpoint(
+			boost::asio::ip::address::from_string( get_shared().host->get_ip( ) ),
+			port
 		);
 
-		// Add search path.
-		get_shared().host->add_search_path( flex::ROOT_DATA_DIRECTORY + std::string( "packages" ) );
+		try {
+			prober.connect( endpoint );
 
-		// Set auth mode.
-		get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
-
-		// Set endpoint.
-		get_shared().host->set_ip( "127.0.0.1" );
-
-		// Find free port.
-		bool in_use = true;
-		unsigned short port = 2593;
-		boost::asio::io_service io_service;
-
-		while( in_use ) {
-			boost::asio::ip::tcp::socket prober( io_service );
-			boost::asio::ip::tcp::endpoint endpoint(
-				boost::asio::ip::address::from_string( get_shared().host->get_ip( ) ),
-				port
-			);
-
-			try {
-				prober.connect( endpoint );
-
-				// Connection successful, try next port.
-				++port;
-			}
-			catch( const boost::system::system_error& /*e*/ ) {
-				// Connection failed, use port.
-				in_use = false;
-			}
+			// Connection successful, try next port.
+			++port;
 		}
-
-		get_shared().host->set_port( port );
-
-		leave( new ConnectState( get_render_target() ) );
+		catch( const boost::system::system_error& /*e*/ ) {
+			// Connection failed, use port.
+			in_use = false;
+		}
 	}
 
-}
+	get_shared().host->set_port( port );
 
-void MenuState::on_start_game_reject() {
-}
-
-void MenuState::on_insta_click() {
-	on_start_game_accept();
+	leave( StateFactory::create_connect_state( get_render_target() ) );
 }
 
 void MenuState::ProcessEvent( Rocket::Core::Event& event ) {

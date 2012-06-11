@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 
 #include "PlayState.hpp"
-#include "MenuState.hpp"
+#include "StateFactory.hpp"
 #include "ColorPicker.hpp"
 #include "Shared.hpp"
 #include "PlanetDrawable.hpp"
@@ -241,7 +241,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 		}
 		else {
 			// Otherwise leave game (TODO: confirmation dialog).
-			leave( new MenuState( get_render_target() ) );
+			leave( StateFactory::create_menu_state( get_render_target() ) );
 
 			// Cancel preparing objects.
 			{
