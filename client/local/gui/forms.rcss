@@ -191,7 +191,7 @@ select selectarrow {
 }
 
 select selectbox {
-	background:#00000055;
+	background:#000000dd;
 	color:#fff;
 	padding:7px;
 	max-height:150px;

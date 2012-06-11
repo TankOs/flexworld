@@ -64,7 +64,7 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 
 		void ProcessEvent( Rocket::Core::Event& event );
 
-		void update_sensitivity_number();
+		void update_range_numbers();
 		void update_binding_labels();
 		void create_binding_elements( const std::string& description = "", Controls::Action action = Controls::UNMAPPED );
 
@@ -82,8 +82,15 @@ class OptionsDocumentController : public Rocket::Core::EventListener {
 		Rocket::Core::Element* m_sensitivity_number_element;
 		Rocket::Core::Element* m_bindings_element;
 
+		Rocket::Core::Element* m_vsync_element;
+		Rocket::Core::Element* m_fps_div_element;
+		Rocket::Controls::ElementFormControlInput* m_fps_element;
+		Rocket::Core::Element* m_fps_number_element;
+		Rocket::Controls::ElementFormControlInput* m_fov_element;
+		Rocket::Core::Element* m_fov_number_element;
 		Rocket::Core::Element* m_fullscreen_element;
 		Rocket::Controls::ElementFormControlSelect* m_resolution_element;
+		Rocket::Controls::ElementFormControlSelect* m_texture_filter_element;
 
 		Rocket::Core::Element* m_close_element;
 		Rocket::Core::Element* m_save_element;

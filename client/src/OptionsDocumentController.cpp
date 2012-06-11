@@ -22,8 +22,15 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	m_sensitivity_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "sensitivity" ) ) ),
 	m_sensitivity_number_element( dynamic_cast<Rocket::Core::Element*>( root.GetElementById( "sensitivity_number" ) ) ),
 	m_bindings_element( root.GetElementById( "bindings" ) ),
+	m_vsync_element( root.GetElementById( "vsync" ) ),
+	m_fps_div_element( root.GetElementById( "fps_div" ) ),
+	m_fps_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "fps" ) ) ),
+	m_fps_number_element( root.GetElementById( "fps_number" ) ),
+	m_fov_element( dynamic_cast<Rocket::Controls::ElementFormControlInput*>( root.GetElementById( "fov" ) ) ),
+	m_fov_number_element( root.GetElementById( "fov_number" ) ),
 	m_fullscreen_element( root.GetElementById( "fullscreen" ) ),
 	m_resolution_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "resolution" ) ) ),
+	m_texture_filter_element( dynamic_cast<Rocket::Controls::ElementFormControlSelect*>( root.GetElementById( "texture_filter" ) ) ),
 	m_close_element( root.GetElementById( "close" ) ),
 	m_save_element( root.GetElementById( "save" ) ),
 	m_current_action_id( Controls::UNMAPPED ),
@@ -34,7 +41,15 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	assert( m_invert_mouse_element );
 	assert( m_sensitivity_element );
 	assert( m_sensitivity_number_element );
+	assert( m_vsync_element );
+	assert( m_fps_div_element );
+	assert( m_fps_element );
+	assert( m_fps_number_element );
+	assert( m_fov_element );
+	assert( m_fov_number_element );
+	assert( m_fullscreen_element );
 	assert( m_resolution_element );
+	assert( m_texture_filter_element );
 	assert( m_close_element );
 	assert( m_save_element );
 
@@ -57,6 +72,9 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 
 	// Events.
 	m_sensitivity_element->AddEventListener( "change", this );
+	m_vsync_element->AddEventListener( "change", this );
+	m_fps_element->AddEventListener( "change", this );
+	m_fov_element->AddEventListener( "change", this );
 	m_close_element->AddEventListener( "click", this );
 	m_save_element->AddEventListener( "click", this );
 
@@ -93,7 +111,11 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 OptionsDocumentController::~OptionsDocumentController() {
 	// Detach event listener.
 	m_sensitivity_element->RemoveEventListener( "change", this );
+	m_vsync_element->RemoveEventListener( "change", this );
+	m_fps_element->RemoveEventListener( "change", this );
+	m_fov_element->RemoveEventListener( "change", this );
 	m_close_element->RemoveEventListener( "close", this );
+	m_save_element->RemoveEventListener( "click", this );
 }
 
 void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
@@ -112,12 +134,24 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 		m_invert_mouse_element->RemoveAttribute( "checked" );
 	}
 
-	update_sensitivity_number();
-	m_sensitivity_element->SetValue( std::to_string( std::ceil( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
+	update_range_numbers();
+	m_sensitivity_element->SetValue( std::to_string( std::floor( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
 
 	update_binding_labels();
 
 	// Video.
+
+	if( m_user_settings.is_vsync_enabled() ) {
+		m_vsync_element->SetAttribute( "checked", "checked" );
+		m_fps_div_element->SetProperty( "display", "none" );
+	}
+	else {
+		m_vsync_element->RemoveAttribute( "display" );
+		m_fps_div_element->RemoveProperty( "display" );
+	}
+
+	m_fps_element->SetValue( std::to_string( m_user_settings.get_fps_limit() ).c_str() );
+	m_fov_element->SetValue( std::to_string( std::floor( m_user_settings.get_fov() ) ).c_str() );
 
 	// Pick video mode.
 	int new_mode_idx = 0;
@@ -143,13 +177,27 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 	}
 
 	m_resolution_element->SetSelection( new_mode_idx );
+
+	// Texture filter.
+	m_texture_filter_element->SetSelection( static_cast<int>( m_user_settings.get_texture_filter() ) );
 }
 
-void OptionsDocumentController::update_sensitivity_number() {
-	std::stringstream sstr;
-	sstr << static_cast<int>( std::ceil( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) );
-
-	m_sensitivity_number_element->SetInnerRML( sstr.str().c_str() );
+void OptionsDocumentController::update_range_numbers() {
+	{
+		std::stringstream sstr;
+		sstr << static_cast<int>( std::floor( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) );
+		m_sensitivity_number_element->SetInnerRML( sstr.str().c_str() );
+	}
+	{
+		std::stringstream sstr;
+		sstr << static_cast<int>( m_user_settings.get_fps_limit() );
+		m_fps_number_element->SetInnerRML( sstr.str().c_str() );
+	}
+	{
+		std::stringstream sstr;
+		sstr << static_cast<int>( m_user_settings.get_fov() );
+		m_fov_number_element->SetInnerRML( sstr.str().c_str() );
+	}
 }
 
 void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
@@ -166,10 +214,42 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 		float number = 0;
 
 		sstr >> number;
-		m_user_settings.get_controls().set_mouse_sensitivity( number / 10.0f );
+		m_user_settings.get_controls().set_mouse_sensitivity( std::floor( number ) / 10.0f );
 
 		if( update_timer.getElapsedTime() >= sf::milliseconds( 20 ) ) {
-			update_sensitivity_number();
+			update_range_numbers();
+			update_timer.restart();
+		}
+	}
+	else if( element->GetId() == "vsync" ) {
+		if( element->HasAttribute( "checked" ) ) {
+			m_fps_div_element->SetProperty( "display", "none" );
+		}
+		else {
+			m_fps_div_element->RemoveProperty( "display" );
+		}
+	}
+	else if( element->GetId() == "fps" ) {
+		std::stringstream sstr( m_fps_element->GetValue().CString() );
+		float number = 0;
+
+		sstr >> number;
+		m_user_settings.set_fps_limit( static_cast<unsigned int>( std::floor( number ) ) );
+
+		if( update_timer.getElapsedTime() >= sf::milliseconds( 20 ) ) {
+			update_range_numbers();
+			update_timer.restart();
+		}
+	}
+	else if( element->GetId() == "fov" ) {
+		std::stringstream sstr( m_fov_element->GetValue().CString() );
+		float number = 0;
+
+		sstr >> number;
+		m_user_settings.set_fov( static_cast<uint8_t>( std::floor( number ) ) );
+
+		if( update_timer.getElapsedTime() >= sf::milliseconds( 20 ) ) {
+			update_range_numbers();
 			update_timer.restart();
 		}
 	}
@@ -181,11 +261,14 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 	else if( element->GetId() == "save" ) {
 		// Deserialize.
 		m_user_settings.set_username( std::string( m_username_element->GetValue().CString() ) );
+		m_user_settings.set_serial( std::string( m_serial_element->GetValue().CString() ) );
 
 		m_user_settings.get_controls().set_mouse_inverted( m_invert_mouse_element->HasAttribute( "checked" ) );
 
+		m_user_settings.enable_vsync( m_vsync_element->HasAttribute( "checked" ) );
 		m_user_settings.enable_fullscreen( m_fullscreen_element->HasAttribute( "checked" ) );
 		m_user_settings.set_video_mode( m_video_modes[m_resolution_element->GetSelection()] );
+		m_user_settings.set_texture_filter( static_cast<TextureFilter>( m_texture_filter_element->GetSelection() ) );
 
 		if( on_accept ) {
 			on_accept();

@@ -16,10 +16,11 @@ GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 			throw DeserializeException( "Document missing." );
 		}
 		else if( doc.Type() != YAML::NodeType::Map ) {
+			std::cout << doc.Type() << std::endl;
 			throw DeserializeException( "Root not a map." );
 		}
 	}
-	catch( ... ) {
+	catch( const YAML::Exception& ) {
 		throw DeserializeException( "Malformed file." );
 	}
 

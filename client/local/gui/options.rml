@@ -24,7 +24,7 @@
 				<panel>
 					<h2 style="margin-top:0;">Mouse</h2>
 					<label style="vertical-align:middle;">Invert Y</label><input type="checkbox" id="invert_mouse"/><br/>
-					<label>Sensitivity</label><input type="range" id="sensitivity" min="1" max="50" step="1" value="1"/> <span id="sensitivity_number" style="margin-left:5px;">3.4</span>
+					<label>Sensitivity</label><input type="range" id="sensitivity" min="1" max="50" step="1" value="1"/>&nbsp;<span id="sensitivity_number" style="margin-left:5px;">3.4</span>
 
 					<h2>Bindings</h2>
 					<div id="bindings">
@@ -35,14 +35,21 @@
 				<panel>
 					<h2 style="margin-top:0;">Performance &amp; View</h2>
 					<label style="vertical-align:middle;">Vertical sync</label><input type="checkbox" id="vsync"/><br/>
-					<label>FPS limit</label><input type="range" id="fps" min="20" max="500" step="1" value="200"/><span id="fps_number" style="margin-left:5px;">200</span>
-					<label>Field of view</label><input type="range" id="fov" min="1" max="140" step="5" value="70"/> <span id="fov_number" style="margin-left:5px;">70</span>
+					<div id="fps_div">
+						<label>FPS limit</label><input type="range" id="fps" min="20" max="200" step="1" value="200"/>&nbsp;<span id="fps_number" style="margin-left:5px;">200</span>
+					</div>
+					<label>Field of view</label><input type="range" id="fov" min="60" max="120" step="1" value="70"/>&nbsp;<span id="fov_number" style="margin-left:5px;">70</span>
 
 					<h2>Display</h2>
 					<label style="vertical-align:middle;">Fullscreen</label><input type="checkbox" id="fullscreen"/><br/>
 					<label>Resolution</label><select id="resolution"></select>
 
 					<h2>Advanced</h2>
+					<label>Texture filter</label><select id="texture_filter">
+						<option value="0" selected="selected">Trilinear (nicest)</option>
+						<option value="1">Bilinear (blurry)</option>
+						<option value="2">I like pixels (yuck!)</option>
+					</select>
 					<label>Anisotropic filter</label><select id="af" style="width:5em;">
 						<option value="0" selected="selected">Off</option>
 					</select>

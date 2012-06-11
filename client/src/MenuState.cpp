@@ -15,6 +15,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <boost/filesystem.hpp>
+#include <fstream>
 
 static const bool SHOW_NOTICES = false;
 static const float FADE_SPEED = 3000.0f;
@@ -322,9 +323,11 @@ void MenuState::on_insta_click() {
 
 	// Get selected game mode. TODO
 	//const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
-	flex::GameMode game_mode = flex::GameModeDriver::deserialize(
-		flex::ROOT_DATA_DIRECTORY + std::string( "modes/sandbox.yml" )
-	);
+	std::ifstream in( (flex::ROOT_DATA_DIRECTORY + std::string( "modes/sandbox.yml" )).c_str() );
+	std::stringstream buffer;
+
+	buffer << in.rdbuf();
+	flex::GameMode game_mode = flex::GameModeDriver::deserialize( buffer.str() );
 
 	// Prepare backend and session host.
 	get_shared().account_manager.reset( new flex::AccountManager );
