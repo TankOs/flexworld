@@ -4,6 +4,7 @@
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
 #include "TextScroller.hpp"
+#include "UserInterface.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
@@ -59,6 +60,7 @@ class PlayState : public State, flex::Client::Handler {
 		void request_chunks( const ViewCuboid& cuboid );
 
 		// UI.
+		UserInterface m_user_interface;
 		TextScroller m_text_scroller;
 
 		bool m_has_focus;

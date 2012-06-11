@@ -1,0 +1,115 @@
+<rml>
+	<head>
+		<link type="text/rcss" href="basic.rcss"/>
+		<link type="text/rcss" href="forms.rcss"/>
+		<style>
+			body {
+				font-family:MenuFont;
+				font-size:14;
+				color:#000;
+			}
+
+			tabs {
+				width:20%;
+				max-height:100%;
+				overflow-y:scroll;
+				float:left;
+			}
+
+			tab {
+			}
+
+			panels {
+				float:left;
+				max-height:100%;
+				width:78%;
+				margin-left:10px;
+			}
+
+			panel {
+				max-height:100%;
+				overflow-y:scroll;
+			}
+
+		</style>
+	</head>
+	<body>
+
+		<div class="window" style="width: 600px; height:200px; margin:0;" id="window">
+			<handle move_target="#document"><title>Chat</title></handle>
+			<tabset>
+				<panel>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+					Text<br/>
+					im<br/>
+					Status-Channel<br/>
+				</panel>
+				<panel>
+					Text<br/>
+					im<br/>
+					Broadcast-Channel<br/>
+				</panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+				<panel></panel>
+
+				<tab>Status</tab>
+				<tab>Broadcast</tab>
+				<tab>Planet</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity sfjg sldfgjs ldfjkg j</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+				<tab>Vicinity</tab>
+			</tabset>
+
+		</div>
+	</body>
+</rml>

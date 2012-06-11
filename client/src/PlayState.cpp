@@ -29,6 +29,7 @@ static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
+	m_user_interface( target ),
 	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
@@ -600,6 +601,9 @@ void PlayState::render() const {
 
 	// Text scroller.
 	m_text_scroller.render( target );
+
+	// User interface.
+	m_user_interface.render();
 
 	// FPS.
 	target.draw( m_fps_text );

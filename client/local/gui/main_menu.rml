@@ -10,8 +10,7 @@
 			<p class="subtitle">Version <span id="version">X.Y.Z-R</span></p>
 
 			<div style="display: block; padding: 20px 0;">
-				<button id="quickstart">Quickstart</button>
-				<button id="play">Play</button>
+				<button id="quickstart">Play</button>
 				<button id="options">Options</button>
 				<button id="quit">Quit</button>
 			</div>

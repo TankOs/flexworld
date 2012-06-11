@@ -61,6 +61,8 @@ button:active {
 	left:30px;
 	top:7px;
 	width:88%;
+	height:25px;
+	line-height:20px;
 
 	bg-decorator:tiled-horizontal;
 	bg-left-image:forms.png 0px 50px 52px 81px;
