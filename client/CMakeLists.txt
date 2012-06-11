@@ -9,16 +9,12 @@ set(
 	SOURCES
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
-	${INC_DIR}/ChatWindow.hpp
 	${INC_DIR}/ClassDrawable.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
 	${INC_DIR}/ColorPicker.hpp
 	${INC_DIR}/ConnectState.hpp
-	${INC_DIR}/Container.hpp
-	${INC_DIR}/ContainerManager.hpp
 	${INC_DIR}/Controls.hpp
-	${INC_DIR}/DebugWindow.hpp
 	${INC_DIR}/EntityGroupNode.hpp
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
@@ -39,16 +35,12 @@ set(
 	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
-	${SRC_DIR}/ChatWindow.cpp
 	${SRC_DIR}/ClassDrawable.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
 	${SRC_DIR}/ColorPicker.cpp
 	${SRC_DIR}/ConnectState.cpp
-	${SRC_DIR}/Container.cpp
-	${SRC_DIR}/ContainerManager.cpp
 	${SRC_DIR}/Controls.cpp
-	${SRC_DIR}/DebugWindow.cpp
 	${SRC_DIR}/EntityGroupNode.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/KeyNames.cpp
@@ -73,7 +65,6 @@ include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/SFML/extlibs/headers/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/libRocket/Include/ )
-include_directories( ${SFGUI_INCLUDE_DIR} )
 include_directories( ${OPENGL_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
@@ -91,7 +82,6 @@ target_link_libraries( flexworld-client fwsg )
 target_link_libraries( flexworld-client RocketControls )
 target_link_libraries( flexworld-client RocketDebugger )
 target_link_libraries( flexworld-client RocketCore )
-target_link_libraries( flexworld-client ${SFGUI_LIBRARY} )
 target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
 target_link_libraries( flexworld-client ${Boost_FILESYSTEM_LIBRARY} )
@@ -101,7 +91,7 @@ target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
 if( NOT WINDOWS )
 	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
 
-	if( SFML_STATIC_LIBRARIES AND SFGUI_STATIC_LIBRARIES )
+	if( SFML_STATIC_LIBRARIES )
 		target_link_libraries( flexworld-client jpeg )
 		target_link_libraries( flexworld-client GLEW )
 		target_link_libraries( flexworld-client freetype )

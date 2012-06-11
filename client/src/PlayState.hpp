@@ -1,11 +1,9 @@
 #pragma once
 
 #include "State.hpp"
-#include "ChatWindow.hpp"
 #include "Camera.hpp"
 #include "ResourceManager.hpp"
 #include "TextScroller.hpp"
-#include "ContainerManager.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Planet.hpp>
@@ -13,7 +11,7 @@
 
 #include <FWSG/Node.hpp>
 #include <FWSG/Renderer.hpp>
-#include <SFGUI/SFGUI.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
@@ -42,19 +40,14 @@ class PlayState : public State, flex::Client::Handler {
 		void update( const sf::Time& delta );
 		void render() const;
 
-		void update_gui_mode();
-		void enable_gui_mode( bool enable );
 		void reset_mouse();
 
 		void launch_objects_preparation_thread();
 		void stop_and_wait_for_objects_preparation_thread();
 		void prepare_objects();
 
-		void on_chat_message_ready();
-		void on_chat_close_click();
 		void on_debug_class_id_change();
 		void on_debug_spawn_id_change();
-		void on_container_destroy();
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
@@ -68,13 +61,6 @@ class PlayState : public State, flex::Client::Handler {
 		// UI.
 		TextScroller m_text_scroller;
 
-		sfg::Desktop m_desktop;
-		ChatWindow::Ptr m_chat_window;
-		sfg::SharedPtr<DebugWindow> m_debug_window;
-
-		ContainerManager m_container_manager;
-
-		bool m_gui_mode;
 		bool m_has_focus;
 
 		sf::Text m_fps_text;

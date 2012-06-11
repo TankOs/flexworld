@@ -25,7 +25,7 @@ endif()
 #
 # Override CMake module path to use custom/modified Find scripts.
 #
-set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlibs/SFML/cmake/Modules;${PROJECT_SOURCE_DIR}/extlibs/SFGUI/cmake;${CMAKE_MODULE_PATH}" )
+set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlibs/SFML/cmake/Modules;${CMAKE_MODULE_PATH}" )
 
 #
 # Global project settings.
@@ -72,7 +72,6 @@ endif()
 set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
 set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
 set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
-set( SFGUI_STATIC_LIBRARIES false CACHE BOOL "Was SFGUI built as a static library?" )
 
 #
 # Compiler-specific.
@@ -127,7 +126,6 @@ endif()
 
 if( FW_BUILD_CLIENT )
 	find_package( OpenGL REQUIRED )
-	find_package( SFGUI REQUIRED )
 
 	# Build libRocket.
 	set( BUILD_SHARED_LIBS false CACHE BOOL "" )

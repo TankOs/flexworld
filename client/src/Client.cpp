@@ -6,7 +6,6 @@
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/Log.hpp>
 
-#include <SFGUI/SFGUI.hpp>
 #include <Rocket/Core.h>
 #include <boost/filesystem.hpp>
 #include <sstream>
@@ -104,9 +103,6 @@ void Client::run() {
 	}
 
 	m_window.setVerticalSyncEnabled( Shared::get().user_settings.is_vsync_enabled() );
-
-	// SFGUI guard.
-	sfg::SFGUI sfgui_guard;
 
 	// Launch first state.
 	State* state( StateFactory::create_menu_state( m_window ) );

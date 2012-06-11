@@ -2,6 +2,8 @@
 #include "StateFactory.hpp"
 #include "Shared.hpp"
 
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Event.hpp>
 #include <iostream>
 
 ConnectState::ConnectState( sf::RenderWindow& target ) :
@@ -12,32 +14,6 @@ ConnectState::ConnectState( sf::RenderWindow& target ) :
 }
 
 void ConnectState::init() {
-	// GUI.
-	// Widgets.
-	m_info_window = sfg::Window::Create( sfg::Window::BACKGROUND );
-	m_info_window->SetTitle( L"Connecting..." );
-
-	m_info_label = sfg::Label::Create( L"" );
-
-	// Layout.
-	sfg::Box::Ptr vbox( sfg::Box::Create( sfg::Box::VERTICAL, 5.0f ) );
-	vbox->Pack( m_info_label, true );
-
-	m_info_window->Add( vbox );
-
-	// Init.
-	m_info_window->SetRequisition( sf::Vector2f( 400.f, 200.f ) );
-	m_info_window->SetPosition(
-		sf::Vector2f(
-			static_cast<float>( get_render_target().getSize().x ) / 2.f - m_info_window->GetAllocation().width / 2.f,
-			static_cast<float>( get_render_target().getSize().y ) / 2.f - m_info_window->GetAllocation().height / 2.f
-		)
-	);
-
-	m_desktop.Add( m_info_window );
-
-	// Prepare backend.
-
 	// Make sure IO service exists and is stopped.
 	get_shared().io_service->stop();
 	get_shared().io_service->reset();
@@ -71,9 +47,6 @@ void ConnectState::handle_event( const sf::Event& event ) {
 		m_canceled = true;
 		leave( StateFactory::create_menu_state( get_render_target() ) );
 	}
-	else {
-		m_desktop.HandleEvent( event );
-	}
 }
 
 void ConnectState::update( const sf::Time& delta ) {
@@ -90,14 +63,6 @@ void ConnectState::update( const sf::Time& delta ) {
 		get_shared().client->start( get_shared().host->get_ip(), get_shared().host->get_port() );
 	}
 
-	// Update GUI.
-	if( m_next_info_text.size() ) {
-		m_info_label->SetText( m_next_info_text );
-		m_next_info_text.clear();
-	}
-
-	m_desktop.Update( delta.asSeconds() );
-
 	if( m_go_on ) {
 		leave( StateFactory::create_play_state( get_render_target() ) );
 	}
@@ -107,9 +72,6 @@ void ConnectState::render() const {
 	sf::RenderWindow& window( get_render_target() );
 
 	window.clear();
-
-	// Render GUI.
-	sfg::Renderer::Get().Display( window );
 
 	window.display();
 }

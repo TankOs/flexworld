@@ -3,7 +3,6 @@
 #include "State.hpp"
 
 #include <FlexWorld/Client.hpp>
-#include <SFGUI/SFGUI.hpp>
 
 /** Connect state.
  *
@@ -30,12 +29,8 @@ class ConnectState : public State, public flex::Client::Handler {
 		void handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::LoginOK& msg, flex::Client::ConnectionID conn_id );
 
-		sfg::Desktop m_desktop;
 		std::string m_next_info_text;
 
 		bool m_canceled;
 		bool m_go_on;
-
-		sfg::Window::Ptr m_info_window;
-		sfg::Label::Ptr m_info_label;
 };
