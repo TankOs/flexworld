@@ -73,7 +73,7 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	create_binding_elements( "Use (hold to pick up)", Controls::USE );
 	create_binding_elements( "Drop", Controls::DROP );
 	create_binding_elements();
-	create_binding_elements( "Toggle desk", Controls::INVENTORY );
+	create_binding_elements( "Toggle desk", Controls::DESK );
 	create_binding_elements( "Chat", Controls::CHAT );
 
 	// Events.

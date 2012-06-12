@@ -42,6 +42,7 @@ class PlayState : public State, flex::Client::Handler {
 		void render() const;
 
 		void reset_mouse();
+		void update_mouse_pointer();
 
 		void launch_objects_preparation_thread();
 		void stop_and_wait_for_objects_preparation_thread();
@@ -125,6 +126,8 @@ class PlayState : public State, flex::Client::Handler {
 		bool m_use;
 		bool m_fly_up; // XXX
 		bool m_fly_down; // XXX
+
+		bool m_mouse_pointer_visible;
 
 		uint32_t m_last_picked_entity_id;
 

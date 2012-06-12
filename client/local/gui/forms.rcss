@@ -58,16 +58,10 @@ button:active {
 	color:#fff;
 	position:absolute;
 	text-align:center;
-	left:30px;
-	top:7px;
-	width:88%;
-	height:25px;
-	line-height:20px;
-
-	bg-decorator:tiled-horizontal;
-	bg-left-image:forms.png 0px 50px 52px 81px;
-	bg-center-image:forms.png repeat-truncate 52px 50px 118px 81px;
-	bg-right-image:forms.png 118px 50px 181px 81px;
+	top:5px;
+	left:0px;
+	width:100%;
+	line-height:25px;
 }
 
 tabset tab {
@@ -111,6 +105,7 @@ input.text {
 	padding: 7px 7px 0 7px;
 	/*font-size: 14;*/
 	margin-bottom: 5px;
+	color:#000;
 
 	bg-decorator:tiled-box;
 

@@ -6,6 +6,7 @@
 #include "Shared.hpp"
 #include "PlanetDrawable.hpp"
 #include "EntityGroupNode.hpp"
+#include "JournalWindowController.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -29,7 +30,7 @@ static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
-	m_user_interface( target ),
+	m_user_interface( target, get_shared().user_settings.get_controls() ),
 	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
@@ -48,6 +49,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_use( false ),
 	m_fly_up( false ),
 	m_fly_down( false ),
+	m_mouse_pointer_visible( true ),
 	m_last_picked_entity_id( 0 ),
 	m_my_entity_received( false )
 {
@@ -128,6 +130,7 @@ void PlayState::init() {
 
 	// Reset mouse so that the initial view direction is straight.
 	reset_mouse();
+	update_mouse_pointer();
 }
 
 void PlayState::cleanup() {
@@ -168,14 +171,27 @@ void PlayState::cleanup() {
 }
 
 void PlayState::handle_event( const sf::Event& event ) {
+	// Leave game?
 	if( event.type == sf::Event::Closed ) {
 		leave();
 	}
-	else if(
+
+	// Give event to user interface.
+	m_user_interface.handle_event( event );
+
+	// Do we need to show/hide the mouse pointer?
+	update_mouse_pointer();
+
+	// If user interface is consuming events, stop processing.
+	if( m_user_interface.is_consuming_events() ) {
+		return;
+	}
+
+	// Leave game? TODO: Confirmation dialog.
+	if(
 		event.type == sf::Event::KeyPressed &&
 		event.key.code == sf::Keyboard::Escape
 	) {
-		// Otherwise leave game (TODO: confirmation dialog).
 		leave( StateFactory::create_menu_state( get_render_target() ) );
 
 		// Cancel preparing objects.
@@ -209,9 +225,11 @@ void PlayState::handle_event( const sf::Event& event ) {
 	// Check for LostFocus and GainedFocus
 	if( event.type == sf::Event::LostFocus ) {
 		m_has_focus = false;
+		update_mouse_pointer();
 	}
 	else if( event.type == sf::Event::GainedFocus ) {
 		m_has_focus = true;
+		update_mouse_pointer();
 	}
 
 	// Check for actions.
@@ -264,12 +282,6 @@ void PlayState::handle_event( const sf::Event& event ) {
 			case Controls::CROUCH:
 				m_fly_down = pressed;
 				m_update_velocity = true;
-				break;
-
-			case Controls::CHAT:
-				break;
-
-			case Controls::INVENTORY:
 				break;
 
 			case Controls::PRIMARY_ACTION:
@@ -385,8 +397,30 @@ void PlayState::update( const sf::Time& delta ) {
 	// Ask IO service.
 	get_shared().io_service->poll();
 
-	// Process mouse/keyboard input only if window has the focus.
-	if( m_has_focus ) {
+	// Update velocity.
+	if( m_update_velocity ) {
+		// If we didn't receive our own entity yet, do not move (what to move anyways?).
+		if( !m_my_entity_received ) {
+			m_velocity.x = 0;
+			m_velocity.y = 0;
+			m_velocity.z = 0;
+		}
+		else {
+			m_target_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
+			m_target_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
+			m_target_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+
+			flex::normalize( m_target_velocity );
+			m_target_velocity.x *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
+			m_target_velocity.y *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
+			m_target_velocity.z *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
+		}
+
+		m_update_velocity = false;
+	}
+
+	// Process mouse look only if window has focus and mouse pointer is grabbed.
+	if( m_has_focus && !m_mouse_pointer_visible ) {
 		// Get mouse movement.
 		sf::Vector2i mouse_delta(
 			sf::Mouse::getPosition( get_render_target() ) -
@@ -411,81 +445,60 @@ void PlayState::update( const sf::Time& delta ) {
 
 			m_update_eyepoint = true;
 		}
+	}
 
-		// Movement.
-		if( m_update_velocity ) {
-			// If we didn't receive our own entity yet, do not move (what to move anyways?).
-			if( !m_my_entity_received ) {
-				m_velocity.x = 0;
-				m_velocity.y = 0;
-				m_velocity.z = 0;
-			}
-			else {
-				m_target_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
-				m_target_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
-				m_target_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
+	// Movement.
+	if( m_velocity.x < m_target_velocity.x ) {
+		m_velocity.x = std::min( m_target_velocity.x, m_velocity.x + WALK_ACCELERATION * delta.asSeconds() );
+	}
+	else if( m_velocity.x > m_target_velocity.x ) {
+		m_velocity.x = std::max( m_target_velocity.x, m_velocity.x - WALK_ACCELERATION * delta.asSeconds() );
+	}
 
-				flex::normalize( m_target_velocity );
-				m_target_velocity.x *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-				m_target_velocity.y *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-				m_target_velocity.z *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-			}
+	if( m_velocity.y < m_target_velocity.y ) {
+		m_velocity.y = std::min( m_target_velocity.y, m_velocity.y + WALK_ACCELERATION * delta.asSeconds() );
+	}
+	else if( m_velocity.y > m_target_velocity.y ) {
+		m_velocity.y = std::max( m_target_velocity.y, m_velocity.y - WALK_ACCELERATION * delta.asSeconds() );
+	}
 
-			m_update_velocity = false;
-		}
+	if( m_velocity.z < m_target_velocity.z ) {
+		m_velocity.z = std::min( m_target_velocity.z, m_velocity.z + WALK_ACCELERATION * delta.asSeconds() );
+	}
+	else if( m_velocity.z > m_target_velocity.z ) {
+		m_velocity.z = std::max( m_target_velocity.z, m_velocity.z - WALK_ACCELERATION * delta.asSeconds() );
+	}
 
-		if( m_velocity.x < m_target_velocity.x ) {
-			m_velocity.x = std::min( m_target_velocity.x, m_velocity.x + WALK_ACCELERATION * delta.asSeconds() );
-		}
-		else if( m_velocity.x > m_target_velocity.x ) {
-			m_velocity.x = std::max( m_target_velocity.x, m_velocity.x - WALK_ACCELERATION * delta.asSeconds() );
-		}
+	if( m_velocity.z != 0 ) {
+		m_camera.walk( m_velocity.z * delta.asSeconds() );
+		m_update_eyepoint = true;
+	}
 
-		if( m_velocity.y < m_target_velocity.y ) {
-			m_velocity.y = std::min( m_target_velocity.y, m_velocity.y + WALK_ACCELERATION * delta.asSeconds() );
-		}
-		else if( m_velocity.y > m_target_velocity.y ) {
-			m_velocity.y = std::max( m_target_velocity.y, m_velocity.y - WALK_ACCELERATION * delta.asSeconds() );
-		}
+	if( m_velocity.x != 0 ) {
+		m_camera.strafe( m_velocity.x * delta.asSeconds() );
+		m_update_eyepoint = true;
+	}
 
-		if( m_velocity.z < m_target_velocity.z ) {
-			m_velocity.z = std::min( m_target_velocity.z, m_velocity.z + WALK_ACCELERATION * delta.asSeconds() );
-		}
-		else if( m_velocity.z > m_target_velocity.z ) {
-			m_velocity.z = std::max( m_target_velocity.z, m_velocity.z - WALK_ACCELERATION * delta.asSeconds() );
-		}
+	if( m_velocity.y != 0 ) {
+		m_camera.fly( m_velocity.y * delta.asSeconds() );
+		m_update_eyepoint = true;
+	}
 
-		if( m_velocity.z != 0 ) {
-			m_camera.walk( m_velocity.z * delta.asSeconds() );
-			m_update_eyepoint = true;
-		}
+	// If eyepoint changed update transform of scene graph.
+	if( m_update_eyepoint ) {
+		m_scene_graph->set_local_transform(
+			sg::Transform(
+				sf::Vector3f(
+					-m_camera.get_position().x - m_camera.get_eye_offset().x,
+					-m_camera.get_position().y - m_camera.get_eye_offset().y,
+					-m_camera.get_position().z - m_camera.get_eye_offset().z
+				),
+				m_camera.get_rotation(),
+				sf::Vector3f( 1, 1, 1 )
+			)
+		);
 
-		if( m_velocity.x != 0 ) {
-			m_camera.strafe( m_velocity.x * delta.asSeconds() );
-			m_update_eyepoint = true;
-		}
-
-		if( m_velocity.y != 0 ) {
-			m_camera.fly( m_velocity.y * delta.asSeconds() );
-			m_update_eyepoint = true;
-		}
-
-		// If eyepoint changed update transform of scene graph.
-		if( m_update_eyepoint ) {
-			m_scene_graph->set_local_transform(
-				sg::Transform(
-					sf::Vector3f(
-						-m_camera.get_position().x - m_camera.get_eye_offset().x,
-						-m_camera.get_position().y - m_camera.get_eye_offset().y,
-						-m_camera.get_position().z - m_camera.get_eye_offset().z
-					),
-					m_camera.get_rotation(),
-					sf::Vector3f( 1, 1, 1 )
-				)
-			);
-
-			m_update_eyepoint = false;
-		}
+		m_update_eyepoint = false;
 	}
 
 	// If use key is pressed and timer expired, execute pick up event.
@@ -895,8 +908,8 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 }
 
 void PlayState::reset_mouse() {
-	// Do nothing if window not focused.
-	if( !m_has_focus ) {
+	// Do nothing if mouse cursor is visible.
+	if( m_mouse_pointer_visible ) {
 		return;
 	}
 
@@ -909,6 +922,12 @@ void PlayState::reset_mouse() {
 void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID /*conn_id*/ ) {
 	// Play sound.
 	m_chat_sound.play();
+
+	// Add to journal.
+	m_user_interface.get_journal_controller().add_message(
+		msg.get_message(),
+		msg.get_channel()
+	);
 }
 
 void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
@@ -997,4 +1016,37 @@ void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::Co
 
 	// Notify thread.
 	m_prepare_objects_condition.notify_one();
+}
+
+void PlayState::update_mouse_pointer() {
+	bool old_visibility = m_mouse_pointer_visible;
+
+	m_mouse_pointer_visible =
+		m_user_interface.is_mouse_pointer_needed() ||
+		!m_has_focus
+	;
+
+	if( old_visibility == m_mouse_pointer_visible ) {
+		return;
+	}
+
+	get_render_target().setMouseCursorVisible( m_mouse_pointer_visible );
+
+	if( !m_mouse_pointer_visible ) {
+		// Reset mouse so that the eye won't rotate when leaving any GUI mode.
+		reset_mouse();
+	}
+	else {
+		// Stop all movements.
+		m_walk_forward = false;
+		m_walk_backward = false;
+		m_strafe_left = false;
+		m_strafe_right = false;
+		m_fly_up = false;
+		m_fly_down = false;
+		m_use = false;
+		m_run = false;
+
+		m_update_velocity = true;
+	}
 }

@@ -20,7 +20,7 @@ class Controls {
 			DROP, ///< Drop.
 			PRIMARY_ACTION, ///< Primary action.
 			SECONDARY_ACTION, ///< Secondary action.
-			INVENTORY, ///< Inventory.
+			DESK, ///< Desk.
 			CHAT, ///< Chat.
 			RUN, ///< Run modifier.
 			NUM_ACTIONS ///< Total number of actions.
