@@ -13,6 +13,7 @@ class Element;
 class Event;
 }
 namespace Controls {
+class ElementTabSet;
 class ElementFormControlInput;
 class ElementFormControlSelect;
 }
@@ -35,6 +36,17 @@ class ChatController : public Rocket::Core::EventListener {
 		 * @param event Event.
 		 */
 		void ProcessEvent( Rocket::Core::Event& event );
+
+		/** Check if there's an active channel.
+		 * @return true if a channel is active.
+		 */
+		bool has_active_channel() const;
+
+		/** Get active channel.
+		 * Undefined behaviour if there's no active channel.
+		 * @return Active channel.
+		 */
+		const std::string& get_active_channel() const;
 
 		/** Get entered chat message.
 		 * @return Message.
@@ -69,8 +81,11 @@ class ChatController : public Rocket::Core::EventListener {
 
 		typedef std::vector<ChannelInfo> ChannelArray;
 
+		void prune_lines( Rocket::Core::Element* parent, std::size_t num_max_lines );
+
 		ChannelArray m_channels;
 		Rocket::Core::Element* m_root;
 		Rocket::Core::Element* m_send_element;
 		Rocket::Controls::ElementFormControlInput* m_message_element;
+		Rocket::Controls::ElementTabSet* m_tabset_element;
 };

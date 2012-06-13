@@ -191,10 +191,24 @@ void UserInterface::on_chat_send_click() {
 	// Get message.
 	sf::String message = m_chat_controller->get_message();
 
-	// Close chat window.
-	m_chat_document->Show( Rocket::Core::ElementDocument::NONE );
-	m_chat_document->Hide();
-	m_close_book_sound.play();
+	// Give observer.
+	if( message.getSize() > 0 && on_chat_message ) {
+		on_chat_message( message );
+	}
+
+	// Close chat window only if user doesn't hold CTRL.
+	if(
+		!sf::Keyboard::isKeyPressed( sf::Keyboard::LControl ) &&
+		!sf::Keyboard::isKeyPressed( sf::Keyboard::RControl )
+	) {
+		m_chat_document->Show( Rocket::Core::ElementDocument::NONE );
+		m_chat_document->Hide();
+		m_close_book_sound.play();
+	}
+
+	m_chat_controller->set_message( "" );
+	m_chat_controller->focus_message_box();
+
 	m_last_event_consumed = true;
 }
 

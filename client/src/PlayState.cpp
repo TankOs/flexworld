@@ -128,6 +128,12 @@ void PlayState::init() {
 	m_resource_manager.set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
 	m_resource_manager.set_texture_filter( get_shared().user_settings.get_texture_filter() );
 
+	// Setup UI.
+	m_user_interface.on_chat_message = boost::bind( &PlayState::on_chat_message, this, _1 );
+
+	// XXX XXX Open broadcast channel.
+	m_user_interface.get_chat_controller().add_message( "Heya.", "Broadcast" );
+
 	// Reset mouse so that the initial view direction is straight.
 	reset_mouse();
 	update_mouse_pointer();
@@ -926,11 +932,31 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 	// Play sound.
 	m_chat_sound.play();
 
+	// Construct message with sender included.
+	sf::String final_message;
+
+	final_message += "<";
+	final_message += msg.get_sender();
+	final_message += "> ";
+	final_message += msg.get_message();
+
+	final_message = final_message;
+
 	// Add to chat history.
 	m_user_interface.get_chat_controller().add_message(
-		msg.get_message(),
+		final_message,
 		msg.get_channel()
 	);
+
+	// Add to recent message.
+	sf::String with_chan_message;
+
+	with_chan_message += "[";
+	with_chan_message += msg.get_channel();
+	with_chan_message += "] ";
+	with_chan_message += final_message;
+
+	m_text_scroller.add_text( with_chan_message );
 }
 
 void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
@@ -1034,6 +1060,7 @@ void PlayState::update_mouse_pointer() {
 	}
 
 	get_render_target().setMouseCursorVisible( m_mouse_pointer_visible );
+	get_render_target().setKeyRepeatEnabled( m_mouse_pointer_visible );
 
 	if( !m_mouse_pointer_visible ) {
 		// Reset mouse so that the eye won't rotate when leaving any GUI mode.
@@ -1052,4 +1079,14 @@ void PlayState::update_mouse_pointer() {
 
 		m_update_velocity = true;
 	}
+}
+
+void PlayState::on_chat_message( const sf::String& message ) {
+	flex::msg::Chat chat_msg;
+
+	chat_msg.set_sender( " " );
+	chat_msg.set_channel( m_user_interface.get_chat_controller().get_active_channel() );
+	chat_msg.set_message( message );
+
+	get_shared().client->send_message( chat_msg );
 }

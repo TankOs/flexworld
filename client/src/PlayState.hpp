@@ -48,8 +48,7 @@ class PlayState : public State, flex::Client::Handler {
 		void stop_and_wait_for_objects_preparation_thread();
 		void prepare_objects();
 
-		void on_debug_class_id_change();
-		void on_debug_spawn_id_change();
+		void on_chat_message( const sf::String& message );
 
 		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
 		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
