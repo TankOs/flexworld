@@ -51,23 +51,6 @@ endif()
 # Find dependencies ================
 #===================================
 
-# FreeType
-if(WIN32)
-	set(FREETYPE_INCLUDE_DIRS ../../support/freetype/include)
-	set(FREETYPE_LIBRARY freetype243MT.lib)
-	set(FREETYPE_LINK_DIRS ../../support/lib)
-	set(FREETYPE_FOUND TRUE)
-else()
-	find_package(Freetype REQUIRED)	
-endif()
-
-if(FREETYPE_FOUND)
-		include_directories(${FREETYPE_INCLUDE_DIRS})
-		link_directories(${FREETYPE_LINK_DIRS})
-		list(APPEND CORE_LINK_LIBS ${FREETYPE_LIBRARY})
-endif()
-mark_as_advanced(FREETYPE_INCLUDE_DIRS FREETYPE_LIBRARY FREETYPE_LINK_DIRECTORIES)
-
 # Boost and Python
 if(BUILD_PYTHON_BINDINGS)
     find_package(PythonInterp REQUIRED)
@@ -160,6 +143,10 @@ endif()
 #===================================
 # Link libraries ===================
 #===================================
+
+# Freetype found by FlexWorld script.
+include_directories( ${FREETYPE_INCLUDE_DIRS} )
+target_link_libraries( RocketCore ${FREETYPE_LIBRARIES} )
 
 target_link_libraries(RocketCore ${CORE_LINK_LIBS})
 target_link_libraries(RocketControls RocketCore)

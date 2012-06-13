@@ -75,7 +75,6 @@ include_directories( ${OPENGL_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
 include_directories( ${YAML_CPP_INCLUDE_DIR} )
-include_directories( ${FREETYPE_INCLUDE_DIRS} )
 
 if( NOT WINDOWS )
 	include_directories( ${X11_Xrandr_INCLUDE_PATH} )
@@ -94,7 +93,6 @@ target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRAR
 target_link_libraries( flexworld-client ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${Boost_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
-target_link_libraries( flexworld-client ${FREETYPE_LIBRARIES} )
 
 if( NOT WINDOWS )
 	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
