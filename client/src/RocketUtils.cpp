@@ -11,8 +11,8 @@ void center_element( Rocket::Core::Element& element, const sf::Vector2f& center 
 	for( int box_idx = 0; box_idx < element.GetNumBoxes(); ++box_idx ) {
 		const Rocket::Core::Box& box = element.GetBox( box_idx );
 
-		element_size.x += box.GetSize().x;
-		element_size.y += box.GetSize().y;
+		element_size.x += box.GetSize( Rocket::Core::Box::MARGIN ).x;
+		element_size.y += box.GetSize( Rocket::Core::Box::MARGIN ).y;
 	}
 
 	{

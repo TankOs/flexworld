@@ -6,7 +6,7 @@
 #include "Shared.hpp"
 #include "PlanetDrawable.hpp"
 #include "EntityGroupNode.hpp"
-#include "JournalWindowController.hpp"
+#include "ChatController.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -540,6 +540,9 @@ void PlayState::update( const sf::Time& delta ) {
 
 	// Update text scroller.
 	m_text_scroller.update();
+
+	// Update GUI.
+	m_user_interface.update( delta );
 }
 
 void PlayState::render() const {
@@ -923,8 +926,8 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 	// Play sound.
 	m_chat_sound.play();
 
-	// Add to journal.
-	m_user_interface.get_journal_controller().add_message(
+	// Add to chat history.
+	m_user_interface.get_chat_controller().add_message(
 		msg.get_message(),
 		msg.get_channel()
 	);

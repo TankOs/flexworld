@@ -36,8 +36,8 @@ button:active {
 	min-width: 50px;
 	min-height: 50px;
 	padding: 65px 40px 40px 40px;
-	margin-top:-65px;
-	margin-left:-40px;
+	/*margin-top:-65px;
+	margin-left:-40px;*/
 
 	bg-decorator:tiled-box;
 
@@ -96,6 +96,10 @@ tabset tab:active {
 	bg-right-image:forms.png 118px 25px 180px 49px;
 }
 
+tabset tab:selected {
+	color:#00f;
+}
+
 tabset panel {
 	margin-top: 0px;
 }
@@ -109,24 +113,6 @@ input.text {
 
 	bg-decorator:tiled-box;
 
-	bg-top-left-image:forms.png     224px 17px 231px 24px;
-	bg-top-right-image:forms.png    234px 17px 241px 24px;
-	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
-	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
-
-	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
-	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
-	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
-	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
-
-	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
-}
-
-input.text:focus {
-	color:#fff;
-
-	bg-decorator:tiled-box;
-
 	bg-top-left-image:forms.png     241px 17px 248px 24px;
 	bg-top-right-image:forms.png    251px 17px 258px 24px;
 	bg-bottom-right-image:forms.png 251px 27px 258px 34px;
@@ -138,6 +124,22 @@ input.text:focus {
 	bg-left-image:forms.png repeat-stretch   241px 24px 248px 27px;
 
 	bg-center-image:forms.png repeat-truncate 248px 24px 251px 27px;
+}
+
+input.text:focus {
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     224px 17px 231px 24px;
+	bg-top-right-image:forms.png    234px 17px 241px 24px;
+	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
+	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
+
+	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
+	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
+	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
+	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
+
+	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
 }
 
 select {
@@ -148,24 +150,6 @@ select {
 
 	bg-decorator:tiled-box;
 
-	bg-top-left-image:forms.png     224px 17px 231px 24px;
-	bg-top-right-image:forms.png    234px 17px 241px 24px;
-	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
-	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
-
-	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
-	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
-	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
-	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
-
-	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
-}
-
-select:focus {
-	color:#fff;
-
-	bg-decorator:tiled-box;
-
 	bg-top-left-image:forms.png     241px 17px 248px 24px;
 	bg-top-right-image:forms.png    251px 17px 258px 24px;
 	bg-bottom-right-image:forms.png 251px 27px 258px 34px;
@@ -177,6 +161,22 @@ select:focus {
 	bg-left-image:forms.png repeat-stretch   241px 24px 248px 27px;
 
 	bg-center-image:forms.png repeat-truncate 248px 24px 251px 27px;
+}
+
+select:focus {
+	bg-decorator:tiled-box;
+
+	bg-top-left-image:forms.png     224px 17px 231px 24px;
+	bg-top-right-image:forms.png    234px 17px 241px 24px;
+	bg-bottom-right-image:forms.png 234px 27px 241px 34px;
+	bg-bottom-left-image:forms.png  224px 27px 231px 34px;
+
+	bg-top-image:forms.png repeat-stretch    231px 17px 234px 24px;
+	bg-right-image:forms.png repeat-stretch  234px 24px 241px 27px;
+	bg-bottom-image:forms.png repeat-stretch 231px 27px 234px 34px;
+	bg-left-image:forms.png repeat-stretch   224px 24px 231px 27px;
+
+	bg-center-image:forms.png repeat-truncate 231px 24px 234px 27px;
 }
 
 select selectarrow {

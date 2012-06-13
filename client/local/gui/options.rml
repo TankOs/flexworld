@@ -9,7 +9,7 @@
 	</head>
 	<body>
 		<div class="window" style="width: 400px;" id="window">
-			<handle move_target="#document"><title>Options</title></handle>
+			<handle move_target="window"><title>Options</title></handle>
 			<tabset>
 				<tab style="margin-left:50px;">Account</tab>
 				<panel>
@@ -23,7 +23,7 @@
 				<tab>Controls</tab>
 				<panel>
 					<h2 style="margin-top:0;">Mouse</h2>
-					<label style="vertical-align:middle;">Invert Y</label><input type="checkbox" id="invert_mouse"/><br/>
+					<label style="vertical-align:middle;">Invert Y axis</label><input type="checkbox" id="invert_mouse"/><br/>
 					<label>Sensitivity</label><input type="range" id="sensitivity" min="1" max="50" step="1" value="1"/>&nbsp;<span id="sensitivity_number" style="margin-left:5px;">3.4</span>
 
 					<h2>Bindings</h2>

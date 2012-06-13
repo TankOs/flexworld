@@ -8,6 +8,8 @@ Sounds
 ------
 client/local/sfx/chat.wav: CC BY 3.0 (http://www.freesound.org/people/junggle/sounds/30341/)
 client/local/sfx/lick.wav: CC BY 3.0 (http://www.freesound.org/people/TicTacShutUp/sounds/406/)
+client/local/sfx/page0.wav: CC Sampling Plus 1.0 (http://www.freesound.org/people/Pogotron/sounds/60836/)
+client/local/sfx/page1.wav: CC Sampling Plus 1.0 (http://www.freesound.org/people/Pogotron/sounds/60836/)
 
 Fonts
 -----

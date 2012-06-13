@@ -1,3 +1,7 @@
+body {
+	font-charset:U+0020-00FF;
+}
+
 p, h1, h2 {
 	display: block;
 }
