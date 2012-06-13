@@ -126,6 +126,7 @@ endif()
 
 if( FW_BUILD_CLIENT )
 	find_package( OpenGL REQUIRED )
+	find_package( Freetype REQUIRED )
 
 	# Build libRocket.
 	set( BUILD_SHARED_LIBS false CACHE BOOL "" )
