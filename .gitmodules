@@ -10,3 +10,6 @@
 [submodule "extlibs/assimp"]
 	path = extlibs/assimp
 	url = git://github.com/assimp/assimp.git
+[submodule "extlibs/libRocket"]
+	path = extlibs/libRocket
+	url = git://github.com/lloydw/libRocket.git

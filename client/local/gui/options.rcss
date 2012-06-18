@@ -22,6 +22,10 @@ label {
 	margin-right:10px;
 }
 
+input {
+	width:250px;
+}
+
 label, input {
 	margin-bottom:0.5em;
 }
