@@ -9,6 +9,11 @@
 #   - LIBROCKET_LIBRARIES: All libraries.
 
 set( LIBROCKET_FOUND false )
+set( LIBROCKET_STATIC_LIBRARIES TRUE CACHE BOOL "Use static libRocket libraries." )
+
+if( LIBROCKET_STATIC_LIBRARIES )
+	add_definitions( -DSTATIC_LIB )
+endif()
 
 find_path(
 	LIBROCKET_INCLUDE_DIR
