@@ -5,6 +5,7 @@
 #include <SFML/System/String.hpp>
 #include <Rocket/Core.h>
 #include <Rocket/Controls.h>
+#include <iterator>
 #include <cassert>
 
 ChatController::ChatController( Rocket::Core::Element* root ) :

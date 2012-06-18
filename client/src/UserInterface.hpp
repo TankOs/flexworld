@@ -3,6 +3,7 @@
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/Sound.hpp>
+#include <boost/function.hpp>
 #include <memory>
 
 class ChatController;
@@ -73,7 +74,7 @@ class UserInterface {
 		 */
 		ChatController& get_chat_controller();
 
-		std::function<void( const sf::String& )> on_chat_message; ///< Fired when user wants to send chat message.
+		boost::function<void( const sf::String& )> on_chat_message; ///< Fired when user wants to send chat message.
 
 	private:
 		void on_chat_send_click();

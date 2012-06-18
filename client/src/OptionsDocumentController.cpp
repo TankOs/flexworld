@@ -107,7 +107,7 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 		std::stringstream sstr;
 		sstr << mode.width << " x " << mode.height;
 
-		m_resolution_element->Add( sstr.str().c_str(), std::to_string( m_video_modes.size() - 1 ).c_str() );
+		m_resolution_element->Add( sstr.str().c_str(), std::to_string( static_cast<unsigned long long>( m_video_modes.size() - 1 ) ).c_str() );
 	}
 
 	// Enumerate anisotropic filter levels.
@@ -119,7 +119,7 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 		std::stringstream sstr;
 		sstr << static_cast<int>( level ) << "x";
 
-		m_anisotropic_filter_element->Add( sstr.str().c_str(), std::to_string( static_cast<int>( level ) ).c_str() );
+		m_anisotropic_filter_element->Add( sstr.str().c_str(), std::to_string( static_cast<long long>( level ) ).c_str() );
 	}
 }
 
@@ -164,7 +164,7 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 	}
 
 	update_range_numbers();
-	m_sensitivity_element->SetValue( std::to_string( std::floor( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
+	m_sensitivity_element->SetValue( std::to_string( static_cast<long long>( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
 
 	update_binding_labels();
 
@@ -179,8 +179,8 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 		m_fps_div_element->RemoveProperty( "display" );
 	}
 
-	m_fps_element->SetValue( std::to_string( m_user_settings.get_fps_limit() ).c_str() );
-	m_fov_element->SetValue( std::to_string( std::floor( m_user_settings.get_fov() ) ).c_str() );
+	m_fps_element->SetValue( std::to_string( static_cast<long long>( m_user_settings.get_fps_limit() ) ).c_str() );
+	m_fov_element->SetValue( std::to_string( static_cast<long long>( m_user_settings.get_fov() ) ).c_str() );
 
 	// Pick video mode.
 	int new_mode_idx = 0;

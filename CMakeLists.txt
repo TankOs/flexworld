@@ -8,6 +8,7 @@ endif()
 #
 # Detections.
 #
+
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Windows" )
 	set( WINDOWS 1 )
 elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
@@ -61,6 +62,7 @@ if( WINDOWS )
 	set( BIN_EXTENSION ".exe" )
 	set( SHARE_TARGET_DIR . )
 	add_definitions( -DWINDOWS )
+	add_definitions( -DWIN32_LEAN_AND_MEAN )
 else()
 	set( SHARE_TARGET_DIR share/FlexWorld )
 	add_definitions( -DLINUX )
@@ -122,17 +124,6 @@ find_package( Lua51 REQUIRED )
 
 if( NOT WINDOWS )
 	find_package( X11 REQUIRED )
-endif()
-
-if( FW_BUILD_CLIENT )
-	find_package( OpenGL REQUIRED )
-	find_package( Freetype REQUIRED )
-
-	# Build libRocket.
-	set( BUILD_SHARED_LIBS false CACHE BOOL "" )
-	set( CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/extlibs/libRocket/Build/cmake" )
-
-	add_subdirectory( "${PROJECT_SOURCE_DIR}/extlibs/libRocket/Build/" )
 endif()
 
 #
