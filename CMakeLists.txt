@@ -138,6 +138,9 @@ find_package( Lua51 REQUIRED )
 if( NOT WINDOWS AND FW_BUILD_CLIENT )
 	find_package( X11 REQUIRED )
 	find_package( OpenAL REQUIRED )
+endif()
+
+if( FW_BUILD_CLIENT )
 	find_package( OpenGL REQUIRED )
 endif()
 
