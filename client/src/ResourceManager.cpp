@@ -321,11 +321,13 @@ void ResourceManager::setup_texture( TexturePtr texture, const sf::Image* image 
 	}
 
 	// Anisotropic filter.
-	glTexParameterf(
-		GL_TEXTURE_2D,
-		GL_TEXTURE_MAX_ANISOTROPY_EXT,
-		m_anisotropy_level > 0 ? std::pow( 2.0f, static_cast<float>( m_anisotropy_level - 1 ) ) : 0.0f
-	);
+	if( m_anisotropy_level > 0 ) {
+		glTexParameterf(
+			GL_TEXTURE_2D,
+			GL_TEXTURE_MAX_ANISOTROPY_EXT,
+			std::pow( 2.0f, static_cast<float>( m_anisotropy_level - 1 ) )
+		);
+	}
 
 	glBindTexture( GL_TEXTURE_2D, 0 );
 }
