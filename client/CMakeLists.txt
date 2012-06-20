@@ -79,6 +79,7 @@ include_directories( ${YAML_CPP_INCLUDE_DIR} )
 if( NOT WINDOWS )
 	include_directories( ${X11_Xrandr_INCLUDE_PATH} )
 	include_directories( ${X11_X11_INCLUDE_PATH} )
+	include_directories( ${OPENAL_INCLUDE_DIR} )
 endif()
 
 add_executable( flexworld-client ${SOURCES} )
@@ -87,12 +88,14 @@ target_link_libraries( flexworld-client flexworld )
 target_link_libraries( flexworld-client fwsg )
 target_link_libraries( flexworld-client ${LIBROCKET_LIBRARIES} )
 target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
-target_link_libraries( flexworld-client ${OPENGL_glu_LIBRARY} ${OPENGL_gl_LIBRARY} )
+target_link_libraries( flexworld-client ${OPENGL_LIBRARIES} )
+target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
 target_link_libraries( flexworld-client ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${Boost_SYSTEM_LIBRARY} )
-target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
 
 if( NOT WINDOWS )
+	target_link_libraries( flexworld-client ${OPENAL_LIBRARY} )
+	target_link_libraries( flexworld-client sndfile )
 	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
 
 	if( SFML_STATIC_LIBRARIES )
@@ -102,14 +105,10 @@ if( NOT WINDOWS )
 	endif()
 endif()
 
+# Binaries.
 if( FW_PORTABLE_INSTALL OR WINDOWS )
 	install(
 		TARGETS flexworld-client
-		DESTINATION .
-	)
-
-	install(
-		DIRECTORY local
 		DESTINATION .
 	)
 elseif( LINUX )
@@ -117,11 +116,12 @@ elseif( LINUX )
 		TARGETS flexworld-client
 		DESTINATION games
 	)
-
-	install(
-		DIRECTORY local
-		DESTINATION share/games/flexworld
-	)
 else()
 	message( FATAL_ERROR "Install?!?!?!" )
 endif()
+
+# Data.
+install(
+	DIRECTORY local
+	DESTINATION "${FW_INSTALL_ROOT_DATA_DIRECTORY}"
+)

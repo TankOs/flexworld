@@ -31,18 +31,30 @@ set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlib
 #
 # Global project settings.
 #
-set( FW_VERSION_MAJOR "0" )
-set( FW_VERSION_MINOR "0" )
-set( FW_VERSION_REVISION "0" )
-set( FW_VERSION_SUFFIX "12-24-0" )
+set( FW_VERSION_MAJOR "0" CACHE STRING "Version (major)" FORCE )
+set( FW_VERSION_MINOR "0" CACHE STRING "Version (minor)" FORCE )
+set( FW_VERSION_REVISION "0" CACHE STRING "Version (revision)" FORCE )
+set( FW_VERSION_SUFFIX "12-24-0" CACHE STRING "Version (suffix)" FORCE )
 
 set( FW_PORTABLE_INSTALL TRUE CACHE BOOL "Install portable (especially useful for distributing Linux test releases(!), so that both client and server don't use absolute system paths)." )
 
 # Configure data root directory.
 if( FW_PORTABLE_INSTALL OR WINDOWS )
-	set( FW_ROOT_DATA_DIRECTORY "./" )
+	set( FW_INSTALL_ROOT_DATA_DIRECTORY "./" )
+	set( GEN_ROOT_DATA_DIRECTORY "${FW_INSTALL_ROOT_DATA_DIRECTORY}" )
+elseif( LINUX )
+	set( FW_INSTALL_ROOT_DATA_DIRECTORY "share/games/flexworld/" )
+	set( GEN_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/${FW_INSTALL_ROOT_DATA_DIRECTORY}" )
 else()
-	set( FW_ROOT_DATA_DIRECTORY "${CMAKE_INSTALL_PREFIX}/share/games/flexworld/" )
+	message( FATAL_ERROR "Unsupported system." )
+endif()
+
+if( NOT FW_ROOT_DATA_DIRECTORY )
+	set( FW_ROOT_DATA_DIRECTORY "${GEN_ROOT_DATA_DIRECTORY}" )
+else()
+	message( "****************************** FlexWorld root data directory overriden: ${FW_ROOT_DATA_DIRECTORY}" )
+	message( "****************************** FlexWorld root data directory overriden: ${FW_ROOT_DATA_DIRECTORY}" )
+	message( "****************************** FlexWorld root data directory overriden: ${FW_ROOT_DATA_DIRECTORY}" )
 endif()
 
 #
@@ -123,8 +135,10 @@ find_package( yaml-cpp REQUIRED )
 find_package( Threads REQUIRED )
 find_package( Lua51 REQUIRED )
 
-if( NOT WINDOWS )
+if( NOT WINDOWS AND FW_BUILD_CLIENT )
 	find_package( X11 REQUIRED )
+	find_package( OpenAL REQUIRED )
+	find_package( OpenGL REQUIRED )
 endif()
 
 #

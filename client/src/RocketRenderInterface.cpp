@@ -140,7 +140,7 @@ bool RocketRenderInterface::LoadTexture(
 	// Try to load the texture.
 	sf::Texture* texture = new sf::Texture;
 
-	if( !texture->loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( source.CString() ) ) ) {
+	if( !texture->loadFromFile( std::string( source.CString() ) ) ) {
 		delete texture;
 		return false;
 	}

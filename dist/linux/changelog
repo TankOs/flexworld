@@ -1,0 +1,23 @@
+flexworld (0.0.0-12-24-0) unstable; urgency=low
+
+  * FIX: Alt+F4 exits game (#406).
+  * FIX: Stopping flight when going into chat (#392).
+  * FIX: convert2fwm doesn't need a colon for slot IDs anymore (#401).
+  * FEATURE: Added key for "Desk". Desk doesn't contain anything yet.
+  * FEATURE: Attaching entities (only possible in source code right now).
+  * FEATURE: Chat notification sound.
+  * FEATURE: Chat scroller (shows last chat messages for a short time).
+  * FEATURE: Entity origin property.
+  * FEATURE: Entity picking (#423).
+  * FEATURE: Entity rendering.
+  * FEATURE: Eye offset added for camera (view height).
+  * FEATURE: More grass (height=2) to play around with.
+  * FEATURE: Recreated chat window.
+  * FEATURE: Recreated options window.
+  * FEATURE: Reserved hooks (hooks beginning with _ (underscore)).
+  * FEATURE: Running.
+  * FEATURE: Several Lua API additions.
+  * FEATURE: Using/picking up entities (picking up not yet catchable in Lua).
+  * FEATURE: libRocket graphical user interface.
+
+  -- Stefan Schindler <stefan@boxbox.org> Tue, 19 Jun 2012 13:57:08 +0200

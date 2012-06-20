@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=FlexWorld
-Comment=FlexWorld
-Exec=/usr/games/flexworld-client
+Comment=Flexible 3D open content sandbox game
+Exec=flexworld-client
 Terminal=false
 Type=Application
 Categories=Game;
