@@ -299,9 +299,6 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 	msg::LoginOK ok_msg;
 	ok_msg.set_entity_id( entity_id );
 	m_server->send_message( ok_msg, conn_id );
-
-	// Trigger event.
-	m_script_manager->trigger_connect_system_event( conn_id );
 }
 
 void SessionHost::set_auth_mode( AuthMode mode ) {
@@ -350,6 +347,9 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	m_lock_facility.lock_planet( *construct, false );
 
 	beam_player( conn_id, "construct", sf::Vector3f( 40, height, 40 ), 200 );
+
+	// Trigger connect event. TODO Is this the right place?
+	m_script_manager->trigger_connect_system_event( conn_id );
 }
 
 void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
