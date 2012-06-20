@@ -21,7 +21,7 @@ end
 
 function on_set_next_command( args, client_id )
 	if #args < 1 then
-		flex.server:broadcast_chat_message( "Usage: /set_next CLASS_ID" )
+		flex.server:broadcast_chat_message( "Usage: /set_next CLASS_ID", "Status", "Server" )
 		return
 	end
 
