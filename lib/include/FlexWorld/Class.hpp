@@ -148,6 +148,22 @@ class Class {
 		 */
 		const FloatCuboid& get_bounding_box() const;
 
+		/** Check if class has a container image assigned.
+		 * @return true if assigned.
+		 */
+		bool has_container_image() const;
+
+		/** Set container image.
+		 * @param image Image resource.
+		 */
+		void set_container_image( const Resource& image );
+
+		/** Get container image.
+		 * Undefined behaviour if no image set.
+		 * @return Container image.
+		 */
+		const Resource& get_container_image() const;
+
 	private:
 		typedef std::map<const std::string, sf::Vector3f> HookMap;
 		typedef std::vector<Resource> ResourceVector;
@@ -156,6 +172,7 @@ class Class {
 		ResourceVector m_textures;
 		std::string m_name;
 		std::unique_ptr<Resource> m_model;
+		std::unique_ptr<Resource> m_container_image;
 		FloatCuboid m_bounding_box;
 		sf::Vector3f m_origin;
 		sf::Vector3f m_scale;

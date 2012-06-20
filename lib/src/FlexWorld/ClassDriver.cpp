@@ -239,6 +239,29 @@ Class ClassDriver::load( const std::string& path ) {
 		}
 	}
 
+	// Read container image.
+	{
+		const YAML::Node* container_image_node( doc.FindValue( "ContainerImage" ) );
+
+		if( container_image_node ) {
+			if( container_image_node->Type() != YAML::NodeType::Scalar ) {
+				throw LoadException( "ContainerImage not a scalar." );
+			}
+
+			*container_image_node >> string;
+
+			FlexID id;
+			if( !id.parse( string ) ) {
+				throw LoadException( "Invalid ID." );
+			}
+			else if( !id.is_valid_resource() ) {
+				throw LoadException( "ContainerImage is not a resource." );
+			}
+
+			cls->set_container_image( Resource( id ) );
+		}
+	}
+
 	return *cls;
 }
 

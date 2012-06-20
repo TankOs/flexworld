@@ -9,3 +9,4 @@ Hooks:
 Textures:
   - "test/grass.png"
 Model: "test/cube.fwm"
+ContainerImage: "test/image.png"

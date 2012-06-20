@@ -35,6 +35,13 @@ const Class& Class::operator=( const Class& other ) {
 		m_model.reset();
 	}
 
+	if( other.m_container_image ) {
+		m_container_image.reset( new Resource( *other.m_container_image ) );
+	}
+	else {
+		m_container_image.reset();
+	}
+
 	return *this;
 }
 
@@ -120,5 +127,19 @@ void Class::set_bounding_box( const FloatCuboid& cuboid ) {
 const FloatCuboid& Class::get_bounding_box() const {
 	return m_bounding_box;
 }
+
+bool Class::has_container_image() const {
+	return m_container_image.get() != nullptr;
+}
+
+void Class::set_container_image( const Resource& image ) {
+	m_container_image.reset( new Resource( image ) );
+}
+
+const Resource& Class::get_container_image() const {
+	assert( m_container_image );
+	return *m_container_image;
+}
+
 
 }
