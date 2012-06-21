@@ -972,118 +972,6 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) {
-	using namespace flex;
-
-	static const Entity::ID ID = 1337;
-	static const Planet::Coordinate POSITION( 1, 2, 3 );
-	static const std::string CLASS( "fw.base.human/dwarf_male" );
-	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
-	static const float HEADING( 213.44f );
-
-	// Create source buffer.
-	ServerProtocol::Buffer source;
-	source.insert( source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
-	source.insert( source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
-
-	// Initial state.
-	{
-		msg::CreateEntity msg;
-
-		BOOST_CHECK( msg.get_id() == 0 );
-		BOOST_CHECK( msg.get_position() == Planet::Coordinate( 0, 0, 0 ) );
-		BOOST_CHECK( msg.get_heading() == 0 );
-		BOOST_CHECK( msg.get_class() == "" );
-	}
-
-	// Basic properties.
-	{
-		msg::CreateEntity msg;
-		msg.set_id( ID );
-		msg.set_position( POSITION );
-		msg.set_heading( HEADING );
-		msg.set_class( CLASS );
-
-		BOOST_CHECK( msg.get_id() == ID );
-		BOOST_CHECK( msg.get_position() == POSITION );
-		BOOST_CHECK( msg.get_heading() == HEADING );
-		BOOST_CHECK( msg.get_class() == CLASS );
-	}
-
-	// Serialize.
-	{
-		msg::CreateEntity msg;
-		msg.set_id( ID );
-		msg.set_position( POSITION );
-		msg.set_heading( HEADING );
-		msg.set_class( CLASS );
-
-		ServerProtocol::Buffer buffer;
-		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
-
-		BOOST_CHECK( buffer == source );
-	}
-
-	// Serialize with invalid class ID.
-	{
-		msg::CreateEntity msg;
-		msg.set_id( ID );
-		msg.set_position( POSITION );
-		msg.set_heading( HEADING );
-		msg.set_class( "" );
-
-		ServerProtocol::Buffer buffer;
-		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
-
-		msg.set_class( std::string( 256, 'x' ) );
-		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
-	}
-
-	// Deserialize.
-	{
-		msg::CreateEntity msg;
-
-		std::size_t eaten = 0;
-		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
-
-		BOOST_CHECK( eaten == source.size() );
-		BOOST_CHECK( msg.get_id() == ID );
-		BOOST_CHECK( msg.get_position() == POSITION );
-		BOOST_CHECK( msg.get_heading() == HEADING );
-		BOOST_CHECK( msg.get_class() == CLASS );
-	}
-
-	// Deserialize with bogus class length.
-	{
-		uint8_t zero = 0;
-
-		ServerProtocol::Buffer invalid_source;
-		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
-		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
-		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
-		invalid_source.push_back( zero );
-		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
-
-		msg::CreateEntity msg;
-		std::size_t eaten = 0;
-
-		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid class length." ) );
-		BOOST_CHECK( eaten == 0 );
-	}
-
-	// Deserialize with too less data.
-	{
-		msg::CreateEntity msg;
-
-		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
-			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
-		}
-	}
-}
-
 BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 	using namespace flex;
 
@@ -1669,6 +1557,270 @@ BOOST_AUTO_TEST_CASE( TestUse ) {
 	// Deserialize with too less data.
 	{
 		msg::Use msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) { // Without parent.
+	using namespace flex;
+
+	static const Entity::ID ID = 1337;
+	static const Planet::Coordinate POSITION( 1, 2, 3 );
+	static const std::string CLASS( "fw.base.human/dwarf_male" );
+	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
+	static const float HEADING( 213.44f );
+	static const uint8_t PARENT_HOOK_LENGTH = 0;
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &PARENT_HOOK_LENGTH ), reinterpret_cast<const char*>( &PARENT_HOOK_LENGTH ) + sizeof( PARENT_HOOK_LENGTH ) );
+
+	// Initial state.
+	{
+		msg::CreateEntity msg;
+
+		BOOST_CHECK( msg.get_id() == 0 );
+		BOOST_CHECK( msg.get_position() == Planet::Coordinate( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_heading() == 0 );
+		BOOST_CHECK( msg.get_class() == "" );
+		BOOST_CHECK( msg.has_parent() == false );
+		BOOST_CHECK( msg.get_parent_id() == 0 );
+		BOOST_CHECK( msg.get_parent_hook().empty() == true );
+	}
+
+	// Basic properties.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+
+		BOOST_CHECK( msg.get_id() == ID );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
+	}
+
+	// Serialize.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Serialize with invalid class ID.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( "" );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
+
+		msg.set_class( std::string( 256, 'x' ) );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
+	}
+
+	// Deserialize.
+	{
+		msg::CreateEntity msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_id() == ID );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
+		BOOST_CHECK( msg.has_parent() == false );
+	}
+
+	// Deserialize with bogus class length.
+	{
+		uint8_t zero = 0;
+
+		ServerProtocol::Buffer invalid_source;
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+		invalid_source.push_back( zero );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+
+		msg::CreateEntity msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid class length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::CreateEntity msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE( TestCreateAttachedEntityMessage ) {
+	using namespace flex;
+
+	static const Entity::ID ID = 1337;
+	static const Planet::Coordinate POSITION( 1, 2, 3 );
+	static const std::string CLASS( "fw.base.human/dwarf_male" );
+	static const uint8_t CLASS_LENGTH = static_cast<uint8_t>( CLASS.size() );
+	static const float HEADING( 213.44f );
+	static const Entity::ID PARENT_ID = 4958;
+	static const std::string PARENT_HOOK = "foobar";
+	static const uint8_t PARENT_HOOK_LENGTH = static_cast<uint8_t>( PARENT_HOOK.size() );
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( &CLASS_LENGTH ), reinterpret_cast<const char*>( &CLASS_LENGTH ) + sizeof( CLASS_LENGTH ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &PARENT_HOOK_LENGTH ), reinterpret_cast<const char*>( &PARENT_HOOK_LENGTH ) + sizeof( PARENT_HOOK_LENGTH ) );
+	source.insert( source.end(), reinterpret_cast<const char*>( PARENT_HOOK.c_str() ), reinterpret_cast<const char*>( PARENT_HOOK.c_str() ) + PARENT_HOOK.size() );
+	source.insert( source.end(), reinterpret_cast<const char*>( &PARENT_ID ), reinterpret_cast<const char*>( &PARENT_ID ) + sizeof( PARENT_ID ) );
+
+	// Initial state.
+	{
+		msg::CreateEntity msg;
+
+		BOOST_CHECK( msg.get_id() == 0 );
+		BOOST_CHECK( msg.get_position() == Planet::Coordinate( 0, 0, 0 ) );
+		BOOST_CHECK( msg.get_heading() == 0 );
+		BOOST_CHECK( msg.get_class() == "" );
+		BOOST_CHECK( msg.has_parent() == false );
+		BOOST_CHECK( msg.get_parent_id() == 0 );
+		BOOST_CHECK( msg.get_parent_hook().empty() == true );
+	}
+
+	// Basic properties.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+		msg.set_parent_id( PARENT_ID );
+		msg.set_parent_hook( PARENT_HOOK );
+
+		BOOST_CHECK( msg.get_id() == ID );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
+		BOOST_CHECK( msg.get_parent_id() == PARENT_ID );
+		BOOST_CHECK( msg.get_parent_hook() == PARENT_HOOK );
+	}
+
+	// Serialize.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+		msg.set_parent_id( PARENT_ID );
+		msg.set_parent_hook( PARENT_HOOK );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Serialize with invalid class ID.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( "" );
+		msg.set_parent_id( PARENT_ID );
+		msg.set_parent_hook( PARENT_HOOK );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
+
+		msg.set_class( std::string( 256, 'x' ) );
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid class name." ) );
+	}
+
+	// Serialize with invalid hook ID.
+	{
+		msg::CreateEntity msg;
+		msg.set_id( ID );
+		msg.set_position( POSITION );
+		msg.set_heading( HEADING );
+		msg.set_class( CLASS );
+		msg.set_parent_id( PARENT_ID );
+		msg.set_parent_hook( std::string( 256, 'a' ) );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_EXCEPTION( msg.serialize( buffer ), msg::CreateEntity::InvalidDataException, ExceptionChecker<msg::CreateEntity::InvalidDataException>( "Invalid hook." ) );
+	}
+
+	// Deserialize.
+	{
+		msg::CreateEntity msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_id() == ID );
+		BOOST_CHECK( msg.get_position() == POSITION );
+		BOOST_CHECK( msg.get_heading() == HEADING );
+		BOOST_CHECK( msg.get_class() == CLASS );
+		BOOST_CHECK( msg.has_parent() == true );
+		BOOST_CHECK( msg.get_parent_id() == PARENT_ID );
+		BOOST_CHECK( msg.get_parent_hook() == PARENT_HOOK );
+	}
+
+	// Deserialize with bogus class length.
+	{
+		uint8_t zero = 0;
+
+		ServerProtocol::Buffer invalid_source;
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &POSITION ), reinterpret_cast<const char*>( &POSITION ) + sizeof( POSITION ) );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( &HEADING ), reinterpret_cast<const char*>( &HEADING ) + sizeof( HEADING ) );
+		invalid_source.push_back( zero );
+		invalid_source.insert( invalid_source.end(), reinterpret_cast<const char*>( CLASS.c_str() ), reinterpret_cast<const char*>( CLASS.c_str() ) + CLASS.size() );
+
+		msg::CreateEntity msg;
+		std::size_t eaten = 0;
+
+		BOOST_CHECK_EXCEPTION( eaten = msg.deserialize( &invalid_source.front(), invalid_source.size() ), msg::Beam::BogusDataException, ExceptionChecker<msg::Beam::BogusDataException>( "Invalid class length." ) );
+		BOOST_CHECK( eaten == 0 );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::CreateEntity msg;
 
 		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
 			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );

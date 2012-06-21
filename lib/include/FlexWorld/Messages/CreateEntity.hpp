@@ -57,13 +57,42 @@ class CreateEntity : public Message {
 		 */
 		const std::string& get_class() const;
 
+		/** Check if entity has a parent and hook set.
+		 * @return true if parent set.
+		 */
+		bool has_parent() const;
+
+		/** Set parent entity ID.
+		 * @param id ID.
+		 */
+		void set_parent_id( Entity::ID id );
+
+		/** Set parent hook.
+		 * @param hook Hook.
+		 */
+		void set_parent_hook( const std::string& hook );
+
+		/** Get parent entity ID.
+		 * @return Parent entity ID.
+		 * @see has_parent
+		 */
+		Entity::ID get_parent_id() const;
+
+		/** Get parent hook.
+		 * @return Parent hook.
+		 * @see has_parent
+		 */
+		const std::string& get_parent_hook() const;
+
 		void serialize( Buffer& buffer ) const;
 		std::size_t deserialize( const char* buffer, std::size_t buffer_size );
 
 	private:
 		std::string m_class;
+		std::string m_parent_hook;
 		Planet::Coordinate m_position;
 		Entity::ID m_id;
+		Entity::ID m_parent_id;
 		float m_heading;
 };
 

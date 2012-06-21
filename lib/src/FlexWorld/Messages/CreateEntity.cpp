@@ -8,8 +8,10 @@ namespace msg {
 CreateEntity::CreateEntity() :
 	Message(),
 	m_class( "" ),
+	m_parent_hook( "" ),
 	m_position( 0, 0, 0 ),
 	m_id( 0 ),
+	m_parent_id( 0 ),
 	m_heading( 0 )
 {
 }
@@ -20,6 +22,9 @@ void CreateEntity::serialize( Buffer& buffer ) const {
 	if( m_class.size() < 1 || m_class.size() > 255 ) {
 		throw InvalidDataException( "Invalid class name." );
 	}
+	else if( m_parent_hook.size() > 255 ) {
+		throw InvalidDataException( "Invalid hook." );
+	}
 
 	// Enlarge buffer.
 	buffer.resize(
@@ -27,7 +32,7 @@ void CreateEntity::serialize( Buffer& buffer ) const {
 		+ sizeof( m_id )
 		+ sizeof( m_position )
 		+ sizeof( m_heading )
-		+ sizeof( uint8_t )
+		+ sizeof( uint8_t ) // Class length.
 	);
 
 	*reinterpret_cast<Entity::ID*>( &buffer[buf_ptr] ) = m_id; buf_ptr += sizeof( m_id );
@@ -35,6 +40,17 @@ void CreateEntity::serialize( Buffer& buffer ) const {
 	*reinterpret_cast<float*>( &buffer[buf_ptr] ) = m_heading; buf_ptr += sizeof( m_heading );
 	*reinterpret_cast<uint8_t*>( &buffer[buf_ptr] ) = static_cast<uint8_t>( m_class.size() ); buf_ptr += sizeof( uint8_t );
 	buffer.insert( buffer.end(), m_class.begin(), m_class.end() );
+
+	// Insert hook length, hook and parent ID (last two only if desired).
+	uint8_t hook_length = static_cast<uint8_t>( m_parent_hook.size() );
+
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &hook_length ), reinterpret_cast<const char*>( &hook_length ) + sizeof( hook_length ) );
+
+	// Append hook name and parent ID if hook is set.
+	if( hook_length > 0 ) {
+		buffer.insert( buffer.end(), m_parent_hook.begin(), m_parent_hook.end() );
+		buffer.insert( buffer.end(), reinterpret_cast<const char*>( &m_parent_id ), reinterpret_cast<const char*>( &m_parent_id ) + sizeof( m_parent_id ) );
+	}
 }
 
 std::size_t CreateEntity::deserialize( const char* buffer, std::size_t buffer_size ) {
@@ -84,11 +100,52 @@ std::size_t CreateEntity::deserialize( const char* buffer, std::size_t buffer_si
 	const char* class_ptr = &buffer[buf_ptr];
 	buf_ptr += class_length;
 
+	// Hook length.
+	uint8_t hook_length = 0;
+
+	if( buffer_size - buf_ptr < sizeof( hook_length ) ) {
+		return 0;
+	}
+
+	hook_length = *reinterpret_cast<const uint8_t*>( &buffer[buf_ptr] );
+	buf_ptr += sizeof( hook_length );
+
+	// Read hook and parent entity ID if hook length is given.
+	const char* hook_id = nullptr;
+	Entity::ID parent_id = 0;
+
+	if( hook_length > 0 ) {
+		// Hook.
+		if( buffer_size - buf_ptr < hook_length ) {
+			return 0;
+		}
+
+		hook_id = &buffer[buf_ptr];
+		buf_ptr += hook_length;
+
+		// Parent entity ID.
+		if( buffer_size - buf_ptr < sizeof( m_parent_id ) ) {
+			return 0;
+		}
+
+		parent_id = *reinterpret_cast<const Entity::ID*>( &buffer[buf_ptr] );
+		buf_ptr += sizeof( m_parent_id );
+	}
+
 	// Okay, apply.
 	m_id = id;
 	m_position = position;
 	m_heading = heading;
 	m_class = std::string( class_ptr, class_length );
+
+	if( hook_length == 0 ) {
+		m_parent_hook = "";
+		m_parent_id = 0;
+	}
+	else {
+		m_parent_hook = std::string( hook_id, hook_length );
+		m_parent_id = parent_id;
+	}
 
 	return buf_ptr;
 }
@@ -123,6 +180,26 @@ void CreateEntity::set_id( Entity::ID id ) {
 
 Entity::ID CreateEntity::get_id() const {
 	return m_id;
+}
+
+bool CreateEntity::has_parent() const {
+	return !m_parent_hook.empty();
+}
+
+Entity::ID CreateEntity::get_parent_id() const {
+	return m_parent_id;
+}
+
+const std::string& CreateEntity::get_parent_hook() const {
+	return m_parent_hook;
+}
+
+void CreateEntity::set_parent_id( Entity::ID id ) {
+	m_parent_id = id;
+}
+
+void CreateEntity::set_parent_hook( const std::string& hook ) {
+	m_parent_hook = hook;
 }
 
 }
