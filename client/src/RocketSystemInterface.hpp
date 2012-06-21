@@ -7,6 +7,9 @@
  */
 class RocketSystemInterface : public Rocket::Core::SystemInterface {
 	public:
+		/** Get elapsed time.
+		 * @return Elapsed time in seconds.
+		 */
 		float GetElapsedTime();
 
 	private:

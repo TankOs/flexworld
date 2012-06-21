@@ -14,7 +14,7 @@ class VertexArray;
 class RocketRenderInterface : public Rocket::Core::RenderInterface {
 	public:
 		/** Ctor.
-		 * @param render_target SFML render target.
+		 * @param target SFML render target.
 		 */
 		RocketRenderInterface( sf::RenderTarget& target );
 
@@ -40,7 +40,7 @@ class RocketRenderInterface : public Rocket::Core::RenderInterface {
 		 * @param num_vertices Number of vertices.
 		 * @param indices Indices.
 		 * @param num_indices Number of indices.
-		 * @param texture Texture handle.
+		 * @param texture_handle Texture handle.
 		 * @return Geometry handle.
 		 */
 		Rocket::Core::CompiledGeometryHandle CompileGeometry(

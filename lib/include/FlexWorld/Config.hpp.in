@@ -2,11 +2,13 @@
 
 #include <FlexWorld/Version.hpp>
 
+/** FlexWorld library.
+ */
 namespace flex {
 
-static const Version VERSION( @FW_VERSION_MAJOR@, @FW_VERSION_MINOR@, @FW_VERSION_REVISION@ );
-static const char* VERSION_SUFFIX = "@FW_VERSION_SUFFIX@";
+static const Version VERSION( @FW_VERSION_MAJOR@, @FW_VERSION_MINOR@, @FW_VERSION_REVISION@ ); ///< FlexWorld version.
+static const char* VERSION_SUFFIX = "@FW_VERSION_SUFFIX@"; ///< Version suffix.
 
-static const char* ROOT_DATA_DIRECTORY = "@FW_ROOT_DATA_DIRECTORY@";
+static const char* ROOT_DATA_DIRECTORY = "@FW_ROOT_DATA_DIRECTORY@"; ///< Root data directory path.
 
 }

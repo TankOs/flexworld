@@ -14,5 +14,9 @@ class Context;
  */
 class RocketEventDispatcher {
 	public:
+		/** Dispatch SFML event to libRocket.
+		 * @param event SFML event.
+		 * @param context libRocket context.
+		 */
 		static void dispatch_event( const sf::Event& event, Rocket::Core::Context& context );
 };

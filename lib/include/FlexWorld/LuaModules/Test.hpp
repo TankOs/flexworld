@@ -11,6 +11,9 @@ namespace Diluculum {
 }
 
 namespace flex {
+
+/** Lua modules.
+ */
 namespace lua {
 
 /** Lua test module.

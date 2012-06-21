@@ -19,6 +19,8 @@
 
 namespace flex {
 
+/** Message list.
+ */
 typedef
 	tpl::Typelist<msg::OpenLogin,
 	tpl::Typelist<msg::ServerInfo,
@@ -37,6 +39,8 @@ typedef
 	ServerMessageList
 ;
 
+/** Protocol.
+ */
 typedef Protocol<ServerMessageList> ServerProtocol;
 
 }

@@ -8,6 +8,9 @@
 #include <string>
 
 namespace flex {
+
+/** Network messages.
+ */
 namespace msg {
 
 /** Beam network message.

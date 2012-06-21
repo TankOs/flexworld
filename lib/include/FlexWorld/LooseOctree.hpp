@@ -122,7 +122,6 @@ class LooseOctree {
 		 * The node isn't traversed. If the specified data isn't found, nothing
 		 * happens.
 		 * @param data Data.
-		 * @param node Node.
 		 */
 		void erase( const T& data );
 
