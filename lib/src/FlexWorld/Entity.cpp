@@ -197,4 +197,21 @@ Entity& Entity::get_child( const std::string& hook_id, std::size_t index ) const
 	return *hook_iter->second[index];
 }
 
+const std::string& Entity::get_child_hook( const Entity& child ) const {
+	assert( has_child( child ) == true );
+
+	HookEntityMap::iterator hook_iter( m_children->begin() );
+	HookEntityMap::iterator hook_iter_end( m_children->end() );
+	
+	for( ; hook_iter != hook_iter_end; ++hook_iter ) {
+		EntityPtrArray& ents = hook_iter->second;
+
+		if( std::find( ents.begin(), ents.end(), &child ) != ents.end() ) {
+			return hook_iter->first;
+		}
+	}
+
+	assert( false && "Entity not found?!" );
+}
+
 }

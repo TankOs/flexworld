@@ -227,6 +227,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 		else if( event.key.code == sf::Keyboard::F1 ) { // Toggle debug window.
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
+			m_text_scroller.add_text( L"Screenshot saved." );
 		}
 	}
 
@@ -898,7 +899,7 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 		std::cout << " Parent entity #" << msg.get_parent_id() << ", hook " << msg.get_parent_hook();
 	}
 	else {
-		std::cout << " No parent entity." << std::endl;
+		std::cout << " No parent entity.";
 	}
 
 	std::cout << std::endl;
@@ -914,11 +915,37 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 		m_update_eyepoint = true;
 	}
 
-	// Add to entity drawable (skip own entity).
-	if( m_entity_group_node && msg.get_id() != get_shared().entity_id ) {
+	// Add to entity drawable. Skip if
+	// - entity is attached to invisible hook
+	// - entity is attached to ourself
+	bool skip = false;
+
+	if( m_entity_group_node == nullptr || msg.get_id() == get_shared().entity_id ) {
+		skip = true;
+	}
+	else {
+		get_shared().lock_facility->lock_world( true );
+
+		const flex::Entity* entity = get_shared().world->find_entity( msg.get_id() );
+		assert( entity != nullptr );
+
+		const flex::Entity* parent_ent = entity->get_parent();
+
+		while( parent_ent ) {
+			if( parent_ent->get_id() == get_shared().entity_id ) {
+				skip = true;
+				break;
+			}
+
+			parent_ent = parent_ent->get_parent();
+		}
+
+		get_shared().lock_facility->lock_world( false );
+	}
+
+	if( !skip ) {
 		{
 			boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
-
 			m_entity_ids.push_back( msg.get_id() );
 		}
 

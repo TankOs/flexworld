@@ -134,6 +134,10 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 			m_last_create_entity_message = msg;
 		}
 
+		void handle_message( const flex::msg::AttachEntity& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+			m_last_attach_entity_message = msg;
+		}
+
 		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
 		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
@@ -144,6 +148,7 @@ class TestSessionHostGateClientHandler : public flex::Client::Handler {
 		flex::msg::DestroyBlock m_last_destroy_block_message;
 		flex::msg::SetBlock m_last_set_block_message;
 		flex::msg::CreateEntity m_last_create_entity_message;
+		flex::msg::AttachEntity m_last_attach_entity_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
@@ -560,11 +565,41 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		// Poll IO service.
 		io_service.poll();
 
-		// Check that client received set block message.
+		// Check that client received message.
 		BOOST_CHECK( handler.m_last_create_entity_message.get_id() == 0 );
 		BOOST_CHECK( handler.m_last_create_entity_message.get_heading() == 0 );
 		BOOST_CHECK( handler.m_last_create_entity_message.get_class() == CLASS_ID.get() );
 		BOOST_CHECK( handler.m_last_create_entity_message.get_position() == ENTITY_POS );
+		BOOST_CHECK( handler.m_last_create_entity_message.has_parent() == false );
+
+		// Create entity attached to previously created entity.
+		flex::Entity::ID attached_entity_id = 0;
+
+		BOOST_CHECK_NO_THROW(
+			attached_entity_id = host.create_entity(
+				CLASS_ID,
+				entity->get_id(),
+				"inventory"
+			)
+		);
+
+		// Verify.
+		const flex::Entity* attached_entity = world.find_entity( attached_entity_id );
+
+		BOOST_REQUIRE( attached_entity != nullptr );
+		BOOST_CHECK( attached_entity->get_parent() == entity );
+		BOOST_CHECK( entity->has_child( *attached_entity, "inventory" ) == true );
+
+		// Poll IO service.
+		io_service.poll();
+
+		BOOST_CHECK( handler.m_last_create_entity_message.get_id() == attached_entity->get_id() );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_heading() == 0 );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_class() == CLASS_ID.get() );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_position() == sf::Vector3f( 0, 0, 0 ) );
+		BOOST_CHECK( handler.m_last_create_entity_message.has_parent() == true );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_hook() == "inventory" );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_id() == entity->get_id() );
 
 		// Check invalid calls.
 		BOOST_CHECK_EXCEPTION(

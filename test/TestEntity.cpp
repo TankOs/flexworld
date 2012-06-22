@@ -79,6 +79,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( parent.has_child( child, "fukk" ) == false );
 		BOOST_CHECK( &parent.get_child( "hook", 0 ) == &child );
 		BOOST_CHECK( child.get_parent() == &parent );
+		BOOST_CHECK( parent.get_child_hook( child ) == "hook" );
 
 		parent.detach( child );
 		BOOST_CHECK( parent.get_num_children() == 0 );
@@ -102,6 +103,8 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( parent.has_child( brother, "fukk" ) == false );
 		BOOST_CHECK( &parent.get_child( "hook", 0 ) == &child );
 		BOOST_CHECK( &parent.get_child( "hook", 1 ) == &brother );
+		BOOST_CHECK( parent.get_child_hook( child ) == "hook" );
+		BOOST_CHECK( parent.get_child_hook( brother ) == "hook" );
 
 		BOOST_CHECK( child.get_parent() == &parent );
 		BOOST_CHECK( brother.get_parent() == &parent );
@@ -118,6 +121,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( parent.has_child( brother, "hook" ) == true );
 		BOOST_CHECK( parent.has_child( brother, "fukk" ) == false );
 		BOOST_CHECK( &parent.get_child( "hook", 0 ) == &brother );
+		BOOST_CHECK( parent.get_child_hook( brother ) == "hook" );
 
 		BOOST_CHECK( child.get_parent() == nullptr );
 		BOOST_CHECK( brother.get_parent() == &parent );
@@ -152,6 +156,8 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( parent.has_child( brother, "fukk" ) == true );
 		BOOST_CHECK( &parent.get_child( "hook", 0 ) == &child );
 		BOOST_CHECK( &parent.get_child( "fukk", 0 ) == &brother );
+		BOOST_CHECK( parent.get_child_hook( child ) == "hook" );
+		BOOST_CHECK( parent.get_child_hook( brother ) == "fukk" );
 
 		BOOST_CHECK( child.get_parent() == &parent );
 		BOOST_CHECK( brother.get_parent() == &parent );
@@ -168,6 +174,7 @@ BOOST_AUTO_TEST_CASE( TestEntity ) {
 		BOOST_CHECK( parent.has_child( brother, "hook" ) == false );
 		BOOST_CHECK( parent.has_child( brother, "fukk" ) == false );
 		BOOST_CHECK( &parent.get_child( "hook", 0 ) == &child );
+		BOOST_CHECK( parent.get_child_hook( child ) == "hook" );
 
 		BOOST_CHECK( child.get_parent() == &parent );
 		BOOST_CHECK( brother.get_parent() == nullptr );

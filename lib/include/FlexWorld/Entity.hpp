@@ -154,6 +154,13 @@ class Entity : public NonCopyable {
 		 */
 		Entity& get_child( const std::string& hook_id, std::size_t index ) const;
 
+		/** Get the hook name a child is attached to.
+		 * Undefined behaviour if given entity isn't a child of this entity.
+		 * @param child Child.
+		 * @return Hook name.
+		 */
+		const std::string& get_child_hook( const Entity& child ) const;
+
 	private:
 		typedef std::vector<Entity*> EntityPtrArray;
 		typedef std::map<const std::string, EntityPtrArray> HookEntityMap;

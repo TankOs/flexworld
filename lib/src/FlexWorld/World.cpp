@@ -187,7 +187,14 @@ void World::attach_entity( Entity::ID source_id, Entity::ID target_id, const std
 
 	assert( source != nullptr );
 	assert( target != nullptr );
-	assert( target->get_class().find_hook( hook_id ) != nullptr );
+
+	// Create hook at target entity if it doesn't exist.
+	if( target->get_class().find_hook( hook_id ) == nullptr ) {
+		ClassMap::iterator cls = m_classes.find( target->get_class().get_id().get() );
+		assert( cls != m_classes.end() );
+
+		cls->second.set_hook( hook_id, sf::Vector3f( -1, -1, -1 ) );
+	}
 
 	// Detach entity if already attached.
 	if( source->get_parent() != nullptr ) {

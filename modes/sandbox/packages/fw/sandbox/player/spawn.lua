@@ -13,6 +13,8 @@ function on_spawn_command( args, client_id )
 	local ent_pos, ent_planet = flex.world:get_entity_position( ent_id )
 
 	flex.world:create_entity( class_id, ent_pos, ent_planet )
+
+	flex.server:broadcast_chat_message( "Spawned " .. class_id .. ".", "Status", "Server" )
 end
 
 flex.event:hook_command( "spawn", on_spawn_command )

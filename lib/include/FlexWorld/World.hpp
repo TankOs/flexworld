@@ -126,7 +126,8 @@ class World {
 		 * Undefined behaviour if one of the entities weren't added or hook is
 		 * invalid. It's perfectly sane to reattach entities to another parent.
 		 * Attached entities lose their planet link. Position is reset to (0; 0;
-		 * 0).
+		 * 0). If the hook doesn't exist at the target entity, it's being created
+		 * and its position is set to -1, -1, -1 to indicate an invisible hook.
 		 * @param source_id ID of entity to attach.
 		 * @param target_id ID of entity to attach to.
 		 * @param hook_id ID of hook.

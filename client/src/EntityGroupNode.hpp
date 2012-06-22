@@ -17,6 +17,13 @@ class ResourceManager;
 class ClassDrawable;
 
 /** FWSG drawable for rendering multiple entities.
+ *
+ * The group node is responsible for rendering entities in hierarchies.
+ * Entities just have to be added to render them correctly depending on their
+ * position, if attached or not.
+ *
+ * Entities that are being (re-)attached have to be re-inserted to the group
+ * node. The update call will NOT handle that case.
  */
 class EntityGroupNode : public sg::Node {
 	public:
@@ -31,7 +38,8 @@ class EntityGroupNode : public sg::Node {
 		static Ptr create( ResourceManager& resource_manager, sg::Renderer& renderer );
 
 		/** Add entity.
-		 * Undefined behaviour if entity has been added before.
+		 * Undefined behaviour if entity has been added before. If entity is a
+		 * child, all parent entities must have been added, too.
 		 * @param entity Entity.
 		 */
 		void add_entity( const flex::Entity& entity );

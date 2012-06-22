@@ -1037,8 +1037,65 @@ void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& posit
 	m_lock_facility.lock_world( false );
 }
 
-uint32_t SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*parent_id*/, const std::string& /*hook_id*/ ) {
-	return 0;
+uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t parent_id, const std::string& hook_id ) {
+	m_lock_facility.lock_world( true );
+
+	// Check for valid class.
+	if( !cls_id.is_valid_resource() ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	const Class* cls = get_or_load_class( cls_id );
+
+	if( cls == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Class not found." );
+	}
+
+	// Check for valid hook.
+	if( hook_id.empty() ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Invalid hook." );
+	}
+
+	// Find parent entity.
+	const Entity* parent_ent = m_world.find_entity( parent_id );
+
+	if( parent_ent == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Parent entity not found." );
+	}
+
+	// Create entity.
+	Entity& ent = m_world.create_entity( cls_id );
+
+	// Attach entity to parent.
+	m_world.attach_entity( ent.get_id(), parent_ent->get_id(), hook_id );
+
+	// Remember properties.
+	Entity::ID ent_id = ent.get_id();
+	sf::Vector3f ent_position = ent.get_position();
+
+	m_lock_facility.lock_world( false );
+
+	// Notify clients. TODO: Only for clients in range.
+	msg::CreateEntity msg;
+
+	msg.set_class( cls_id.get() );
+	msg.set_heading( 0 );
+	msg.set_id( ent_id );
+	msg.set_position( ent_position );
+	msg.set_parent_hook( hook_id );
+	msg.set_parent_id( parent_id );
+
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected ) {
+			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );
+		}
+	}
+
+	return ent_id;
 }
 
 uint32_t SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*container_id*/ ) {
