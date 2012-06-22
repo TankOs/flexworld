@@ -891,8 +891,17 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 	std::cout
 		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
 		<< msg.get_position().x << ", " << msg.get_position().y << ", " << msg.get_position().z
-		<< " (" << msg.get_heading() << "°)" << std::endl
+		<< " (" << msg.get_heading() << "°)"
 	;
+	
+	if( msg.has_parent() ) {
+		std::cout << " Parent entity #" << msg.get_parent_id() << ", hook " << msg.get_parent_hook();
+	}
+	else {
+		std::cout << " No parent entity." << std::endl;
+	}
+
+	std::cout << std::endl;
 #endif
 
 	// If own entity set position.

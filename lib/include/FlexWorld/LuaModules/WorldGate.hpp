@@ -36,13 +36,28 @@ class WorldGate {
 		 */
 		virtual void set_block( const BlockPosition& block_position, const std::string& planet, const FlexID& cls ) = 0;
 
-		/** Create entity.
+		/** Create entity at specific position.
 		 * @param cls_id Class ID.
 		 * @param position Block position.
 		 * @param planet_id Planet ID.
 		 * @throws std::runtime_error in case of any error.
 		 */
 		virtual void create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) = 0;
+
+		/** Create entity attached to another entity.
+		 * @param cls_id Class ID.
+		 * @param parent_id Parent entity ID.
+		 * @param hook_id Parent hook ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual void create_entity( const FlexID& cls_id, uint32_t parent_id, const std::string& hook_id ) = 0;
+
+		/** Create entity and stow it into container.
+		 * @param cls_id Class ID.
+		 * @param container_id Container entity ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual void create_entity( const FlexID& cls_id, uint32_t container_id ) = 0;
 
 		/** Get an entity's position.
 		 * @param entity_id Entity ID.

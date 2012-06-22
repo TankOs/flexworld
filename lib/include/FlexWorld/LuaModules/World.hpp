@@ -44,7 +44,13 @@ class World {
 		Diluculum::LuaValueList set_block( const Diluculum::LuaValueList& args );
 
 		/** Create entity (Lua function).
-		 * @param args class:string block_position:table(x,y,z) planet:string
+		 * This function has 3 signatures:
+		 * 
+		 *   class:string block_position:table(x,y,z) planet:string (create entity at specific position + planet)
+		 *   class:string parent_id:number hook:string (create entity attached at another entity at a specific hook)
+		 *   class:string parent_id:number (create entity and stow it into a container)
+		 *
+		 * @param args See description.
 		 * @return nil
 		 */
 		Diluculum::LuaValueList create_entity( const Diluculum::LuaValueList& args );

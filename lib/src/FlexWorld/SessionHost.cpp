@@ -1035,4 +1035,10 @@ void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& posit
 	m_lock_facility.lock_world( false );
 }
 
+void SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*parent_id*/, const std::string& /*hook_id*/ ) {
+}
+
+void SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*container_id*/ ) {
+}
+
 }

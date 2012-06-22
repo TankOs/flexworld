@@ -65,6 +65,11 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 			std::runtime_error,
 			ExceptionChecker<std::runtime_error>( "Invalid entity ID." )
 		);
+
+		BOOST_CHECK_NO_THROW( state.doString( "flex.world:create_entity( \"some/class348734\", 9384, \"foobar387\" )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/foo\", 9384, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 2938, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid parent entity ID." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 9384, \"foobar\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid hook." ) );
 	}
 
 	// Call functions with invalid arguments.
@@ -115,16 +120,19 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 
 		// create_entity
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity()", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\" )", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\", {1, 2, 3} )", state ) == true );
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, \"planet\", 123 )", state ) == true );
 
+		BOOST_CHECK( check_error( "No matching function signature.", "flex.world:create_entity( \"some/class\", 123, 123 )", state ) == true );
+		BOOST_CHECK( check_error( "No matching function signature.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, 123 )", state ) == true );
+		BOOST_CHECK( check_error( "No matching function signature.", "flex.world:create_entity( \"some/class\", \"foo\", 123 )", state ) == true );
+		BOOST_CHECK( check_error( "No matching function signature.", "flex.world:create_entity( \"some/class\", \"foo\" )", state ) == true );
+
 		BOOST_CHECK( check_error( "Expected string for class.", "flex.world:create_entity( 123, {1, 2, 3}, \"planet\" )", state ) == true );
+
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"\", {1, 2, 3}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"package\", {1, 2, 3}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid class.", "flex.world:create_entity( \"faulty/class!\", {1, 2, 3}, \"planet\" )", state ) == true );
 
-		BOOST_CHECK( check_error( "Expected table for position.", "flex.world:create_entity( \"some/class\", 123, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Wrong number of elements in position table.", "flex.world:create_entity( \"some/class\", {1, 2}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Wrong number of elements in position table.", "flex.world:create_entity( \"some/class\", {1, 2, 3, 4}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Expected number for x position.", "flex.world:create_entity( \"some/class\", {\"a\", 2, 3}, \"planet\" )", state ) == true );
@@ -133,9 +141,12 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		BOOST_CHECK( check_error( "Invalid x position.", "flex.world:create_entity( \"some/class\", {-1, 2, 3}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid y position.", "flex.world:create_entity( \"some/class\", {1, -1, 3}, \"planet\" )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid z position.", "flex.world:create_entity( \"some/class\", {1, 2, -1}, \"planet\" )", state ) == true );
-
-		BOOST_CHECK( check_error( "Expected string for planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, 123 )", state ) == true );
 		BOOST_CHECK( check_error( "Invalid planet.", "flex.world:create_entity( \"some/class\", {1, 2, 3}, \"\" )", state ) == true );
+
+		BOOST_CHECK( check_error( "Invalid parent entity ID.", "flex.world:create_entity( \"some/class\", -1, \"foobar\" )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid hook.", "flex.world:create_entity( \"some/class\", 123, \"\" )", state ) == true );
+
+		BOOST_CHECK( check_error( "Invalid parent entity ID.", "flex.world:create_entity( \"some/class\", -1 )", state ) == true );
 
 		// get_entity_position
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.world:get_entity_position()", state ) == true );

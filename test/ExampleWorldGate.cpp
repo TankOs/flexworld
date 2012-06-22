@@ -50,6 +50,30 @@ void ExampleWorldGate::create_entity( const flex::FlexID& cls_id, const EntityPo
 	}
 }
 
+void ExampleWorldGate::create_entity( const flex::FlexID& cls_id, uint32_t parent_id, const std::string& hook_id ) {
+	if( cls_id.get() != "some/class348734" ) {
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	if( parent_id != 9384 ) {
+		throw std::runtime_error( "Invalid parent entity ID." );
+	}
+
+	if( hook_id != "foobar387" ) {
+		throw std::runtime_error( "Invalid hook." );
+	}
+}
+
+void ExampleWorldGate::create_entity( const flex::FlexID& cls_id, uint32_t container_id ) {
+	if( cls_id.get() != "some/class" ) {
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	if( container_id != 3478834 ) {
+		throw std::runtime_error( "Invalid container ID." );
+	}
+}
+
 void ExampleWorldGate::get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id ) {
 	if( entity_id != 0 ) {
 		throw std::runtime_error( "Invalid entity ID." );
