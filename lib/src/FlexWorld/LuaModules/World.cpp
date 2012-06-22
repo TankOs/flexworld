@@ -196,6 +196,8 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 		}
 	}
 
+	uint32_t entity_id = 0;
+
 	switch( signature ) {
 		case CREATE_AT_POSITION_SIGNATURE:
 			{
@@ -239,7 +241,7 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 				}
 
 				try {
-					m_gate->create_entity( cls_id, position, planet );
+					entity_id = m_gate->create_entity( cls_id, position, planet );
 				}
 				catch( const std::runtime_error& e ) {
 					throw Diluculum::LuaError( e.what() );
@@ -262,7 +264,7 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 				}
 
 				try {
-					m_gate->create_entity( cls_id, parent_id, hook );
+					entity_id = m_gate->create_entity( cls_id, parent_id, hook );
 				}
 				catch( const std::runtime_error& e ) {
 					throw Diluculum::LuaError( e.what() );
@@ -277,6 +279,13 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 				if( parent_id < 0 ) {
 					throw Diluculum::LuaError( "Invalid parent entity ID." );
 				}
+
+				try {
+					entity_id = m_gate->create_entity( cls_id, parent_id );
+				}
+				catch( const std::runtime_error& e ) {
+					throw Diluculum::LuaError( e.what() );
+				}
 			}
 			break;
 
@@ -285,7 +294,10 @@ Diluculum::LuaValueList World::create_entity( const Diluculum::LuaValueList& arg
 			break;
 	}
 
-	return Diluculum::LuaValueList();
+	Diluculum::LuaValueList ret;
+	ret.push_back( entity_id );
+
+	return ret;
 }
 
 Diluculum::LuaValueList World::get_entity_position( const Diluculum::LuaValueList& args ) {

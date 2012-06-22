@@ -54,10 +54,19 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:set_block( {10, 20, 30}, \"foobar\", \"some/class\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:set_block( {10, 20, 30}, \"planet\", \"some/lass\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.world:create_entity( \"some/class\", {11, 22, 33}, \"planet\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.world:create_entity( \"some/class\", {11, 22, 33}, \"planet\" ) == 938 )" ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"foo/bar\", {11, 22, 33}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {0, 0, 0}, \"planet\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid entity position." ) );
 		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class\", {11, 22, 33}, \"meow\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.world:create_entity( \"some/class348734\", 9384, \"foobar387\" ) == 458 )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/foo\", 9384, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 2938, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid parent entity ID." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 9384, \"foobar\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid hook." ) );
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.world:create_entity( \"some/class12347882\", 3478834 ) == 784 )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/foo\", 3478834 )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class12347882\", 2938 )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid container ID." ) );
 
 		BOOST_CHECK_NO_THROW( state.doString( "local pos, planet = flex.world:get_entity_position( 0 ); assert( pos[1] == 1 and pos[2] == 2 and pos[3] == 3 and planet == \"planet\" )" ) );
 		BOOST_CHECK_EXCEPTION(
@@ -65,11 +74,6 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 			std::runtime_error,
 			ExceptionChecker<std::runtime_error>( "Invalid entity ID." )
 		);
-
-		BOOST_CHECK_NO_THROW( state.doString( "flex.world:create_entity( \"some/class348734\", 9384, \"foobar387\" )" ) );
-		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/foo\", 9384, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid class." ) );
-		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 2938, \"foobar387\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid parent entity ID." ) );
-		BOOST_CHECK_EXCEPTION( state.doString( "flex.world:create_entity( \"some/class348734\", 9384, \"foobar\" )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid hook." ) );
 	}
 
 	// Call functions with invalid arguments.

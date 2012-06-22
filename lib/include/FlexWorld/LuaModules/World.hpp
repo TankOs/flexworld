@@ -51,7 +51,7 @@ class World {
 		 *   class:string parent_id:number (create entity and stow it into a container)
 		 *
 		 * @param args See description.
-		 * @return nil
+		 * @return id:number
 		 */
 		Diluculum::LuaValueList create_entity( const Diluculum::LuaValueList& args );
 

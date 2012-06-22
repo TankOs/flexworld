@@ -916,7 +916,7 @@ void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::Connec
 	m_lock_facility.lock_world( false );
 }
 
-void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) {
+uint32_t SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& position, const std::string& planet_id ) {
 	// Check class ID.
 	if( cls_id.is_valid_resource() == false ) {
 		throw std::runtime_error( "Invalid class ID." );
@@ -988,6 +988,8 @@ void SessionHost::create_entity( const FlexID& cls_id, const EntityPosition& pos
 			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );
 		}
 	}
+
+	return ent_id;
 }
 
 uint32_t SessionHost::get_client_entity_id( uint32_t client_id ) const {
@@ -1035,10 +1037,12 @@ void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& posit
 	m_lock_facility.lock_world( false );
 }
 
-void SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*parent_id*/, const std::string& /*hook_id*/ ) {
+uint32_t SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*parent_id*/, const std::string& /*hook_id*/ ) {
+	return 0;
 }
 
-void SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*container_id*/ ) {
+uint32_t SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*container_id*/ ) {
+	return 0;
 }
 
 }
