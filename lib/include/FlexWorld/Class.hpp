@@ -29,6 +29,8 @@ namespace flex {
  */
 class Class {
 	public:
+		static const sf::Vector3f INVISIBLE_HOOK; ///< Value for invisible hooks.
+
 		/** Ctor.
 		 * @param id ID.
 		 */

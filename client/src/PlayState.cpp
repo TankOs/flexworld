@@ -931,7 +931,16 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 
 		const flex::Entity* parent_ent = entity->get_parent();
 
-		while( parent_ent ) {
+		// Check if entity is attached to invisible hook.
+		if( parent_ent ) {
+			if( *parent_ent->get_class().find_hook( parent_ent->get_child_hook( *entity ) ) == flex::Class::INVISIBLE_HOOK ) {
+				skip = true;
+				std::cout << "SKIPPED YA" << std::endl;
+			}
+		}
+
+		// Check if any parent entity is the player entity.
+		while( !skip && parent_ent ) {
 			if( parent_ent->get_id() == get_shared().entity_id ) {
 				skip = true;
 				break;

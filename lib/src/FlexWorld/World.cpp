@@ -193,7 +193,7 @@ void World::attach_entity( Entity::ID source_id, Entity::ID target_id, const std
 		ClassMap::iterator cls = m_classes.find( target->get_class().get_id().get() );
 		assert( cls != m_classes.end() );
 
-		cls->second.set_hook( hook_id, sf::Vector3f( -1, -1, -1 ) );
+		cls->second.set_hook( hook_id, sf::Vector3f( Class::INVISIBLE_HOOK ) );
 	}
 
 	// Detach entity if already attached.

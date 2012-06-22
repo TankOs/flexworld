@@ -1,8 +1,15 @@
 #include <FlexWorld/Class.hpp>
 
 #include <cassert>
+#include <limits>
 
 namespace flex {
+
+const sf::Vector3f Class::INVISIBLE_HOOK = sf::Vector3f(
+	std::numeric_limits<float>::max(),
+	std::numeric_limits<float>::max(),
+	std::numeric_limits<float>::max()
+);
 
 Class::Class( const FlexID& id ) :
 	m_name( "" ),

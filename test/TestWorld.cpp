@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE( TestWorld ) {
 			const sf::Vector3f* hook = world.find_class( CLASS_ID )->find_hook( "new_hook" );
 
 			BOOST_REQUIRE( hook != nullptr );
-			BOOST_CHECK( *hook == sf::Vector3f( -1, -1, -1 ) );
+			BOOST_CHECK( *hook == Class::INVISIBLE_HOOK );
 		}
 
 		// Attach after adding both parent and child to world.
