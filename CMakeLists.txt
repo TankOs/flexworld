@@ -134,6 +134,7 @@ find_package( SFML 2.0 REQUIRED COMPONENTS ${SFML_COMPONENTS} )
 find_package( yaml-cpp REQUIRED )
 find_package( Threads REQUIRED )
 find_package( Lua51 REQUIRED )
+find_package( libnoise REQUIRED )
 
 if( NOT WINDOWS AND FW_BUILD_CLIENT )
 	find_package( X11 REQUIRED )
