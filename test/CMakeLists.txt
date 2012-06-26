@@ -47,6 +47,7 @@ set(
 	TestServerLuaModule.cpp
 	TestServerProtocol.cpp
 	TestSessionHost.cpp
+	TestTerrainGenerator.cpp
 	TestTestLuaModule.cpp
 	TestVersion.cpp
 	TestWorld.cpp

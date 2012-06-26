@@ -83,6 +83,7 @@ set(
 	${INC_DIR}/FlexWorld/SessionHost.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
+	${INC_DIR}/FlexWorld/TerrainGenerator.hpp
 	${INC_DIR}/FlexWorld/Version.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp
@@ -139,6 +140,7 @@ set(
 	${SRC_DIR}/FlexWorld/ScriptManager.cpp
 	${SRC_DIR}/FlexWorld/Server.cpp
 	${SRC_DIR}/FlexWorld/SessionHost.cpp
+	${SRC_DIR}/FlexWorld/TerrainGenerator.cpp
 	${SRC_DIR}/FlexWorld/Version.cpp
 	${SRC_DIR}/FlexWorld/World.cpp
 )
@@ -146,6 +148,7 @@ set(
 include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/Diluculum/include/ )
+include_directories( ${LIBNOISE_INCLUDE_DIR} )
 include_directories( ${LUA_INCLUDE_DIR} )
 include_directories( ${YAML_CPP_INCLUDE_DIR} )
 include_directories( ${SFML_INCLUDE_DIR} )
@@ -155,6 +158,7 @@ add_library( flexworld ${SOURCES} )
 
 target_link_libraries( flexworld fwsg )
 target_link_libraries( flexworld Diluculum )
+target_link_libraries( flexworld ${LIBNOISE_LIBRARY} )
 target_link_libraries( flexworld ${LUA_LIBRARIES} )
 target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
