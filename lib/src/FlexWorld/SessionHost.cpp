@@ -12,6 +12,7 @@
 #include <FlexWorld/World.hpp>
 #include <FlexWorld/GameMode.hpp>
 #include <FlexWorld/PackageEnumerator.hpp>
+#include <FlexWorld/TerrainGenerator.hpp>
 
 #include <boost/filesystem.hpp>
 #include <set>
@@ -144,6 +145,7 @@ bool SessionHost::start() {
 	m_lock_facility.create_planet_lock( *planet );
 	m_managed_planets.insert( planet->get_id() );
 
+	/*
 	// Build grass plane.
 	{
 		Planet::Vector chunk_pos( 0, 4, 0 );
@@ -166,6 +168,18 @@ bool SessionHost::start() {
 			}
 		}
 	}
+	*/
+
+	// Initialize random number generator.
+	std::srand( static_cast<unsigned int>( std::time( 0 ) ) );
+
+	TerrainGenerator generator( *grass_cls );
+
+	generator.set_seed( std::rand() );
+	generator.set_base_height( 70 );
+	generator.set_maximum_height( 10 );
+
+	generator.generate( *planet, Cuboid<uint32_t>( 0, 0, 0, 256, 128, 256 ) );
 
 	// Release lock again.
 	m_lock_facility.lock_world( false );

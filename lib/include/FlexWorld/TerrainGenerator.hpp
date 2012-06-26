@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FlexWorld/FlexID.hpp>
 #include <FlexWorld/Cuboid.hpp>
 
 #include <vector>
@@ -9,6 +8,7 @@
 namespace flex {
 
 class Planet;
+class Class;
 
 /** Terrain generator.
  *
@@ -28,18 +28,18 @@ class TerrainGenerator {
 
 			uint32_t min_height; ///< Min height.
 			uint32_t max_height; ///< Max height.
-			FlexID class_id; ///< Class ID.
+			const Class* cls; ///< Class.
 		};
 
 		/** Ctor.
-		 * @param default_id Default class ID.
+		 * @param default_id Default class (reference is stored!).
 		 */
-		TerrainGenerator( const FlexID& default_id );
+		TerrainGenerator( const Class& default_cls );
 
-		/** Get default class ID.
-		 * @return Default class ID.
+		/** Get default class.
+		 * @return Default class.
 		 */
-		const FlexID& get_default_class_id() const;
+		const Class& get_default_class() const;
 
 		/** Get number of layers.
 		 * @return Number of layers.
@@ -98,7 +98,7 @@ class TerrainGenerator {
 	private:
 		typedef std::vector<Layer> LayerArray;
 
-		FlexID m_default_class_id;
+		const Class* m_default_cls;
 		LayerArray m_layers;
 		int m_seed;
 		uint32_t m_base_height;

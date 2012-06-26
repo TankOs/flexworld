@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 
 		// Check invalid destroy calls.
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 32, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
-		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 1, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
+		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 64, 0 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "No block at given position." ) );
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 99999, 99999, 99999 ), PLANET_ID ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Block position out of range." ) );
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "foobar" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Planet not found." ) );
 		BOOST_CHECK_EXCEPTION( host.destroy_block( lua::WorldGate::BlockPosition( 0, 0, 0 ), "" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid planet." ) );

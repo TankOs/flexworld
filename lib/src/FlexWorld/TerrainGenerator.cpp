@@ -16,16 +16,16 @@
 
 namespace flex {
 
-TerrainGenerator::TerrainGenerator( const FlexID& default_id ) :
-	m_default_class_id( default_id ),
+TerrainGenerator::TerrainGenerator( const Class& default_cls ) :
+	m_default_cls( &default_cls ),
 	m_seed( 0 ),
 	m_base_height( 0 ),
 	m_max_height( 0 )
 {
 }
 
-const FlexID& TerrainGenerator::get_default_class_id() const {
-	return m_default_class_id;
+const Class& TerrainGenerator::get_default_class() const {
+	return *m_default_cls;
 }
 
 std::size_t TerrainGenerator::get_num_layers() const {
@@ -70,9 +70,7 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 	assert( cuboid.x + cuboid.width <= planet.get_size().x * planet.get_chunk_size().x );
 	assert( cuboid.y + cuboid.height <= planet.get_size().y * planet.get_chunk_size().y );
 	assert( cuboid.z + cuboid.depth <= planet.get_size().z * planet.get_chunk_size().z );
-	assert( m_base_height <= planet.get_size().y * planet.get_chunk_size().y );
-	assert( m_max_height <= planet.get_size().y * planet.get_chunk_size().y );
-	assert( m_max_height >= m_base_height );
+	assert( cuboid.y + m_base_height + m_max_height <= planet.get_size().y * planet.get_chunk_size().y );
 
 	// Prepare Perlin noise generator.
 	using namespace noise::module;
@@ -88,6 +86,8 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 	Chunk::Vector initial_block_pos( 0, 0, 0 );
 	Chunk::Vector chunk_size = planet.get_chunk_size();
 	double value = 0;
+	uint32_t final_value = 0;
+	uint32_t y = 0;
 
 	// Get initial chunk and block positions.
 	bool result = planet.transform(
@@ -108,8 +108,7 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 	Planet::Vector chunk_pos = initial_chunk_pos;
 	Chunk::Vector block_pos = initial_block_pos;
 	double max_height = static_cast<double>( m_max_height );
-	double factor = static_cast<double>( m_max_height - m_base_height ) / max_height;
-	double base = static_cast<double>( m_base_height ) / max_height;
+	double base = static_cast<double>( m_base_height );
 
 #ifdef OUTPUT_DEBUG_IMAGE
 	sf::Image debug_image;
@@ -119,15 +118,14 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 	for( uint32_t z = cuboid.z; z < max_z; ++z ) {
 		for( uint32_t x = cuboid.x; x < max_x; ++x ) {
 			value = perlin.GetValue(
-				static_cast<double>( x ) / 200.0,
+				static_cast<double>( x ) / 800.0,
 				0.1,
-				static_cast<double>( z ) / 200.0
+				static_cast<double>( z ) / 800.0
 			);
 
 			value = std::max( -1.0, std::min( 1.0, value ) );
 			value = (value + 1.0) / 2.0f;
-			value *= factor;
-			value += base;
+			value *= max_height;
 
 #ifdef OUTPUT_DEBUG_IMAGE
 			debug_image.setPixel(
@@ -141,6 +139,41 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 			);
 #endif
 
+			final_value = m_base_height + static_cast<uint32_t>( value );
+
+			// Save blocks at planet.
+			block_pos.y = initial_block_pos.y;
+			chunk_pos.y = initial_chunk_pos.y;
+
+			if( !planet.has_chunk( chunk_pos ) ) {
+				planet.create_chunk( chunk_pos );
+			}
+
+			for(
+				y = cuboid.y;
+				y < final_value && y < cuboid.y + cuboid.height;
+				++y
+			) {
+				// Skip base blocks. TODO
+				if( y >= m_base_height ) {
+					// Set the block.
+					planet.set_block( chunk_pos, block_pos, *m_default_cls );
+				}
+
+				// Advance block.
+				++block_pos.y;
+
+				if( block_pos.y >= chunk_size.y ) {
+					block_pos.y = 0;
+					++chunk_pos.y;
+
+					// Create chunk.
+					if( !planet.has_chunk( chunk_pos ) ) {
+						planet.create_chunk( chunk_pos );
+					}
+				}
+			}
+
 			++block_pos.x;
 			if( block_pos.x >= chunk_size.x ) {
 				block_pos.x = 0;
@@ -152,7 +185,7 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 		block_pos.x = initial_block_pos.x;
 
 		++block_pos.z;
-		if( block_pos.y >= chunk_size.y ) {
+		if( block_pos.z >= chunk_size.z ) {
 			block_pos.z = 0;
 			++chunk_pos.z;
 		}
@@ -167,7 +200,8 @@ void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid 
 
 TerrainGenerator::Layer::Layer() :
 	min_height( 0 ),
-	max_height( 0 )
+	max_height( 0 ),
+	cls( nullptr )
 {
 }
 
@@ -175,7 +209,7 @@ bool operator==( const TerrainGenerator::Layer& first, const TerrainGenerator::L
 	return
 		first.min_height == second.min_height &&
 		first.max_height == second.max_height &&
-		first.class_id == second.class_id
+		first.cls == second.cls
 	;
 }
 
