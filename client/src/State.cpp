@@ -1,4 +1,5 @@
 #include "State.hpp"
+#include "UserSettings.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -51,6 +52,8 @@ State* State::run() {
 
 				std::stringstream basename;
 				basename
+					<< UserSettings::get_profile_path()
+					<< "/"
 					<< "flexworld_"
 					<< std::setw( 4 ) << std::setfill( '0' ) << static_cast<int>( now.date().year() ) << "-"
 					<< std::setw( 2 ) << std::setfill( '0' ) << static_cast<int>( now.date().month() ) << "-"
