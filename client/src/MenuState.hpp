@@ -54,4 +54,6 @@ class MenuState : public State, public Rocket::Core::EventListener {
 		std::unique_ptr<OptionsDocumentController> m_options_controller;
 
 		sf::Music m_music;
+
+		bool m_commencing;
 };

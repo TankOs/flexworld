@@ -25,7 +25,8 @@ MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
 	m_background_varray( sf::Quads, 4 ),
 	m_rocket_context( nullptr ),
-	m_options_document( nullptr )
+	m_options_document( nullptr ),
+	m_commencing( false )
 {
 }
 
@@ -320,6 +321,13 @@ void MenuState::on_quit_click() {
 
 void MenuState::on_insta_click() {
 	// TODO: Use 'start game' window.
+
+	// Cancel if game's already commencing.
+	if( m_commencing ) {
+		return;
+	}
+
+	m_commencing = true;
 
 	// Create IO service.
 	get_shared().io_service.reset( new boost::asio::io_service );
