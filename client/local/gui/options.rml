@@ -18,6 +18,7 @@
 
 					<p style="margin-top:15px;">You received your personal serial number when you purchased the game. If you lost it visit flexworld-game.com, log into your account and check your purchased products.</p>
 					<p>The username is used when you connect to any multiplayer server. The serial is only used when you connect to servers running in official mode.</p>
+					<p style="height:160px;"></p>
 				</panel>
 
 				<tab>Controls</tab>
@@ -45,19 +46,20 @@
 					<label>Resolution</label><select id="resolution"></select>
 
 					<h2>Advanced</h2>
+					<label>Anisotropic filter</label><select id="af" style="width:5em;">
+						<option value="0" selected="selected">Off</option>
+					</select><br/>
 					<label>Texture filter</label><select id="texture_filter">
 						<option value="0" selected="selected">Trilinear (nicest)</option>
 						<option value="1">Bilinear (blurry)</option>
 						<option value="2">I like pixels (yuck!)</option>
 					</select>
-					<label>Anisotropic filter</label><select id="af" style="width:5em;">
-						<option value="0" selected="selected">Off</option>
-					</select>
 				</panel>
 
 				<tab>Audio</tab>
 				<panel>
-					No settings here, yet.
+					<p>No settings here, yet.</p>
+					<p style="height:280px;"></p>
 				</panel>
 			</tabset>
 
