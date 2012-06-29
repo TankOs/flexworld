@@ -34,7 +34,7 @@ set( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${PROJECT_SOURCE_DIR}/extlib
 set( FW_VERSION_MAJOR "0" CACHE STRING "Version (major)" FORCE )
 set( FW_VERSION_MINOR "0" CACHE STRING "Version (minor)" FORCE )
 set( FW_VERSION_REVISION "0" CACHE STRING "Version (revision)" FORCE )
-set( FW_VERSION_SUFFIX "12-24-0" CACHE STRING "Version (suffix)" FORCE )
+set( FW_VERSION_SUFFIX "12-26-0" CACHE STRING "Version (suffix)" FORCE )
 
 set( FW_PORTABLE_INSTALL TRUE CACHE BOOL "Install portable (especially useful for distributing Linux test releases(!), so that both client and server don't use absolute system paths)." )
 
