@@ -177,7 +177,7 @@ bool SessionHost::start() {
 
 	generator.set_seed( std::rand() );
 	generator.set_base_height( 70 );
-	generator.set_maximum_height( 10 );
+	generator.set_maximum_height( 5 );
 
 	generator.generate( *planet, Cuboid<uint32_t>( 0, 0, 0, 256, 128, 256 ) );
 
