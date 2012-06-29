@@ -179,10 +179,14 @@ void RocketEventDispatcher::dispatch_event( const sf::Event& event, Rocket::Core
 		context.ProcessMouseMove( event.mouseMove.x, event.mouseMove.y, make_key_modifier_state() );
 	}
 	else if( event.type == sf::Event::MouseButtonPressed ) {
-		context.ProcessMouseButtonDown( translate_mouse_button( event.mouseButton.button ), make_key_modifier_state() );
+		if( event.mouseButton.button == sf::Mouse::Left ) { // FIXME Bug in libRocket: Sets elements to :active even when button is released.
+			context.ProcessMouseButtonDown( translate_mouse_button( event.mouseButton.button ), make_key_modifier_state() );
+		}
 	}
 	else if( event.type == sf::Event::MouseButtonReleased ) {
-		context.ProcessMouseButtonUp( translate_mouse_button( event.mouseButton.button ), make_key_modifier_state() );
+		if( event.mouseButton.button == sf::Mouse::Left ) { // FIXME Bug in libRocket: Sets elements to :active even when button is released.
+			context.ProcessMouseButtonUp( translate_mouse_button( event.mouseButton.button ), make_key_modifier_state() );
+		}
 	}
 	else if( event.type == sf::Event::MouseWheelMoved ) {
 		context.ProcessMouseWheel( -event.mouseWheel.delta, make_key_modifier_state() );
