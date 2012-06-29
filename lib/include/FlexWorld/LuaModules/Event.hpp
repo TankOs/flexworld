@@ -157,17 +157,14 @@ class Event {
 		typedef std::vector<Diluculum::LuaFunction> FunctionArray;
 
 		typedef std::vector<FunctionArray> SystemEventFunctionArray;
-
-		typedef std::map<const std::string, FunctionArray> ClassFunctionsMap;
-		typedef std::vector<ClassFunctionsMap> ClassEventFunctionsArray;
-
+		typedef std::vector<FunctionArray> ClassEventFunctionArray;
 		typedef std::map<const std::string, Diluculum::LuaFunction> CommandFunctionMap;
 
 		void call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
-		void call_class_event_callbacks( ClassEvent event, const std::string& cls_id, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
+		void call_class_event_callbacks( ClassEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
 
 		SystemEventFunctionArray m_system_functions;
-		ClassEventFunctionsArray m_class_functions;
+		ClassEventFunctionArray m_class_functions;
 		CommandFunctionMap m_command_functions;
 };
 

@@ -8,4 +8,4 @@ function on_dwarf_use_horse( entity_id, actor_id, client_id )
 	flex.world:create_entity( "fw.tools/shovel", entity_id, "rhand" )
 end
 
-flex.event:hook_class_event( flex.Event.Class.USE, "fw.sandbox.player/dwarf_male", on_dwarf_use_horse )
+flex.event:hook_class_event( flex.Event.Class.USE, on_dwarf_use_horse )

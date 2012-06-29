@@ -61,8 +61,8 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Event event;
 		event.register_object( state["flex"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, \"some/class\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, function() end )" ) );
 
 		BOOST_CHECK( event.get_num_class_hooks() == 2 );
 	}
@@ -230,17 +230,13 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		// hook_class_event
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event()", state ) == true );
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event( flex.Event.Class.USE )", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event( flex.Event.Class.USE, \"meh/bleh\" )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event( flex.Event.Class.USE, function() end, 123 )", state ) == true );
 
-		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_class_event( \"meh\", \"meh/bleh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected string for class.", "flex.event:hook_class_event( flex.Event.Class.USE, 123, function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_class_event( flex.Event.Class.USE, \"meh/bleh\", 123 )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_class_event( \"meh\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_class_event( flex.Event.Class.USE, 123 )", state ) == true );
 
-		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( " + num_class_events + ", \"meh/bleh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( -1, \"meh/bleh\", function() end )", state ) == true );
-
-		BOOST_CHECK( check_error( "Invalid class ID.", "flex.event:hook_class_event( flex.Event.Class.USE, \"meh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid class ID.", "flex.event:hook_class_event( flex.Event.Class.USE, \"\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( " + num_class_events + ", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( -1, function() end )", state ) == true );
 
 		// hook_command
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command()", state ) == true );

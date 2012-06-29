@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_REQUIRE( manager.execute_string( "function on_use( entity_id, actor_id, client_id ) assert( entity_id == 11 and actor_id == 22 and client_id == 33 ); flex.test:set_value( \"use_ok\", \"yes\" ) end" ) );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.USE, \"some/class\", on_use )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.USE, on_use )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_REQUIRE( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/block_action.lua" ) ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, \"some/class\", handler )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, handler )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 		Entity actor( cls );
