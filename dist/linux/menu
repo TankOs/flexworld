@@ -1,5 +1,0 @@
-?package(flexworld):\
-	needs="X11"\
-	section="Games/Adventure"\
-	title="FlexWorld"\
-	command="flexworld-client"

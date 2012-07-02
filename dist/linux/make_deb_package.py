@@ -153,10 +153,10 @@ os.mkdir( debian_path )
 shutil.copy( path.join( SCRIPT_PATH, "changelog" ), debian_path )
 
 # Copy menu file.
-menu_path = path.join( tmp_dir_path, "usr", "share", "menu" )
+menu_path = path.join( tmp_dir_path, "usr", "share", "applications" )
 
 os.makedirs( menu_path )
-shutil.copy( path.join( SCRIPT_PATH, "menu" ), path.join( menu_path, "flexworld" ) )
+shutil.copy( path.join( SCRIPT_PATH, "flexworld.desktop" ), path.join( menu_path, "flexworld.desktop" ) )
 
 # Open control file and replace identifiers.
 f = open( control_file_path, "r" )

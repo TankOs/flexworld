@@ -25,8 +25,8 @@ MenuState::MenuState( sf::RenderWindow& target ) :
 	State( target ),
 	m_background_varray( sf::Quads, 4 ),
 	m_rocket_context( nullptr ),
-	m_options_document( nullptr ),
-	m_commencing( false )
+	m_menu_document( nullptr ),
+	m_options_document( nullptr )
 {
 }
 
@@ -95,13 +95,13 @@ void MenuState::init() {
 	//Rocket::Debugger::SetVisible( true );
 
 	const std::string filename = flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/main_menu.rml" );
-	Rocket::Core::ElementDocument* document = m_rocket_context->LoadDocument( filename.c_str() );
+	m_menu_document = m_rocket_context->LoadDocument( filename.c_str() );
 
-	document->AddEventListener( "click", this );
-	document->Show();
+	m_menu_document->AddEventListener( "click", this );
+	m_menu_document->Show();
 
 	center_element(
-		*document->GetElementById( "main_menu" ),
+		*m_menu_document->GetElementById( "main_menu" ),
 		sf::Vector2f(
 			static_cast<float>( get_render_target().getSize().x ) / 2.0f,
 			static_cast<float>( get_render_target().getSize().y ) / 2.0f
@@ -118,12 +118,10 @@ void MenuState::init() {
 			<< flex::VERSION_SUFFIX
 		;
 
-		Rocket::Core::Element* version_element = document->GetElementById( "version" );
+		Rocket::Core::Element* version_element = m_menu_document->GetElementById( "version" );
 		assert( version_element );
 		version_element->SetInnerRML( sstr.str().c_str() );
 	}
-
-	document->RemoveReference();
 
 	// Setup options document + controller.
 	m_options_document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
@@ -159,6 +157,7 @@ void MenuState::cleanup() {
 	// Cleanup Rocket.
 	m_options_controller.reset();
 
+	m_menu_document->RemoveReference();
 	m_options_document->RemoveReference();
 	m_rocket_context->RemoveReference();
 
@@ -322,12 +321,9 @@ void MenuState::on_quit_click() {
 void MenuState::on_insta_click() {
 	// TODO: Use 'start game' window.
 
-	// Cancel if game's already commencing.
-	if( m_commencing ) {
-		return;
-	}
-
-	m_commencing = true;
+	// Hide GUI.
+	m_options_document->Hide();
+	m_menu_document->Hide();
 
 	// Create IO service.
 	get_shared().io_service.reset( new boost::asio::io_service );

@@ -49,11 +49,10 @@ class MenuState : public State, public Rocket::Core::EventListener {
 		sf::Texture m_background_texture;
 
 		Rocket::Core::Context* m_rocket_context;
+		Rocket::Core::ElementDocument* m_menu_document;
 		Rocket::Core::ElementDocument* m_options_document;
 
 		std::unique_ptr<OptionsDocumentController> m_options_controller;
 
 		sf::Music m_music;
-
-		bool m_commencing;
 };
