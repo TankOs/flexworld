@@ -71,29 +71,29 @@ class ScriptManager {
 		 */
 		bool trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender );
 
-		/** Trigger connect system event.
+		/** Trigger connect event.
 		 * @param client_id Client ID.
 		 * @return false if error occured.
 		 */
-		bool trigger_connect_system_event( uint16_t client_id );
+		bool trigger_connect_event( uint16_t client_id );
 
-		/** Trigger chat system event.
+		/** Trigger chat event.
 		 * @param message Message.
 		 * @param channel Channel.
 		 * @param sender Sender.
 		 * @return false if error occured.
 		 */
-		bool trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender );
+		bool trigger_chat_event( const sf::String& message, const sf::String& channel, uint16_t sender );
 
-		/** Trigger use class event.
+		/** Trigger use event.
 		 * @param entity Entity being used.
 		 * @param actor Actor entity.
 		 * @param client_id Client ID.
 		 * @return false if error occured.
 		 */
-		bool trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id );
+		bool trigger_use_event( const Entity& entity, const Entity& actor, uint16_t client_id );
 
-		/** Trigger block action class event.
+		/** Trigger block action event.
 		 * @param block_pos Block position of block the action is performed on.
 		 * @param next_block_pos Block position of block's neighbour (depending on which face the player clicked on).
 		 * @param primary true if primary action, otherwise secondary.
@@ -101,7 +101,7 @@ class ScriptManager {
 		 * @param client_id Client ID.
 		 * @return false if error occured.
 		 */
-		bool trigger_block_action_class_event(
+		bool trigger_block_action_event(
 			const sf::Vector3<uint32_t>& block_pos,
 			const sf::Vector3<uint32_t>& next_block_pos,
 			bool primary,

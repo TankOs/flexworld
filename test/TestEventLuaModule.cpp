@@ -29,8 +29,8 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		{
 			lua::Event event;
 
-			BOOST_CHECK( event.get_num_system_hooks() == 0 );
-			BOOST_CHECK( event.get_num_class_hooks() == 0 );
+			BOOST_CHECK( event.get_num_event_hooks() == 0 );
+			BOOST_CHECK( event.get_num_command_hooks() == 0 );
 		}
 
 		// Lua ctor.
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		}
 	}
 
-	// Hook system events.
+	// Hook events.
 	{
 		Diluculum::LuaState state;
 		setup_state_for_event( state );
@@ -47,24 +47,12 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Event event;
 		event.register_object( state["flex"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CHAT, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CONNECT, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CHAT, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.USE, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.BLOCK_ACTION, function() end )" ) );
 
-		BOOST_CHECK( event.get_num_system_hooks() == 2 );
-	}
-
-	// Hook class events.
-	{
-		Diluculum::LuaState state;
-		setup_state_for_event( state );
-
-		lua::Event event;
-		event.register_object( state["flex"]["event"] );
-
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.USE, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, function() end )" ) );
-
-		BOOST_CHECK( event.get_num_class_hooks() == 2 );
+		BOOST_CHECK( event.get_num_event_hooks() == 4 );
 	}
 
 	// Hook commands.
@@ -82,7 +70,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK( event.get_num_command_hooks() == 3 );
 	}
 
-	// Trigger system events.
+	// Trigger events.
 	{
 		Diluculum::LuaState state;
 		setup_state_for_event( state );
@@ -97,8 +85,8 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doString( "function on_connect( client_id ) flex.test:set_value( \"connect\", \"called\" .. tostring( client_id ) ) end" ) );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == nil )" ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_system_event( flex.Event.System.CONNECT, on_connect )" ) );
-		event.trigger_connect_system_event( 1337, state );
+		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CONNECT, on_connect )" ) );
+		event.trigger_connect_event( 1337, state );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == \"called1337\" )" ) );
 	}
 
@@ -117,7 +105,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
 
 		// Trigger.
-		BOOST_CHECK_NO_THROW( event.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337, state ) );
+		BOOST_CHECK_NO_THROW( event.trigger_chat_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337, state ) );
 	}
 
 	// Trigger class events.
@@ -150,16 +138,16 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		// Trigger use event.
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == nil )" ) );
 
-		event.trigger_use_class_event( ent_a, ent_actor, 111, state );
+		event.trigger_use_event( ent_a, ent_actor, 111, state );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"100,1337,111\" )" ) );
 
-		event.trigger_use_class_event( ent_b, ent_actor, 222, state );
+		event.trigger_use_event( ent_b, ent_actor, 222, state );
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"200,1337,222\" )" ) );
 
 		// Trigger block action event.
 		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == nil )" ) );
 
-		event.trigger_block_action_class_event(
+		event.trigger_block_action_event(
 			lua::Event::BlockPosition( 1, 2, 3 ),
 			lua::Event::BlockPosition( 4, 5, 6 ),
 			true,
@@ -203,40 +191,23 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Event event;
 		event.register_object( state["flex"]["event"] );
 
-		// hook_system_event
-		std::string num_system_events;
-		std::string num_class_events;
+		// hook_event
+		std::string num_events;
 
 		{
 			std::stringstream sstr;
-			sstr << lua::Event::NUM_SYSTEM_EVENTS;
-			num_system_events = sstr.str();
-		}
-		{
-			std::stringstream sstr;
-			sstr << lua::Event::NUM_CLASS_EVENTS;
-			num_class_events = sstr.str();
+			sstr << lua::Event::NUM_EVENTS;
+			num_events = sstr.str();
 		}
 
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_system_event()", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_system_event( flex.Event.System.CONNECT )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_event()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_event( flex.Event.CONNECT )", state ) == true );
 
-		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_system_event( \"meh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_system_event( flex.Event.System.CONNECT, 123 )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_event( \"meh\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_event( flex.Event.CONNECT, 123 )", state ) == true );
 
-		BOOST_CHECK( check_error( "Invalid system event ID.", "flex.event:hook_system_event( " + num_system_events + ", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid system event ID.", "flex.event:hook_system_event( -1, function() end )", state ) == true );
-
-		// hook_class_event
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event()", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event( flex.Event.Class.USE )", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_class_event( flex.Event.Class.USE, function() end, 123 )", state ) == true );
-
-		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_class_event( \"meh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_class_event( flex.Event.Class.USE, 123 )", state ) == true );
-
-		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( " + num_class_events + ", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid class event ID.", "flex.event:hook_class_event( -1, function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid event ID.", "flex.event:hook_event( " + num_events + ", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid event ID.", "flex.event:hook_event( -1, function() end )", state ) == true );
 
 		// hook_command
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command()", state ) == true );

@@ -26,5 +26,5 @@ function on_block_action_event( block, next_block, primary, actor, client_id )
 	flex.test:set_value( "block_action", "called" )
 end
 
-flex.event:hook_class_event( flex.Event.Class.USE, on_actor_use )
-flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, on_block_action_event )
+flex.event:hook_event( flex.Event.USE, on_actor_use )
+flex.event:hook_event( flex.Event.BLOCK_ACTION, on_block_action_event )

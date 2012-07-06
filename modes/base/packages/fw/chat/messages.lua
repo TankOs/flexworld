@@ -5,4 +5,4 @@ function on_connect_system_event( client )
 	flex.server:broadcast_chat_message( username .. " joined the game.", "Status", "Server" )
 end
 
-flex.event:hook_system_event( flex.Event.System.CONNECT, on_connect_system_event )
+flex.event:hook_event( flex.Event.CONNECT, on_connect_system_event )

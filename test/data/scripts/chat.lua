@@ -8,4 +8,4 @@ function on_chat_event( msg, channel, sender )
 	assert( sender == 1337 )
 end
 
-flex.event:hook_system_event( flex.Event.System.CHAT, on_chat_event )
+flex.event:hook_event( flex.Event.CHAT, on_chat_event )

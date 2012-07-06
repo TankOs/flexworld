@@ -28,5 +28,5 @@ function on_set_next_command( args, client_id )
 	next_class_id = args[1]
 end
 
-flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, on_build_class_block_action )
+flex.event:hook_event( flex.Event.BLOCK_ACTION, on_build_class_block_action )
 flex.event:hook_command( "set_next", on_set_next_command )

@@ -13,23 +13,18 @@ namespace flex {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( Event )
-	DILUCULUM_CLASS_METHOD( Event, hook_system_event )
-	DILUCULUM_CLASS_METHOD( Event, hook_class_event )
+	DILUCULUM_CLASS_METHOD( Event, hook_event )
 	DILUCULUM_CLASS_METHOD( Event, hook_command )
 DILUCULUM_END_CLASS( Event )
 
 void Event::register_class( Diluculum::LuaVariable target ) {
 	DILUCULUM_REGISTER_CLASS( target, Event );
 
-	// System events.
-	target["System"] = Diluculum::EmptyTable;
-	target["System"]["CONNECT"] = CONNECT_EVENT;
-	target["System"]["CHAT"] = CHAT_EVENT;
-
-	// Class events.
-	target["Class"] = Diluculum::EmptyTable;
-	target["Class"]["USE"] = USE_EVENT;
-	target["Class"]["BLOCK_ACTION"] = BLOCK_ACTION_EVENT;
+	// Events.
+	target["CONNECT"] = CONNECT_EVENT;
+	target["CHAT"] = CHAT_EVENT;
+	target["USE"] = USE_EVENT;
+	target["BLOCK_ACTION"] = BLOCK_ACTION_EVENT;
 }
 
 bool Event::is_valid_command( const std::string& command ) {
@@ -58,8 +53,7 @@ Event::Event( const Diluculum::LuaValueList& /*args*/ ) {
 }
 
 Event::Event() :
-	m_system_functions( NUM_SYSTEM_EVENTS ),
-	m_class_functions( NUM_CLASS_EVENTS )
+	m_event_functions( NUM_EVENTS )
 {
 }
 
@@ -67,21 +61,11 @@ void Event::register_object( Diluculum::LuaVariable target ) {
 	DILUCULUM_REGISTER_OBJECT( target, Event, *this );
 }
 
-std::size_t Event::get_num_system_hooks() const {
+std::size_t Event::get_num_event_hooks() const {
 	std::size_t num = 0;
 
-	for( std::size_t idx = 0; idx < m_system_functions.size(); ++idx ) {
-		num += m_system_functions[idx].size();
-	}
-
-	return num;
-}
-
-std::size_t Event::get_num_class_hooks() const {
-	std::size_t num = 0;
-
-	for( std::size_t idx = 0; idx < m_class_functions.size(); ++idx ) {
-		num += m_class_functions[idx].size();
+	for( std::size_t idx = 0; idx < m_event_functions.size(); ++idx ) {
+		num += m_event_functions[idx].size();
 	}
 
 	return num;
@@ -91,7 +75,7 @@ std::size_t Event::get_num_command_hooks() const {
 	return m_command_functions.size();
 }
 
-Diluculum::LuaValueList Event::hook_system_event( const Diluculum::LuaValueList& args ) {
+Diluculum::LuaValueList Event::hook_event( const Diluculum::LuaValueList& args ) {
 	if( args.size() != 2 ) {
 		throw Diluculum::LuaError( "Wrong number of arguments." );
 	}
@@ -106,35 +90,11 @@ Diluculum::LuaValueList Event::hook_system_event( const Diluculum::LuaValueList&
 
 	int event_id = static_cast<int>( args[0].asInteger() );
 
-	if( event_id < 0 || event_id >= NUM_SYSTEM_EVENTS ) {
-		throw Diluculum::LuaError( "Invalid system event ID." );
+	if( event_id < 0 || event_id >= NUM_EVENTS ) {
+		throw Diluculum::LuaError( "Invalid event ID." );
 	}
 
-	m_system_functions[event_id].push_back( args[1].asFunction() );
-
-	return Diluculum::LuaValueList();
-}
-
-Diluculum::LuaValueList Event::hook_class_event( const Diluculum::LuaValueList& args ) {
-	if( args.size() != 2 ) {
-		throw Diluculum::LuaError( "Wrong number of arguments." );
-	}
-
-	if( args[0].type() != LUA_TNUMBER ) {
-		throw Diluculum::LuaError( "Expected number for event." );
-	}
-
-	if( args[1].type() != LUA_TFUNCTION ) {
-		throw Diluculum::LuaError( "Expected function for callback." );
-	}
-
-	int event_id = static_cast<int>( args[0].asInteger() );
-
-	if( event_id < 0 || event_id >= NUM_CLASS_EVENTS ) {
-		throw Diluculum::LuaError( "Invalid class event ID." );
-	}
-
-	m_class_functions[event_id].push_back( args[1].asFunction() );
+	m_event_functions[event_id].push_back( args[1].asFunction() );
 
 	return Diluculum::LuaValueList();
 }
@@ -164,14 +124,14 @@ Diluculum::LuaValueList Event::hook_command( const Diluculum::LuaValueList& args
 	return Diluculum::LuaValueList();
 }
 
-void Event::trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state ) {
+void Event::trigger_connect_event( uint16_t client_id, Diluculum::LuaState& state ) {
 	Diluculum::LuaValueList args;
 	args.push_back( client_id );
 
-	call_system_event_callbacks( CONNECT_EVENT, args, state );
+	call_event_callbacks( CONNECT_EVENT, args, state );
 }
 
-void Event::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state ) {
+void Event::trigger_chat_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state ) {
 	// Convert UTF-32 to UTF-8.
 	std::string message_u8;
 	std::string channel_u8;
@@ -185,14 +145,14 @@ void Event::trigger_chat_system_event( const sf::String& message, const sf::Stri
 	args.push_back( channel_u8 );
 	args.push_back( sender );
 
-	call_system_event_callbacks( CHAT_EVENT, args, state );
+	call_event_callbacks( CHAT_EVENT, args, state );
 }
 
-void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
+void Event::call_event_callbacks( int event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
 	// Cache.
-	FunctionArray& funcs = m_system_functions[event];
+	FunctionArray& funcs = m_event_functions[event];
 	std::size_t num = funcs.size();
-	static const std::string CHUNK_NAME = "FW System Event";
+	static const std::string CHUNK_NAME = "FW event";
 
 	// Call Lua functions.
 	for( std::size_t idx = 0; idx < num; ++idx ) {
@@ -200,26 +160,14 @@ void Event::call_system_event_callbacks( SystemEvent event, const Diluculum::Lua
 	}
 }
 
-void Event::call_class_event_callbacks( ClassEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state ) {
-	// Cache.
-	FunctionArray& funcs = m_class_functions[event];
-	std::size_t num = funcs.size();
-	static const std::string CHUNK_NAME = "FW Class Event";
-
-	// Call Lua functions.
-	for( std::size_t idx = 0; idx < num; ++idx ) {
-		state.call( funcs[idx], args, CHUNK_NAME );
-	}
-}
-
-void Event::trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state ) {
+void Event::trigger_use_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state ) {
 	Diluculum::LuaValueList args;
 
 	args.push_back( entity.get_id() );
 	args.push_back( actor.get_id() );
 	args.push_back( client_id );
 
-	call_class_event_callbacks( USE_EVENT, args, state );
+	call_event_callbacks( USE_EVENT, args, state );
 }
 
 void Event::trigger_command( const std::string& command, const std::vector<sf::String>& args, uint16_t sender, Diluculum::LuaState& state ) {
@@ -253,7 +201,7 @@ void Event::trigger_command( const std::string& command, const std::vector<sf::S
 	state.call( cmd_iter->second, call_args, command );
 }
 
-void Event::trigger_block_action_class_event(
+void Event::trigger_block_action_event(
 	const BlockPosition& block_pos,
 	const BlockPosition& next_block_pos,
 	bool primary,
@@ -282,7 +230,7 @@ void Event::trigger_block_action_class_event(
 	args.push_back( actor.get_id() );
 	args.push_back( client_id );
 
-	call_class_event_callbacks( BLOCK_ACTION_EVENT, args, state );
+	call_event_callbacks( BLOCK_ACTION_EVENT, args, state );
 }
 
 }

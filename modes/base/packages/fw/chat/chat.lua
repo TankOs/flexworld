@@ -15,4 +15,4 @@ function on_chat_system_event( message, channel, sender )
 	end
 end
 
-flex.event:hook_system_event( flex.Event.System.CHAT, on_chat_system_event )
+flex.event:hook_event( flex.Event.CHAT, on_chat_system_event )

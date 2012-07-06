@@ -935,7 +935,6 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 		if( parent_ent ) {
 			if( *parent_ent->get_class().find_hook( parent_ent->get_child_hook( *entity ) ) == flex::Class::INVISIBLE_HOOK ) {
 				skip = true;
-				std::cout << "SKIPPED YA" << std::endl;
 			}
 		}
 

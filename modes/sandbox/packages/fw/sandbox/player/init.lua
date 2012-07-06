@@ -10,4 +10,4 @@ function on_connect( client_id )
 	--flex.world:create_entity( "fw.tools/shovel", backpack_id )
 end
 
-flex.event:hook_system_event( flex.Event.System.CONNECT, on_connect )
+flex.event:hook_event( flex.Event.CONNECT, on_connect )

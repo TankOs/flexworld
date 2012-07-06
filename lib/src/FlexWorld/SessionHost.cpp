@@ -363,7 +363,7 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	beam_player( conn_id, "construct", sf::Vector3f( 40, height, 40 ), 200 );
 
 	// Trigger connect event. TODO Is this the right place?
-	m_script_manager->trigger_connect_system_event( conn_id );
+	m_script_manager->trigger_connect_event( conn_id );
 }
 
 void SessionHost::beam_player( Server::ConnectionID conn_id, const std::string& planet_id, const sf::Vector3f& position, float heading ) {
@@ -636,7 +636,7 @@ void SessionHost::handle_message( const msg::Chat& chat_msg, Server::ConnectionI
 	}
 	else {
 		// No command, give to script manager normally.
-		m_script_manager->trigger_chat_system_event( chat_msg.get_message(), chat_msg.get_channel(), conn_id );
+		m_script_manager->trigger_chat_event( chat_msg.get_message(), chat_msg.get_channel(), conn_id );
 	}
 }
 
@@ -851,7 +851,7 @@ void SessionHost::handle_message( const msg::Use& use_msg, Server::ConnectionID 
 	// TODO Distance/range check.
 
 	// Hand over to script.
-	m_script_manager->trigger_use_class_event( *object, *info.entity, conn_id );
+	m_script_manager->trigger_use_event( *object, *info.entity, conn_id );
 
 	m_lock_facility.lock_world( false );
 }
@@ -916,7 +916,7 @@ void SessionHost::handle_message( const msg::BlockAction& ba_msg, Server::Connec
 			}
 
 			// Send to script manager.
-			m_script_manager->trigger_block_action_class_event(
+			m_script_manager->trigger_block_action_event(
 				ba_msg.get_block_position(),
 				next_block,
 				ba_msg.is_primary(),

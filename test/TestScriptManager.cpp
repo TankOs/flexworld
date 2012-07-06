@@ -113,20 +113,20 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_REQUIRE( result == true );
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
-		BOOST_CHECK( manager.trigger_chat_system_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) == true );
+		BOOST_CHECK( manager.trigger_chat_event( sf::String( L"Hell\xF6" ), sf::String( L"Ch\xE4nnel" ), 1337 ) == true );
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 
 		// Error handling.
 		manager.clear();
 
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_system_event( flex.Event.System.CHAT, faulty )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.CHAT, faulty )" ) == true );
 
-		BOOST_CHECK( manager.trigger_chat_system_event( sf::String(), sf::String(), 0 ) == false );
+		BOOST_CHECK( manager.trigger_chat_event( sf::String(), sf::String(), 0 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 
-	// Trigger connect system event.
+	// Trigger connect event.
 	{
 		ScriptManager manager( server_gate, world_gate );
 		bool result = false;
@@ -135,16 +135,16 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_REQUIRE( result == true );
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
-		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == true );
+		BOOST_CHECK( manager.trigger_connect_event( 1337 ) == true );
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 
 		// Error handling.
 		manager.clear();
 
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_system_event( flex.Event.System.CONNECT, faulty )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.CONNECT, faulty )" ) == true );
 
-		BOOST_CHECK( manager.trigger_connect_system_event( 1337 ) == false );
+		BOOST_CHECK( manager.trigger_connect_event( 1337 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
 	}
 
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_REQUIRE( manager.execute_string( "function on_use( entity_id, actor_id, client_id ) assert( entity_id == 11 and actor_id == 22 and client_id == 33 ); flex.test:set_value( \"use_ok\", \"yes\" ) end" ) );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.USE, on_use )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.USE, on_use )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 		BOOST_CHECK(
-			manager.trigger_use_class_event(
+			manager.trigger_use_event(
 				object,
 				actor,
 				33
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_REQUIRE( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/block_action.lua" ) ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_class_event( flex.Event.Class.BLOCK_ACTION, handler )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.BLOCK_ACTION, handler )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 		Entity actor( cls );
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 		BOOST_CHECK(
-			manager.trigger_block_action_class_event(
+			manager.trigger_block_action_event(
 				lua::Event::BlockPosition( 1, 2, 3 ),
 				lua::Event::BlockPosition( 4, 5, 6 ),
 				true,

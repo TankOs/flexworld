@@ -116,15 +116,15 @@ bool ScriptManager::trigger_command( const std::string& command, const std::vect
 	return true;
 }
 
-bool ScriptManager::trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender ) {
+bool ScriptManager::trigger_chat_event( const sf::String& message, const sf::String& channel, uint16_t sender ) {
 	m_last_error = "";
 
 	try {
-		m_event_module->trigger_chat_system_event( message, channel, sender, *m_state );
+		m_event_module->trigger_chat_event( message, channel, sender, *m_state );
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "CHAT system event error: " << m_last_error << Log::endl;
+		Log::Logger( Log::ERR ) << "CHAT event error: " << m_last_error << Log::endl;
 
 		return false;
 	}
@@ -132,15 +132,15 @@ bool ScriptManager::trigger_chat_system_event( const sf::String& message, const 
 	return true;
 }
 
-bool ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
+bool ScriptManager::trigger_connect_event( uint16_t client_id ) {
 	m_last_error = "";
 
 	try {
-		m_event_module->trigger_connect_system_event( client_id, *m_state );
+		m_event_module->trigger_connect_event( client_id, *m_state );
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "CONNECT system event error: " << m_last_error << Log::endl;
+		Log::Logger( Log::ERR ) << "CONNECT event error: " << m_last_error << Log::endl;
 
 		return false;
 	}
@@ -148,15 +148,15 @@ bool ScriptManager::trigger_connect_system_event( uint16_t client_id ) {
 	return true;
 }
 
-bool ScriptManager::trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id ) {
+bool ScriptManager::trigger_use_event( const Entity& entity, const Entity& actor, uint16_t client_id ) {
 	m_last_error.clear();
 
 	try {
-		m_event_module->trigger_use_class_event( entity, actor, client_id, *m_state );
+		m_event_module->trigger_use_event( entity, actor, client_id, *m_state );
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "USE class event error: " << m_last_error << Log::endl;
+		Log::Logger( Log::ERR ) << "USE event error: " << m_last_error << Log::endl;
 
 		return false;
 	}
@@ -164,7 +164,7 @@ bool ScriptManager::trigger_use_class_event( const Entity& entity, const Entity&
 	return true;
 }
 
-bool ScriptManager::trigger_block_action_class_event(
+bool ScriptManager::trigger_block_action_event(
 	const sf::Vector3<uint32_t>& block_pos,
 	const sf::Vector3<uint32_t>& next_block_pos,
 	bool primary,
@@ -174,11 +174,11 @@ bool ScriptManager::trigger_block_action_class_event(
 	m_last_error.clear();
 
 	try {
-		m_event_module->trigger_block_action_class_event( block_pos, next_block_pos, primary, actor, client_id, *m_state );
+		m_event_module->trigger_block_action_event( block_pos, next_block_pos, primary, actor, client_id, *m_state );
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "BLOCK_ACTION class event error: " << m_last_error << Log::endl;
+		Log::Logger( Log::ERR ) << "BLOCK_ACTION event error: " << m_last_error << Log::endl;
 
 		return false;
 	}

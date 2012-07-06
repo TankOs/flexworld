@@ -15,7 +15,6 @@ class LuaState;
 
 namespace flex {
 
-class Class;
 class Entity;
 
 namespace lua {
@@ -26,20 +25,14 @@ class Event {
 	public:
 		typedef sf::Vector3<uint32_t> BlockPosition; ///< Block position type.
 
-		/** System event.
+		/** Event.
 		 */
-		enum SystemEvent {
+		enum {
 			CONNECT_EVENT = 0, ///< Client connected.
 			CHAT_EVENT, ///< Chat message.
-			NUM_SYSTEM_EVENTS ///< Number of system events.
-		};
-
-		/** Class event.
-		 */
-		enum ClassEvent {
 			USE_EVENT, ///< Player used entity.
 			BLOCK_ACTION_EVENT, ///< Player used primary action on block.
-			NUM_CLASS_EVENTS ///< Number of class events.
+			NUM_EVENTS ///< Number of events.
 		};
 
 		/** Register class with state.
@@ -70,34 +63,22 @@ class Event {
 		 */
 		void register_object( Diluculum::LuaVariable target );
 
-		/** Get number of system hooks.
-		 * @return Number of system hooks.
+		/** Get number of event hooks.
+		 * @return Number of event hooks.
 		 */
-		std::size_t get_num_system_hooks() const;
-
-		/** Get number of class hooks.
-		 * @return Number of class hooks.
-		 */
-		std::size_t get_num_class_hooks() const;
+		std::size_t get_num_event_hooks() const;
 
 		/** Get number of command hooks.
 		 * @return Number of command hooks.
 		 */
 		std::size_t get_num_command_hooks() const;
 
-		/** Hook system event (Lua function).
+		/** Hook event (Lua function).
 		 * @param args event:number, callback:function
 		 * @return nil
 		 * @throws Diluculum::LuaError if invalid event or function given.
 		 */
-		Diluculum::LuaValueList hook_system_event( const Diluculum::LuaValueList& args );
-
-		/** Hook class event (Lua function).
-		 * @param args event:number, class:string, callback:function
-		 * @return nil
-		 * @throws Diluculum::LuaError if invalid event, class or function given.
-		 */
-		Diluculum::LuaValueList hook_class_event( const Diluculum::LuaValueList& args );
+		Diluculum::LuaValueList hook_event( const Diluculum::LuaValueList& args );
 
 		/** Hook command (Lua function).
 		 * @param args command:string, callback:function.
@@ -106,29 +87,29 @@ class Event {
 		 */
 		Diluculum::LuaValueList hook_command( const Diluculum::LuaValueList& args );
 
-		/** Trigger connect system event.
+		/** Trigger connect event.
 		 * @param client_id Client ID.
 		 * @param state Lua state to use for calling functions.
 		 */
-		void trigger_connect_system_event( uint16_t client_id, Diluculum::LuaState& state );
+		void trigger_connect_event( uint16_t client_id, Diluculum::LuaState& state );
 
-		/** Trigger chat system event.
+		/** Trigger chat event.
 		 * @param message Message.
 		 * @param channel Channel.
 		 * @param sender Sender.
 		 * @param state Lua state.
 		 */
-		void trigger_chat_system_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state );
+		void trigger_chat_event( const sf::String& message, const sf::String& channel, uint16_t sender, Diluculum::LuaState& state );
 
-		/** Trigger use class event.
+		/** Trigger use event.
 		 * @param entity Entity being used.
 		 * @param actor Actor entity.
 		 * @param client_id Client ID.
 		 * @param state Lua state.
 		 */
-		void trigger_use_class_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state );
+		void trigger_use_event( const Entity& entity, const Entity& actor, uint16_t client_id, Diluculum::LuaState& state );
 
-		/** Trigger block action class event.
+		/** Trigger block action event.
 		 * @param block_pos Block position of block the action is performed on.
 		 * @param next_block_pos Block position of block's neighbour (depending on which face the player clicked on).
 		 * @param primary true if primary action, otherwise secondary.
@@ -136,7 +117,7 @@ class Event {
 		 * @param client_id Client ID.
 		 * @param state Lua state.
 		 */
-		void trigger_block_action_class_event(
+		void trigger_block_action_event(
 			const BlockPosition& block_pos,
 			const BlockPosition& next_block_pos,
 			bool primary,
@@ -156,15 +137,12 @@ class Event {
 	private:
 		typedef std::vector<Diluculum::LuaFunction> FunctionArray;
 
-		typedef std::vector<FunctionArray> SystemEventFunctionArray;
-		typedef std::vector<FunctionArray> ClassEventFunctionArray;
+		typedef std::vector<FunctionArray> EventFunctionArray;
 		typedef std::map<const std::string, Diluculum::LuaFunction> CommandFunctionMap;
 
-		void call_system_event_callbacks( SystemEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
-		void call_class_event_callbacks( ClassEvent event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
+		void call_event_callbacks( int event, const Diluculum::LuaValueList& args, Diluculum::LuaState& state );
 
-		SystemEventFunctionArray m_system_functions;
-		ClassEventFunctionArray m_class_functions;
+		EventFunctionArray m_event_functions;
 		CommandFunctionMap m_command_functions;
 };
 
