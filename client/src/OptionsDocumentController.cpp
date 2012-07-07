@@ -64,7 +64,6 @@ OptionsDocumentController::OptionsDocumentController( Rocket::Core::Element& roo
 	create_binding_elements( "Walk backward", Controls::WALK_BACKWARD );
 	create_binding_elements( "Strafe left", Controls::STRAFE_LEFT );
 	create_binding_elements( "Strafe right", Controls::STRAFE_RIGHT );
-	create_binding_elements( "Run", Controls::RUN );
 	create_binding_elements( "Jump", Controls::JUMP );
 	create_binding_elements( "Crouch", Controls::CROUCH );
 	create_binding_elements();

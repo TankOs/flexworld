@@ -25,10 +25,11 @@
 #include <sstream>
 #include <iostream>
 
-static const float MAX_WALK_SPEED = 2.0f; // [m/s] TODO: Replace by class' walk speed.
+static const float MAX_WALK_SPEED = 2.5f; // [m/s] TODO: Replace by class' walk speed.
 static const float MAX_RUN_SPEED = 12.0f; // [m/s] TODO: Replace by class' walk speed.
 static const float WALK_ACCELERATION = 24.0f; // x/s². TODO: Replace by class' acceleration.
 static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
+static const sf::Time RUN_TIME = sf::milliseconds( 200 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -260,6 +261,13 @@ void PlayState::handle_event( const sf::Event& event ) {
 		switch( action ) {
 			case Controls::WALK_FORWARD:
 				m_walk_forward = pressed;
+				m_run = false;
+
+				// If pressed twice in a short time enable running.
+				if( pressed && m_forward_timer.restart() <= RUN_TIME ) {
+					m_run = true;
+				}
+
 				m_update_velocity = true;
 				break;
 
@@ -275,11 +283,6 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 			case Controls::STRAFE_RIGHT:
 				m_strafe_right = pressed;
-				m_update_velocity = true;
-				break;
-
-			case Controls::RUN:
-				m_run = pressed;
 				m_update_velocity = true;
 				break;
 

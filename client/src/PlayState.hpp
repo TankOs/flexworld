@@ -131,6 +131,7 @@ class PlayState : public State, flex::Client::Handler {
 		uint32_t m_last_picked_entity_id;
 
 		sf::Clock m_use_timer;
+		sf::Clock m_forward_timer;
 
 		// State.
 		bool m_my_entity_received;
