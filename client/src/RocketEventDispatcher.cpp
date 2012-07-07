@@ -195,7 +195,7 @@ void RocketEventDispatcher::dispatch_event( const sf::Event& event, Rocket::Core
 		// Only process codes >= 0x20, otherwise we'd process control characters.
 		sf::Uint32 ch = event.text.unicode;
 
-		if( ch >= 0x20 && ch <= 0xff ) {
+		if( ch >= 0x20 && ch <= 0xff && ch != 0x7f ) {
 			// Convert UTF-32 to UTF-16 (UCS-2 is needed by libRocket).
 			sf::Uint16 rocket_ch = 0;
 
