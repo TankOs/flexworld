@@ -2,8 +2,6 @@
 #include "StateFactory.hpp"
 #include "Shared.hpp"
 #include "OptionsDocumentController.hpp"
-#include "RocketRenderInterface.hpp"
-#include "RocketSystemInterface.hpp"
 #include "RocketEventDispatcher.hpp"
 #include "RocketUtils.hpp"
 
@@ -64,18 +62,6 @@ void MenuState::init() {
 	}
 
 	// Setup Rocket.
-	RocketRenderInterface* render_interface = new RocketRenderInterface( get_render_target() );
-	RocketSystemInterface* system_interface = new RocketSystemInterface;
-
-	Rocket::Core::SetRenderInterface( render_interface );
-	Rocket::Core::SetSystemInterface( system_interface );
-
-	Rocket::Core::Initialise();
-	Rocket::Controls::Initialise();
-
-	render_interface->RemoveReference();
-	system_interface->RemoveReference();
-
 	Rocket::Core::FontDatabase::LoadFontFace(
 		(flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/Economica-Bold.ttf" )).c_str(),
 		"MenuFont",

@@ -1,12 +1,15 @@
 #include "Client.hpp"
 #include "StateFactory.hpp"
 #include "State.hpp"
+#include "RocketRenderInterface.hpp"
+#include "RocketSystemInterface.hpp"
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
 #include <FlexWorld/Log.hpp>
 
 #include <Rocket/Core.h>
+#include <Rocket/Controls.h>
 #include <boost/filesystem.hpp>
 #include <sstream>
 #include <iostream>
@@ -103,6 +106,19 @@ void Client::run() {
 
 	m_window.setVerticalSyncEnabled( Shared::get().user_settings.is_vsync_enabled() );
 
+	// Setup libRocket.
+	RocketRenderInterface* render_interface = new RocketRenderInterface( m_window );
+	RocketSystemInterface* system_interface = new RocketSystemInterface;
+
+	Rocket::Core::SetRenderInterface( render_interface );
+	Rocket::Core::SetSystemInterface( system_interface );
+
+	Rocket::Core::Initialise();
+	Rocket::Controls::Initialise();
+
+	render_interface->RemoveReference();
+	system_interface->RemoveReference();
+
 	// Launch first state.
 	State* state( StateFactory::create_menu_state( m_window ) );
 
@@ -115,4 +131,7 @@ void Client::run() {
 
 	// Shutdown libRocket.
 	Rocket::Core::Shutdown();
+
+	delete render_interface;
+	delete system_interface;
 }

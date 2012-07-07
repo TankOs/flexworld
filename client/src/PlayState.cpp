@@ -160,6 +160,7 @@ void PlayState::cleanup() {
 	get_shared().host.reset();
 	get_shared().lock_facility.reset();
 	get_shared().client.reset();
+	get_shared().world.reset();
 
 	// Restore old matrices.
 	glMatrixMode( GL_TEXTURE );

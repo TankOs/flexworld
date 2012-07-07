@@ -36,6 +36,8 @@ void ScriptManager::clear() {
 	// Clean up modules and state.
 	delete m_event_module;
 	delete m_test_module;
+	delete m_server_module;
+	delete m_world_module;
 
 	delete m_state;
 
