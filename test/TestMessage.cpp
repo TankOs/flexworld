@@ -16,6 +16,7 @@
 #include <FlexWorld/Messages/SetBlock.hpp>
 #include <FlexWorld/Messages/AttachEntity.hpp>
 #include <FlexWorld/Messages/Use.hpp>
+#include <FlexWorld/Messages/OpenContainer.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <iostream>
 
@@ -1827,3 +1828,60 @@ BOOST_AUTO_TEST_CASE( TestCreateAttachedEntityMessage ) {
 		}
 	}
 }
+
+BOOST_AUTO_TEST_CASE( TestOpenContainer ) {
+	using namespace flex;
+
+	static const Entity::ID ID = 1337;
+
+	// Create source buffer.
+	ServerProtocol::Buffer source;
+	source.insert( source.end(), reinterpret_cast<const char*>( &ID ), reinterpret_cast<const char*>( &ID ) + sizeof( ID ) );
+
+	// Initial state.
+	{
+		msg::OpenContainer msg;
+
+		BOOST_CHECK( msg.get_id() == 0 );
+	}
+
+	// Basic properties.
+	{
+		msg::OpenContainer msg;
+		msg.set_id( ID );
+
+		BOOST_CHECK( msg.get_id() == ID );
+	}
+
+	// Serialize.
+	{
+		msg::OpenContainer msg;
+		msg.set_id( ID );
+
+		ServerProtocol::Buffer buffer;
+		BOOST_CHECK_NO_THROW( msg.serialize( buffer ) );
+
+		BOOST_CHECK( buffer == source );
+	}
+
+	// Deserialize.
+	{
+		msg::OpenContainer msg;
+
+		std::size_t eaten = 0;
+		BOOST_CHECK_NO_THROW( eaten = msg.deserialize( &source[0], source.size() ) );
+
+		BOOST_CHECK( eaten == source.size() );
+		BOOST_CHECK( msg.get_id() == ID );
+	}
+
+	// Deserialize with too less data.
+	{
+		msg::OpenContainer msg;
+
+		for( std::size_t amount = 0; amount < source.size(); ++amount ) {
+			BOOST_CHECK( msg.deserialize( &source[0], amount ) == 0 );
+		}
+	}
+}
+
