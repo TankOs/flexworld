@@ -39,6 +39,8 @@ class MenuState : public State, public Rocket::Core::EventListener {
 
 		void ProcessEvent( Rocket::Core::Event& event );
 
+		void update_gui_visibility();
+
 		void on_insta_click();
 		void on_options_click();
 		void on_options_accept();

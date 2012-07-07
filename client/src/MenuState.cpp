@@ -146,6 +146,8 @@ void MenuState::init() {
 	get_shared().world.reset();
 
 	get_render_target().resetGLStates();
+
+	update_gui_visibility();
 }
 
 void MenuState::cleanup() {
@@ -307,6 +309,8 @@ void MenuState::on_options_accept() {
 
 	m_options_document->Show( Rocket::Core::ElementDocument::FOCUS );
 	m_options_document->Hide();
+
+	update_gui_visibility();
 }
 
 void MenuState::on_options_reject() {
@@ -402,4 +406,17 @@ void MenuState::ProcessEvent( Rocket::Core::Event& event ) {
 		on_options_click();
 	}
 
+}
+
+void MenuState::update_gui_visibility() {
+	// Play button is only visible when username and serial have been entered.
+	if(
+		get_shared().user_settings.get_username().empty() ||
+		get_shared().user_settings.get_serial().empty()
+	) {
+		m_menu_document->GetElementById( "quickstart" )->SetProperty( "display", "none" );
+	}
+	else {
+		m_menu_document->GetElementById( "quickstart" )->SetProperty( "display", "block" );
+	}
 }
