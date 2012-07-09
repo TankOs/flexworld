@@ -57,7 +57,6 @@ set(
 	${INC_DIR}/FlexWorld/Messages/CreateEntity.hpp
 	${INC_DIR}/FlexWorld/Messages/DestroyBlock.hpp
 	${INC_DIR}/FlexWorld/Messages/LoginOK.hpp
-	${INC_DIR}/FlexWorld/Messages/OpenContainer.hpp
 	${INC_DIR}/FlexWorld/Messages/OpenLogin.hpp
 	${INC_DIR}/FlexWorld/Messages/Ready.hpp
 	${INC_DIR}/FlexWorld/Messages/RequestChunk.hpp
@@ -121,7 +120,6 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/CreateEntity.cpp
 	${SRC_DIR}/FlexWorld/Messages/DestroyBlock.cpp
 	${SRC_DIR}/FlexWorld/Messages/LoginOK.cpp
-	${SRC_DIR}/FlexWorld/Messages/OpenContainer.cpp
 	${SRC_DIR}/FlexWorld/Messages/OpenLogin.cpp
 	${SRC_DIR}/FlexWorld/Messages/Ready.cpp
 	${SRC_DIR}/FlexWorld/Messages/RequestChunk.cpp
