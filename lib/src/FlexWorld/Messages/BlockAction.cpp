@@ -1,6 +1,6 @@
 #include <FlexWorld/Messages/BlockAction.hpp>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 BlockAction::BlockAction() :

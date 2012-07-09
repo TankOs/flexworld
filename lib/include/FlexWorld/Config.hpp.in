@@ -4,7 +4,7 @@
 
 /** FlexWorld library.
  */
-namespace flex {
+namespace fw {
 
 static const Version VERSION( @FW_VERSION_MAJOR@, @FW_VERSION_MINOR@, @FW_VERSION_REVISION@ ); ///< FlexWorld version.
 static const char* VERSION_SUFFIX = "@FW_VERSION_SUFFIX@"; ///< Version suffix.

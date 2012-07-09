@@ -8,7 +8,7 @@
 
 class ResourceManager;
 
-namespace flex {
+namespace fw {
 class Planet;
 class FlexID;
 class Model;
@@ -33,17 +33,17 @@ class PlanetDrawable : public sg::Drawable {
 		 * @param renderer Renderer.
 		 * @return PlanetDrawable.
 		 */
-		static Ptr create( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer );
+		static Ptr create( const fw::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer );
 
 		/** Set view radius.
 		 * @param radius Radius (in chunks).
 		 */
-		void set_view_radius( flex::Planet::ScalarType radius );
+		void set_view_radius( fw::Planet::ScalarType radius );
 
 		/** Prepare chunk for rendering.
 		 * @param chunk_pos Chunk position.
 		 */
-		void prepare_chunk( const flex::Planet::Vector& chunk_pos );
+		void prepare_chunk( const fw::Planet::Vector& chunk_pos );
 
 		/** Cancel preparing chunks.
 		 */
@@ -72,16 +72,16 @@ class PlanetDrawable : public sg::Drawable {
 		typedef std::map<ChunkPosition, StepVector> ChunkStepsMap;
 		typedef std::vector<DelayedStep> DelayedStepVector;
 
-		PlanetDrawable( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer );
-		std::shared_ptr<const flex::Model> get_model( const flex::FlexID& id ) const;
-		std::shared_ptr<const sf::Texture> get_texture( const flex::FlexID& id ) const;
+		PlanetDrawable( const fw::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer );
+		std::shared_ptr<const fw::Model> get_model( const fw::FlexID& id ) const;
+		std::shared_ptr<const sf::Texture> get_texture( const fw::FlexID& id ) const;
 
 		ChunkStepsMap m_steps;
 
-		const flex::Planet* m_planet;
+		const fw::Planet* m_planet;
 		ResourceManager& m_resource_manager;
 
-		flex::Planet::ScalarType m_view_radius;
+		fw::Planet::ScalarType m_view_radius;
 
 		boost::mutex m_delayed_steps_mutex;
 		DelayedStepVector m_delayed_steps;

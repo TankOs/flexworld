@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace flex {
+namespace fw {
 
 /** The Peer class holds some basic information for server<->client connections.
  */

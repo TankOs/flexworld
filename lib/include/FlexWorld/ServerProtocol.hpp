@@ -18,7 +18,7 @@
 #include <FlexWorld/Messages/AttachEntity.hpp>
 #include <FlexWorld/TemplateUtils.hpp>
 
-namespace flex {
+namespace fw {
 
 /** Message list.
  */

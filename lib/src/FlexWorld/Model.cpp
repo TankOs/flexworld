@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 Model::Model() :
 	m_bounding_box( 0, 0, 0, 0, 0, 0 ),

@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstring>
 
-namespace flex {
+namespace fw {
 
 template <class T, class DVS>
 inline void continue_search(

@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** 3D mesh.
  */

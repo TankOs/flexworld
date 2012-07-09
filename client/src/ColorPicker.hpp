@@ -9,7 +9,7 @@
 
 class ResourceManager;
 
-namespace flex {
+namespace fw {
 class Planet;
 class World;
 }
@@ -50,7 +50,7 @@ class ColorPicker {
 
 			ObjectType m_type; ///< Type of hit object.
 			BlockPosition m_block_position; ///< Position of hit block (in absolute planet coordinates).
-			flex::Facing m_facing; ///< Facing.
+			fw::Facing m_facing; ///< Facing.
 			uint32_t m_entity_id; ///< ID of hit entity.
 		};
 
@@ -72,8 +72,8 @@ class ColorPicker {
 			float distance,
 			const sg::Transform& transform,
 			const sf::Vector2i& pixel_pos,
-			const flex::Planet& planet,
-			const flex::World& world,
+			const fw::Planet& planet,
+			const fw::World& world,
 			const std::set<uint32_t>& skip_entity_ids,
 			ResourceManager& resource_manager
 		);

@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 Resource::Resource( const FlexID& id ) :
 	m_id( id )

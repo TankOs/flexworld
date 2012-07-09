@@ -17,7 +17,7 @@
 #include <boost/filesystem.hpp>
 #include <set>
 
-namespace flex {
+namespace fw {
 
 static const Chunk::Vector DEFAULT_CHUNK_SIZE = Chunk::Vector( 16, 16, 16 );
 static const Planet::Vector DEFAULT_CONSTRUCT_SIZE = Planet::Vector( 16, 16, 16 );
@@ -259,7 +259,7 @@ void SessionHost::handle_message( const msg::OpenLogin& login_msg, Server::Conne
 	m_lock_facility.lock_account_manager( true );
 
 	// Check if an account for that username exists.
-	const flex::Account* account = m_account_manager.find_account( login_msg.get_username() );
+	const fw::Account* account = m_account_manager.find_account( login_msg.get_username() );
 
 	// If it doesn't exist, create a new one.
 	if( account == nullptr ) {

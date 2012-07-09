@@ -40,33 +40,33 @@ class ResourceManager {
 		 * @return true on success, false on error.
 		 * @see finalize_prepared_textures for finalizing prepared textures, i.e. loading image data into them.
 		 */
-		bool prepare_texture( const flex::FlexID& id );
+		bool prepare_texture( const fw::FlexID& id );
 
 		/** Load texture from file.
 		 * A texture with the same ID gets removed (even if loading fails).
 		 * @param id ID.
 		 * @return true on success.
 		 */
-		bool load_texture( const flex::FlexID& id );
+		bool load_texture( const fw::FlexID& id );
 
 		/** Find texture.
 		 * @param id ID.
 		 * @return Texture or nullptr if not found.
 		 */
-		std::shared_ptr<const sf::Texture> find_texture( const flex::FlexID& id ) const;
+		std::shared_ptr<const sf::Texture> find_texture( const fw::FlexID& id ) const;
 
 		/** Load model from file.
 		 * A model with the same ID gets removed (even if loading fails).
 		 * @param id ID.
 		 * @return true on success.
 		 */
-		bool load_model( const flex::FlexID& id );
+		bool load_model( const fw::FlexID& id );
 
 		/** Find model.
 		 * @param id ID.
 		 * @return Model or nullptr if not found.
 		 */
-		std::shared_ptr<const flex::Model> find_model( const flex::FlexID& id ) const;
+		std::shared_ptr<const fw::Model> find_model( const fw::FlexID& id ) const;
 
 		/** Prepare buffer object group.
 		 * The buffer objects are uninitialized until
@@ -76,13 +76,13 @@ class ResourceManager {
 		 * @param model_id ID of model.
 		 * @return true on success, false if failed to load model.
 		 */
-		bool prepare_buffer_object_group( const flex::FlexID& model_id );
+		bool prepare_buffer_object_group( const fw::FlexID& model_id );
 
 		/** Find buffer object group.
 		 * @param model_id Model ID.
 		 * @return Buffer object group or nullptr if not found.
 		 */
-		BufferObjectGroup::PtrConst find_buffer_object_group( const flex::FlexID& model_id ) const;
+		BufferObjectGroup::PtrConst find_buffer_object_group( const fw::FlexID& model_id ) const;
 
 		/** Garbage collect.
 		 * All resources with a use count of 1 are unloaded.
@@ -113,8 +113,8 @@ class ResourceManager {
 
 	private:
 		typedef std::shared_ptr<sf::Texture> TexturePtr;
-		typedef std::shared_ptr<flex::Model> ModelPtr;
-		typedef std::shared_ptr<const flex::Model> ModelPtrConst;
+		typedef std::shared_ptr<fw::Model> ModelPtr;
+		typedef std::shared_ptr<const fw::Model> ModelPtrConst;
 		typedef std::shared_ptr<sf::Image> ImagePtr;
 
 		typedef std::map<const std::string, TexturePtr> TextureMap;

@@ -5,7 +5,7 @@
 #include <iomanip> // XXX 
 
 BOOST_AUTO_TEST_CASE( TestChunk ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const Chunk::Vector SIZE( 16, 16, 16 );
 

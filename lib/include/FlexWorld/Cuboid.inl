@@ -1,6 +1,6 @@
 #include <algorithm>
 
-namespace flex {
+namespace fw {
 
 template <class T>
 Cuboid<T> Cuboid<T>::calc_intersection( const Cuboid<T>& first, const Cuboid<T>& second ) {

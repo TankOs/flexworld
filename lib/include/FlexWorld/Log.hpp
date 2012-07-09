@@ -4,7 +4,7 @@
 #include <iostream>
 #include <typeinfo>
 
-namespace flex {
+namespace fw {
 
 /** Simply logging utility class.
  * Console logging is enabled by default.

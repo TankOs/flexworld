@@ -1,7 +1,7 @@
 #include <FlexWorld/Peer.hpp>
 #include <iostream> // XXX 
 
-namespace flex {
+namespace fw {
 
 Peer::Peer() :
 	ip( "" ),

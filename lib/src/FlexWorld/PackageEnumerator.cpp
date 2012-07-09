@@ -2,7 +2,7 @@
 
 namespace fs = boost::filesystem;
 
-namespace flex {
+namespace fw {
 
 bool PackageEnumerator::enumerate( const std::string& path ) {
 	m_script_files.clear();

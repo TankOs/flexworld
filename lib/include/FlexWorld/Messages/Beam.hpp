@@ -7,7 +7,7 @@
 #include <SFML/System/Vector3.hpp>
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** Network messages.
  */

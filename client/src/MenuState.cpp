@@ -37,7 +37,7 @@ void MenuState::init() {
 	float width = static_cast<float>( get_render_target().getSize().x );
 	float height = static_cast<float>( get_render_target().getSize().y );
 
-	m_background_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/bg.png" ) );
+	m_background_texture.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/bg.png" ) );
 
 	sf::Vector2f texture_size(
 		static_cast<float>( m_background_texture.getSize().x ),
@@ -63,7 +63,7 @@ void MenuState::init() {
 
 	// Setup Rocket.
 	Rocket::Core::FontDatabase::LoadFontFace(
-		(flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/Economica-Bold.ttf" )).c_str(),
+		(fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/Economica-Bold.ttf" )).c_str(),
 		"MenuFont",
 		Rocket::Core::Font::STYLE_NORMAL,
 		Rocket::Core::Font::WEIGHT_NORMAL
@@ -80,7 +80,7 @@ void MenuState::init() {
 	Rocket::Debugger::Initialise( m_rocket_context );
 	//Rocket::Debugger::SetVisible( true );
 
-	const std::string filename = flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/main_menu.rml" );
+	const std::string filename = fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/main_menu.rml" );
 	m_menu_document = m_rocket_context->LoadDocument( filename.c_str() );
 
 	m_menu_document->AddEventListener( "click", this );
@@ -98,10 +98,10 @@ void MenuState::init() {
 	{
 		std::stringstream sstr;
 		sstr
-			<< static_cast<int>( flex::VERSION.get_major() ) << "."
-			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
-			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
-			<< flex::VERSION_SUFFIX
+			<< static_cast<int>( fw::VERSION.get_major() ) << "."
+			<< static_cast<int>( fw::VERSION.get_minor() ) << "."
+			<< static_cast<int>( fw::VERSION.get_revision() ) << " "
+			<< fw::VERSION_SUFFIX
 		;
 
 		Rocket::Core::Element* version_element = m_menu_document->GetElementById( "version" );
@@ -110,14 +110,14 @@ void MenuState::init() {
 	}
 
 	// Setup options document + controller.
-	m_options_document = m_rocket_context->LoadDocument( (flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
+	m_options_document = m_rocket_context->LoadDocument( (fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/options.rml" )).c_str() );
 	m_options_controller.reset( new OptionsDocumentController( *m_options_document ) );
 
 	m_options_controller->on_reject = std::bind( &MenuState::on_options_reject, this );
 	m_options_controller->on_accept = std::bind( &MenuState::on_options_accept, this );
 
 	// Music. XXX
-	std::string music_path = flex::ROOT_DATA_DIRECTORY + std::string( "/local/music/kevin_macleod_-_cambodean_odessy.ogg" );
+	std::string music_path = fw::ROOT_DATA_DIRECTORY + std::string( "/local/music/kevin_macleod_-_cambodean_odessy.ogg" );
 
 	if( boost::filesystem::exists( music_path ) ) {
 		m_music.openFromFile( music_path );
@@ -319,20 +319,20 @@ void MenuState::on_insta_click() {
 	get_shared().io_service.reset( new boost::asio::io_service );
 
 	// Get selected game mode. TODO
-	//const flex::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
-	std::ifstream in( (flex::ROOT_DATA_DIRECTORY + std::string( "modes/sandbox.yml" )).c_str() );
+	//const fw::GameMode& game_mode = m_start_game_window->get_selected_game_mode();
+	std::ifstream in( (fw::ROOT_DATA_DIRECTORY + std::string( "modes/sandbox.yml" )).c_str() );
 	std::stringstream buffer;
 
 	buffer << in.rdbuf();
-	flex::GameMode game_mode = flex::GameModeDriver::deserialize( buffer.str() );
+	fw::GameMode game_mode = fw::GameModeDriver::deserialize( buffer.str() );
 
 	// Prepare backend and session host.
-	get_shared().account_manager.reset( new flex::AccountManager );
-	get_shared().lock_facility.reset( new flex::LockFacility );
-	get_shared().world.reset( new flex::World );
+	get_shared().account_manager.reset( new fw::AccountManager );
+	get_shared().lock_facility.reset( new fw::LockFacility );
+	get_shared().world.reset( new fw::World );
 
 	get_shared().host.reset(
-		new flex::SessionHost(
+		new fw::SessionHost(
 			*get_shared().io_service,
 			*get_shared().lock_facility,
 			*get_shared().account_manager,
@@ -342,10 +342,10 @@ void MenuState::on_insta_click() {
 	);
 
 	// Add search path.
-	get_shared().host->add_search_path( flex::ROOT_DATA_DIRECTORY + std::string( "packages" ) );
+	get_shared().host->add_search_path( fw::ROOT_DATA_DIRECTORY + std::string( "packages" ) );
 
 	// Set auth mode.
-	get_shared().host->set_auth_mode( flex::SessionHost::OPEN_AUTH );
+	get_shared().host->set_auth_mode( fw::SessionHost::OPEN_AUTH );
 
 	// Set endpoint.
 	get_shared().host->set_ip( "127.0.0.1" );

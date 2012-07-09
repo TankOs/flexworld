@@ -3,7 +3,7 @@
 
 /// @cond NEVER
 
-namespace flex {
+namespace fw {
 
 template <class MessageTypelist>
 const typename Protocol<MessageTypelist>::MessageID Protocol<MessageTypelist>::INVALID_MESSAGE_ID = std::numeric_limits<uint8_t>::max();

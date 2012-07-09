@@ -10,7 +10,7 @@ namespace Diluculum {
 	class LuaState;
 }
 
-namespace flex {
+namespace fw {
 
 /** Lua modules.
  */

@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 class FlexID;
 

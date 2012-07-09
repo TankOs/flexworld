@@ -4,7 +4,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestClass ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Create class and check initial state.
 	{

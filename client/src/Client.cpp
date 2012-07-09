@@ -17,9 +17,9 @@
 Client::Client() {
 	// Setup logger.
 	#if defined( NDEBUG )
-		flex::Log::Logger.set_min_level( flex::Log::INFO );
+		fw::Log::Logger.set_min_level( fw::Log::INFO );
 	#else
-		flex::Log::Logger.set_min_level( flex::Log::DEBUG );
+		fw::Log::Logger.set_min_level( fw::Log::DEBUG );
 	#endif
 }
 
@@ -95,10 +95,10 @@ void Client::run() {
 	{
 		std::stringstream sstr;
 		sstr << "FlexWorld "
-			<< static_cast<int>( flex::VERSION.get_major() ) << "."
-			<< static_cast<int>( flex::VERSION.get_minor() ) << "."
-			<< static_cast<int>( flex::VERSION.get_revision() ) << " "
-			<< flex::VERSION_SUFFIX
+			<< static_cast<int>( fw::VERSION.get_major() ) << "."
+			<< static_cast<int>( fw::VERSION.get_minor() ) << "."
+			<< static_cast<int>( fw::VERSION.get_revision() ) << " "
+			<< fw::VERSION_SUFFIX
 		;
 
 		m_window.setTitle( sstr.str() );

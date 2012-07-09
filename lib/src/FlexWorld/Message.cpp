@@ -1,6 +1,6 @@
 #include <FlexWorld/Message.hpp>
 
-namespace flex {
+namespace fw {
 
 Message::~Message() {
 }

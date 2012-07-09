@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 Chat::Chat() :

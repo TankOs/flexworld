@@ -3,7 +3,7 @@
 #include <cassert>
 #include <limits>
 
-namespace flex {
+namespace fw {
 
 ClassCache::ClassCache() :
 	m_num_holes( 0 )

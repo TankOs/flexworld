@@ -18,7 +18,7 @@ void ConnectState::init() {
 	get_shared().io_service->stop();
 	get_shared().io_service->reset();
 
-	get_shared().client.reset( new flex::Client( *get_shared().io_service, *this ) );
+	get_shared().client.reset( new fw::Client( *get_shared().io_service, *this ) );
 
 	// If a session host exists, we want to launch a local server. If not, just
 	// connect.
@@ -76,19 +76,19 @@ void ConnectState::render() const {
 	window.display();
 }
 
-void ConnectState::handle_connect( flex::Client::ConnectionID ) {
+void ConnectState::handle_connect( fw::Client::ConnectionID ) {
 	m_next_info_text = "Connection established.";
 }
 
-void ConnectState::handle_disconnect( flex::Client::ConnectionID ) {
+void ConnectState::handle_disconnect( fw::Client::ConnectionID ) {
 	m_next_info_text = "Connection failed.";
 	m_canceled = true;
 }
 
-void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Client::ConnectionID /*conn_id*/ ) {
-	if( msg.get_auth_mode() == flex::msg::ServerInfo::OPEN_AUTH ) {
+void ConnectState::handle_message( const fw::msg::ServerInfo& msg, fw::Client::ConnectionID /*conn_id*/ ) {
+	if( msg.get_auth_mode() == fw::msg::ServerInfo::OPEN_AUTH ) {
 		// Send username & password. TODO: Ask for password for remote connections.
-		flex::msg::OpenLogin login_msg;
+		fw::msg::OpenLogin login_msg;
 		login_msg.set_username( get_shared().user_settings.get_username() );
 		login_msg.set_password( "LOCAL" );
 
@@ -102,7 +102,7 @@ void ConnectState::handle_message( const flex::msg::ServerInfo& msg, flex::Clien
 	}
 }
 
-void ConnectState::handle_message( const flex::msg::LoginOK& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void ConnectState::handle_message( const fw::msg::LoginOK& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	m_next_info_text = "Login successful, get ready!";
 
 	get_shared().entity_id = msg.get_entity_id();

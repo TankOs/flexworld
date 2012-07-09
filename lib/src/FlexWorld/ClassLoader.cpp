@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 ClassLoader::ClassLoader() {
 }

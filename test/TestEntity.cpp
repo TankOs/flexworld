@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestEntity ) {
-	using namespace flex;
+	using namespace fw;
 
 	FlexID id;
 	id.parse( "fw.weapons/sword" );

@@ -46,12 +46,12 @@ inline bool is_triangle_covered(
 PlanetDrawable::~PlanetDrawable() {
 }
 
-PlanetDrawable::Ptr PlanetDrawable::create( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) {
+PlanetDrawable::Ptr PlanetDrawable::create( const fw::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) {
 	Ptr planet_drw( new PlanetDrawable( planet, resource_manager, renderer ) );
 	return planet_drw;
 }
 
-PlanetDrawable::PlanetDrawable( const flex::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) :
+PlanetDrawable::PlanetDrawable( const fw::Planet& planet, ResourceManager& resource_manager, sg::Renderer& renderer ) :
 	Drawable( renderer ),
 	m_planet( &planet ),
 	m_resource_manager( resource_manager ),
@@ -59,13 +59,13 @@ PlanetDrawable::PlanetDrawable( const flex::Planet& planet, ResourceManager& res
 {
 }
 
-void PlanetDrawable::set_view_radius( flex::Planet::ScalarType radius ) {
+void PlanetDrawable::set_view_radius( fw::Planet::ScalarType radius ) {
 	m_view_radius = radius;
 }
 
-void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
+void PlanetDrawable::prepare_chunk( const fw::Planet::Vector& chunk_pos ) {
 	typedef std::map<std::shared_ptr<const sf::Texture>, std::shared_ptr<sg::TriangleGeometry>> TextureGeometryMap;
-	const flex::Chunk::Vector& chunk_size = m_planet->get_chunk_size();
+	const fw::Chunk::Vector& chunk_size = m_planet->get_chunk_size();
 
 	sf::Vector3f org_offset(
 		static_cast<float>( chunk_pos.x * chunk_size.x ) * GRID_SIZE,
@@ -74,15 +74,15 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	);
 	sf::Vector3f offset = org_offset;
 
-	const flex::Class* block_cls = nullptr;
-	const flex::Class* nbor_block_cls = nullptr;
-	std::shared_ptr<const flex::Model> model;
-	std::shared_ptr<const flex::Model> nbor_model;
+	const fw::Class* block_cls = nullptr;
+	const fw::Class* nbor_block_cls = nullptr;
+	std::shared_ptr<const fw::Model> model;
+	std::shared_ptr<const fw::Model> nbor_model;
 	std::shared_ptr<const sf::Texture> texture;
 	TextureGeometryMap new_geometries;
 	sg::Vertex vertex[3];
-	const sf::FloatRect* coverage_rects[flex::NUM_FACES];
-	flex::Chunk::Vector block_runner;
+	const sf::FloatRect* coverage_rects[fw::NUM_FACES];
+	fw::Chunk::Vector block_runner;
 
 	for( block_runner.z = 0; block_runner.z < chunk_size.z; ++block_runner.z ) {
 		for( block_runner.y = 0; block_runner.y < chunk_size.y; ++block_runner.y ) {
@@ -106,63 +106,63 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 					//
 					// Get all neighbour's coverage rects.
 
-					coverage_rects[flex::UP_FACE] =
+					coverage_rects[fw::UP_FACE] =
 						(
 							block_runner.y + 1 < m_planet->get_chunk_size().y &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + fw::Chunk::Vector( 0, 1, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::DOWN_FACE )
+						? &nbor_model->get_face_coverage( fw::DOWN_FACE )
 						: 0
 					;
 
-					coverage_rects[flex::DOWN_FACE] =
+					coverage_rects[fw::DOWN_FACE] =
 						(
 							block_runner.y > 0 &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 1, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - fw::Chunk::Vector( 0, 1, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::UP_FACE )
+						? &nbor_model->get_face_coverage( fw::UP_FACE )
 						: 0
 					;
 
-					coverage_rects[flex::LEFT_FACE] =
+					coverage_rects[fw::LEFT_FACE] =
 						(
 							block_runner.x > 0 &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - fw::Chunk::Vector( 1, 0, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::RIGHT_FACE )
+						? &nbor_model->get_face_coverage( fw::RIGHT_FACE )
 						: 0
 					;
 
-					coverage_rects[flex::RIGHT_FACE] =
+					coverage_rects[fw::RIGHT_FACE] =
 						(
 							block_runner.x + 1 < m_planet->get_chunk_size().x &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 1, 0, 0 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + fw::Chunk::Vector( 1, 0, 0 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::LEFT_FACE )
+						? &nbor_model->get_face_coverage( fw::LEFT_FACE )
 						: 0
 					;
 
-					coverage_rects[flex::FRONT_FACE] =
+					coverage_rects[fw::FRONT_FACE] =
 						(
 							block_runner.z + 1 < m_planet->get_chunk_size().z &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner + fw::Chunk::Vector( 0, 0, 1 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::BACK_FACE )
+						? &nbor_model->get_face_coverage( fw::BACK_FACE )
 						: 0
 					;
 
-					coverage_rects[flex::BACK_FACE] =
+					coverage_rects[fw::BACK_FACE] =
 						(
 							block_runner.z > 0 &&
-							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - flex::Chunk::Vector( 0, 0, 1 ) )) &&
+							(nbor_block_cls = m_planet->find_block( chunk_pos, block_runner - fw::Chunk::Vector( 0, 0, 1 ) )) &&
 							(nbor_model = get_model( nbor_block_cls->get_model().get_id() ))
 						)
-						? &nbor_model->get_face_coverage( flex::FRONT_FACE )
+						? &nbor_model->get_face_coverage( fw::FRONT_FACE )
 						: 0
 					;
 
@@ -172,7 +172,7 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 
 					// Iterate over meshes.
 					for( std::size_t mesh_idx = 0; mesh_idx < model->get_num_meshes(); ++mesh_idx ) {
-						const flex::Mesh& mesh = model->get_mesh( mesh_idx );
+						const fw::Mesh& mesh = model->get_mesh( mesh_idx );
 
 						assert( mesh.get_texture_slot() < block_cls->get_num_textures() );
 
@@ -214,7 +214,7 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 							if(
 								// left face.
 								(
-									coverage_rects[flex::LEFT_FACE] &&
+									coverage_rects[fw::LEFT_FACE] &&
 									vertex[0].vector.x <= BOUNDARY_TOLERANCE &&
 									vertex[1].vector.x <= BOUNDARY_TOLERANCE &&
 									vertex[2].vector.x <= BOUNDARY_TOLERANCE &&
@@ -225,13 +225,13 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.z,
 										vertex[2].vector.y,
 										vertex[2].vector.z,
-										*coverage_rects[flex::LEFT_FACE]
+										*coverage_rects[fw::LEFT_FACE]
 									)
 								)
 								||
 								// Right face.
 								(
-									coverage_rects[flex::RIGHT_FACE] &&
+									coverage_rects[fw::RIGHT_FACE] &&
 									vertex[0].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[1].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[2].vector.x >= 1.0f - BOUNDARY_TOLERANCE &&
@@ -242,13 +242,13 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.z,
 										vertex[2].vector.y,
 										vertex[2].vector.z,
-										*coverage_rects[flex::RIGHT_FACE]
+										*coverage_rects[fw::RIGHT_FACE]
 									)
 								)
 								||
 								// Up face.
 								(
-									coverage_rects[flex::UP_FACE] &&
+									coverage_rects[fw::UP_FACE] &&
 									vertex[0].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[1].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[2].vector.y >= 1.0f - BOUNDARY_TOLERANCE &&
@@ -259,13 +259,13 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.z,
 										vertex[2].vector.x,
 										vertex[2].vector.z,
-										*coverage_rects[flex::UP_FACE]
+										*coverage_rects[fw::UP_FACE]
 									)
 								)
 								||
 								// Down face.
 								(
-									coverage_rects[flex::DOWN_FACE] &&
+									coverage_rects[fw::DOWN_FACE] &&
 									vertex[0].vector.y <= BOUNDARY_TOLERANCE &&
 									vertex[1].vector.y <= BOUNDARY_TOLERANCE &&
 									vertex[2].vector.y <= BOUNDARY_TOLERANCE &&
@@ -276,13 +276,13 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.z,
 										vertex[2].vector.x,
 										vertex[2].vector.z,
-										*coverage_rects[flex::DOWN_FACE]
+										*coverage_rects[fw::DOWN_FACE]
 									)
 								)
 								||
 								// Front face.
 								(
-									coverage_rects[flex::FRONT_FACE] &&
+									coverage_rects[fw::FRONT_FACE] &&
 									vertex[0].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[1].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
 									vertex[2].vector.z >= 1.0f - BOUNDARY_TOLERANCE &&
@@ -293,13 +293,13 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.y,
 										vertex[2].vector.x,
 										vertex[2].vector.y,
-										*coverage_rects[flex::FRONT_FACE]
+										*coverage_rects[fw::FRONT_FACE]
 									)
 								)
 								||
 								// Back face.
 								(
-									coverage_rects[flex::BACK_FACE] &&
+									coverage_rects[fw::BACK_FACE] &&
 									vertex[0].vector.z <= BOUNDARY_TOLERANCE &&
 									vertex[1].vector.z <= BOUNDARY_TOLERANCE &&
 									vertex[2].vector.z <= BOUNDARY_TOLERANCE &&
@@ -310,7 +310,7 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 										vertex[1].vector.y,
 										vertex[2].vector.x,
 										vertex[2].vector.y,
-										*coverage_rects[flex::BACK_FACE]
+										*coverage_rects[fw::BACK_FACE]
 									)
 								)
 							) {
@@ -372,8 +372,8 @@ void PlanetDrawable::prepare_chunk( const flex::Planet::Vector& chunk_pos ) {
 	queue_update();
 }
 
-std::shared_ptr<const flex::Model> PlanetDrawable::get_model( const flex::FlexID& id ) const {
-	std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( id );
+std::shared_ptr<const fw::Model> PlanetDrawable::get_model( const fw::FlexID& id ) const {
+	std::shared_ptr<const fw::Model> model = m_resource_manager.find_model( id );
 
 	if( model == nullptr ) {
 		// Try to load.
@@ -388,7 +388,7 @@ std::shared_ptr<const flex::Model> PlanetDrawable::get_model( const flex::FlexID
 	return model;
 }
 
-std::shared_ptr<const sf::Texture> PlanetDrawable::get_texture( const flex::FlexID& id ) const {
+std::shared_ptr<const sf::Texture> PlanetDrawable::get_texture( const fw::FlexID& id ) const {
 	std::shared_ptr<const sf::Texture> texture = m_resource_manager.find_texture( id );
 
 	if( texture == nullptr ) {

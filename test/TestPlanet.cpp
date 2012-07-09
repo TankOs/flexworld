@@ -7,7 +7,7 @@
 #include <sstream>
 
 BOOST_AUTO_TEST_CASE( TestPlanet ) {
-	using namespace flex;
+	using namespace fw;
 
 	const Planet::Vector PLANET_SIZE( 2, 1, 2 );
 	const Chunk::Vector CHUNK_SIZE( 16, 16, 16 );

@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 AttachEntity::AttachEntity() :

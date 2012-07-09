@@ -5,7 +5,7 @@
 #include <SFML/System/Vector3.hpp>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 class Class;
 

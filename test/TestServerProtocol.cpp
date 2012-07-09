@@ -4,16 +4,16 @@
 
 #include <boost/test/unit_test.hpp>
 
-class SPHandler : public flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID> {
+class SPHandler : public fw::MessageHandler<fw::ServerMessageList, fw::ServerProtocol::ConnectionID> {
 	public:
-		using flex::MessageHandler<flex::ServerMessageList, flex::ServerProtocol::ConnectionID>::handle_message;
+		using fw::MessageHandler<fw::ServerMessageList, fw::ServerProtocol::ConnectionID>::handle_message;
 
 		SPHandler() :
 			m_login_handled( false )
 		{
 		}
 
-		void handle_message( const flex::msg::OpenLogin& login, flex::ServerProtocol::ConnectionID sender ) {
+		void handle_message( const fw::msg::OpenLogin& login, fw::ServerProtocol::ConnectionID sender ) {
 			BOOST_CHECK( sender == 9949 );
 			BOOST_CHECK( login.get_username() == "Tank" );
 			BOOST_CHECK( login.get_password() == "h4x0r" );
@@ -25,7 +25,7 @@ class SPHandler : public flex::MessageHandler<flex::ServerMessageList, flex::Ser
 };
 
 BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
-	using namespace flex;
+	using namespace fw;
 
 	ServerProtocol protocol;
 	SPHandler handler;
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE( TestServerProtocol ) {
 		const std::string password( "h4x0r" );
 		const std::string server_password( "me0w" );
 		
-		buffer.push_back( static_cast<char>( tpl::IndexOf<flex::msg::OpenLogin, ServerMessageList>::RESULT ) );
+		buffer.push_back( static_cast<char>( tpl::IndexOf<fw::msg::OpenLogin, ServerMessageList>::RESULT ) );
 		buffer.push_back( static_cast<char>( username.size() ) );
 		buffer.insert( buffer.end(), username.begin(), username.end() );
 		buffer.push_back( static_cast<char>( password.size() ) );

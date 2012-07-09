@@ -8,7 +8,7 @@
 
 class ResourceManager;
 
-namespace flex {
+namespace fw {
 class Class;
 }
 
@@ -31,7 +31,7 @@ class ClassDrawable : public sg::Drawable {
 		 * the resource manager
 		 * @param cls Class (reference is stored internally).
 		 */
-		void set_class( const flex::Class& cls );
+		void set_class( const fw::Class& cls );
 
 	protected:
 		/** Ctor.
@@ -51,5 +51,5 @@ class ClassDrawable : public sg::Drawable {
 		StepArray m_steps;
 
 		ResourceManager& m_resource_manager;
-		const flex::Class* m_class;
+		const fw::Class* m_class;
 };

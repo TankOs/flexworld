@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-namespace flex {
+namespace fw {
 
 class Model;
 

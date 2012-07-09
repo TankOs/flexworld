@@ -13,7 +13,7 @@
 #include <memory>
 #include <set>
 
-namespace flex {
+namespace fw {
 
 class LockFacility;
 class AccountManager;

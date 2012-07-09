@@ -1,6 +1,6 @@
 #include <FlexWorld/NonCopyable.hpp>
 
-namespace flex {
+namespace fw {
 
 NonCopyable::NonCopyable() {
 }

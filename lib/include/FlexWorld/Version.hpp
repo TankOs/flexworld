@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** Simple version structure.
  */

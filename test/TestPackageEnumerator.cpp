@@ -6,7 +6,7 @@
 #include <boost/filesystem.hpp>
 
 BOOST_AUTO_TEST_CASE( TestPackageEnumerator ) {
-	using namespace flex;
+	using namespace fw;
 	namespace fs = boost::filesystem;
 
 	// Initial state.

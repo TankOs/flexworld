@@ -2,7 +2,7 @@
 
 #include <Diluculum/LuaVariable.hpp>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 class WorldGate;

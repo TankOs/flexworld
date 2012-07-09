@@ -4,7 +4,7 @@
 #include <map>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 class Class;
 

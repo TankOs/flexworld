@@ -3,7 +3,7 @@
 	#include <iostream>
 #endif
 
-namespace flex {
+namespace fw {
 
 /// @cond NEVER
 

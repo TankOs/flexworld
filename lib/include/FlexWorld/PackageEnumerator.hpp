@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** PackageEnumerator searches for scripts in packages.
  */

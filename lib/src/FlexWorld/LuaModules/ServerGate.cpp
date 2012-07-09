@@ -1,6 +1,6 @@
 #include <FlexWorld/LuaModules/ServerGate.hpp>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 ServerGate::~ServerGate() {

@@ -13,7 +13,7 @@ namespace Diluculum {
 class LuaState;
 }
 
-namespace flex {
+namespace fw {
 
 class Entity;
 
@@ -121,7 +121,7 @@ class Event {
 			const BlockPosition& block_pos,
 			const BlockPosition& next_block_pos,
 			bool primary,
-			const flex::Entity& actor,
+			const fw::Entity& actor,
 			uint16_t client_id,
 			Diluculum::LuaState& state
 		);

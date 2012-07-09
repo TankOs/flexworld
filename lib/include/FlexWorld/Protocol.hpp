@@ -7,7 +7,7 @@
 #include <limits>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 // Skip parsing the impls.
 /// @cond NEVER
@@ -53,7 +53,7 @@ class ProtocolImpl : public ProtocolImpl<typename MessageTypelist::Tail, Org> {
  * and dispatching messages.
  */
 template <class MessageTypelist>
-class Protocol : public flex::ProtocolImpl<MessageTypelist, MessageTypelist> {
+class Protocol : public fw::ProtocolImpl<MessageTypelist, MessageTypelist> {
 	public:
 		typedef typename std::vector<char> Buffer; ///< Buffer.
 		typedef uint8_t MessageID; ///< Message ID.

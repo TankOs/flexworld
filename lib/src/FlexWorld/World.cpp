@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 World::World() :
 	m_next_entity_id( 0 )

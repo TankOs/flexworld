@@ -11,7 +11,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestScriptManager ) {
-	using namespace flex;
+	using namespace fw;
 
 	ExampleServerGate server_gate;
 	ExampleWorldGate world_gate;
@@ -71,18 +71,18 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	{
 		ScriptManager manager( server_gate, world_gate );
 
-		BOOST_CHECK( manager.execute_string( "assert( flex.test ~= nil and flex.Test ~= nil )" ) == true );
-		BOOST_CHECK( manager.execute_string( "assert( flex.event ~= nil and flex.Event ~= nil )" ) == true );
-		BOOST_CHECK( manager.execute_string( "assert( flex.server ~= nil and flex.Server ~= nil )" ) == true );
-		BOOST_CHECK( manager.execute_string( "assert( flex.world ~= nil and flex.World ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( fw.test ~= nil and fw.Test ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( fw.event ~= nil and fw.Event ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( fw.server ~= nil and fw.Server ~= nil )" ) == true );
+		BOOST_CHECK( manager.execute_string( "assert( fw.world ~= nil and fw.World ~= nil )" ) == true );
 	}
 
 	// Trigger command.
 	{
 		ScriptManager manager( server_gate, world_gate );
 
-		BOOST_CHECK( manager.execute_string( "function foo( args, sender ) flex.test:set_value( \"yo\", args[1] .. args[2] .. tostring( sender ) ) end" ) );
-		BOOST_CHECK( manager.execute_string( "flex.event:hook_command( \"test\", foo )" ) );
+		BOOST_CHECK( manager.execute_string( "function foo( args, sender ) fw.test:set_value( \"yo\", args[1] .. args[2] .. tostring( sender ) ) end" ) );
+		BOOST_CHECK( manager.execute_string( "fw.event:hook_command( \"test\", foo )" ) );
 
 		std::vector<sf::String> args;
 		args.push_back( sf::String( L"hello" ) );
@@ -92,13 +92,13 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		BOOST_CHECK( manager.trigger_command( "test", args, 123 ) == true );
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 
-		BOOST_CHECK( manager.execute_string( "assert( flex.test:find_value( \"yo\" ) == \"helloworld123\" )" ) );
+		BOOST_CHECK( manager.execute_string( "assert( fw.test:find_value( \"yo\" ) == \"helloworld123\" )" ) );
 
 		// Error handling.
 		manager.clear();
 
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_command( \"meow\", faulty )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "fw.event:hook_command( \"meow\", faulty )" ) == true );
 
 		BOOST_CHECK( manager.trigger_command( "meow", args, 888 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		manager.clear();
 
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.CHAT, faulty )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "fw.event:hook_event( fw.Event.CHAT, faulty )" ) == true );
 
 		BOOST_CHECK( manager.trigger_chat_event( sf::String(), sf::String(), 0 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		manager.clear();
 
 		BOOST_REQUIRE( manager.execute_string( "function faulty() assert( false ) end" ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.CONNECT, faulty )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "fw.event:hook_event( fw.Event.CONNECT, faulty )" ) == true );
 
 		BOOST_CHECK( manager.trigger_connect_event( 1337 ) == false );
 		BOOST_CHECK( manager.get_last_error().empty() == false );
@@ -152,8 +152,8 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 	{
 		ScriptManager manager( server_gate, world_gate );
 
-		BOOST_REQUIRE( manager.execute_string( "function on_use( entity_id, actor_id, client_id ) assert( entity_id == 11 and actor_id == 22 and client_id == 33 ); flex.test:set_value( \"use_ok\", \"yes\" ) end" ) );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.USE, on_use )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "function on_use( entity_id, actor_id, client_id ) assert( entity_id == 11 and actor_id == 22 and client_id == 33 ); fw.test:set_value( \"use_ok\", \"yes\" ) end" ) );
+		BOOST_REQUIRE( manager.execute_string( "fw.event:hook_event( fw.Event.USE, on_use )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 
@@ -173,7 +173,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		);
 		BOOST_CHECK( manager.get_last_error().empty() == true );
 
-		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( flex.test:find_value( \"use_ok\" ) == \"yes\" )" ) );
+		BOOST_CHECK_NO_THROW( manager.execute_string( "assert( fw.test:find_value( \"use_ok\" ) == \"yes\" )" ) );
 	}
 
 	// Trigger block action class event.
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE( TestScriptManager ) {
 		ScriptManager manager( server_gate, world_gate );
 
 		BOOST_REQUIRE( manager.execute_file( DATA_DIRECTORY + std::string( "/scripts/block_action.lua" ) ) == true );
-		BOOST_REQUIRE( manager.execute_string( "flex.event:hook_event( flex.Event.BLOCK_ACTION, handler )" ) == true );
+		BOOST_REQUIRE( manager.execute_string( "fw.event:hook_event( fw.Event.BLOCK_ACTION, handler )" ) == true );
 
 		Class cls( FlexID::make( "some/class" ) );
 		Entity actor( cls );

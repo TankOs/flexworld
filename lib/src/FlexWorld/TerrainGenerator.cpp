@@ -14,7 +14,7 @@
 #include <cassert>
 #include <iostream> // XXX 
 
-namespace flex {
+namespace fw {
 
 TerrainGenerator::TerrainGenerator( const Class& default_cls ) :
 	m_default_cls( &default_cls ),

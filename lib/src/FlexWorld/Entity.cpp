@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 Entity::Entity( const Class& cls ) :
 	m_position( 0, 0, 0 ),

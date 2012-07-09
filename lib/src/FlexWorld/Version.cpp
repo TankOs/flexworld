@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-namespace flex {
+namespace fw {
 
 Version::Version( uint32_t major, uint32_t minor, uint32_t revision ) :
 	m_major( major ),

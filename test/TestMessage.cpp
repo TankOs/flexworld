@@ -22,13 +22,13 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Nothing to check (yet?).
 }
 
 BOOST_AUTO_TEST_CASE( TestOpenLoginMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	const std::string USERNAME = "Tank";
 	const std::string PASSWORD = "h4x0r";
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE( TestOpenLoginMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestServerInfoMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	const msg::ServerInfo::AuthMode AUTH_MODE = msg::ServerInfo::KEY_AUTH;
 	const uint8_t FLAGS = msg::ServerInfo::PASSWORD_FLAG;
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE( TestServerInfoMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	const std::size_t SIZE = sizeof( Entity::ID );
 
@@ -294,7 +294,7 @@ BOOST_AUTO_TEST_CASE( TestLoginOKMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestReadyMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	const std::size_t SIZE = sizeof( uint8_t );
 
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE( TestReadyMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	const std::string PLANET_NAME = "construct";
 	const sf::Vector3f POSITION = sf::Vector3f( 1, 2, 3 );
@@ -741,7 +741,7 @@ BOOST_AUTO_TEST_CASE( TestBeamMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	enum { CHUNK_SIZE = 16 };
 	static const Planet::Vector POSITION( 22, 33, 44 );
@@ -854,7 +854,7 @@ BOOST_AUTO_TEST_CASE( TestChunkMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const Planet::Vector POSITION( 1, 2, 3 );
 	static const msg::RequestChunk::Timestamp TIMESTAMP( 12345 );
@@ -917,7 +917,7 @@ BOOST_AUTO_TEST_CASE( TestRequestChunkMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const Planet::Vector POSITION( 1, 2, 3 );
 
@@ -973,7 +973,7 @@ BOOST_AUTO_TEST_CASE( TestChunkUnchangedMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestChatMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const sf::String MESSAGE = "Hello, this is the operator!";
 	static const uint16_t MESSAGE_SIZE = static_cast<uint8_t>( MESSAGE.getSize() );
@@ -1149,7 +1149,7 @@ BOOST_AUTO_TEST_CASE( TestChatMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestDestroyBlockMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const msg::DestroyBlock::BlockPosition BLOCK_POS( 10, 20, 30 );
 
@@ -1205,7 +1205,7 @@ BOOST_AUTO_TEST_CASE( TestDestroyBlockMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestBlockActionMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const msg::BlockAction::BlockPosition BLOCK_POS( 1, 2, 3 );
 	static const bool PRIMARY = false;
@@ -1298,7 +1298,7 @@ BOOST_AUTO_TEST_CASE( TestBlockActionMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestSetBlockMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const msg::BlockAction::BlockPosition BLOCK_POS( 1, 2, 3 );
 	static const std::string CLASS_ID = "some/class";
@@ -1387,7 +1387,7 @@ BOOST_AUTO_TEST_CASE( TestSetBlockMessage ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestAttachEntity ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const uint32_t SOURCE_ENTITY_ID = 11;
 	static const uint32_t TARGET_ENTITY_ID = 22;
@@ -1506,7 +1506,7 @@ BOOST_AUTO_TEST_CASE( TestAttachEntity ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestUse ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const uint32_t ENTITY_ID = 1337;
 
@@ -1565,7 +1565,7 @@ BOOST_AUTO_TEST_CASE( TestUse ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) { // Without parent.
-	using namespace flex;
+	using namespace fw;
 
 	static const Entity::ID ID = 1337;
 	static const Planet::Coordinate POSITION( 1, 2, 3 );
@@ -1683,7 +1683,7 @@ BOOST_AUTO_TEST_CASE( TestCreateEntityMessage ) { // Without parent.
 }
 
 BOOST_AUTO_TEST_CASE( TestCreateAttachedEntityMessage ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const Entity::ID ID = 1337;
 	static const Planet::Coordinate POSITION( 1, 2, 3 );

@@ -8,7 +8,7 @@ enum { NUM_THREADS = 50 };
 bool g_wait = true;
 boost::mutex g_wait_mutex;
 
-void thread_func( flex::RefLock* lock ) {
+void thread_func( fw::RefLock* lock ) {
 	// Wait until all threads are ready.
 	while( true ) {
 		g_wait_mutex.lock();
@@ -33,7 +33,7 @@ void thread_func( flex::RefLock* lock ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestRefLock ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Initial state.
 	{

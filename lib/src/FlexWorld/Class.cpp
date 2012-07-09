@@ -3,7 +3,7 @@
 #include <cassert>
 #include <limits>
 
-namespace flex {
+namespace fw {
 
 const sf::Vector3f Class::INVISIBLE_HOOK = sf::Vector3f(
 	std::numeric_limits<float>::max(),

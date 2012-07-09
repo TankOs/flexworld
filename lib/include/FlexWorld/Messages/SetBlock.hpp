@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** Set block network message.

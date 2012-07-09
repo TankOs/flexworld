@@ -11,14 +11,14 @@
 #include <boost/test/unit_test.hpp>
 
 void setup_state_for_event( Diluculum::LuaState& state ) {
-	state["flex"] = Diluculum::EmptyTable;
+	state["fw"] = Diluculum::EmptyTable;
 
-	flex::lua::Event::register_class( state["flex"]["Event"] );
-	flex::lua::Test::register_class( state["flex"]["Test"] );
+	fw::lua::Event::register_class( state["fw"]["Event"] );
+	fw::lua::Test::register_class( state["fw"]["Test"] );
 }
 
 BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Initial state.
 	{
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 
 		// Lua ctor.
 		{
-			BOOST_CHECK( check_error( "Not allowed to instantiate Event.", "foo = flex.Event.new()", state ) == true );
+			BOOST_CHECK( check_error( "Not allowed to instantiate Event.", "foo = fw.Event.new()", state ) == true );
 		}
 	}
 
@@ -45,12 +45,12 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		setup_state_for_event( state );
 
 		lua::Event event;
-		event.register_object( state["flex"]["event"] );
+		event.register_object( state["fw"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CONNECT, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CHAT, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.USE, function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.BLOCK_ACTION, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_event( fw.Event.CONNECT, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_event( fw.Event.CHAT, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_event( fw.Event.USE, function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_event( fw.Event.BLOCK_ACTION, function() end )" ) );
 
 		BOOST_CHECK( event.get_num_event_hooks() == 4 );
 	}
@@ -61,11 +61,11 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		setup_state_for_event( state );
 
 		lua::Event event;
-		event.register_object( state["flex"]["event"] );
+		event.register_object( state["fw"]["event"] );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_world\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_flex\", function() end )" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_command( \"hello_myself\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_command( \"hello_world\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_command( \"hello_flex\", function() end )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_command( \"hello_myself\", function() end )" ) );
 
 		BOOST_CHECK( event.get_num_command_hooks() == 3 );
 	}
@@ -78,16 +78,16 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Test test;
 		lua::Event event;
 
-		test.register_object( state["flex"]["test"] );
-		event.register_object( state["flex"]["event"] );
+		test.register_object( state["fw"]["test"] );
+		event.register_object( state["fw"]["event"] );
 
 		// Connect event.
-		BOOST_CHECK_NO_THROW( state.doString( "function on_connect( client_id ) flex.test:set_value( \"connect\", \"called\" .. tostring( client_id ) ) end" ) );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "function on_connect( client_id ) fw.test:set_value( \"connect\", \"called\" .. tostring( client_id ) ) end" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"connect\" ) == nil )" ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "flex.event:hook_event( flex.Event.CONNECT, on_connect )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "fw.event:hook_event( fw.Event.CONNECT, on_connect )" ) );
 		event.trigger_connect_event( 1337, state );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"connect\" ) == \"called1337\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"connect\" ) == \"called1337\" )" ) );
 	}
 
 	// Trigger chat event.
@@ -98,8 +98,8 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Test test;
 		lua::Event event;
 
-		test.register_object( state["flex"]["test"] );
-		event.register_object( state["flex"]["event"] );
+		test.register_object( state["fw"]["test"] );
+		event.register_object( state["fw"]["event"] );
 
 		// Load script.
 		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/chat.lua" ) ) );
@@ -129,23 +129,23 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Test test;
 		lua::Event event;
 
-		test.register_object( state["flex"]["test"] );
-		event.register_object( state["flex"]["event"] );
+		test.register_object( state["fw"]["test"] );
+		event.register_object( state["fw"]["event"] );
 
 		// Load test environment.
 		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + std::string( "/scripts/class_events.lua" ) ) );
 
 		// Trigger use event.
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"use\" ) == nil )" ) );
 
 		event.trigger_use_event( ent_a, ent_actor, 111, state );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"100,1337,111\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"use\" ) == \"100,1337,111\" )" ) );
 
 		event.trigger_use_event( ent_b, ent_actor, 222, state );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"use\" ) == \"200,1337,222\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"use\" ) == \"200,1337,222\" )" ) );
 
 		// Trigger block action event.
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"block_action\" ) == nil )" ) );
 
 		event.trigger_block_action_event(
 			lua::Event::BlockPosition( 1, 2, 3 ),
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 			state
 		);
 
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"block_action\" ) == \"called\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"block_action\" ) == \"called\" )" ) );
 	}
 
 	// Trigger commands.
@@ -167,8 +167,8 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		lua::Test test;
 		lua::Event event;
 
-		test.register_object( state["flex"]["test"] );
-		event.register_object( state["flex"]["event"] );
+		test.register_object( state["fw"]["test"] );
+		event.register_object( state["fw"]["event"] );
 
 		// Load test environment.
 		BOOST_CHECK_NO_THROW( state.doFile( DATA_DIRECTORY + "/scripts/commands.lua" ) );
@@ -178,9 +178,9 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		args.push_back( sf::String( L"hell\xE4" ) );
 		args.push_back( sf::String( L"hell\xF6" ) );
 
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == nil )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"hello_world\" ) == nil )" ) );
 		event.trigger_command( "hello_world", args, 1337, state );
-		BOOST_CHECK_NO_THROW( state.doString( "assert( flex.test:find_value( \"hello_world\" ) == \"hell\xC3\xA4 hell\xC3\xB6\" )" ) );
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.test:find_value( \"hello_world\" ) == \"hell\xC3\xA4 hell\xC3\xB6\" )" ) );
 	}
 
 	// Call functions with invalid arguments.
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 		setup_state_for_event( state );
 
 		lua::Event event;
-		event.register_object( state["flex"]["event"] );
+		event.register_object( state["fw"]["event"] );
 
 		// hook_event
 		std::string num_events;
@@ -200,23 +200,23 @@ BOOST_AUTO_TEST_CASE( TestEventLuaModule ) {
 			num_events = sstr.str();
 		}
 
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_event()", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_event( flex.Event.CONNECT )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.event:hook_event()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.event:hook_event( fw.Event.CONNECT )", state ) == true );
 
-		BOOST_CHECK( check_error( "Expected number for event.", "flex.event:hook_event( \"meh\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_event( flex.Event.CONNECT, 123 )", state ) == true );
+		BOOST_CHECK( check_error( "Expected number for event.", "fw.event:hook_event( \"meh\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Expected function for callback.", "fw.event:hook_event( fw.Event.CONNECT, 123 )", state ) == true );
 
-		BOOST_CHECK( check_error( "Invalid event ID.", "flex.event:hook_event( " + num_events + ", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid event ID.", "flex.event:hook_event( -1, function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid event ID.", "fw.event:hook_event( " + num_events + ", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid event ID.", "fw.event:hook_event( -1, function() end )", state ) == true );
 
 		// hook_command
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command()", state ) == true );
-		BOOST_CHECK( check_error( "Wrong number of arguments.", "flex.event:hook_command( \"meh\" )", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.event:hook_command()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.event:hook_command( \"meh\" )", state ) == true );
 
-		BOOST_CHECK( check_error( "Expected string for command.", "flex.event:hook_command( 123, function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Expected function for callback.", "flex.event:hook_command( \"meh\", 123 )", state ) == true );
+		BOOST_CHECK( check_error( "Expected string for command.", "fw.event:hook_command( 123, function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Expected function for callback.", "fw.event:hook_command( \"meh\", 123 )", state ) == true );
 
-		BOOST_CHECK( check_error( "Invalid command.", "flex.event:hook_command( \"\", function() end )", state ) == true );
-		BOOST_CHECK( check_error( "Invalid command.", "flex.event:hook_command( \"$§%%$&=\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid command.", "fw.event:hook_command( \"\", function() end )", state ) == true );
+		BOOST_CHECK( check_error( "Invalid command.", "fw.event:hook_command( \"$§%%$&=\", function() end )", state ) == true );
 	}
 }

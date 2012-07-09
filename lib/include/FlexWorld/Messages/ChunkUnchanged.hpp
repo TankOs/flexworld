@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** ChunkUnchanged network message.

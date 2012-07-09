@@ -2,7 +2,7 @@
 
 #include <FlexWorld/FlexID.hpp>
 
-namespace flex {
+namespace fw {
 
 /** Resource.
  * A resource is basically a node on the filesystem identified by a FlexID.

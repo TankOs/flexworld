@@ -1,4 +1,4 @@
-namespace flex {
+namespace fw {
 
 template <class MsgType>
 void Server::send_message( const MsgType& message, ConnectionID conn_id ) {

@@ -2,7 +2,7 @@
 
 #include <boost/thread.hpp>
 
-namespace flex {
+namespace fw {
 
 /** Specialized reference-counted lock.
  *

@@ -8,11 +8,11 @@
 bool g_main_thread_wait = false;
 boost::mutex g_main_thread_wait_mutex;
 
-void planet_thread_func( flex::LockFacility* facility ) {
+void planet_thread_func( fw::LockFacility* facility ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestLockFacility ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Initial state.
 	{

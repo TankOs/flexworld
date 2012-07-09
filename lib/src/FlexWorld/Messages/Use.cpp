@@ -1,6 +1,6 @@
 #include <FlexWorld/Messages/Use.hpp>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 Use::Use() :

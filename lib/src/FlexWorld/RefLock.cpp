@@ -1,6 +1,6 @@
 #include <FlexWorld/RefLock.hpp>
 
-namespace flex {
+namespace fw {
 
 RefLock::RefLock() :
 	m_usage_count( 0 )

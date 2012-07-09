@@ -5,7 +5,7 @@
 #include <SFML/System/String.hpp>
 #include <string>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** Chat network message.

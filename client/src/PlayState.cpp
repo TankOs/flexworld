@@ -79,7 +79,7 @@ void PlayState::init() {
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
 
-	m_crosshair_texture.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/gui/crosshair.png" ) );
+	m_crosshair_texture.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/crosshair.png" ) );
 	m_crosshair_sprite = sf::Sprite( m_crosshair_texture );
 	m_crosshair_sprite.setPosition(
 		static_cast<float>( get_render_target().getSize().x ) / 2.0f - m_crosshair_sprite.getLocalBounds().width / 2.0f,
@@ -87,7 +87,7 @@ void PlayState::init() {
 	);
 
 	// Setup local sounds.
-	m_chat_buffer.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "/local/sfx/chat.wav" ) );
+	m_chat_buffer.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/sfx/chat.wav" ) );
 	m_chat_sound.setBuffer( m_chat_buffer );
 
 	// Setup scene.
@@ -123,11 +123,11 @@ void PlayState::init() {
 	glLoadIdentity();
 
 	// Notify server that we're ready.
-	flex::msg::Ready ready_msg;
+	fw::msg::Ready ready_msg;
 	get_shared().client->send_message( ready_msg );
 
 	// Setup resource manager.
-	m_resource_manager.set_base_path( flex::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+	m_resource_manager.set_base_path( fw::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
 	m_resource_manager.set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
 	m_resource_manager.set_texture_filter( get_shared().user_settings.get_texture_filter() );
 
@@ -306,9 +306,9 @@ void PlayState::handle_event( const sf::Event& event ) {
 
 					if( pressed ) {
 						// Calc forward vector.
-						sf::Vector3f forward = flex::polar_to_vector(
-							flex::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
-							flex::deg_to_rad( -m_camera.get_rotation().y ),
+						sf::Vector3f forward = fw::polar_to_vector(
+							fw::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
+							fw::deg_to_rad( -m_camera.get_rotation().y ),
 							1.0f
 						);
 
@@ -318,13 +318,13 @@ void PlayState::handle_event( const sf::Event& event ) {
 						// Get planet.
 						get_shared().lock_facility->lock_world( true );
 
-						const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+						const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 						assert( planet != nullptr );
 
 						get_shared().lock_facility->lock_planet( *planet, true );
 
 						// Build list of entities to be skipped.
-						std::set<flex::Entity::ID> skip_entity_ids;
+						std::set<fw::Entity::ID> skip_entity_ids;
 						skip_entity_ids.insert( get_shared().entity_id );
 
 						ColorPicker::Result result = ColorPicker::pick(
@@ -363,7 +363,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 						if( is_action ) {
 							if( result.m_type == ColorPicker::Result::BLOCK ) {
 								// Send block action msg.
-								flex::msg::BlockAction ba_msg;
+								fw::msg::BlockAction ba_msg;
 
 								ba_msg.set_block_position( result.m_block_position );
 								ba_msg.set_facing( result.m_facing );
@@ -387,7 +387,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 						// If use key was depressed and the use key flag is still true,
 						// execute use event.
 						if( !is_action && m_use ) {
-							flex::msg::Use use_msg;
+							fw::msg::Use use_msg;
 
 							use_msg.set_entity_id( m_last_picked_entity_id );
 
@@ -423,7 +423,7 @@ void PlayState::update( const sf::Time& delta ) {
 			m_target_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
 			m_target_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
 
-			flex::normalize( m_target_velocity );
+			fw::normalize( m_target_velocity );
 			m_target_velocity.x *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
 			m_target_velocity.y *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
 			m_target_velocity.z *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
@@ -645,12 +645,12 @@ void PlayState::render() const {
 
 void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 	std::size_t num_requests = 0; // XXX
-	flex::Planet::Vector runner;
+	fw::Planet::Vector runner;
 
 	for( runner.z = cuboid.z; runner.z < cuboid.z + cuboid.width; ++runner.z ) {
 		for( runner.y = cuboid.y; runner.y < cuboid.y + cuboid.width; ++runner.y ) {
 			for( runner.x = cuboid.x; runner.x < cuboid.x + cuboid.width; ++runner.x ) {
-				flex::msg::RequestChunk req_msg;
+				fw::msg::RequestChunk req_msg;
 
 				req_msg.set_position( runner );
 				req_msg.set_timestamp( 0 );
@@ -665,13 +665,13 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 	sstr << "Requested " << num_requests << " chunks.";
 }
 
-void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
 	m_my_entity_received = false;
 
 	// Fetch planet.
 	get_shared().lock_facility->lock_world( true );
-	const flex::Planet* planet = get_shared().world->find_planet( msg.get_planet_name() );
+	const fw::Planet* planet = get_shared().world->find_planet( msg.get_planet_name() );
 
 	if( planet ) {
 		get_shared().lock_facility->lock_planet( *planet, true );
@@ -693,20 +693,20 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	launch_objects_preparation_thread();
 
 	// Update view cuboid.
-	flex::Planet::Vector chunk_pos;
-	flex::Chunk::Vector block_pos;
+	fw::Planet::Vector chunk_pos;
+	fw::Chunk::Vector block_pos;
 
 	if( !planet->transform( msg.get_position(), chunk_pos, block_pos ) ) {
 		get_shared().lock_facility->lock_planet( *planet, false );
 		return;
 	}
 
-	m_view_cuboid.x = static_cast<flex::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, flex::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.y = static_cast<flex::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, flex::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.z = static_cast<flex::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, flex::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.width = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), flex::Planet::ScalarType( 30 ) );
-	m_view_cuboid.height = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), flex::Planet::ScalarType( 30 ) );
-	m_view_cuboid.depth = std::min( static_cast<flex::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), flex::Planet::ScalarType( 30 ) );
+	m_view_cuboid.x = static_cast<fw::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, fw::Planet::ScalarType( 30 ) ) );
+	m_view_cuboid.y = static_cast<fw::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, fw::Planet::ScalarType( 30 ) ) );
+	m_view_cuboid.z = static_cast<fw::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, fw::Planet::ScalarType( 30 ) ) );
+	m_view_cuboid.width = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), fw::Planet::ScalarType( 30 ) );
+	m_view_cuboid.height = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), fw::Planet::ScalarType( 30 ) );
+	m_view_cuboid.depth = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), fw::Planet::ScalarType( 30 ) );
 
 	// Detach old drawables.
 	if( m_planet_drawable ) {
@@ -729,13 +729,13 @@ void PlayState::handle_message( const flex::msg::Beam& msg, flex::Client::Connec
 	request_chunks( m_view_cuboid );
 }
 
-void PlayState::handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	if( !m_current_planet_id.size() ) {
 		return;
 	}
 
 	get_shared().lock_facility->lock_world( true );
-	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -799,7 +799,7 @@ void PlayState::prepare_objects() {
 			// Check for unprepared chunk.
 			if( m_chunk_list.size() > 0 ) {
 				// Get next chunk position.
-				flex::Planet::Vector chunk_pos = m_chunk_list.front();
+				fw::Planet::Vector chunk_pos = m_chunk_list.front();
 				m_chunk_list.pop_front();
 
 				m_object_list_mutex.unlock();
@@ -807,7 +807,7 @@ void PlayState::prepare_objects() {
 				// Get planet.
 				get_shared().lock_facility->lock_world( true );
 
-				const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+				const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 				assert( planet );
 				get_shared().lock_facility->lock_planet( *planet, true );
 				get_shared().lock_facility->lock_world( false );
@@ -836,7 +836,7 @@ void PlayState::prepare_objects() {
 				// Fetch entity.
 				get_shared().lock_facility->lock_world( true );
 
-				const flex::Entity* entity = get_shared().world->find_entity( next_entity_id );
+				const fw::Entity* entity = get_shared().world->find_entity( next_entity_id );
 				assert( entity );
 
 				if( entity ) {
@@ -886,7 +886,7 @@ void PlayState::stop_and_wait_for_objects_preparation_thread() {
 	m_prepare_objects_thread.reset();
 }
 
-void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
 		return;
@@ -930,14 +930,14 @@ void PlayState::handle_message( const flex::msg::CreateEntity& msg, flex::Client
 	else {
 		get_shared().lock_facility->lock_world( true );
 
-		const flex::Entity* entity = get_shared().world->find_entity( msg.get_id() );
+		const fw::Entity* entity = get_shared().world->find_entity( msg.get_id() );
 		assert( entity != nullptr );
 
-		const flex::Entity* parent_ent = entity->get_parent();
+		const fw::Entity* parent_ent = entity->get_parent();
 
 		// Check if entity is attached to invisible hook.
 		if( parent_ent ) {
-			if( *parent_ent->get_class().find_hook( parent_ent->get_child_hook( *entity ) ) == flex::Class::INVISIBLE_HOOK ) {
+			if( *parent_ent->get_class().find_hook( parent_ent->get_child_hook( *entity ) ) == fw::Class::INVISIBLE_HOOK ) {
 				skip = true;
 			}
 		}
@@ -978,7 +978,7 @@ void PlayState::reset_mouse() {
 	);
 }
 
-void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::Chat& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	// Play sound.
 	m_chat_sound.play();
 
@@ -1009,17 +1009,17 @@ void PlayState::handle_message( const flex::msg::Chat& msg, flex::Client::Connec
 	m_text_scroller.add_text( with_chan_message );
 }
 
-void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
 		return;
 	}
 
-	flex::Planet::Vector chunk_pos;
+	fw::Planet::Vector chunk_pos;
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -1030,9 +1030,9 @@ void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client
 		get_shared().lock_facility->lock_planet( *planet, true );
 
 		// Get chunk position.
-		chunk_pos.x = static_cast<flex::Planet::ScalarType>( msg.get_block_position().x / planet->get_chunk_size().x );
-		chunk_pos.y = static_cast<flex::Planet::ScalarType>( msg.get_block_position().y / planet->get_chunk_size().y );
-		chunk_pos.z = static_cast<flex::Planet::ScalarType>( msg.get_block_position().z / planet->get_chunk_size().z );
+		chunk_pos.x = static_cast<fw::Planet::ScalarType>( msg.get_block_position().x / planet->get_chunk_size().x );
+		chunk_pos.y = static_cast<fw::Planet::ScalarType>( msg.get_block_position().y / planet->get_chunk_size().y );
+		chunk_pos.z = static_cast<fw::Planet::ScalarType>( msg.get_block_position().z / planet->get_chunk_size().z );
 
 		get_shared().lock_facility->lock_planet( *planet, false );
 	}
@@ -1053,17 +1053,17 @@ void PlayState::handle_message( const flex::msg::DestroyBlock& msg, flex::Client
 	m_prepare_objects_condition.notify_one();
 }
 
-void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
 		return;
 	}
 
-	flex::Planet::Vector chunk_pos;
+	fw::Planet::Vector chunk_pos;
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const flex::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -1074,9 +1074,9 @@ void PlayState::handle_message( const flex::msg::SetBlock& msg, flex::Client::Co
 		get_shared().lock_facility->lock_planet( *planet, true );
 
 		// Get chunk position.
-		chunk_pos.x = static_cast<flex::Planet::ScalarType>( msg.get_block_position().x / planet->get_chunk_size().x );
-		chunk_pos.y = static_cast<flex::Planet::ScalarType>( msg.get_block_position().y / planet->get_chunk_size().y );
-		chunk_pos.z = static_cast<flex::Planet::ScalarType>( msg.get_block_position().z / planet->get_chunk_size().z );
+		chunk_pos.x = static_cast<fw::Planet::ScalarType>( msg.get_block_position().x / planet->get_chunk_size().x );
+		chunk_pos.y = static_cast<fw::Planet::ScalarType>( msg.get_block_position().y / planet->get_chunk_size().y );
+		chunk_pos.z = static_cast<fw::Planet::ScalarType>( msg.get_block_position().z / planet->get_chunk_size().z );
 
 		get_shared().lock_facility->lock_planet( *planet, false );
 	}
@@ -1132,7 +1132,7 @@ void PlayState::update_mouse_pointer() {
 }
 
 void PlayState::on_chat_message( const sf::String& message ) {
-	flex::msg::Chat chat_msg;
+	fw::msg::Chat chat_msg;
 
 	chat_msg.set_sender( " " );
 	chat_msg.set_channel( m_user_interface.get_chat_controller().get_active_channel() );

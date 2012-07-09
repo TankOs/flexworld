@@ -1,4 +1,4 @@
-namespace flex {
+namespace fw {
 
 template <class T>
 char signum( const T& val ) {

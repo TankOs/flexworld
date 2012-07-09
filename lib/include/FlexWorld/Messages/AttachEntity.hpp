@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** Attach entity network message.

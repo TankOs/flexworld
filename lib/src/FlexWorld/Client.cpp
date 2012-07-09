@@ -4,7 +4,7 @@
 #include <boost/bind.hpp>
 #include <iostream>
 
-namespace flex {
+namespace fw {
 
 void Client::Handler::handle_connect( ConnectionID id ) {
 	std::cerr << "WARNING: Connection of #" << id << " not handled!" << std::endl;

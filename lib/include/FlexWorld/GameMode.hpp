@@ -6,7 +6,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** Game mode.
  */

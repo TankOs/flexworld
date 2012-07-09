@@ -2,7 +2,7 @@
 
 #include <SFML/System/Vector3.hpp>
 
-namespace flex {
+namespace fw {
 
 /** Cuboid.
  */

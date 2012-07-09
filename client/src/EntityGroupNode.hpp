@@ -9,7 +9,7 @@ namespace sg {
 class Renderer;
 }
 
-namespace flex {
+namespace fw {
 class Entity;
 }
 
@@ -42,18 +42,18 @@ class EntityGroupNode : public sg::Node {
 		 * child, all parent entities must have been added, too.
 		 * @param entity Entity.
 		 */
-		void add_entity( const flex::Entity& entity );
+		void add_entity( const fw::Entity& entity );
 
 		/** Update entity.
 		 * Undefined behaviour if entity hasn't been added before.
 		 * @param entity Entity (ptr is stored).
 		 */
-		void update_entity( const flex::Entity& entity );
+		void update_entity( const fw::Entity& entity );
 
 		/** Remove entity (do not render anymore).
 		 * @param entity Entity.
 		 */
-		void remove_entity( const flex::Entity& entity );
+		void remove_entity( const fw::Entity& entity );
 
 	private:
 		typedef std::map<uint32_t, std::shared_ptr<ClassDrawable>> EntityClassDrawableMap;

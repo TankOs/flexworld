@@ -4,7 +4,7 @@
 
 #include <map>
 
-namespace flex {
+namespace fw {
 
 /** Account manager.
  * The account manager is a simple storage class for managing accounts. Besides

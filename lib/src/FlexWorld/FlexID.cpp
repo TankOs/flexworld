@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 FlexID FlexID::make( const std::string& string ) {
 	FlexID id;

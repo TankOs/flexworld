@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** Driver for (de)serializing game modes from and to YAML.
  */

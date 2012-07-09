@@ -7,7 +7,7 @@
 #include <SFML/Graphics/Rect.hpp>
 #include <vector>
 
-namespace flex {
+namespace fw {
 
 /** 3D model.
  * The model consists of meshes.

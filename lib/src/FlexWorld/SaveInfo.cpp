@@ -1,6 +1,6 @@
 #include <FlexWorld/SaveInfo.hpp>
 
-namespace flex {
+namespace fw {
 
 SaveInfo::SaveInfo() :
 	m_timestamp( 0 )

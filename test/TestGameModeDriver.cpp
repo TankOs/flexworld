@@ -7,7 +7,7 @@
 #include <fstream>
 
 BOOST_AUTO_TEST_CASE( TestGameModeDriver ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Read test game mode.
 	std::ifstream in( (DATA_DIRECTORY + "/modes/tutorial.yml").c_str() );

@@ -9,7 +9,7 @@
 #include <iterator>
 #include <iostream> // XXX TODO
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( Event )
@@ -205,7 +205,7 @@ void Event::trigger_block_action_event(
 	const BlockPosition& block_pos,
 	const BlockPosition& next_block_pos,
 	bool primary,
-	const flex::Entity& actor,
+	const fw::Entity& actor,
 	uint16_t client_id,
 	Diluculum::LuaState& state
 ) {

@@ -6,7 +6,7 @@
 #include <iostream>
 
 namespace std {
-	bool operator<( const flex::Planet::Vector& first, const flex::Planet::Vector& second ) {
+	bool operator<( const fw::Planet::Vector& first, const fw::Planet::Vector& second ) {
 		if( first.z < second.z ) {
 			return true;
 		}
@@ -29,7 +29,7 @@ namespace std {
 	}
 }
 
-namespace flex {
+namespace fw {
 
 Planet::Planet( const std::string& id, const Vector& size, const Chunk::Vector& chunk_size ) :
 	m_size( size ),

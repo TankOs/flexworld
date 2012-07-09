@@ -15,7 +15,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
-	using namespace flex;
+	using namespace fw;
 
 	Log::Logger.set_min_level( Log::FATAL );
 
@@ -109,57 +109,57 @@ BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 }
 
 
-class TestSessionHostGateClientHandler : public flex::Client::Handler {
+class TestSessionHostGateClientHandler : public fw::Client::Handler {
 	public:
 		TestSessionHostGateClientHandler() :
-			flex::Client::Handler(),
+			fw::Client::Handler(),
 			m_num_chat_messages_received( 0 )
 		{
 		}
 
-		void handle_message( const flex::msg::Chat& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+		void handle_message( const fw::msg::Chat& msg, fw::Server::ConnectionID /*conn_id*/ ) {
 			m_last_chat_message = msg;
 			++m_num_chat_messages_received;
 		}
 
-		void handle_message( const flex::msg::DestroyBlock& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+		void handle_message( const fw::msg::DestroyBlock& msg, fw::Server::ConnectionID /*conn_id*/ ) {
 			m_last_destroy_block_message = msg;
 		}
 
-		void handle_message( const flex::msg::SetBlock& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+		void handle_message( const fw::msg::SetBlock& msg, fw::Server::ConnectionID /*conn_id*/ ) {
 			m_last_set_block_message = msg;
 		}
 
-		void handle_message( const flex::msg::CreateEntity& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+		void handle_message( const fw::msg::CreateEntity& msg, fw::Server::ConnectionID /*conn_id*/ ) {
 			m_last_create_entity_message = msg;
 		}
 
-		void handle_message( const flex::msg::AttachEntity& msg, flex::Server::ConnectionID /*conn_id*/ ) {
+		void handle_message( const fw::msg::AttachEntity& msg, fw::Server::ConnectionID /*conn_id*/ ) {
 			m_last_attach_entity_message = msg;
 		}
 
-		void handle_message( const flex::msg::ServerInfo& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
-		void handle_message( const flex::msg::LoginOK& /*msg*/, flex::Server::ConnectionID /*conn_id*/ ) {}
-		void handle_connect( flex::Server::ConnectionID /*conn_id*/ ) {}
-		void handle_disconnect( flex::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_message( const fw::msg::ServerInfo& /*msg*/, fw::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_message( const fw::msg::LoginOK& /*msg*/, fw::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_connect( fw::Server::ConnectionID /*conn_id*/ ) {}
+		void handle_disconnect( fw::Server::ConnectionID /*conn_id*/ ) {}
 
 		std::size_t m_num_chat_messages_received;
-		flex::msg::Chat m_last_chat_message;
-		flex::msg::DestroyBlock m_last_destroy_block_message;
-		flex::msg::SetBlock m_last_set_block_message;
-		flex::msg::CreateEntity m_last_create_entity_message;
-		flex::msg::AttachEntity m_last_attach_entity_message;
+		fw::msg::Chat m_last_chat_message;
+		fw::msg::DestroyBlock m_last_destroy_block_message;
+		fw::msg::SetBlock m_last_set_block_message;
+		fw::msg::CreateEntity m_last_create_entity_message;
+		fw::msg::AttachEntity m_last_attach_entity_message;
 };
 
 BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
-	using namespace flex;
+	using namespace fw;
 
 	Log::Logger.set_min_level( Log::FATAL );
 
 	GameMode mode;
 	AccountManager account_manager;
 
-	mode.set_default_entity_class_id( FlexID::make( "fw.base.nature/grass" ) );
+	mode.set_default_entity_class_id( FlexID::make( "fw.struct.simple/grass" ) );
 	mode.add_package( FlexID::make( "sessionhostscripts" ) );
 
 	enum { TIMEOUT = 2000 };
@@ -573,7 +573,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		BOOST_CHECK( handler.m_last_create_entity_message.has_parent() == false );
 
 		// Create entity attached to previously created entity.
-		flex::Entity::ID attached_entity_id = 0;
+		fw::Entity::ID attached_entity_id = 0;
 
 		BOOST_CHECK_NO_THROW(
 			attached_entity_id = host.create_entity(
@@ -584,7 +584,7 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		);
 
 		// Verify.
-		const flex::Entity* attached_entity = world.find_entity( attached_entity_id );
+		const fw::Entity* attached_entity = world.find_entity( attached_entity_id );
 
 		BOOST_REQUIRE( attached_entity != nullptr );
 		BOOST_CHECK( attached_entity->get_parent() == entity );

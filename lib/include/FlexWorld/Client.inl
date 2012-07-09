@@ -1,7 +1,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio/placeholders.hpp>
 
-namespace flex {
+namespace fw {
 
 template <class MsgType>
 void Client::send_message( const MsgType& message ) {

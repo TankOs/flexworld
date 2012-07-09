@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 RequestChunk::RequestChunk() :

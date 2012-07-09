@@ -1,4 +1,4 @@
-namespace flex {
+namespace fw {
 
 template <class T>
 Log& Log::operator<<( const T& data ) {

@@ -57,8 +57,8 @@ ColorPicker::Result ColorPicker::pick(
 	float distance,
 	const sg::Transform& transform,
 	const sf::Vector2i& pixel_pos,
-	const flex::Planet& planet,
-	const flex::World& world,
+	const fw::Planet& planet,
+	const fw::World& world,
 	const std::set<uint32_t>& skip_entity_ids,
 	ResourceManager& resource_manager
 ) {
@@ -81,16 +81,16 @@ ColorPicker::Result ColorPicker::pick(
 	}
 
 	// Shoot ray and collect blocks of interest.
-	typedef std::map<Result::BlockPosition, const flex::Class*> BlockMap;
+	typedef std::map<Result::BlockPosition, const fw::Class*> BlockMap;
 	BlockMap blocks;
 
 	float remaining_distance = distance;
 	sf::Vector3f current_pos = origin;
 
-	flex::Planet::Vector chunk_pos;
-	flex::Chunk::Vector block_pos;
+	fw::Planet::Vector chunk_pos;
+	fw::Chunk::Vector block_pos;
 
-	const flex::Class* block_cls = nullptr;
+	const fw::Class* block_cls = nullptr;
 
 	Result::BlockPosition abs_pos;
 	Result::BlockPosition old_abs_pos;
@@ -202,9 +202,9 @@ ColorPicker::Result ColorPicker::pick(
 		block_cls = block_iter->second;
 
 		// Get or load model.
-		const flex::FlexID& model_id = block_cls->get_model().get_id();
+		const fw::FlexID& model_id = block_cls->get_model().get_id();
 
-		std::shared_ptr<const flex::Model> model = resource_manager.find_model( model_id );
+		std::shared_ptr<const fw::Model> model = resource_manager.find_model( model_id );
 
 		// If model not found cancel picking. Picking only works on visible data.
 		if( !model ) {
@@ -244,7 +244,7 @@ ColorPicker::Result ColorPicker::pick(
 	}
 
 	// Fetch entities.
-	flex::FloatCuboid entity_pick_cuboid(
+	fw::FloatCuboid entity_pick_cuboid(
 		origin.x - distance,
 		origin.y - distance,
 		origin.z - distance,
@@ -255,7 +255,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	// Fetch from planet. The array of fetched IDs also works as the color -> ID
 	// mapping.
-	std::vector<flex::Entity::ID> fetched_entity_ids;
+	std::vector<fw::Entity::ID> fetched_entity_ids;
 
 	planet.search_entities( entity_pick_cuboid, fetched_entity_ids );
 
@@ -273,7 +273,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	for( std::size_t ent_idx = 0; ent_idx < fetched_entity_ids.size(); ++ent_idx ) {
 		// Fetch entity.
-		const flex::Entity* ent = world.find_entity( fetched_entity_ids[ent_idx] );
+		const fw::Entity* ent = world.find_entity( fetched_entity_ids[ent_idx] );
 		assert( ent );
 
 		if( !ent ) {
@@ -422,7 +422,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	// The final step is to determine the side the user clicked on. This is
 	// accomplished by rendering the bounding box.
-	std::shared_ptr<const flex::Model> model;
+	std::shared_ptr<const fw::Model> model;
 
 	sf::Vector3f b_pos(
 		static_cast<float>( result.m_block_position.x ),
@@ -444,7 +444,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	// Build bounding box geometry.
 	sg::TriangleGeometry bb_geometry;
-	flex::FloatCuboid bb = model->get_bounding_box();
+	fw::FloatCuboid bb = model->get_bounding_box();
 
 	// Apply block scale divisor.
 	bb.x /= model->get_block_scale_divisor();
@@ -572,22 +572,22 @@ ColorPicker::Result ColorPicker::pick(
 	}
 
 	if( read_color == sf::Color::Red ) {
-		result.m_facing = flex::SOUTH;
+		result.m_facing = fw::SOUTH;
 	}
 	else if( read_color == sf::Color::Green ) {
-		result.m_facing = flex::NORTH;
+		result.m_facing = fw::NORTH;
 	}
 	else if( read_color == sf::Color::Yellow ) {
-		result.m_facing = flex::WEST;
+		result.m_facing = fw::WEST;
 	}
 	else if( read_color == sf::Color::Blue ) {
-		result.m_facing = flex::EAST;
+		result.m_facing = fw::EAST;
 	}
 	else if( read_color == sf::Color::Black ) {
-		result.m_facing = flex::UP;
+		result.m_facing = fw::UP;
 	}
 	else if( read_color == sf::Color::Cyan ) {
-		result.m_facing = flex::DOWN;
+		result.m_facing = fw::DOWN;
 	}
 	else {
 		//std::cerr << "WARNING: Face picker read an invalid color." << std::endl;

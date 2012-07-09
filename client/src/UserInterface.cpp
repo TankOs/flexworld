@@ -45,7 +45,7 @@ UserInterface::UserInterface(
 {
 	// Load fonts.
 	Rocket::Core::FontDatabase::LoadFontFace(
-		(flex::ROOT_DATA_DIRECTORY + std::string( "local/gui/Economica-Bold.ttf" )).c_str(),
+		(fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/Economica-Bold.ttf" )).c_str(),
 		"MenuFont",
 		Rocket::Core::Font::STYLE_NORMAL,
 		Rocket::Core::Font::WEIGHT_NORMAL
@@ -53,7 +53,7 @@ UserInterface::UserInterface(
 
 	// Load documents.
 	m_chat_document = m_chat_context->LoadDocument(
-		(flex::ROOT_DATA_DIRECTORY + std::string( "local/gui/chat.rml" )).c_str()
+		(fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/chat.rml" )).c_str()
 	);
 
 	// Prepare controllers.
@@ -64,8 +64,8 @@ UserInterface::UserInterface(
 	m_background_shape.setFillColor( sf::Color( 0, 0, 0, 130 ) );
 
 	// Load sounds.
-	m_open_book_sound_buffer.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "local/sfx/page0.wav" ) );
-	m_close_book_sound_buffer.loadFromFile( flex::ROOT_DATA_DIRECTORY + std::string( "local/sfx/page1.wav" ) );
+	m_open_book_sound_buffer.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "local/sfx/page0.wav" ) );
+	m_close_book_sound_buffer.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "local/sfx/page1.wav" ) );
 
 	m_open_book_sound = sf::Sound( m_open_book_sound_buffer );
 	m_close_book_sound = sf::Sound( m_close_book_sound_buffer );

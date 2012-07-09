@@ -5,7 +5,7 @@
 #include <cmath>
 
 BOOST_AUTO_TEST_CASE( TestMath ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Normalize vector.
 	{
@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 		float length = std::sqrt( vec.x * vec.x + vec.y * vec.y + vec.z * vec.z );
 		sf::Vector3f expected( vec.x / length, vec.y / length, vec.z / length );
 
-		flex::normalize( vec );
+		fw::normalize( vec );
 
 		BOOST_CHECK( vec == expected );
 	}
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 			sf::Vector2f( 10, 10 )
 		};
 
-		BOOST_CHECK( flex::calc_triangle_area( points[0], points[1], points[2] ) == 12.5f );
+		BOOST_CHECK( fw::calc_triangle_area( points[0], points[1], points[2] ) == 12.5f );
 	}
 
 	// Calc area of 2D rect.
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 		float a = 10.0f;
 		float b = 30.0f;
 
-		BOOST_CHECK( flex::calc_rect_area( a, b ) == a * b );
+		BOOST_CHECK( fw::calc_rect_area( a, b ) == a * b );
 	}
 
 	// Degrees to radians.

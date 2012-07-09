@@ -3,10 +3,10 @@
 
 #include <FlexWorld/ServerProtocol.hpp>
 
-class TestServerProtocolReactor : public flex::ServerProtocol {
+class TestServerProtocolReactor : public fw::ServerProtocol {
 	public:
 		TestServerProtocolReactor() :
-			flex::ServerProtocol(),
+			fw::ServerProtocol(),
 			m_num_logins_received( 0 ),
 			m_sender( 0 )
 		{

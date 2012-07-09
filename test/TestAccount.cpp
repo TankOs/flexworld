@@ -3,7 +3,7 @@
 #include <FlexWorld/Account.hpp>
 
 BOOST_AUTO_TEST_CASE( TestAccount ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Initial state.
 	{

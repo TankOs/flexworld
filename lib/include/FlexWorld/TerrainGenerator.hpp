@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 class Planet;
 class Class;

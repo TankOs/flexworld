@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** Class driver for loading and saving class files to and from YAML.
  */

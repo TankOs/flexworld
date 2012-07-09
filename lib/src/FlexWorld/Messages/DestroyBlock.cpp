@@ -1,6 +1,6 @@
 #include <FlexWorld/Messages/DestroyBlock.hpp>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 void DestroyBlock::serialize( Buffer& buffer ) const {

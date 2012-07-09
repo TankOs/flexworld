@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** FlexWorld identifier.
  * The FlexWorld identifier (short FlexID or FID) is used to identify resources

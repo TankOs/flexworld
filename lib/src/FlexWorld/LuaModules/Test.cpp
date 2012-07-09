@@ -6,7 +6,7 @@
 #include <Diluculum/LuaWrappers.hpp>
 #include <iterator>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( Test )

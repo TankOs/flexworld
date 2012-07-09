@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace flex {
+namespace fw {
 
 LockFacility::LockFacility() :
 	m_num_locked_planets( 0 )

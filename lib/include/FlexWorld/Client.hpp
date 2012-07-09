@@ -5,7 +5,7 @@
 
 #include <boost/asio/ip/tcp.hpp>
 
-namespace flex {
+namespace fw {
 
 /** Client.
  *

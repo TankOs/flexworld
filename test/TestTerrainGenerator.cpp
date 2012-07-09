@@ -7,7 +7,7 @@
 #include <ctime>
 
 BOOST_AUTO_TEST_CASE( TestTerrainGenerator ) {
-	using namespace flex;
+	using namespace fw;
 
 	static const Class default_cls( FlexID::make( "fw.base.nature/grass" ) );
 	static const Class cls0( FlexID::make( "fw.base.nature/cls0" ) );

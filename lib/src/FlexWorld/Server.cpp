@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 /// HANDLER
 

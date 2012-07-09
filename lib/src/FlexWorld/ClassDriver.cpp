@@ -4,7 +4,7 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 
-namespace flex {
+namespace fw {
 
 void ClassDriver::load( const std::string& path, Class& cls ) {
 	// Copy original file to keep ID.

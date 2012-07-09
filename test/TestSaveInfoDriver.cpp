@@ -7,7 +7,7 @@
 #include <fstream>
 
 BOOST_AUTO_TEST_CASE( TestSaveInfoDriver ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Load test data.
 	std::ifstream in( DATA_DIRECTORY + "/saves/test/info.yml" );

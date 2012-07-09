@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace flex {
+namespace fw {
 
 void normalize( sf::Vector3f& vector ) {
 	float length = std::sqrt( vector.x * vector.x + vector.y * vector.y + vector.z * vector.z );

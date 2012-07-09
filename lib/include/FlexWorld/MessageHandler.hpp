@@ -2,7 +2,7 @@
 
 #include <FlexWorld/TemplateUtils.hpp>
 
-namespace flex {
+namespace fw {
 
 /// @cond NEVER
 

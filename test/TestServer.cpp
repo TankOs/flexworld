@@ -5,22 +5,22 @@
 #include <boost/asio.hpp>
 #include <set>
 
-class ServerHandler : public flex::Server::Handler {
+class ServerHandler : public fw::Server::Handler {
 	public:
 		ServerHandler() :
 			m_num_logins( 0 )
 		{
 		}
 
-		void handle_connect( flex::Server::ConnectionID id ) {
+		void handle_connect( fw::Server::ConnectionID id ) {
 			m_connected_clients.insert( id );
 		}
 
-		void handle_disconnect( flex::Server::ConnectionID id ) {
+		void handle_disconnect( fw::Server::ConnectionID id ) {
 			m_connected_clients.erase( id );
 		}
 
-		void handle_message( const flex::msg::OpenLogin& msg, flex::Server::ConnectionID sender ) {
+		void handle_message( const fw::msg::OpenLogin& msg, fw::Server::ConnectionID sender ) {
 			BOOST_REQUIRE( msg.get_username() == "Tank" );
 			BOOST_REQUIRE( msg.get_password() == "h4x0r" );
 			BOOST_REQUIRE( msg.get_server_password() == "me0w" );
@@ -35,7 +35,7 @@ class ServerHandler : public flex::Server::Handler {
 			}
 		}
 
-		const std::set<flex::Server::ConnectionID>& get_connected_clients() {
+		const std::set<fw::Server::ConnectionID>& get_connected_clients() {
 			return m_connected_clients;
 		}
 
@@ -43,7 +43,7 @@ class ServerHandler : public flex::Server::Handler {
 			return m_num_logins;
 		}
 
-		std::size_t get_num_logins( flex::Server::ConnectionID client_id ) {
+		std::size_t get_num_logins( fw::Server::ConnectionID client_id ) {
 			return
 				m_num_client_logins.find( client_id ) == m_num_client_logins.end() ?
 				0 :
@@ -52,13 +52,13 @@ class ServerHandler : public flex::Server::Handler {
 		}
 
 	private:
-		std::set<flex::Server::ConnectionID> m_connected_clients;
-		std::map<flex::Server::ConnectionID, std::size_t> m_num_client_logins;
+		std::set<fw::Server::ConnectionID> m_connected_clients;
+		std::map<fw::Server::ConnectionID, std::size_t> m_num_client_logins;
 		std::size_t m_num_logins;
 };
 
 BOOST_AUTO_TEST_CASE( TestServer ) {
-	using namespace flex;
+	using namespace fw;
 	using namespace boost::asio;
 
 	static const std::string IP = "127.0.0.1";
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE( TestServer ) {
 
 		for( std::size_t client_id = 0; client_id < NUM_CLIENTS; ++client_id ) {
 			for( std::size_t msg_idx = 0; msg_idx < NUM_MESSAGES; ++msg_idx ) {
-				server.send_message( msg, static_cast<flex::Server::ConnectionID>( client_id ) );
+				server.send_message( msg, static_cast<fw::Server::ConnectionID>( client_id ) );
 			}
 		}
 

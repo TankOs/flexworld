@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	assert( model.get_num_meshes() < 256 );
@@ -18,7 +18,7 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	buffer.push_back( 0x00 ); // Version.
 
 	// Bounding box.
-	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_bounding_box() ), reinterpret_cast<const char*>( &model.get_bounding_box() ) + sizeof( flex::FloatCuboid ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_bounding_box() ), reinterpret_cast<const char*>( &model.get_bounding_box() ) + sizeof( fw::FloatCuboid ) );
 
 	// Coverage rects.
 	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ) + sizeof( sf::FloatRect ) );
@@ -119,13 +119,13 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 	}
 
 	// Bounding box.
-	flex::FloatCuboid bbox;
+	fw::FloatCuboid bbox;
 
 	if( buffer.size() - buf_ptr < sizeof( bbox ) ) {
 		throw DeserializationException( "Bounding box missing." );
 	}
 
-	bbox = *reinterpret_cast<const flex::FloatCuboid*>( &buffer[buf_ptr] );
+	bbox = *reinterpret_cast<const fw::FloatCuboid*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( bbox );
 
 	if(

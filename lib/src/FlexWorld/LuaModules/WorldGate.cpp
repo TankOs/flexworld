@@ -1,6 +1,6 @@
 #include <FlexWorld/LuaModules/WorldGate.hpp>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 WorldGate::~WorldGate() {

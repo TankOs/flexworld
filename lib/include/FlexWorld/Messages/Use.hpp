@@ -2,7 +2,7 @@
 
 #include <FlexWorld/Message.hpp>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** Use message.

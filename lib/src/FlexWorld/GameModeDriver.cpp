@@ -3,7 +3,7 @@
 #include <yaml-cpp/yaml.h>
 #include <memory>
 
-namespace flex {
+namespace fw {
 
 GameMode GameModeDriver::deserialize( const std::string& buffer ) {
 	std::stringstream str( buffer );

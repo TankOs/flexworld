@@ -5,7 +5,7 @@
 #include <ctime>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 Log Log::Logger;
 const char Log::endl = '\n';

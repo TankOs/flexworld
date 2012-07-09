@@ -3,7 +3,7 @@
 #include <SFML/System/Vector3.hpp>
 #include <SFML/System/Vector2.hpp>
 
-namespace flex {
+namespace fw {
 
 static const float PI = 3.14159265f;
 

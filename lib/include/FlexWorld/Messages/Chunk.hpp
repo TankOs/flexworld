@@ -7,7 +7,7 @@
 #include <vector>
 #include <string>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** Chunk network message.
@@ -39,16 +39,16 @@ class Chunk : public Message {
 		/** Set blocks.
 		 * @param chunk Chunk to extract blocks from.
 		 */
-		void set_blocks( const flex::Chunk& chunk );
+		void set_blocks( const fw::Chunk& chunk );
 
 		/** Get block.
 		 * @param index Block index (must be valid).
 		 * @return Block.
 		 */
-		flex::Chunk::Block get_block( std::size_t index ) const;
+		fw::Chunk::Block get_block( std::size_t index ) const;
 
 	private:
-		typedef std::vector<flex::Chunk::Block> BlockVector;
+		typedef std::vector<fw::Chunk::Block> BlockVector;
 		typedef uint16_t NumBlocksType;
 
 		BlockVector m_blocks;

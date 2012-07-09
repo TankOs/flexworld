@@ -3,7 +3,7 @@
 #include <limits>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 Mesh::Mesh() :
 	m_texture_slot( 0 )

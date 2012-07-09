@@ -4,7 +4,7 @@
 
 #include <map>
 
-namespace flex {
+namespace fw {
 
 class Planet;
 

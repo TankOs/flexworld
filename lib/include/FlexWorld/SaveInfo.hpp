@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** SaveInfo contains useful information about a world save like paths and a descriptive name.
  */

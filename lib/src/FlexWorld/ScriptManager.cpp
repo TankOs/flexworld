@@ -7,7 +7,7 @@
 
 #include <Diluculum/LuaState.hpp>
 
-namespace flex {
+namespace fw {
 
 ScriptManager::ScriptManager( lua::ServerGate& server_gate, lua::WorldGate& world_gate ) :
 	m_state( nullptr ),
@@ -45,7 +45,7 @@ void ScriptManager::clear() {
 	m_state = new Diluculum::LuaState;
 
 	// Setup state.
-	(*m_state)["flex"] = Diluculum::EmptyTable;
+	(*m_state)["fw"] = Diluculum::EmptyTable;
 
 	// Create modules.
 	m_test_module = new lua::Test;
@@ -54,15 +54,15 @@ void ScriptManager::clear() {
 	m_world_module = new lua::World( m_world_gate );
 
 	// Setup modules.
-	lua::Test::register_class( (*m_state)["flex"]["Test"] );
-	lua::Event::register_class( (*m_state)["flex"]["Event"] );
-	lua::Server::register_class( (*m_state)["flex"]["Server"] );
-	lua::World::register_class( (*m_state)["flex"]["World"] );
+	lua::Test::register_class( (*m_state)["fw"]["Test"] );
+	lua::Event::register_class( (*m_state)["fw"]["Event"] );
+	lua::Server::register_class( (*m_state)["fw"]["Server"] );
+	lua::World::register_class( (*m_state)["fw"]["World"] );
 
-	m_test_module->register_object( (*m_state)["flex"]["test"] );
-	m_event_module->register_object( (*m_state)["flex"]["event"] );
-	m_server_module->register_object( (*m_state)["flex"]["server"] );
-	m_world_module->register_object( (*m_state)["flex"]["world"] );
+	m_test_module->register_object( (*m_state)["fw"]["test"] );
+	m_event_module->register_object( (*m_state)["fw"]["event"] );
+	m_server_module->register_object( (*m_state)["fw"]["server"] );
+	m_world_module->register_object( (*m_state)["fw"]["world"] );
 }
 
 bool ScriptManager::execute_file( const std::string& path ) {
@@ -170,7 +170,7 @@ bool ScriptManager::trigger_block_action_event(
 	const sf::Vector3<uint32_t>& block_pos,
 	const sf::Vector3<uint32_t>& next_block_pos,
 	bool primary,
-	const flex::Entity& actor,
+	const fw::Entity& actor,
 	uint16_t client_id
 ) {
 	m_last_error.clear();

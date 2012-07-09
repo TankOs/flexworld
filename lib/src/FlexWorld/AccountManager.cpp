@@ -6,7 +6,7 @@
 #include <sstream>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 AccountManager::AccountManager() {
 }

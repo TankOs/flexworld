@@ -16,11 +16,11 @@ EntityGroupNode::EntityGroupNode( ResourceManager& resource_manager, sg::Rendere
 {
 }
 
-void EntityGroupNode::add_entity( const flex::Entity& entity ) {
+void EntityGroupNode::add_entity( const fw::Entity& entity ) {
 	assert( m_class_drawables.find( entity.get_id() ) == m_class_drawables.end() );
 
 	// Traverse up the entity's hierarchy.
-	const flex::Entity* parent = entity.get_parent();
+	const fw::Entity* parent = entity.get_parent();
 	ClassDrawable::Ptr parent_node;
 
 	if( parent != nullptr ) {
@@ -46,13 +46,13 @@ void EntityGroupNode::add_entity( const flex::Entity& entity ) {
 	update_entity( entity );
 }
 
-void EntityGroupNode::update_entity( const flex::Entity& entity ) {
+void EntityGroupNode::update_entity( const fw::Entity& entity ) {
 	EntityClassDrawableMap::iterator iter = m_class_drawables.find( entity.get_id() );
 	assert( iter != m_class_drawables.end() );
 
 	// Calculate transform including hook offset.
 	sf::Vector3f position = entity.get_position();
-	const flex::Entity* parent = entity.get_parent();
+	const fw::Entity* parent = entity.get_parent();
 
 	if( parent != nullptr ) {
 		// Find out hook the entity is attached to.
@@ -71,5 +71,5 @@ void EntityGroupNode::update_entity( const flex::Entity& entity ) {
 	);
 }
 
-void EntityGroupNode::remove_entity( const flex::Entity& /*entity*/ ) {
+void EntityGroupNode::remove_entity( const fw::Entity& /*entity*/ ) {
 }

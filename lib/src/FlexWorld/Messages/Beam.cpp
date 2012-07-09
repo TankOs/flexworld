@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 Beam::Beam() :

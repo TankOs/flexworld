@@ -1,6 +1,6 @@
 #include <FlexWorld/PlayerInfo.hpp>
 
-namespace flex {
+namespace fw {
 
 PlayerInfo::PlayerInfo() :
 	view_cuboid( 0, 0, 0, 0, 0, 0 ),

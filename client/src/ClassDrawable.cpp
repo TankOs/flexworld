@@ -20,7 +20,7 @@ ClassDrawable::ClassDrawable( sg::Renderer& renderer, ResourceManager& resource_
 {
 }
 
-void ClassDrawable::set_class( const flex::Class& cls ) {
+void ClassDrawable::set_class( const fw::Class& cls ) {
 	m_class = &cls;
 
 	// Apply scale.
@@ -45,7 +45,7 @@ void ClassDrawable::invalidate_steps() {
 	m_steps.clear();
 
 	// Find buffer object group.
-	const flex::FlexID& model_id = m_class->get_model().get_id();
+	const fw::FlexID& model_id = m_class->get_model().get_id();
 
 	BufferObjectGroup::PtrConst group = m_resource_manager.find_buffer_object_group( model_id );
 
@@ -65,13 +65,13 @@ void ClassDrawable::invalidate_steps() {
 
 	// Get model. At this point it exists for sure due to the previous call to
 	// prepare_buffer_object_group().
-	std::shared_ptr<const flex::Model> model = m_resource_manager.find_model( model_id );
+	std::shared_ptr<const fw::Model> model = m_resource_manager.find_model( model_id );
 	assert( model != nullptr );
 
 	// Iterate over buffer objects.
 	for( std::size_t bo_idx = 0; bo_idx < group->get_num_buffer_objects(); ++bo_idx ) {
 		// Get texture ID.
-		const flex::FlexID& texture_id = m_class->get_texture(
+		const fw::FlexID& texture_id = m_class->get_texture(
 			model->get_mesh( bo_idx ).get_texture_slot()
 		).get_id();
 

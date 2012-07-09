@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** CreateEntity network message.

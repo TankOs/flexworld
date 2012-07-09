@@ -43,7 +43,7 @@
 #include <fstream>
 #include <iomanip>
 
-namespace flex {
+namespace fw {
 
 /*	
  *	SHA1

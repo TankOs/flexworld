@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 /** OpenLogin network message.

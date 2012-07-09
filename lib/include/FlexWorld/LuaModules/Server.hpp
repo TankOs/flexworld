@@ -12,7 +12,7 @@ namespace Diluculum {
 class LuaState;
 }
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 class ServerGate;

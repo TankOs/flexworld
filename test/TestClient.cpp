@@ -4,24 +4,24 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/asio.hpp>
 
-struct ClientHandler : public flex::Client::Handler {
+struct ClientHandler : public fw::Client::Handler {
 	ClientHandler() :
 		connected( false ),
 		num_logins_handled( 0 )
 	{
 	}
 
-	void handle_connect( flex::Client::ConnectionID id ) {
+	void handle_connect( fw::Client::ConnectionID id ) {
 		BOOST_REQUIRE( id == 0 );
 		connected = true;
 	}
 
-	void handle_disconnect( flex::Client::ConnectionID id ) {
+	void handle_disconnect( fw::Client::ConnectionID id ) {
 		BOOST_REQUIRE( id == 0 );
 		connected = false;
 	}
 
-	void handle_message( const flex::msg::OpenLogin& msg, flex::Client::ConnectionID /*id*/ ) {
+	void handle_message( const fw::msg::OpenLogin& msg, fw::Client::ConnectionID /*id*/ ) {
 		BOOST_CHECK( msg.get_username() == "Tank" );
 		BOOST_CHECK( msg.get_password() == "h4x0r" );
 		BOOST_CHECK( msg.get_server_password() == "me0w" );
@@ -40,7 +40,7 @@ void start_listener( boost::asio::ip::tcp::acceptor& listener ) {
 }
 
 BOOST_AUTO_TEST_CASE( TestClient ) {
-	using namespace flex;
+	using namespace fw;
 	using namespace boost::asio;
 
 	static const std::string IP = "127.0.0.1";

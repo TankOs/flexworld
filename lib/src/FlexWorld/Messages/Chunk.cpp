@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 Chunk::Chunk() :
@@ -30,7 +30,7 @@ void Chunk::serialize( Buffer& buffer ) const {
 		+ buf_ptr
 		+ sizeof( m_position ) // Position.
 		+ sizeof( NumBlocksType ) // Number of blocks.
-		+ sizeof( flex::Chunk::Block ) * m_blocks.size() // Block data.
+		+ sizeof( fw::Chunk::Block ) * m_blocks.size() // Block data.
 	);
 
 	// Position.
@@ -43,8 +43,8 @@ void Chunk::serialize( Buffer& buffer ) const {
 
 	// Pack block data.
 	for( std::size_t block_idx = 0; block_idx < m_blocks.size(); ++block_idx ) {
-		*reinterpret_cast<flex::Chunk::Block*>( &buffer[buf_ptr] ) = m_blocks[block_idx];
-		buf_ptr += sizeof( flex::Chunk::Block );
+		*reinterpret_cast<fw::Chunk::Block*>( &buffer[buf_ptr] ) = m_blocks[block_idx];
+		buf_ptr += sizeof( fw::Chunk::Block );
 	}
 }
 
@@ -72,7 +72,7 @@ std::size_t Chunk::deserialize( const char* buffer, std::size_t buffer_size ) {
 	}
 
 	// Check if all blocks are present.
-	if( buffer_size - buf_ptr < sizeof( flex::Chunk::Block ) * num_blocks ) {
+	if( buffer_size - buf_ptr < sizeof( fw::Chunk::Block ) * num_blocks ) {
 		return 0;
 	}
 
@@ -80,11 +80,11 @@ std::size_t Chunk::deserialize( const char* buffer, std::size_t buffer_size ) {
 	BlockVector blocks( num_blocks );
 
 	for( std::size_t block_idx = 0; block_idx < num_blocks; ++block_idx ) {
-		blocks[block_idx] = *reinterpret_cast<const flex::Chunk::Block*>( &buffer[buf_ptr] );
-		buf_ptr += sizeof( flex::Chunk::Block );
+		blocks[block_idx] = *reinterpret_cast<const fw::Chunk::Block*>( &buffer[buf_ptr] );
+		buf_ptr += sizeof( fw::Chunk::Block );
 
 		// Check for valid ID.
-		if( blocks[block_idx] > flex::Chunk::MAX_BLOCK_ID ) {
+		if( blocks[block_idx] > fw::Chunk::MAX_BLOCK_ID ) {
 			throw BogusDataException( "Invalid block." );
 		}
 	}
@@ -108,18 +108,18 @@ const Planet::Vector& Chunk::get_position() const {
 	return m_position;
 }
 
-flex::Chunk::Block Chunk::get_block( std::size_t index ) const {
+fw::Chunk::Block Chunk::get_block( std::size_t index ) const {
 	assert( index < m_blocks.size() );
 	return m_blocks[index];
 }
 
-void Chunk::set_blocks( const flex::Chunk& chunk ) {
+void Chunk::set_blocks( const fw::Chunk& chunk ) {
 	m_blocks.resize( chunk.get_size().x * chunk.get_size().y * chunk.get_size().z );
 
 	std::memcpy(
 		reinterpret_cast<char*>( &m_blocks[0] ),
 		reinterpret_cast<const char*>( chunk.get_raw_data() ),
-		sizeof( flex::Chunk::Block ) * m_blocks.size()
+		sizeof( fw::Chunk::Block ) * m_blocks.size()
 	);
 }
 

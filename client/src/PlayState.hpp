@@ -25,7 +25,7 @@ class DebugWindow;
 
 /** Play state.
  */
-class PlayState : public State, flex::Client::Handler {
+class PlayState : public State, fw::Client::Handler {
 	public:
 		/** Ctor.
 		 * @param target Rendering target.
@@ -33,7 +33,7 @@ class PlayState : public State, flex::Client::Handler {
 		PlayState( sf::RenderWindow& target );
 
 	private:
-		typedef flex::Cuboid<flex::Planet::ScalarType> ViewCuboid;
+		typedef fw::Cuboid<fw::Planet::ScalarType> ViewCuboid;
 
 		void init();
 		void cleanup();
@@ -50,12 +50,12 @@ class PlayState : public State, flex::Client::Handler {
 
 		void on_chat_message( const sf::String& message );
 
-		void handle_message( const flex::msg::Beam& msg, flex::Client::ConnectionID conn_id );
-		void handle_message( const flex::msg::ChunkUnchanged& msg, flex::Client::ConnectionID conn_id );
-		void handle_message( const flex::msg::CreateEntity& msg, flex::Client::ConnectionID conn_id );
-		void handle_message( const flex::msg::Chat& msg, flex::Client::ConnectionID conn_id );
-		void handle_message( const flex::msg::DestroyBlock& msg, flex::Client::ConnectionID conn_id );
-		void handle_message( const flex::msg::SetBlock& msg, flex::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::Chat& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::DestroyBlock& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::SetBlock& msg, fw::Client::ConnectionID conn_id );
 
 		void request_chunks( const ViewCuboid& cuboid );
 
@@ -95,7 +95,7 @@ class PlayState : public State, flex::Client::Handler {
 		std::string m_current_planet_id;
 
 		// Object preparation thread.
-		typedef std::list<flex::Planet::Vector> ChunkPositionList;
+		typedef std::list<fw::Planet::Vector> ChunkPositionList;
 		typedef std::list<uint32_t> EntityIDList;
 
 		boost::mutex m_object_list_mutex; // Protects the object lists.

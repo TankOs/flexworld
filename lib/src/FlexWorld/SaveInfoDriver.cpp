@@ -3,7 +3,7 @@
 #include <yaml-cpp/yaml.h>
 #include <sstream>
 
-namespace flex {
+namespace fw {
 
 SaveInfo SaveInfoDriver::deserialize( const std::string& buffer ) {
 	std::stringstream sstr( buffer );

@@ -12,7 +12,7 @@ function on_hello_world_command( args, sender )
 	assert( #args[1] == 6 )
 	assert( #args[2] == 6 )
 
-	flex.test:set_value( "hello_world", args[1] .. " " .. args[2] )
+	fw.test:set_value( "hello_world", args[1] .. " " .. args[2] )
 end
 
-flex.event:hook_command( "hello_world", on_hello_world_command )
+fw.event:hook_command( "hello_world", on_hello_world_command )

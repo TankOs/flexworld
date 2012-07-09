@@ -8,7 +8,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** Loose octree.
  *

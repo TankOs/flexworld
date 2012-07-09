@@ -11,7 +11,7 @@ namespace Diluculum {
 class LuaState;
 }
 
-namespace flex {
+namespace fw {
 class Entity;
 
 namespace lua {
@@ -105,7 +105,7 @@ class ScriptManager {
 			const sf::Vector3<uint32_t>& block_pos,
 			const sf::Vector3<uint32_t>& next_block_pos,
 			bool primary,
-			const flex::Entity& actor,
+			const fw::Entity& actor,
 			uint16_t client_id
 		);
 

@@ -8,7 +8,7 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( TestAccountDriver ) {
-	using namespace flex;
+	using namespace fw;
 
 	// Load test data.
 	std::ifstream in( DATA_DIRECTORY + "/accounts/Tank.yml" );

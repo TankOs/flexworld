@@ -29,7 +29,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** SHA1 hash class.
  */

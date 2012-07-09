@@ -23,7 +23,7 @@ void ResourceManager::set_base_path( const std::string& path ) {
 	}
 }
 
-bool ResourceManager::load_texture( const flex::FlexID& id ) {
+bool ResourceManager::load_texture( const fw::FlexID& id ) {
 	// Erase texture with same ID.
 	if( find_texture( id ) ) {
 		boost::lock_guard<boost::mutex> lock( m_textures_mutex );
@@ -58,7 +58,7 @@ bool ResourceManager::load_texture( const flex::FlexID& id ) {
 	return true;
 }
 
-std::shared_ptr<const sf::Texture> ResourceManager::find_texture( const flex::FlexID& id ) const {
+std::shared_ptr<const sf::Texture> ResourceManager::find_texture( const fw::FlexID& id ) const {
 	std::shared_ptr<const sf::Texture> texture;
 
 	// Guarded.
@@ -98,7 +98,7 @@ void ResourceManager::garbage_collect() {
 	}
 }
 
-bool ResourceManager::load_model( const flex::FlexID& id ) {
+bool ResourceManager::load_model( const fw::FlexID& id ) {
 	// Erase model with same ID.
 	if( find_model( id ) ) {
 		boost::lock_guard<boost::mutex> lock( m_models_mutex );
@@ -117,7 +117,7 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	}
 
 	// Read whole file.
-	flex::ModelDriver::Buffer buffer;
+	fw::ModelDriver::Buffer buffer;
 	in_file >> std::noskipws;
 
 	std::copy(
@@ -129,12 +129,12 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	in_file.close();
 
 	// Deserialize model.
-	ModelPtr model( new flex::Model );
+	ModelPtr model( new fw::Model );
 
 	try {
-		*model = flex::ModelDriver::deserialize( buffer );
+		*model = fw::ModelDriver::deserialize( buffer );
 	}
-	catch( const flex::ModelDriver::DeserializationException& e ) {
+	catch( const fw::ModelDriver::DeserializationException& e ) {
 #if !defined( NDEBUG )
 		std::cerr << "Exception when loading a model: " << e.what() << std::endl;
 #endif
@@ -153,8 +153,8 @@ bool ResourceManager::load_model( const flex::FlexID& id ) {
 	return true;
 }
 
-std::shared_ptr<const flex::Model> ResourceManager::find_model( const flex::FlexID& id ) const {
-	std::shared_ptr<const flex::Model> model;
+std::shared_ptr<const fw::Model> ResourceManager::find_model( const fw::FlexID& id ) const {
+	std::shared_ptr<const fw::Model> model;
 
 	{
 		boost::lock_guard<boost::mutex> lock( m_models_mutex );
@@ -169,7 +169,7 @@ std::shared_ptr<const flex::Model> ResourceManager::find_model( const flex::Flex
 	return model;
 }
 
-bool ResourceManager::prepare_texture( const flex::FlexID& id ) {
+bool ResourceManager::prepare_texture( const fw::FlexID& id ) {
 	boost::lock_guard<boost::mutex> lock( m_textures_mutex );
 
 	// Remove texture with same ID, both prepared and finalized.
@@ -217,14 +217,14 @@ void ResourceManager::finalize_prepared_textures() {
 	m_prepared_textures.clear();
 }
 
-bool ResourceManager::prepare_buffer_object_group( const flex::FlexID& model_id ) {
+bool ResourceManager::prepare_buffer_object_group( const fw::FlexID& model_id ) {
 	assert( model_id.is_valid_resource() );
 	assert( find_buffer_object_group( model_id ) == nullptr );
 
 	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
 
 	// Get model.
-	std::shared_ptr<const flex::Model> model = find_model( model_id );
+	std::shared_ptr<const fw::Model> model = find_model( model_id );
 
 	// If not found, try to load it.
 	if( model == nullptr ) {
@@ -250,7 +250,7 @@ bool ResourceManager::prepare_buffer_object_group( const flex::FlexID& model_id 
 	return true;
 }
 
-BufferObjectGroup::PtrConst ResourceManager::find_buffer_object_group( const flex::FlexID& model_id ) const {
+BufferObjectGroup::PtrConst ResourceManager::find_buffer_object_group( const fw::FlexID& model_id ) const {
 	assert( model_id.is_valid_resource() );
 	boost::lock_guard<boost::mutex> lock( m_buffer_object_groups_mutex );
 

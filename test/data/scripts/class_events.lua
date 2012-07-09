@@ -12,7 +12,7 @@ function on_actor_use( entity, actor, client_id )
 		assert( "Invalid entity ID." )
 	end
 
-	flex.test:set_value( "use", entity .. "," .. actor .. "," .. client_id )
+	fw.test:set_value( "use", entity .. "," .. actor .. "," .. client_id )
 end
 
 -- BLOCK_ACTION event
@@ -23,8 +23,8 @@ function on_block_action_event( block, next_block, primary, actor, client_id )
 	assert( actor == 100 )
 	assert( client_id == 1337 )
 
-	flex.test:set_value( "block_action", "called" )
+	fw.test:set_value( "block_action", "called" )
 end
 
-flex.event:hook_event( flex.Event.USE, on_actor_use )
-flex.event:hook_event( flex.Event.BLOCK_ACTION, on_block_action_event )
+fw.event:hook_event( fw.Event.USE, on_actor_use )
+fw.event:hook_event( fw.Event.BLOCK_ACTION, on_block_action_event )

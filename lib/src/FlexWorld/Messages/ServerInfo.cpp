@@ -1,6 +1,6 @@
 #include <FlexWorld/Messages/ServerInfo.hpp>
 
-namespace flex {
+namespace fw {
 namespace msg {
 
 ServerInfo::ServerInfo() :

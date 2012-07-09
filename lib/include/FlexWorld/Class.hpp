@@ -9,7 +9,7 @@
 #include <vector>
 #include <memory>
 
-namespace flex {
+namespace fw {
 
 /** FlexWorld class.
  *

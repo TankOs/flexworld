@@ -1,6 +1,6 @@
 #include <FlexWorld/Account.hpp>
 
-namespace flex {
+namespace fw {
 
 Account::Account() :
 	m_entity_id( 0 )

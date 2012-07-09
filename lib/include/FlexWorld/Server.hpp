@@ -13,7 +13,7 @@
 #include <memory>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 
 /** Server for handling peers and traffic.
  *

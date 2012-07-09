@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace flex {
+namespace fw {
 
 /** Driver for loading SaveInfo objects from and to YAML.
  */

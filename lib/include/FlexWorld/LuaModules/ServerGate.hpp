@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 /** Gate class for the server Lua module, abstract.

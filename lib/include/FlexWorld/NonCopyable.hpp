@@ -1,6 +1,6 @@
 #pragma once
 
-namespace flex {
+namespace fw {
 
 /** Non-copyable base class.
  */

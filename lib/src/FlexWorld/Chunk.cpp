@@ -4,7 +4,7 @@
 #include <limits>
 #include <cassert>
 
-namespace flex {
+namespace fw {
 
 const Chunk::Block Chunk::MAX_BLOCK_ID = static_cast<Block>( std::numeric_limits<Block>::max() - 1 );
 const Chunk::Block Chunk::INVALID_BLOCK = std::numeric_limits<Block>::max();

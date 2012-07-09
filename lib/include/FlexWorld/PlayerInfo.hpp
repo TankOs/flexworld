@@ -3,7 +3,7 @@
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Cuboid.hpp>
 
-namespace flex {
+namespace fw {
 
 class Account;
 class Planet;

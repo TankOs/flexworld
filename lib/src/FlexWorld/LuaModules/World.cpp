@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace flex {
+namespace fw {
 namespace lua {
 
 DILUCULUM_BEGIN_CLASS( World )

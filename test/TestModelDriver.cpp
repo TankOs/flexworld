@@ -5,13 +5,13 @@
 #include <FWSG/Vertex.hpp>
 #include <boost/test/unit_test.hpp>
 
-bool deserialize_and_check_exception( const flex::ModelDriver::Buffer& buffer, const std::string& expected_what ) {
+bool deserialize_and_check_exception( const fw::ModelDriver::Buffer& buffer, const std::string& expected_what ) {
 	bool correct = false;
 
 	try {
-		flex::ModelDriver::deserialize( buffer );
+		fw::ModelDriver::deserialize( buffer );
 	}
-	catch( const flex::ModelDriver::DeserializationException& e ) {
+	catch( const fw::ModelDriver::DeserializationException& e ) {
 		correct = (e.what() == expected_what);
 	}
 
@@ -19,7 +19,7 @@ bool deserialize_and_check_exception( const flex::ModelDriver::Buffer& buffer, c
 }
 
 BOOST_AUTO_TEST_CASE( TestModelDriver ) {
-	using namespace flex;
+	using namespace fw;
 
 	float value = 0;
 	FloatCuboid cuboid;
@@ -235,13 +235,13 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	{
 		Model model;
 
-		model.set_bounding_box( flex::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
-		model.set_face_coverage( flex::UP_FACE, sf::FloatRect( 100, 101, 102, 103 ) );
-		model.set_face_coverage( flex::DOWN_FACE, sf::FloatRect( 200, 201, 202, 203 ) );
-		model.set_face_coverage( flex::BACK_FACE, sf::FloatRect( 300, 301, 302, 303 ) );
-		model.set_face_coverage( flex::RIGHT_FACE, sf::FloatRect( 400, 401, 402, 403 ) );
-		model.set_face_coverage( flex::FRONT_FACE, sf::FloatRect( 500, 501, 502, 503 ) );
-		model.set_face_coverage( flex::LEFT_FACE, sf::FloatRect( 600, 601, 602, 603 ) );
+		model.set_bounding_box( fw::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		model.set_face_coverage( fw::UP_FACE, sf::FloatRect( 100, 101, 102, 103 ) );
+		model.set_face_coverage( fw::DOWN_FACE, sf::FloatRect( 200, 201, 202, 203 ) );
+		model.set_face_coverage( fw::BACK_FACE, sf::FloatRect( 300, 301, 302, 303 ) );
+		model.set_face_coverage( fw::RIGHT_FACE, sf::FloatRect( 400, 401, 402, 403 ) );
+		model.set_face_coverage( fw::FRONT_FACE, sf::FloatRect( 500, 501, 502, 503 ) );
+		model.set_face_coverage( fw::LEFT_FACE, sf::FloatRect( 600, 601, 602, 603 ) );
 		model.set_block_scale_divisor( 33.0f );
 
 		// Top vertices first.
@@ -330,13 +330,13 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
 
 		// Validate.
-		BOOST_CHECK( model.get_bounding_box() == flex::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::UP_FACE ) == sf::FloatRect( 100, 101, 102, 103 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::DOWN_FACE ) == sf::FloatRect( 200, 201, 202, 203 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::BACK_FACE ) == sf::FloatRect( 300, 301, 302, 303 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::RIGHT_FACE ) == sf::FloatRect( 400, 401, 402, 403 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::FRONT_FACE ) == sf::FloatRect( 500, 501, 502, 503 ) );
-		BOOST_CHECK( model.get_face_coverage( flex::LEFT_FACE ) == sf::FloatRect( 600, 601, 602, 603 ) );
+		BOOST_CHECK( model.get_bounding_box() == fw::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::UP_FACE ) == sf::FloatRect( 100, 101, 102, 103 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::DOWN_FACE ) == sf::FloatRect( 200, 201, 202, 203 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::BACK_FACE ) == sf::FloatRect( 300, 301, 302, 303 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::RIGHT_FACE ) == sf::FloatRect( 400, 401, 402, 403 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::FRONT_FACE ) == sf::FloatRect( 500, 501, 502, 503 ) );
+		BOOST_CHECK( model.get_face_coverage( fw::LEFT_FACE ) == sf::FloatRect( 600, 601, 602, 603 ) );
 		BOOST_CHECK( model.get_block_scale_divisor() == 33.0f );
 		BOOST_CHECK( model.get_num_meshes() == 2 );
 

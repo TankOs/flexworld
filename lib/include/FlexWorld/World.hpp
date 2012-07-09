@@ -6,7 +6,7 @@
 
 #include <map>
 
-namespace flex {
+namespace fw {
 
 /** World.
  * The world holds planets and entities and is used as a global storage.
