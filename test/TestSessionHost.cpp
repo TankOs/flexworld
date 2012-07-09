@@ -757,5 +757,35 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		);
 	}
 
+	// get_entity_class_id
+	{
+		// Setup host.
+		boost::asio::io_service io_service;
+		LockFacility lock_facility;
+		World world;
+		SessionHost host( io_service, lock_facility, account_manager, world, mode );
+
+		// Create test resources.
+		static const FlexID cls_id = FlexID::make( "some/class" );
+
+		Class cls( cls_id );
+		world.add_class( cls );
+		world.create_planet( "foobar", Planet::Vector( 1, 1, 1 ), Chunk::Vector( 16, 16, 16 ) );
+
+		lock_facility.create_planet_lock( *world.find_planet( "foobar" ) );
+
+		Entity& entity = world.create_entity( cls_id );
+
+		// Check.
+		BOOST_CHECK( host.get_entity_class_id( entity.get_id() ) == "some/class" );
+
+		// Check invalid calls.
+		BOOST_CHECK_EXCEPTION(
+			host.get_entity_class_id( 1337 ),
+			std::runtime_error,
+			ExceptionChecker<std::runtime_error>( "Entity not found." )
+		);
+	}
+
 	Log::Logger.set_min_level( Log::DEBUG );
 }

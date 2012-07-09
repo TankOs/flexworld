@@ -74,6 +74,9 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 			std::runtime_error,
 			ExceptionChecker<std::runtime_error>( "Invalid entity ID." )
 		);
+
+		BOOST_CHECK_NO_THROW( state.doString( "assert( fw.world:get_entity_class_id( 0 ) == \"hax/class\" )" ) );
+		BOOST_CHECK_EXCEPTION( state.doString( "fw.world:get_entity_class_id( 1337 )" ), std::runtime_error, ExceptionChecker<std::runtime_error>( "Invalid entity ID." ) );
 	}
 
 	// Call functions with invalid arguments.
@@ -157,5 +160,11 @@ BOOST_AUTO_TEST_CASE( TestWorldLuaModule ) {
 		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.world:get_entity_position( 1, 2 )", state ) == true );
 
 		BOOST_CHECK( check_error( "Expected number for entity.", "fw.world:get_entity_position( \"123\" )", state ) == true );
+
+		// get_entity_class_id
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.world:get_entity_class_id()", state ) == true );
+		BOOST_CHECK( check_error( "Wrong number of arguments.", "fw.world:get_entity_class_id( 1, 2 )", state ) == true );
+
+		BOOST_CHECK( check_error( "Expected number for entity_id.", "fw.world:get_entity_class_id( \"123\" )", state ) == true );
 	}
 }

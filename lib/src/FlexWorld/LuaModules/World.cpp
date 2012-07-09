@@ -13,6 +13,7 @@ namespace lua {
 DILUCULUM_BEGIN_CLASS( World )
 	DILUCULUM_CLASS_METHOD( World, create_entity )
 	DILUCULUM_CLASS_METHOD( World, destroy_block )
+	DILUCULUM_CLASS_METHOD( World, get_entity_class_id )
 	DILUCULUM_CLASS_METHOD( World, get_entity_position )
 	DILUCULUM_CLASS_METHOD( World, set_block )
 DILUCULUM_END_CLASS( World )
@@ -326,6 +327,29 @@ Diluculum::LuaValueList World::get_entity_position( const Diluculum::LuaValueLis
 
 		ret.push_back( l_pos );
 		ret.push_back( planet_id );
+	}
+	catch( const std::runtime_error& e ) {
+		throw Diluculum::LuaError( e.what() );
+	}
+
+	return ret;
+}
+
+Diluculum::LuaValueList World::get_entity_class_id( const Diluculum::LuaValueList& args ) {
+	// Check argument count.
+	if( args.size() != 1 ) {
+		throw Diluculum::LuaError( "Wrong number of arguments." );
+	}
+
+	if( args[0].type() != LUA_TNUMBER ) {
+		throw Diluculum::LuaError( "Expected number for entity_id." );
+	}
+
+	uint32_t entity_id = static_cast<uint32_t>( args[0].asNumber() );
+	Diluculum::LuaValueList ret;
+
+	try {
+		ret.push_back( m_gate->get_entity_class_id( entity_id ) );
 	}
 	catch( const std::runtime_error& e ) {
 		throw Diluculum::LuaError( e.what() );

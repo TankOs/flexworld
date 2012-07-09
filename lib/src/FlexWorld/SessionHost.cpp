@@ -1173,4 +1173,22 @@ uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t container_id
 	return ent_id;
 }
 
+std::string SessionHost::get_entity_class_id( uint32_t entity_id ) {
+	m_lock_facility.lock_world( true );
+
+	// Get entity.
+	const Entity* entity = m_world.find_entity( entity_id );
+
+	if( entity == nullptr ) {
+		throw std::runtime_error( "Entity not found." );
+		m_lock_facility.lock_world( false );
+	}
+
+	std::string class_id = entity->get_class().get_id().get();
+
+	m_lock_facility.lock_world( false );
+
+	return class_id;
+}
+
 }

@@ -187,7 +187,20 @@ class SessionHost :
 		 */
 		uint32_t create_entity( const FlexID& cls_id, uint32_t container_id );
 
+		/** Get entity position.
+		 * @param entity_id Entity ID.
+		 * @param position Filled with entity's position.
+		 * @param planet_id Filled with entity's position.
+		 * @throws std::runtime_error in case of any error.
+		 */
 		void get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id );
+
+		/** Get entity's class ID.
+		 * @param entity_id Entity ID.
+		 * @return Class ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		std::string get_entity_class_id( uint32_t entity_id );
 
 	private:
 		typedef std::vector<PlayerInfo> PlayerInfoVector;

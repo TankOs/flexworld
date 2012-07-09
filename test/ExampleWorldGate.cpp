@@ -88,3 +88,11 @@ void ExampleWorldGate::get_entity_position( uint32_t entity_id, EntityPosition& 
 	position = EntityPosition( 1, 2, 3 );
 	planet_id = "planet";
 }
+
+std::string ExampleWorldGate::get_entity_class_id( uint32_t entity_id ) {
+	if( entity_id != 0 ) {
+		throw std::runtime_error( "Invalid entity ID." );
+	}
+
+	return "hax/class";
+}

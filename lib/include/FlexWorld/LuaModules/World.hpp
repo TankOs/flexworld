@@ -61,6 +61,12 @@ class World {
 		 */
 		Diluculum::LuaValueList get_entity_position( const Diluculum::LuaValueList& args );
 
+		/** Get entity's class ID (Lua function).
+		 * @param args entity_id:number
+		 * @return class_id:string
+		 */
+		Diluculum::LuaValueList get_entity_class_id( const Diluculum::LuaValueList& args );
+
 	private:
 		WorldGate* m_gate;
 };

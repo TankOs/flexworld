@@ -69,6 +69,13 @@ class WorldGate {
 		 * @throws std::runtime_error in case of any error.
 		 */
 		virtual void get_entity_position( uint32_t entity_id, EntityPosition& position, std::string& planet_id ) = 0;
+
+		/** Get an entity's class ID.
+		 * @param entity_id Entity ID.
+		 * @return Entity's class ID.
+		 * @throws std::runtime_error in case of any error.
+		 */
+		virtual std::string get_entity_class_id( uint32_t entity_id ) = 0;
 };
 
 }
