@@ -1052,13 +1052,12 @@ void SessionHost::get_entity_position( uint32_t entity_id, EntityPosition& posit
 }
 
 uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t parent_id, const std::string& hook_id ) {
-	m_lock_facility.lock_world( true );
-
 	// Check for valid class.
 	if( !cls_id.is_valid_resource() ) {
-		m_lock_facility.lock_world( false );
 		throw std::runtime_error( "Invalid class." );
 	}
+
+	m_lock_facility.lock_world( true );
 
 	const Class* cls = get_or_load_class( cls_id );
 
@@ -1112,8 +1111,59 @@ uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t parent_id, c
 	return ent_id;
 }
 
-uint32_t SessionHost::create_entity( const FlexID& /*cls_id*/, uint32_t /*container_id*/ ) {
-	return 0;
+uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t container_id ) {
+	// Check for valid class.
+	if( !cls_id.is_valid_resource() ) {
+		throw std::runtime_error( "Invalid class." );
+	}
+
+	m_lock_facility.lock_world( true );
+
+	const Class* cls = get_or_load_class( cls_id );
+
+	if( cls == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Class not found." );
+	}
+
+	// Find parent entity.
+	const Entity* parent_ent = m_world.find_entity( container_id );
+
+	if( parent_ent == nullptr ) {
+		m_lock_facility.lock_world( false );
+		throw std::runtime_error( "Parent entity not found." );
+	}
+
+	// Create entity.
+	Entity& ent = m_world.create_entity( cls_id );
+
+	// Attach entity to parent.
+	m_world.attach_entity( ent.get_id(), parent_ent->get_id(), "_cont" );
+
+	// Remember properties.
+	Entity::ID ent_id = ent.get_id();
+	sf::Vector3f ent_position = ent.get_position();
+
+	m_lock_facility.lock_world( false );
+
+	// Notify clients. TODO: Only for clients in range.
+	msg::CreateEntity msg;
+
+	msg.set_class( cls_id.get() );
+	msg.set_heading( 0 );
+	msg.set_id( ent_id );
+	msg.set_position( ent_position );
+	msg.set_parent_hook( "_cont" );
+	msg.set_parent_id( container_id );
+
+	// TODO Broadcast func.
+	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
+		if( m_player_infos[client_idx].connected ) {
+			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );
+		}
+	}
+
+	return ent_id;
 }
 
 }

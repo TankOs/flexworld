@@ -4,12 +4,12 @@
 
 -- TODO Error messages.
 function on_dblock_command( args, sender )
-	local username = flex.server:get_client_username( sender )
+	local username = fw.server:get_client_username( sender )
 	local planet = "construct" -- TODO Replace by real planet.
 	local reply_channel = "@" .. planet
 
 	if #args ~= 3 then
-		flex.server:broadcast_chat_message( "Usage: /dblock X Y Z", reply_channel, "Server" )
+		fw.server:broadcast_chat_message( "Usage: /dblock X Y Z", reply_channel, "Server" )
 		return
 	end
 
@@ -21,17 +21,17 @@ function on_dblock_command( args, sender )
 		return
 	end
 
-	flex.world:destroy_block( {x, y, z}, planet )
-	flex.server:broadcast_chat_message( username .. " destroyed block @ " .. x .. ", " .. y .. ", " .. z .. ".", reply_channel, "Server" )
+	fw.world:destroy_block( {x, y, z}, planet )
+	fw.server:broadcast_chat_message( username .. " destroyed block @ " .. x .. ", " .. y .. ", " .. z .. ".", reply_channel, "Server" )
 end
 
 function on_dblockrange_command( args, sender )
-	local username = flex.server:get_client_username( sender )
+	local username = fw.server:get_client_username( sender )
 	local planet = "construct" -- TODO Replace by real planet.
 	local reply_channel = "@" .. planet
 
 	if #args ~= 6 then
-		flex.server:broadcast_chat_message( "Usage: /dblockrange X0 Y0 Z0 X1 Y1 Z1", reply_channel, "Server" )
+		fw.server:broadcast_chat_message( "Usage: /dblockrange X0 Y0 Z0 X1 Y1 Z1", reply_channel, "Server" )
 		return
 	end
 
@@ -53,13 +53,13 @@ function on_dblockrange_command( args, sender )
 	for rx = x0, x1 do
 		for ry = y0, y1 do
 			for rz = z0, z1 do
-				flex.world:destroy_block( {rx, ry, rz}, planet )
+				fw.world:destroy_block( {rx, ry, rz}, planet )
 			end
 		end
 	end
 
-	flex.server:broadcast_chat_message( username .. " destroyed block range.", reply_channel, "Server" )
+	fw.server:broadcast_chat_message( username .. " destroyed block range.", reply_channel, "Server" )
 end
 
-flex.event:hook_command( "dblock", on_dblock_command )
-flex.event:hook_command( "dblockrange", on_dblockrange_command )
+fw.event:hook_command( "dblock", on_dblock_command )
+fw.event:hook_command( "dblockrange", on_dblockrange_command )

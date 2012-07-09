@@ -601,6 +601,35 @@ BOOST_AUTO_TEST_CASE( TestSessionHostGate ) {
 		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_hook() == "inventory" );
 		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_id() == entity->get_id() );
 
+		// Create stowed entity.
+		fw::Entity::ID stowed_entity_id = 0;
+
+		BOOST_CHECK_NO_THROW(
+			stowed_entity_id = host.create_entity(
+				CLASS_ID,
+				attached_entity->get_id()
+			)
+		);
+
+		// Verify.
+		const fw::Entity* stowed_entity = world.find_entity( stowed_entity_id );
+
+		BOOST_REQUIRE( stowed_entity != nullptr );
+		BOOST_CHECK( stowed_entity->get_parent() == attached_entity );
+		BOOST_CHECK( attached_entity->has_child( *stowed_entity, "_cont" ) == true );
+
+		// Poll IO service.
+		io_service.poll();
+
+		BOOST_CHECK( handler.m_last_create_entity_message.get_id() == stowed_entity->get_id() );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_heading() == 0 );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_class() == CLASS_ID.get() );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_position() == sf::Vector3f( 0, 0, 0 ) );
+		BOOST_CHECK( handler.m_last_create_entity_message.has_parent() == true );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_hook() == "_cont" );
+		BOOST_CHECK( handler.m_last_create_entity_message.get_parent_id() == attached_entity->get_id() );
+
+
 		// Check invalid calls.
 		BOOST_CHECK_EXCEPTION(
 			host.create_entity( FlexID::make( "package" ), ENTITY_POS, PLANET_ID ),

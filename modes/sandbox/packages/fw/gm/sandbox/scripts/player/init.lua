@@ -3,11 +3,12 @@
 --
 
 function on_connect( client_id )
-	local entity_id = flex.server:get_client_entity_id( client_id )
-	local backpack_id = flex.world:create_entity( "fw.containers/backpack", entity_id, "inventory" )
+	local entity_id = fw.server:get_client_entity_id( client_id )
+	local backpack_id = fw.world:create_entity( "fw.items.containers/backpack", entity_id, "inventory" )
 
-	--flex.world:create_entity( "fw.animals/horse", backpack_id )
-	--flex.world:create_entity( "fw.tools/shovel", backpack_id )
+	--fw.world:create_entity( "fw.animals/horse", backpack_id )
+	fw.world:create_entity( "fw.items.tools/shovel", backpack_id )
+	print( "OK" )
 end
 
-flex.event:hook_event( flex.Event.CONNECT, on_connect )
+fw.event:hook_event( fw.Event.CONNECT, on_connect )
