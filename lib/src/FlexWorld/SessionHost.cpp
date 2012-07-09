@@ -839,8 +839,14 @@ void SessionHost::handle_message( const msg::Use& use_msg, Server::ConnectionID 
 		return;
 	}
 
-	// Entity must be on same planet.
-	const Planet* linked_planet = m_world.find_linked_planet( use_msg.get_entity_id() );
+	// Player entity must be on same planet as used entity/uppermost parent of used entity.
+	const Entity* uppermost_entity = object;
+
+	if( uppermost_entity->get_parent() != nullptr ) {
+		uppermost_entity = &fw::get_uppermost_parent( *uppermost_entity );
+	}
+
+	const Planet* linked_planet = m_world.find_linked_planet( uppermost_entity->get_id() );
 
 	if( linked_planet != info.planet ) {
 		Log::Logger( Log::ERR ) << info.username << " tried to use entity #" << use_msg.get_entity_id() << " which is at another planet." << Log::endl;
@@ -1156,7 +1162,8 @@ uint32_t SessionHost::create_entity( const FlexID& cls_id, uint32_t container_id
 	msg.set_parent_hook( "_cont" );
 	msg.set_parent_id( container_id );
 
-	// TODO Broadcast func.
+	// TODO Send only to player who currently has the container open? (hard to
+	// tell with current code)
 	for( std::size_t client_idx = 0; client_idx < m_player_infos.size(); ++client_idx ) {
 		if( m_player_infos[client_idx].connected ) {
 			m_server->send_message( msg, static_cast<Server::ConnectionID>( client_idx ) );

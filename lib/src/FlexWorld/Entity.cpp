@@ -214,4 +214,16 @@ const std::string& Entity::get_child_hook( const Entity& child ) const {
 	assert( false && "Entity not found?!" );
 }
 
+const Entity& get_uppermost_parent( const Entity& child ) {
+	assert( child.get_parent() != nullptr );
+
+	const Entity* ent = &child;
+
+	while( ent->get_parent() != nullptr ) {
+		ent = ent->get_parent();
+	}
+
+	return *ent;
+}
+
 }

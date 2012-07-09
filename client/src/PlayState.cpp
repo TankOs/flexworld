@@ -927,24 +927,40 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 	if( m_entity_group_node == nullptr || msg.get_id() == get_shared().entity_id ) {
 		skip = true;
 	}
-	else {
+	else if( msg.has_parent() ) {
 		get_shared().lock_facility->lock_world( true );
 
-		const fw::Entity* entity = get_shared().world->find_entity( msg.get_id() );
-		assert( entity != nullptr );
+		const fw::Entity* parent_ent = get_shared().world->find_entity( msg.get_parent_id() );
+		assert( parent_ent != nullptr );
 
-		const fw::Entity* parent_ent = entity->get_parent();
+		if( parent_ent == nullptr ) {
+			std::cerr
+				<< "*** FATAL ERROR *** Entity #" << msg.get_id() << " shall be attached to #" << msg.get_parent_id()
+				<< ", hook " << msg.get_parent_hook() << ", but parent doesn't exist in world."
+				<< std::endl;
+			;
+			return;
+		}
 
 		// Check if entity is attached to invisible hook.
-		if( parent_ent ) {
-			if( *parent_ent->get_class().find_hook( parent_ent->get_child_hook( *entity ) ) == fw::Class::INVISIBLE_HOOK ) {
-				skip = true;
-			}
+		if( *parent_ent->get_class().find_hook( msg.get_parent_hook() ) == fw::Class::INVISIBLE_HOOK ) {
+			skip = true;
 		}
 
 		// Check if any parent entity is the player entity.
-		while( !skip && parent_ent ) {
+		while( parent_ent ) {
 			if( parent_ent->get_id() == get_shared().entity_id ) {
+				// Check if entity is inventory. If so, use it to get contents.
+				if( msg.get_parent_hook() == "inventory" ) {
+					fw::msg::Use use_msg;
+
+					use_msg.set_entity_id( msg.get_id() );
+
+					get_shared().client->send_message( use_msg );
+
+					std::cout << "Asking for inventory contents." << std::endl;
+				}
+
 				skip = true;
 				break;
 			}

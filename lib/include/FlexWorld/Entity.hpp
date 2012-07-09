@@ -177,4 +177,11 @@ class Entity : public NonCopyable {
 		const Entity* m_parent;
 };
 
+/** Get the uppermost parent of an entity.
+ * Undefined behaviour if no parent.
+ * @param entity Entity.
+ * @return Uppermost parent entity.
+ */
+const Entity& get_uppermost_parent( const Entity& child );
+
 }
