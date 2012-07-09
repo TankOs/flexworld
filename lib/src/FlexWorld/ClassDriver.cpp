@@ -6,7 +6,10 @@
 
 namespace flex {
 
-Class ClassDriver::load( const std::string& path ) {
+void ClassDriver::load( const std::string& path, Class& cls ) {
+	// Copy original file to keep ID.
+	Class new_cls( cls );
+
 	// Open file.
 	std::ifstream in( path.c_str() );
 	if( !in.is_open() ) {
@@ -19,31 +22,7 @@ Class ClassDriver::load( const std::string& path ) {
 
 	parser.GetNextDocument( doc );
 
-	std::unique_ptr<Class> cls;
 	std::string string;
-
-	// Read ID.
-	{
-		const YAML::Node* id_node( doc.FindValue( "ID" ) );
-		if( !id_node ) {
-			throw LoadException( "No ID set." );
-		}
-		else if( id_node->Type() != YAML::NodeType::Scalar ) {
-			throw LoadException( "ID not a scalar." );
-		}
-
-		*id_node >> string;
-
-		FlexID id;
-		if( !id.parse( string ) ) {
-			throw LoadException( "Invalid ID." );
-		}
-		else if( !id.is_valid_resource() ) {
-			throw LoadException( "ID is not a resource." );
-		}
-
-		cls.reset( new Class( id ) );
-	}
 
 	// Read name.
 	{
@@ -60,7 +39,7 @@ Class ClassDriver::load( const std::string& path ) {
 			throw LoadException( "Name empty." );
 		}
 
-		cls->set_name( string );
+		new_cls.set_name( string );
 	}
 
 	// Read model.
@@ -83,7 +62,7 @@ Class ClassDriver::load( const std::string& path ) {
 			throw LoadException( "Model is not a resource." );
 		}
 
-		cls->set_model( Resource( id ) );
+		new_cls.set_model( Resource( id ) );
 	}
 
 	// Read origin.
@@ -107,7 +86,7 @@ Class ClassDriver::load( const std::string& path ) {
 			throw LoadException( "Invalid origin value(s)." );
 		}
 
-		cls->set_origin( origin );
+		new_cls.set_origin( origin );
 	}
 
 	// Read scale.
@@ -131,7 +110,7 @@ Class ClassDriver::load( const std::string& path ) {
 			throw LoadException( "Invalid scale value(s)." );
 		}
 
-		cls->set_scale( scale );
+		new_cls.set_scale( scale );
 	}
 
 	// Read bounding box.
@@ -162,7 +141,7 @@ Class ClassDriver::load( const std::string& path ) {
 			throw LoadException( "Invalid width, height and/or depth for BoundingBox." );
 		}
 
-		cls->set_bounding_box( box );
+		new_cls.set_bounding_box( box );
 	}
 
 	// Read hooks.
@@ -202,7 +181,7 @@ Class ClassDriver::load( const std::string& path ) {
 					throw LoadException( "Invalid hook origin value (" + hook_name + ")." );
 				}
 
-				cls->set_hook( hook_name, hook_origin );
+				new_cls.set_hook( hook_name, hook_origin );
 			}
 		}
 	}
@@ -234,7 +213,7 @@ Class ClassDriver::load( const std::string& path ) {
 					throw LoadException( "Texture ID is not a resource (" + texture_id + ")." );
 				}
 
-				cls->add_texture( Resource( flex_id ) );
+				new_cls.add_texture( Resource( flex_id ) );
 			}
 		}
 	}
@@ -258,11 +237,12 @@ Class ClassDriver::load( const std::string& path ) {
 				throw LoadException( "ContainerImage is not a resource." );
 			}
 
-			cls->set_container_image( Resource( id ) );
+			new_cls.set_container_image( Resource( id ) );
 		}
 	}
 
-	return *cls;
+	// Loading succeeded, copy loaded class to output parameter.
+	cls = new_cls;
 }
 
 }

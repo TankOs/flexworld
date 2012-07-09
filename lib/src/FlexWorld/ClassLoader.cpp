@@ -58,7 +58,9 @@ Class ClassLoader::load( const FlexID& id ) const {
 	// Found, load the class.
 	try {
 		// Load class.
-		Class cls = ClassDriver::load( found_path );
+		Class cls( id );
+
+		ClassDriver::load( found_path, cls );
 
 		// Class loaded, check referenced assets.
 		// Textures.

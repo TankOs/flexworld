@@ -1,0 +1,4 @@
+Name: "Pillar (middle)"
+Textures:
+  - "fw.mats/stone.png"
+Model: "fw.struct.rome/pillar_middle.fwm"

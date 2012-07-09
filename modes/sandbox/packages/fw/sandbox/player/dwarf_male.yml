@@ -1,8 +1,0 @@
-ID: "fw.sandbox.player/dwarf_male"
-Name: "Dwarf (male)"
-Origin: [30.0, 0.0, 17.0]
-Scale: [0.03, 0.03, 0.03]
-Textures:
-  - "fw.base.human/dwarf_male.jpg"
-  - "fw.base.human/dwarf_axe.jpg"
-Model: "fw.base.human/dwarf_male.fwm"

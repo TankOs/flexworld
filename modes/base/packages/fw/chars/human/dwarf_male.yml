@@ -1,0 +1,9 @@
+Name: "Dwarf (male)"
+Origin: [30.0, 0.0, 17.0]
+Scale: [0.03, 0.03, 0.03]
+Hooks:
+  rhand: [-0.8, 0, -0.25]
+Textures:
+  - "fw.chars.human/dwarf_male.jpg"
+  - "fw.chars.human/dwarf_axe.jpg"
+Model: "fw.chars.human/dwarf_male.fwm"

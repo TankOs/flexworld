@@ -10,11 +10,12 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 
 	// Load class.
 	{
-		BOOST_CHECK_NO_THROW( ClassDriver::load( DATA_DIRECTORY + "/packages/test/grass.yml" ) );
-		Class cls = ClassDriver::load( DATA_DIRECTORY + "/packages/test/grass.yml" );
+		Class cls( FlexID::make( "some/class" ) );
+
+		BOOST_CHECK_NO_THROW( ClassDriver::load( DATA_DIRECTORY + "/packages/test/grass.yml", cls ) );
 
 		// Verify loaded data.
-		BOOST_CHECK( cls.get_id().get() == "test/grass" );
+		BOOST_CHECK( cls.get_id().get() == "some/class" );
 		BOOST_CHECK( cls.get_name() == "Grass" );
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 0.1f, 0.2f, 0.3f ) );
 		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 0.11f, 0.22f, 0.33f ) );
@@ -40,10 +41,27 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 		BOOST_CHECK( cls.get_container_image().get_id().get() == "test/image.png" );
 	}
 
+	// Load class fails and doesn't change previous class state.
+	{
+		Class cls( FlexID::make( "some/class" ) );
+
+		cls.set_name( "Meow" );
+
+		BOOST_CHECK_EXCEPTION(
+			ClassDriver::load( DATA_DIRECTORY + "/packages/test/meow.yml", cls ),
+			ClassDriver::LoadException,
+			ExceptionChecker<ClassDriver::LoadException>( "Failed to open file." )
+		);
+
+		BOOST_CHECK( cls.get_name() == "Meow" );
+	}
+
 	// Load class with reserved hook names.
 	{
+		Class cls( FlexID::make( "some/class" ) );
+
 		BOOST_CHECK_EXCEPTION(
-			ClassDriver::load( DATA_DIRECTORY + "/packages/test/reserved_hook.yml" ),
+			ClassDriver::load( DATA_DIRECTORY + "/packages/test/reserved_hook.yml", cls ),
 			ClassDriver::LoadException,
 			ExceptionChecker<ClassDriver::LoadException>( "Invalid use of reserved hook name." )
 		);

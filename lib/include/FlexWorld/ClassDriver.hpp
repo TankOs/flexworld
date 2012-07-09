@@ -17,11 +17,12 @@ class ClassDriver {
 		FLEX_MAKE_RUNTIME_ERROR_EXCEPTION( LoadException );
 
 		/** Load from file.
+		 * If loading fails the cls parameter keeps untouched.
 		 * @param path Path.
-		 * @return Loaded class.
+		 * @param cls Class in which loaded data is stored into.
 		 * @throws LoadException if YAML parser failed to parse loaded data.
 		 */
-		static Class load( const std::string& path );
+		static void load( const std::string& path, Class& cls );
 };
 
 }

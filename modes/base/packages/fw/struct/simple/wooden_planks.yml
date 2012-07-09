@@ -1,0 +1,4 @@
+Name: "Wooden planks"
+Textures:
+  - "fw.mats.nature/wooden_planks.png"
+Model: "fw.struct.prim/cube.fwm"

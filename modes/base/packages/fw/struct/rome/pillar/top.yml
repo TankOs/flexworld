@@ -1,0 +1,4 @@
+Name: "Pillar (top)"
+Textures:
+  - "fw.mats.nature/stone.png"
+Model: "fw.struct.rome/pillar_top.fwm"

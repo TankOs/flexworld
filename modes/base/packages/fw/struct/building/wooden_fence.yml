@@ -1,0 +1,4 @@
+Name: "Fence (wooden)"
+Textures:
+  - "fw.mats.nature/wooden_planks.png"
+Model: "fw.struct.building/fence.fwm"

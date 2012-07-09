@@ -110,7 +110,7 @@ bool SessionHost::start() {
 	m_lock_facility.lock_world( true );
 
 	// Load required grass class.
-	const Class* grass_cls = get_or_load_class( FlexID::make( "fw.base.nature/grass" ) );
+	const Class* grass_cls = get_or_load_class( FlexID::make( "fw.struct.simple/grass" ) );
 
 	if( grass_cls == nullptr ) {
 		Log::Logger( Log::FATAL ) << "Failed to load grass class." << Log::endl;

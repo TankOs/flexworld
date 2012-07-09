@@ -1,5 +1,0 @@
-ID: "fw.base.nature/wooden_planks"
-Name: "Wooden planks"
-Textures:
-  - "fw.base.nature/wooden_planks.png"
-Model: "fw.base.prim/cube.fwm"

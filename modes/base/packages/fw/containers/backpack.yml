@@ -1,6 +1,0 @@
-ID: "fw.containers/backpack"
-Name: "Backpack"
-Textures:
-  - "fw.base.nature/wooden_planks.png"
-Model: "fw.containers/backpack.fwm"
-ContainerImage: "fw.containers/uo_backpack.png"
