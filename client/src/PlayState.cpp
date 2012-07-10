@@ -9,6 +9,7 @@
 #include "PlanetDrawable.hpp"
 #include "EntityGroupNode.hpp"
 #include "ChatController.hpp"
+#include "ContainerManager.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -33,7 +34,7 @@ static const sf::Time RUN_TIME = sf::milliseconds( 200 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
-	m_user_interface( target, get_shared().user_settings.get_controls() ),
+	m_user_interface( target, get_shared().user_settings.get_controls(), m_resource_manager ),
 	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
@@ -930,7 +931,11 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 	else if( msg.has_parent() ) {
 		get_shared().lock_facility->lock_world( true );
 
-		const fw::Entity* parent_ent = get_shared().world->find_entity( msg.get_parent_id() );
+		// Get entity and parent entity.
+		const fw::Entity* ent = get_shared().world->find_entity( msg.get_id() );
+		assert( ent != nullptr );
+
+		const fw::Entity* parent_ent = ent->get_parent();
 		assert( parent_ent != nullptr );
 
 		if( parent_ent == nullptr ) {
@@ -939,6 +944,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 				<< ", hook " << msg.get_parent_hook() << ", but parent doesn't exist in world."
 				<< std::endl;
 			;
+			get_shared().lock_facility->lock_world( false );
 			return;
 		}
 
@@ -955,10 +961,10 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 					fw::msg::Use use_msg;
 
 					use_msg.set_entity_id( msg.get_id() );
-
 					get_shared().client->send_message( use_msg );
 
-					std::cout << "Asking for inventory contents." << std::endl;
+					// Create container for entity.
+					m_user_interface.get_container_manager().create_container( *ent );
 				}
 
 				skip = true;

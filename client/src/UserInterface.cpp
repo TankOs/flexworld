@@ -1,5 +1,6 @@
 #include "UserInterface.hpp"
 #include "ChatController.hpp"
+#include "ContainerManager.hpp"
 #include "RocketEventDispatcher.hpp"
 #include "Controls.hpp"
 
@@ -15,11 +16,13 @@
 
 UserInterface::UserInterface(
 	sf::RenderTarget& render_target,
-	const Controls& controls
+	const Controls& controls,
+	ResourceManager& resource_manager
 ) :
 	m_background_shape( sf::Vector2f( static_cast<float>( render_target.getSize().x ), static_cast<float>( render_target.getSize().y ) ) ),
 	m_render_target( render_target ),
 	m_controls( controls ),
+	m_resource_manager( resource_manager ),
 	m_context( 
 		Rocket::Core::CreateContext(
 			"desk",
@@ -43,22 +46,17 @@ UserInterface::UserInterface(
 	m_last_event_consumed( false ),
 	m_consume_next_chat_event( false )
 {
-	// Load fonts.
-	Rocket::Core::FontDatabase::LoadFontFace(
-		(fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/Economica-Bold.ttf" )).c_str(),
-		"MenuFont",
-		Rocket::Core::Font::STYLE_NORMAL,
-		Rocket::Core::Font::WEIGHT_NORMAL
-	);
-
 	// Load documents.
 	m_chat_document = m_chat_context->LoadDocument(
 		(fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/chat.rml" )).c_str()
 	);
+	assert( m_chat_document );
 
 	// Prepare controllers.
 	m_chat_controller.reset( new ChatController( m_chat_document ) );
 	m_chat_controller->on_send_click = std::bind( &UserInterface::on_chat_send_click, this );
+
+	m_container_manager.reset( new ContainerManager( *m_context, m_resource_manager ) );
 
 	// Background shape.
 	m_background_shape.setFillColor( sf::Color( 0, 0, 0, 130 ) );
@@ -127,8 +125,17 @@ void UserInterface::handle_event( const sf::Event& event ) {
 	}
 
 	// The following events only concern windows except chat prompt.
-
 	if( event.type == sf::Event::KeyPressed ) {
+		// Close desk?
+		if( event.key.code == sf::Keyboard::Escape ) {
+			if( m_desk_visible ) {
+				m_desk_visible = false;
+				m_close_book_sound.play();
+				m_last_event_consumed = true;
+				return;
+			}
+		}
+
 		Controls::Action action = m_controls.get_key_action( event.key.code );
 
 		switch( action ) {
@@ -214,4 +221,8 @@ void UserInterface::on_chat_send_click() {
 
 ChatController& UserInterface::get_chat_controller() {
 	return *m_chat_controller;
+}
+
+ContainerManager& UserInterface::get_container_manager() {
+	return *m_container_manager;
 }

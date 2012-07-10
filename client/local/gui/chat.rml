@@ -62,7 +62,7 @@
 		</style>
 	</head>
 	<body>
-		<div class="window" style="width:600px;" id="chat_window">
+		<div class="window" id="chat_window">
 			<handle move_target="chat_window"><title>Chat</title></handle>
 			<tabset id="tabset">
 			</tabset>

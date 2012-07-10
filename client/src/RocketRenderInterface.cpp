@@ -137,10 +137,19 @@ bool RocketRenderInterface::LoadTexture(
 	Rocket::Core::Vector2i& texture_dimensions,
 	const Rocket::Core::String& source
 ) {
+	// Check if the source filename has been marked as being a game file. Remove
+	// the part before + incl. "@@".
+	Rocket::Core::String cleaned_source = source;
+	Rocket::Core::String::size_type atat_pos = cleaned_source.Find( "@@" );
+
+	if( atat_pos != Rocket::Core::String::npos ) {
+		cleaned_source.Erase( 0, atat_pos + 2 );
+	}
+
 	// Try to load the texture.
 	sf::Texture* texture = new sf::Texture;
 
-	if( !texture->loadFromFile( std::string( source.CString() ) ) ) {
+	if( !texture->loadFromFile( std::string( cleaned_source.CString() ) ) ) {
 		delete texture;
 		return false;
 	}

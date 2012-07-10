@@ -31,6 +31,14 @@ class ResourceManager {
 		 */
 		void set_base_path( const std::string& path );
 
+		/** Find path for an ID.
+		 * Utility function, does not load anything. Uses the base path to look for the like.
+		 * @param id ID (must be valid resource).
+		 * @param path Set to found path if matched.
+		 * @return true if found.
+		 */
+		bool find_path( const fw::FlexID& id, std::string& path ) const;
+
 		/** Prepare a texture.
 		 * Loads the image data from disk but does not create the OpenGL texture
 		 * yet. This is useful when loading resources from threads without an

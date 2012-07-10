@@ -7,6 +7,7 @@
 #include <FWSG/BufferObject.hpp>
 #include <fstream>
 #include <iterator>
+#include <cassert>
 
 ResourceManager::ResourceManager() :
 	m_anisotropy_level( 0 ),
@@ -21,6 +22,21 @@ void ResourceManager::set_base_path( const std::string& path ) {
 	if( m_base_path.size() > 0 && m_base_path[m_base_path.size() - 1] != '/' ) {
 		m_base_path += '/';
 	}
+}
+
+bool ResourceManager::find_path( const fw::FlexID& id, std::string& path ) const {
+	assert( id.is_valid_resource() );
+
+	// Build path and try to open.
+	std::string check_path = m_base_path + id.as_path();
+	std::ifstream in_file( check_path.c_str(), std::ios::in | std::ios::binary );
+
+	if( !in_file.good() ) {
+		return false;
+	}
+
+	path = check_path;
+	return true;
 }
 
 bool ResourceManager::load_texture( const fw::FlexID& id ) {

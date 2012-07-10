@@ -1,0 +1,29 @@
+<rml>
+	<head>
+		<style>
+			body {
+				font-family:MenuFont;
+			}
+
+			#container_window {
+				position:absolute;
+				left:0;
+				top:0;
+			}
+
+			#container {
+				position:absolute;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div style="min-width:50px; min-height:50px;" id="container_window">
+			<handle move_target="container_window" style="display:block;">
+				<div id="container"></div>
+				<img id="background"/>
+			</handle>
+		</div>
+
+	</body>
+</rml>

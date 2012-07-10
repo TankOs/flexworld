@@ -8,6 +8,8 @@
 
 class ChatController;
 class Controls;
+class ContainerManager;
+class ResourceManager;
 
 namespace Rocket {
 namespace Core {
@@ -29,10 +31,12 @@ class UserInterface {
 		/** Ctor.
 		 * @param render_target Render target.
 		 * @param controls Controls.
+		 * @param resource_manager Resource manager.
 		 */
 		UserInterface(
 			sf::RenderTarget& render_target,
-			const Controls& controls
+			const Controls& controls,
+			ResourceManager& resource_manager
 		);
 
 		/** Dtor.
@@ -74,6 +78,11 @@ class UserInterface {
 		 */
 		ChatController& get_chat_controller();
 
+		/** Get container manager.
+		 * @return Container manager.
+		 */
+		ContainerManager& get_container_manager();
+
 		boost::function<void( const sf::String& )> on_chat_message; ///< Fired when user wants to send chat message.
 
 	private:
@@ -85,9 +94,12 @@ class UserInterface {
 		sf::Sound m_close_book_sound;
 		sf::RectangleShape m_background_shape;
 		std::unique_ptr<ChatController> m_chat_controller;
+		std::unique_ptr<ContainerManager> m_container_manager;
 
 		sf::RenderTarget& m_render_target;
 		const Controls& m_controls;
+		ResourceManager& m_resource_manager;
+
 		Rocket::Core::Context* m_context;
 		Rocket::Core::Context* m_chat_context;
 		Rocket::Core::ElementDocument* m_chat_document;
