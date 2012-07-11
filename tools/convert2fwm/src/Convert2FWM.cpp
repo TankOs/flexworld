@@ -154,7 +154,7 @@ int main( int argc, char** argv ) {
 	sf::Vector3f lowest_point( std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() );
 	sf::Vector3f highest_point( 0, 0, 0 );
 	sf::Vector3f shift( 0, 0, 0 );
-	flex::FloatCuboid bounding_box( 0, 0, 0, 0 );
+	fw::FloatCuboid bounding_box( 0, 0, 0, 0 );
 
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
 		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
@@ -236,18 +236,18 @@ int main( int argc, char** argv ) {
 	std::size_t num_total_vertices = 0;
 	std::size_t num_total_triangles = 0;
 
-	std::vector<sf::FloatRect> coverage_rects( flex::NUM_FACES, sf::FloatRect( 0, 0, 0, 0 ) );
-	std::vector<float> areas( flex::NUM_FACES, 0 );
+	std::vector<sf::FloatRect> coverage_rects( fw::NUM_FACES, sf::FloatRect( 0, 0, 0, 0 ) );
+	std::vector<float> areas( fw::NUM_FACES, 0 );
 
 	float big_boundary = 1.0f - boundary_tolerance;
 	float small_boundary = boundary_tolerance;
 
-	flex::Model model;
+	fw::Model model;
 
 	// Add meshes.
 	for( unsigned int mesh_index = 0; mesh_index < scene->mNumMeshes; ++mesh_index ) {
 		const aiMesh* ai_mesh( scene->mMeshes[mesh_index] );
-		flex::Mesh mesh;
+		fw::Mesh mesh;
 
 		// Skip empty meshes.
 		if( ai_mesh->mNumVertices < 3 || ai_mesh->mNumFaces < 1 ) {
@@ -376,43 +376,43 @@ int main( int argc, char** argv ) {
 				v0.y >= big_boundary && v1.y >= big_boundary && v2.y >= big_boundary &&
 				n0.y > 0.0f && n1.y > 0.0f && n2.y > 0.0f
 			) {
-				areas[flex::UP_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
-				update_coverage( coverage_rects[flex::UP_FACE], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
+				areas[fw::UP_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
+				update_coverage( coverage_rects[fw::UP_FACE], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
 			}
 			else if(
 				v0.y <= small_boundary && v1.y <= small_boundary && v2.y <= small_boundary &&
 				n0.y < 0.0f && n1.y < 0.0f && n2.y < 0.0f
 			) {
-				areas[flex::DOWN_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
-				update_coverage( coverage_rects[flex::DOWN_FACE], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
+				areas[fw::DOWN_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.x, v0.z ), sf::Vector2f( v1.x, v1.z ), sf::Vector2f( v2.x, v2.z ) );
+				update_coverage( coverage_rects[fw::DOWN_FACE], sf::Vector2f( min.x, min.z ), sf::Vector2f( max.x, max.z ) );
 			}
 			else if(
 				v0.z <= small_boundary && v1.z <= small_boundary && v2.z <= small_boundary &&
 				n0.z < 0.0f && n1.z < 0.0f && n2.z < 0.0f
 			) {
-				areas[flex::BACK_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
-				update_coverage( coverage_rects[flex::BACK_FACE], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
+				areas[fw::BACK_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
+				update_coverage( coverage_rects[fw::BACK_FACE], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
 			}
 			else if(
 				v0.z >= big_boundary && v1.z >= big_boundary && v2.z >= big_boundary &&
 				n0.z > 0.0f && n1.z > 0.0f && n2.z > 0.0f
 			) {
-				areas[flex::FRONT_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
-				update_coverage( coverage_rects[flex::FRONT_FACE], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
+				areas[fw::FRONT_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.x, v0.y ), sf::Vector2f( v1.x, v1.y ), sf::Vector2f( v2.x, v2.y ) );
+				update_coverage( coverage_rects[fw::FRONT_FACE], sf::Vector2f( min.x, min.y ), sf::Vector2f( max.x, max.y ) );
 			}
 			else if(
 				v0.x >= big_boundary && v1.x >= big_boundary && v2.x >= big_boundary &&
 				n0.x > 0.0f && n1.x > 0.0f && n2.x > 0.0f
 			) {
-				areas[flex::RIGHT_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
-				update_coverage( coverage_rects[flex::RIGHT_FACE], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
+				areas[fw::RIGHT_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
+				update_coverage( coverage_rects[fw::RIGHT_FACE], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
 			}
 			else if(
 				v0.x <= small_boundary && v1.x <= small_boundary && v2.x <= small_boundary &&
 				n0.x < 0.0f && n1.x < 0.0f && n2.x < 0.0f
 			) {
-				areas[flex::LEFT_FACE] += flex::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
-				update_coverage( coverage_rects[flex::LEFT_FACE], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
+				areas[fw::LEFT_FACE] += fw::calc_triangle_area( sf::Vector2f( v0.y, v0.z ), sf::Vector2f( v1.y, v1.z ), sf::Vector2f( v2.y, v2.z ) );
+				update_coverage( coverage_rects[fw::LEFT_FACE], sf::Vector2f( min.y, min.z ), sf::Vector2f( max.y, max.z ) );
 			}
 
 			mesh.get_geometry().add_index( indices[0] );
@@ -424,16 +424,16 @@ int main( int argc, char** argv ) {
 	}
 
 	// Reset coverage rects that do not really cover the full rect.
-	for( int face_idx = 0; face_idx < flex::NUM_FACES; ++face_idx ) {
+	for( int face_idx = 0; face_idx < fw::NUM_FACES; ++face_idx ) {
 		sf::FloatRect& rect = coverage_rects[face_idx];
-		float diff = flex::calc_rect_area( rect.width, rect.height ) - areas[face_idx];
+		float diff = fw::calc_rect_area( rect.width, rect.height ) - areas[face_idx];
 
 		if( rect.width == 0.0f || diff > AREA_DIFFERENCE_TOLERANCE ) {
 			rect = sf::FloatRect( 0, 0, 0, 0 );
 		}
 
 		// Finally set model's coverage rect.
-		model.set_face_coverage( static_cast<flex::Face>( face_idx ), rect );
+		model.set_face_coverage( static_cast<fw::Face>( face_idx ), rect );
 	}
 
 	// Set basic props.
@@ -441,8 +441,8 @@ int main( int argc, char** argv ) {
 	model.set_block_scale_divisor( scale_divisor );
 
 	// Write output file.
-	flex::ModelDriver::Buffer buffer;
-	buffer = flex::ModelDriver::serialize( model );
+	fw::ModelDriver::Buffer buffer;
+	buffer = fw::ModelDriver::serialize( model );
 
 	std::ofstream out_file( argv[2], std::ios::binary | std::ios::out );
 
@@ -477,12 +477,12 @@ int main( int argc, char** argv ) {
 			<< ", " << num_total_triangles << " triangle" << (num_total_triangles > 1 ? "s" : "")
 			<< ", block scale divisor " << scale_divisor
 			<< ", coverage "
-			<< (coverage_rects[flex::UP_FACE].width > 0.0f ? "U" : "")
-			<< (coverage_rects[flex::DOWN_FACE].width > 0.0f ? "D" : "")
-			<< (coverage_rects[flex::BACK_FACE].width > 0.0f ? "B" : "")
-			<< (coverage_rects[flex::RIGHT_FACE].width > 0.0f ? "R" : "")
-			<< (coverage_rects[flex::FRONT_FACE].width > 0.0f ? "F" : "")
-			<< (coverage_rects[flex::LEFT_FACE].width > 0.0f ? "L" : "")
+			<< (coverage_rects[fw::UP_FACE].width > 0.0f ? "U" : "")
+			<< (coverage_rects[fw::DOWN_FACE].width > 0.0f ? "D" : "")
+			<< (coverage_rects[fw::BACK_FACE].width > 0.0f ? "B" : "")
+			<< (coverage_rects[fw::RIGHT_FACE].width > 0.0f ? "R" : "")
+			<< (coverage_rects[fw::FRONT_FACE].width > 0.0f ? "F" : "")
+			<< (coverage_rects[fw::LEFT_FACE].width > 0.0f ? "L" : "")
 			<< std::endl
 			<< "Bounding box: " << bounding_box.x << ", " << bounding_box.y << ", " << bounding_box.z
 			<< " / " << bounding_box.width << " * " << bounding_box.height << " * " << bounding_box.depth
