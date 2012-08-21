@@ -72,5 +72,5 @@ class TextScroller {
 		float m_line_spacing;
 		unsigned int m_font_size;
 
-		const sf::Font* m_font;
+		sf::Font m_font;
 };

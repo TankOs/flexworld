@@ -2,6 +2,8 @@
 
 #include "State.hpp"
 
+#include <SFML/Graphics/Font.hpp>
+
 /** Intro state.
  */
 class IntroState : public State {
@@ -20,4 +22,5 @@ class IntroState : public State {
 
 	private:
 		sf::Time m_elapsed;
+		sf::Font m_font;
 };

@@ -1,6 +1,8 @@
 #include "IntroState.hpp"
 #include "StateFactory.hpp"
 
+#include <FlexWorld/Config.hpp>
+
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
@@ -10,6 +12,7 @@ IntroState::IntroState( sf::RenderWindow& target ) :
 }
 
 void IntroState::init() {
+	m_font.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "Economica-Bold.ttf" ) );
 }
 
 void IntroState::cleanup() {
@@ -37,7 +40,7 @@ void IntroState::render() const {
 
 	window.clear();
 
-	sf::Text text( "FlexWorld" );
+	sf::Text text( "FlexWorld", m_font );
 	window.draw( text );
 
 	window.display();

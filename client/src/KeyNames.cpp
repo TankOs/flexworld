@@ -68,7 +68,7 @@ std::string get_key_name( int keycode ) {
 		key_names[sf::Keyboard::Dash] = "-";
 		key_names[sf::Keyboard::Space] = "Space";
 		key_names[sf::Keyboard::Return] = "Enter";
-		key_names[sf::Keyboard::Back] = "Back";
+		key_names[sf::Keyboard::BackSpace] = "Backspace";
 		key_names[sf::Keyboard::Tab] = "Tab";
 		key_names[sf::Keyboard::PageUp] = "Page up";
 		key_names[sf::Keyboard::PageDown] = "Page down";

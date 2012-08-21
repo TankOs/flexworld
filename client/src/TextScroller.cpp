@@ -1,5 +1,7 @@
 #include "TextScroller.hpp"
 
+#include <FlexWorld/Config.hpp>
+
 #include <SFML/Graphics/RenderTarget.hpp>
 
 TextScroller::TextScroller( const sf::Vector2f& bottom_left ) :
@@ -8,9 +10,9 @@ TextScroller::TextScroller( const sf::Vector2f& bottom_left ) :
 	m_fade_duration( sf::milliseconds( 800 ) ),
 	m_max_num_lines( 10 ),
 	m_line_spacing( 5.0f ),
-	m_font_size( 12 ),
-	m_font( &sf::Font::getDefaultFont() )
+	m_font_size( 12 )
 {
+	m_font.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/DejaVuSans.ttf" ) );
 }
 
 void TextScroller::set_sustain_duration( const sf::Time& duration ) {
@@ -87,10 +89,10 @@ void TextScroller::invalidate() {
 		Line& line = *r_line_iter;
 
 		// Reset font + character size.
-		line.text.setFont( *m_font );
+		line.text.setFont( m_font );
 		line.text.setCharacterSize( m_font_size );
 
-		line.shadow.setFont( *m_font );
+		line.shadow.setFont( m_font );
 		line.shadow.setCharacterSize( m_font_size );
 
 		// Update position.

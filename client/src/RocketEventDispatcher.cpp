@@ -122,7 +122,7 @@ Rocket::Core::Input::KeyIdentifier translate_key( sf::Keyboard::Key key ) {
 		rocket_keys[sf::Keyboard::Dash] = Rocket::Core::Input::KI_OEM_MINUS;
 		rocket_keys[sf::Keyboard::Space] = Rocket::Core::Input::KI_SPACE;
 		rocket_keys[sf::Keyboard::Return] = Rocket::Core::Input::KI_RETURN;
-		rocket_keys[sf::Keyboard::Back] = Rocket::Core::Input::KI_BACK;
+		rocket_keys[sf::Keyboard::BackSpace] = Rocket::Core::Input::KI_BACK;
 		rocket_keys[sf::Keyboard::Tab] = Rocket::Core::Input::KI_TAB;
 		rocket_keys[sf::Keyboard::PageUp] = Rocket::Core::Input::KI_PRIOR;
 		rocket_keys[sf::Keyboard::PageDown] = Rocket::Core::Input::KI_NEXT;

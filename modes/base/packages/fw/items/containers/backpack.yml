@@ -1,5 +1,5 @@
 Name: "Backpack"
 Textures:
-  - "fw.mats.nature/wooden_planks.png"
+  - "fw.mats.cloth/cloth.png"
 Model: "fw.items.containers/backpack.fwm"
 ContainerImage: "fw.items.containers/uo_backpack.png"
