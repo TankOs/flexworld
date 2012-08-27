@@ -94,10 +94,6 @@ class PlayState : public State, fw::Client::Handler {
 		ObjectPreparerReader* m_object_preparer_reader;
 
 		// Controls.
-		sf::Vector3f m_velocity;
-		sf::Vector3f m_target_velocity;
-
-		bool m_update_velocity;
 		bool m_update_eyepoint;
 
 		bool m_walk_forward;

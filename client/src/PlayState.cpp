@@ -30,9 +30,6 @@
 #include <sstream>
 #include <iostream>
 
-static const float MAX_WALK_SPEED = 2.5f; // [m/s] TODO: Replace by class' walk speed.
-static const float MAX_RUN_SPEED = 12.0f; // [m/s] TODO: Replace by class' walk speed.
-static const float WALK_ACCELERATION = 24.0f; // x/s². TODO: Replace by class' acceleration.
 static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 static const sf::Time RUN_TIME = sf::milliseconds( 200 );
 
@@ -43,9 +40,6 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_object_preparer_reader( nullptr ),
-	m_velocity( 0, 0, 0 ),
-	m_target_velocity( 0, 0, 0 ),
-	m_update_velocity( false ),
 	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
@@ -90,6 +84,8 @@ void PlayState::init() {
 		static_cast<float>( get_render_target().getSize().x ) / 2.0f - m_crosshair_sprite.getLocalBounds().width / 2.0f,
 		static_cast<float>( get_render_target().getSize().y ) / 2.0f - m_crosshair_sprite.getLocalBounds().height / 2.0f
 	);
+
+	m_user_interface.on_chat_message = boost::bind( &PlayState::on_chat_message, this, _1 );
 
 	// Setup local sounds.
 	m_chat_buffer.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/sfx/chat.wav" ) );
@@ -143,9 +139,6 @@ void PlayState::init() {
 	m_resource_manager.set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
 	m_resource_manager.set_texture_filter( get_shared().user_settings.get_texture_filter() );
 
-	// Setup UI.
-	m_user_interface.on_chat_message = boost::bind( &PlayState::on_chat_message, this, _1 );
-
 	// XXX XXX Open broadcast channel.
 	m_user_interface.get_chat_controller().add_message( "Heya.", "Broadcast" );
 
@@ -155,6 +148,7 @@ void PlayState::init() {
 }
 
 void PlayState::cleanup() {
+	// Stop preparing objects.
 	if( m_object_preparer_reader && m_object_preparer_reader->is_running() ) {
 		m_object_preparer_reader->stop();
 	}
@@ -162,6 +156,7 @@ void PlayState::cleanup() {
 	// Close connections.
 	get_shared().client->stop();
 
+	// Stop host if we're running it ourselves.
 	if( get_shared().host ) {
 		get_shared().host->stop();
 	}
@@ -216,14 +211,14 @@ void PlayState::handle_event( const sf::Event& event ) {
 		event.key.code == sf::Keyboard::Escape
 	) {
 		leave( StateFactory::create_menu_state( get_render_target() ) );
+		return;
 	}
 
+	// Misc hardcoded commands.
 	if( event.type == sf::Event::KeyPressed ) {
 		if( event.key.code == sf::Keyboard::F3 ) { // Toggle wireframe.
 			const sg::WireframeState* wireframe_state = m_scene_graph->find_state<sg::WireframeState>();
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
-		}
-		else if( event.key.code == sf::Keyboard::F1 ) { // Toggle debug window.
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
 			m_text_scroller.add_text( L"Screenshot saved." );
@@ -266,32 +261,26 @@ void PlayState::handle_event( const sf::Event& event ) {
 					m_run = true;
 				}
 
-				m_update_velocity = true;
 				break;
 
 			case Controls::WALK_BACKWARD:
 				m_walk_backward = pressed;
-				m_update_velocity = true;
 				break;
 
 			case Controls::STRAFE_LEFT:
 				m_strafe_left = pressed;
-				m_update_velocity = true;
 				break;
 
 			case Controls::STRAFE_RIGHT:
 				m_strafe_right = pressed;
-				m_update_velocity = true;
 				break;
 
 			case Controls::JUMP:
 				m_fly_up = pressed;
-				m_update_velocity = true;
 				break;
 
 			case Controls::CROUCH:
 				m_fly_down = pressed;
-				m_update_velocity = true;
 				break;
 
 			case Controls::PRIMARY_ACTION:
@@ -404,30 +393,8 @@ void PlayState::handle_event( const sf::Event& event ) {
 }
 
 void PlayState::update( const sf::Time& delta ) {
-	// Ask IO service.
+	// Poll IO service.
 	get_shared().io_service->poll();
-
-	// Update velocity.
-	if( m_update_velocity ) {
-		// If we didn't receive our own entity yet, do not move (what to move anyways?).
-		if( !m_session_state.own_entity_received ) {
-			m_velocity.x = 0;
-			m_velocity.y = 0;
-			m_velocity.z = 0;
-		}
-		else {
-			m_target_velocity.x = (m_strafe_left ? -1.0f : 0.0f) + (m_strafe_right ? 1.0f : 0.0f);
-			m_target_velocity.y = (m_fly_up ? 1.0f : 0.0f) + (m_fly_down ? -1.0f : 0.0f);
-			m_target_velocity.z = (m_walk_forward ? -1.0f : 0.0f) + (m_walk_backward ? 1.0f : 0.0f);
-
-			fw::normalize( m_target_velocity );
-			m_target_velocity.x *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-			m_target_velocity.y *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-			m_target_velocity.z *= !m_run ? MAX_WALK_SPEED : MAX_RUN_SPEED;
-		}
-
-		m_update_velocity = false;
-	}
 
 	// Process mouse look only if window has focus and mouse pointer is grabbed.
 	if( m_has_focus && !m_mouse_pointer_visible ) {
@@ -455,43 +422,6 @@ void PlayState::update( const sf::Time& delta ) {
 
 			m_update_eyepoint = true;
 		}
-	}
-
-	// Movement.
-	if( m_velocity.x < m_target_velocity.x ) {
-		m_velocity.x = std::min( m_target_velocity.x, m_velocity.x + WALK_ACCELERATION * delta.asSeconds() );
-	}
-	else if( m_velocity.x > m_target_velocity.x ) {
-		m_velocity.x = std::max( m_target_velocity.x, m_velocity.x - WALK_ACCELERATION * delta.asSeconds() );
-	}
-
-	if( m_velocity.y < m_target_velocity.y ) {
-		m_velocity.y = std::min( m_target_velocity.y, m_velocity.y + WALK_ACCELERATION * delta.asSeconds() );
-	}
-	else if( m_velocity.y > m_target_velocity.y ) {
-		m_velocity.y = std::max( m_target_velocity.y, m_velocity.y - WALK_ACCELERATION * delta.asSeconds() );
-	}
-
-	if( m_velocity.z < m_target_velocity.z ) {
-		m_velocity.z = std::min( m_target_velocity.z, m_velocity.z + WALK_ACCELERATION * delta.asSeconds() );
-	}
-	else if( m_velocity.z > m_target_velocity.z ) {
-		m_velocity.z = std::max( m_target_velocity.z, m_velocity.z - WALK_ACCELERATION * delta.asSeconds() );
-	}
-
-	if( m_velocity.z != 0 ) {
-		m_camera.walk( m_velocity.z * delta.asSeconds() );
-		m_update_eyepoint = true;
-	}
-
-	if( m_velocity.x != 0 ) {
-		m_camera.strafe( m_velocity.x * delta.asSeconds() );
-		m_update_eyepoint = true;
-	}
-
-	if( m_velocity.y != 0 ) {
-		m_camera.fly( m_velocity.y * delta.asSeconds() );
-		m_update_eyepoint = true;
 	}
 
 	// If eyepoint changed update transform of scene graph.
@@ -1018,8 +948,6 @@ void PlayState::update_mouse_pointer() {
 		m_fly_down = false;
 		m_use = false;
 		m_run = false;
-
-		m_update_velocity = true;
 	}
 }
 
