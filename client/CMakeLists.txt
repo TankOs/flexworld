@@ -10,7 +10,6 @@ set(
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
 	${INC_DIR}/ChatController.hpp
-	${INC_DIR}/ChunkPreparerReader.hpp
 	${INC_DIR}/ClassDrawable.hpp
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
@@ -25,6 +24,7 @@ set(
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
+	${INC_DIR}/ObjectPreparerReader.hpp
 	${INC_DIR}/OptionsDocumentController.hpp
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
@@ -43,7 +43,6 @@ set(
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/ChatController.cpp
-	${SRC_DIR}/ChunkPreparerReader.cpp
 	${SRC_DIR}/ClassDrawable.cpp
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
@@ -59,6 +58,7 @@ set(
 	${SRC_DIR}/KeyNames.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
+	${SRC_DIR}/ObjectPreparerReader.cpp
 	${SRC_DIR}/OptionsDocumentController.cpp
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
@@ -128,11 +128,6 @@ elseif( LINUX )
 	)
 else()
 	message( FATAL_ERROR "Install?!?!?!" )
-endif()
-
-# Unittests.
-if( FW_BUILD_TEST )
-	add_subdirectory( "test" )
 endif()
 
 # Data.

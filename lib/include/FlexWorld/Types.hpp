@@ -15,4 +15,6 @@ typedef sf::Vector3<ChunkSizeType> ChunkSize; ///< Chunk size type.
 
 typedef sf::Vector3<ChunkSizeType> BlockVector; ///< Block position type.
 
+typedef uint32_t EntityID;
+
 }

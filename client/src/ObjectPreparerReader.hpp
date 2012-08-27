@@ -8,34 +8,34 @@
 #include <memory>
 
 class PlanetDrawable;
+class EntityGroupNode;
+
+namespace fw {
+class World;
+class LockFacility;
+}
 
 namespace ms {
 class Message;
 }
 
-/** Chunk preparer reader.
- * FWMS reader that listens for messages that concern chunk creations and
- * updates (message "chunk_created" and "chunk_updated").
- *
- * The reader will (re)create the chunk in memory (its geometry) and enqueue a
- * message "chunk_prepared" when completed.
+/** Object preparer reader.
+ * FWMS reader that listens for messages that concern chunk/entity creations
+ * and updates (messages "chunk_invalidated" and "entity_invalidated").
  *
  * Listens for:
- *   * chunk_created (fw::ChunkVector)
- *   * chunk_updated (fw::ChunkVector)
- *
- * Creates:
- *   * chunk_prepared (fw::ChunkVector)
+ *   * chunk_invalidated (fw::ChunkVector)
+ *   * entity_invalidated (fw::ChunkVector)
  */
-class ChunkPreparerReader : public ms::Reader {
+class ObjectPreparerReader : public ms::Reader {
 	public:
 		/** Ctor.
 		 */
-		ChunkPreparerReader();
+		ObjectPreparerReader();
 
 		/** Dtor.
 		 */
-		~ChunkPreparerReader();
+		~ObjectPreparerReader();
 
 		/** Check if worker thread is running.
 		 * @return true if running.
@@ -54,18 +54,29 @@ class ChunkPreparerReader : public ms::Reader {
 		void stop();
 
 		/** Set planet drawable.
-		 * The drawable will be used to finally prepare the chunks.
+		 * The drawable will be used to finally prepare the objects.
 		 * @param planet_drawable PlanetDrawable.
 		 */
 		void set_planet_drawable( std::shared_ptr<PlanetDrawable> planet_drawable );
 
-		/** Get planet drawable.
-		 * @return PlanetDrawable or nullptr if not set.
+		/** Set world.
+		 * @param world World.
 		 */
-		std::shared_ptr<PlanetDrawable> get_planet_drawable() const;
+		void set_world( const fw::World& world );
+
+		/** Set lock facility.
+		 * @param lock_facility Lock facility.
+		 */
+		void set_lock_facility( fw::LockFacility& lock_facility );
+
+		/** Set entity group node.
+		 * @param entity_group_node Entity group node.
+		 */
+		void set_entity_group_node( std::shared_ptr<EntityGroupNode> entity_group_node );
 
 	private:
 		typedef std::list<fw::ChunkVector> ChunkList;
+		typedef std::list<fw::EntityID> EntityList;
 
 		void handle_message( const ms::Message& message );
 		void thread_func();
@@ -77,8 +88,13 @@ class ChunkPreparerReader : public ms::Reader {
 		mutable boost::condition_variable m_condition;
 
 		std::shared_ptr<PlanetDrawable> m_planet_drawable;
+		std::shared_ptr<EntityGroupNode> m_entity_group_node;
 
 		ChunkList m_chunks;
+		EntityList m_entities;
+
+		const fw::World* m_world;
+		fw::LockFacility* m_lock_facility;
 
 		bool m_is_running;
 		bool m_terminate;

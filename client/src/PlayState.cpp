@@ -10,7 +10,7 @@
 #include "EntityGroupNode.hpp"
 #include "ChatController.hpp"
 #include "ContainerManager.hpp"
-#include "ChunkPreparerReader.hpp"
+#include "ObjectPreparerReader.hpp"
 #include "DebugReader.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
@@ -43,9 +43,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
-	m_chunk_preparer_reader( nullptr ),
-	m_do_prepare_objects( false ),
-	m_cancel_prepare_objects( false ),
+	m_object_preparer_reader( nullptr ),
 	m_velocity( 0, 0, 0 ),
 	m_target_velocity( 0, 0, 0 ),
 	m_update_velocity( false ),
@@ -101,6 +99,10 @@ void PlayState::init() {
 
 	// Setup message system.
 	m_router.create_reader<DebugReader>();
+	m_object_preparer_reader = &m_router.create_reader<ObjectPreparerReader>();
+
+	m_object_preparer_reader->set_world( *get_shared().world );
+	m_object_preparer_reader->set_lock_facility( *get_shared().lock_facility );
 
 	// Setup camera.
 	m_camera.set_fov( get_shared().user_settings.get_fov() );
@@ -152,11 +154,8 @@ void PlayState::init() {
 }
 
 void PlayState::cleanup() {
-	// Terminate objects preparation thread.
-	stop_and_wait_for_objects_preparation_thread();
-
-	if( m_chunk_preparer_reader && m_chunk_preparer_reader->is_running() ) {
-		m_chunk_preparer_reader->stop();
+	if( m_object_preparer_reader && m_object_preparer_reader->is_running() ) {
+		m_object_preparer_reader->stop();
 	}
 
 	// Close connections.
@@ -216,22 +215,6 @@ void PlayState::handle_event( const sf::Event& event ) {
 		event.key.code == sf::Keyboard::Escape
 	) {
 		leave( StateFactory::create_menu_state( get_render_target() ) );
-
-		// Cancel preparing objects.
-		{
-			boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_objects_mutex );
-			m_cancel_prepare_objects = true;
-		}
-
-		{
-			boost::lock_guard<boost::mutex> do_lock( m_prepare_objects_mutex );
-			m_do_prepare_objects = false;
-		}
-
-		// Cancel building VBOs.
-		if( m_planet_drawable ) {
-			m_planet_drawable->cancel_chunk_prepare();
-		}
 	}
 
 	if( event.type == sf::Event::KeyPressed ) {
@@ -699,14 +682,8 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 		return;
 	}
 
-	// Stop preparation thread.
-	stop_and_wait_for_objects_preparation_thread();
-
 	// Save current planet ID.
 	m_current_planet_id = msg.get_planet_name();
-
-	// Setup preparation thread for objects.
-	launch_objects_preparation_thread();
 
 	// Update view cuboid.
 	fw::Planet::Vector chunk_pos;
@@ -739,24 +716,15 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	m_scene_graph->attach( m_planet_drawable );
 	m_scene_graph->attach( m_entity_group_node );
 
-	// Create new chunk preparer reader if it hasn't been created yet.
-	if( m_chunk_preparer_reader == nullptr ) {
-		m_chunk_preparer_reader = &m_router.create_reader<ChunkPreparerReader>();
+	// Stop object preparer if running first.
+	if( m_object_preparer_reader->is_running() ) {
+		m_object_preparer_reader->stop();
 	}
 
-	if( m_chunk_preparer_reader->is_running() ) {
-		m_chunk_preparer_reader->stop();
-	}
-
-	m_chunk_preparer_reader->set_planet_drawable( m_planet_drawable );
-	m_chunk_preparer_reader->launch();
-
-	// Wait until preparer is running.
-	/*
-	while( !m_chunk_preparer_reader->is_running() ) {
-		std::cout << "Waiting..." << std::endl;
-	}
-	*/
+	// Update drawables.
+	m_object_preparer_reader->set_planet_drawable( m_planet_drawable );
+	m_object_preparer_reader->set_entity_group_node( m_entity_group_node );
+	m_object_preparer_reader->launch();
 
 	get_shared().lock_facility->lock_planet( *planet, false );
 
@@ -785,150 +753,12 @@ void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::
 	}
 
 	// Notify message system that we got a new chunk.
-	if( m_chunk_preparer_reader ) {
-		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_created" ) );
+	if( m_object_preparer_reader ) {
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
 		ms_message->set_property( ms::string_hash( "position" ), msg.get_position() );
 
 		m_router.enqueue_message( ms_message );
 	}
-
-	/*
-	// Add chunk to preparation list. Check if the same chunk has already been
-	// added. If so, bring to front.
-	{
-		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
-
-		ChunkPositionList::iterator pos_iter = std::find( m_chunk_list.begin(), m_chunk_list.end(), msg.get_position() );
-
-		if( pos_iter != m_chunk_list.end() ) {
-			m_chunk_list.erase( pos_iter );
-			m_chunk_list.push_front( msg.get_position() );
-		}
-		else {
-			m_chunk_list.push_back( msg.get_position() );
-		}
-	}
-
-	// Notify thread.
-	m_prepare_objects_condition.notify_one();
-	*/
-}
-
-void PlayState::prepare_objects() {
-	boost::unique_lock<boost::mutex> do_lock( m_prepare_objects_mutex );
-	sf::Clock clock;
-
-	while( m_do_prepare_objects ) {
-		// If there's no data, wait.
-		m_object_list_mutex.lock();
-
-		if( m_chunk_list.size() == 0 && m_entity_ids.size() == 0 ) {
-			m_object_list_mutex.unlock();
-			m_prepare_objects_condition.wait( do_lock );
-			continue;
-		}
-
-		// Work until all objects have been processed.
-		while( m_chunk_list.size() > 0 || m_entity_ids.size() > 0 ) {
-			// Shall we cancel?
-			{
-				boost::lock_guard<boost::mutex> cancel_lock( m_cancel_prepare_objects_mutex );
-
-				if( m_cancel_prepare_objects ) {
-					m_chunk_list.clear();
-					m_entity_ids.clear();
-					continue;
-				}
-			}
-
-			// Check for unprepared chunk.
-			if( m_chunk_list.size() > 0 ) {
-				// Get next chunk position.
-				fw::Planet::Vector chunk_pos = m_chunk_list.front();
-				m_chunk_list.pop_front();
-
-				m_object_list_mutex.unlock();
-
-				// Get planet.
-				get_shared().lock_facility->lock_world( true );
-
-				const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
-				assert( planet );
-				get_shared().lock_facility->lock_planet( *planet, true );
-				get_shared().lock_facility->lock_world( false );
-
-				// Make sure chunk exists.
-				if( planet->has_chunk( chunk_pos ) ) {
-					// Prepare chunk in renderer.
-					//m_planet_renderer->prepare_chunk( chunk_pos );
-					m_planet_drawable->prepare_chunk( chunk_pos );
-				}
-				else {
-#if !defined( NDEBUG )
-					std::cout << "Skipping, no chunk at given position." << std::endl;
-#endif
-				}
-
-				get_shared().lock_facility->lock_planet( *planet, false );
-			}
-			else if( m_entity_ids.size() > 0 ) {
-				// Get next entity ID for preparation.
-				uint32_t next_entity_id = m_entity_ids.front();
-				m_entity_ids.pop_front();
-
-				m_object_list_mutex.unlock();
-
-				// Fetch entity.
-				get_shared().lock_facility->lock_world( true );
-
-				const fw::Entity* entity = get_shared().world->find_entity( next_entity_id );
-				assert( entity );
-
-				if( entity ) {
-					// Give to entity drawable.
-					assert( m_entity_group_node );
-
-					{
-						boost::lock_guard<boost::mutex> ed_lock( m_entity_group_node_mutex );
-						m_entity_group_node->add_entity( *entity );
-					}
-				}
-
-				get_shared().lock_facility->lock_world( false );
-			}
-
-			// Go on.
-			m_object_list_mutex.lock();
-		}
-
-		m_object_list_mutex.unlock();
-	}
-
-}
-
-void PlayState::launch_objects_preparation_thread() {
-	assert( !m_prepare_objects_thread );
-	assert( m_do_prepare_objects == false );
-
-	m_do_prepare_objects = true;
-	m_prepare_objects_thread.reset( new boost::thread( std::bind( &PlayState::prepare_objects, this ) ) );
-}
-
-void PlayState::stop_and_wait_for_objects_preparation_thread() {
-	// Do nothing if thread is not running.
-	if( !m_prepare_objects_thread ) {
-		return;
-	}
-
-	{
-		boost::lock_guard<boost::mutex> do_lock( m_prepare_objects_mutex );
-		m_do_prepare_objects = false;
-	}
-
-	m_prepare_objects_condition.notify_one();
-	m_prepare_objects_thread->join();
-
-	m_prepare_objects_thread.reset();
 }
 
 void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID /*conn_id*/ ) {
@@ -1022,13 +852,10 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 	}
 
 	if( !skip ) {
-		{
-			boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
-			m_entity_ids.push_back( msg.get_id() );
-		}
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "entity_invalidated" ) );
+		ms_message->set_property( ms::string_hash( "id" ), msg.get_id() );
 
-		// Notify thread.
-		m_prepare_objects_condition.notify_one();
+		m_router.enqueue_message( ms_message );
 	}
 }
 
@@ -1109,14 +936,13 @@ void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::Co
 		return;
 	}
 
-	// Add chunk to preparation list.
-	{
-		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
-		m_chunk_list.push_back( chunk_pos );
-	}
+	// Invalidate chunk.
+	if( m_object_preparer_reader ) {
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
+		ms_message->set_property( ms::string_hash( "position" ), chunk_pos );
 
-	// Notify thread.
-	m_prepare_objects_condition.notify_one();
+		m_router.enqueue_message( ms_message );
+	}
 }
 
 void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::ConnectionID /*conn_id*/ ) {
@@ -1153,14 +979,13 @@ void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::Connec
 		return;
 	}
 
-	// Add chunk to preparation list.
-	{
-		boost::lock_guard<boost::mutex> list_lock( m_object_list_mutex );
-		m_chunk_list.push_back( chunk_pos );
-	}
+	// Invalidate chunk.
+	if( m_object_preparer_reader ) {
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
+		ms_message->set_property( ms::string_hash( "position" ), chunk_pos );
 
-	// Notify thread.
-	m_prepare_objects_condition.notify_one();
+		m_router.enqueue_message( ms_message );
+	}
 }
 
 void PlayState::update_mouse_pointer() {
