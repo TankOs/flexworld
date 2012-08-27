@@ -13,3 +13,6 @@
 [submodule "extlibs/libRocket"]
 	path = extlibs/libRocket
 	url = git://github.com/lloydw/libRocket.git
+[submodule "extlibs/FWMS"]
+	path = extlibs/FWMS
+	url = gitolite@boxbox.org:fwms.git

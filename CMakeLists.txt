@@ -153,6 +153,14 @@ endif()
 set( FWSG_SKIP_INSTALL TRUE )
 add_subdirectory( "extlibs/FWSG" )
 
+# FWMS.
+set( FWMS_SKIP_INSTALL TRUE )
+set( FWMS_BUILD_EXAMPLES FALSE )
+set( FWMS_BUILD_TEST FALSE )
+set( FWMS_BUILD_DOC FALSE )
+set( FWMS_BUILD_SHARED_LIBS FALSE )
+add_subdirectory( "extlibs/FWMS" )
+
 # Diluculum.
 add_subdirectory( "extlibs/Diluculum" )
 
