@@ -33,6 +33,7 @@ set(
 	${INC_DIR}/RocketRenderInterface.hpp
 	${INC_DIR}/RocketSystemInterface.hpp
 	${INC_DIR}/RocketUtils.hpp
+	${INC_DIR}/SessionState.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/StateFactory.hpp
@@ -67,6 +68,7 @@ set(
 	${SRC_DIR}/RocketRenderInterface.cpp
 	${SRC_DIR}/RocketSystemInterface.cpp
 	${SRC_DIR}/RocketUtils.cpp
+	${SRC_DIR}/SessionState.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/State.cpp
 	${SRC_DIR}/StateFactory.cpp

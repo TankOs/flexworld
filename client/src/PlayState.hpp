@@ -5,6 +5,7 @@
 #include "ResourceManager.hpp"
 #include "TextScroller.hpp"
 #include "UserInterface.hpp"
+#include "SessionState.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Cuboid.hpp>
@@ -87,14 +88,10 @@ class PlayState : public State, fw::Client::Handler {
 		std::shared_ptr<EntityGroupNode> m_entity_group_node;
 
 		Camera m_camera;
-		ViewCuboid m_view_cuboid;
 
 		// Message system.
 		ms::Router m_router;
 		ObjectPreparerReader* m_object_preparer_reader;
-
-		// Backend data.
-		std::string m_current_planet_id;
 
 		// Controls.
 		sf::Vector3f m_velocity;
@@ -114,11 +111,10 @@ class PlayState : public State, fw::Client::Handler {
 
 		bool m_mouse_pointer_visible;
 
+		// State.
+		SessionState m_session_state;
 		uint32_t m_last_picked_entity_id;
 
 		sf::Clock m_use_timer;
 		sf::Clock m_forward_timer;
-
-		// State.
-		bool m_my_entity_received;
 };

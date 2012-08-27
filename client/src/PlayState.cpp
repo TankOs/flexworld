@@ -42,7 +42,6 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
-	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
 	m_object_preparer_reader( nullptr ),
 	m_velocity( 0, 0, 0 ),
 	m_target_velocity( 0, 0, 0 ),
@@ -57,12 +56,14 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_fly_up( false ),
 	m_fly_down( false ),
 	m_mouse_pointer_visible( true ),
-	m_last_picked_entity_id( 0 ),
-	m_my_entity_received( false )
+	m_last_picked_entity_id( 0 )
 {
 }
 
 void PlayState::init() {
+	// Init session state.
+	m_session_state.own_entity_id = get_shared().entity_id;
+
 	// If vsync is enabled disable FPS limiter.
 	if( get_shared().user_settings.is_vsync_enabled() ) {
 		set_render_fps( 0 );
@@ -314,14 +315,14 @@ void PlayState::handle_event( const sf::Event& event ) {
 						// Get planet.
 						get_shared().lock_facility->lock_world( true );
 
-						const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+						const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
 						assert( planet != nullptr );
 
 						get_shared().lock_facility->lock_planet( *planet, true );
 
 						// Build list of entities to be skipped.
 						std::set<fw::Entity::ID> skip_entity_ids;
-						skip_entity_ids.insert( get_shared().entity_id );
+						skip_entity_ids.insert( m_session_state.own_entity_id );
 
 						ColorPicker::Result result = ColorPicker::pick(
 							origin,
@@ -409,7 +410,7 @@ void PlayState::update( const sf::Time& delta ) {
 	// Update velocity.
 	if( m_update_velocity ) {
 		// If we didn't receive our own entity yet, do not move (what to move anyways?).
-		if( !m_my_entity_received ) {
+		if( !m_session_state.own_entity_received ) {
 			m_velocity.x = 0;
 			m_velocity.y = 0;
 			m_velocity.z = 0;
@@ -666,7 +667,7 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 
 void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID /*conn_id*/ ) {
 	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
-	m_my_entity_received = false;
+	m_session_state.own_entity_received = false;
 
 	// Fetch planet.
 	get_shared().lock_facility->lock_world( true );
@@ -683,7 +684,7 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	}
 
 	// Save current planet ID.
-	m_current_planet_id = msg.get_planet_name();
+	m_session_state.current_planet_id = msg.get_planet_name();
 
 	// Update view cuboid.
 	fw::Planet::Vector chunk_pos;
@@ -694,12 +695,12 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 		return;
 	}
 
-	m_view_cuboid.x = static_cast<fw::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, fw::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.y = static_cast<fw::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, fw::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.z = static_cast<fw::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, fw::Planet::ScalarType( 30 ) ) );
-	m_view_cuboid.width = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), fw::Planet::ScalarType( 30 ) );
-	m_view_cuboid.height = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), fw::Planet::ScalarType( 30 ) );
-	m_view_cuboid.depth = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), fw::Planet::ScalarType( 30 ) );
+	m_session_state.view_cuboid.x = static_cast<fw::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state.view_cuboid.y = static_cast<fw::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state.view_cuboid.z = static_cast<fw::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state.view_cuboid.width = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), fw::Planet::ScalarType( 30 ) );
+	m_session_state.view_cuboid.height = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), fw::Planet::ScalarType( 30 ) );
+	m_session_state.view_cuboid.depth = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), fw::Planet::ScalarType( 30 ) );
 
 	// Detach old drawables.
 	if( m_planet_drawable ) {
@@ -729,16 +730,16 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	get_shared().lock_facility->lock_planet( *planet, false );
 
 	// Request chunks.
-	request_chunks( m_view_cuboid );
+	request_chunks( m_session_state.view_cuboid );
 }
 
 void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID /*conn_id*/ ) {
-	if( !m_current_planet_id.size() ) {
+	if( !m_session_state.current_planet_id.size() ) {
 		return;
 	}
 
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -785,8 +786,8 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 #endif
 
 	// If own entity set position.
-	if( msg.get_id() == get_shared().entity_id ) {
-		m_my_entity_received = true;
+	if( msg.get_id() == m_session_state.own_entity_id ) {
+		m_session_state.own_entity_received = true;
 
 		m_camera.set_position( msg.get_position() );
 		m_camera.set_rotation( sf::Vector3f( 0, msg.get_heading(), 0 ) );
@@ -799,7 +800,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 	// - entity is attached to ourself
 	bool skip = false;
 
-	if( m_entity_group_node == nullptr || msg.get_id() == get_shared().entity_id ) {
+	if( m_entity_group_node == nullptr || msg.get_id() == m_session_state.own_entity_id ) {
 		skip = true;
 	}
 	else if( msg.has_parent() ) {
@@ -829,7 +830,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 
 		// Check if any parent entity is the player entity.
 		while( parent_ent ) {
-			if( parent_ent->get_id() == get_shared().entity_id ) {
+			if( parent_ent->get_id() == m_session_state.own_entity_id ) {
 				// Check if entity is inventory. If so, use it to get contents.
 				if( msg.get_parent_hook() == "inventory" ) {
 					fw::msg::Use use_msg;
@@ -912,7 +913,7 @@ void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::Co
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -955,7 +956,7 @@ void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::Connec
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
