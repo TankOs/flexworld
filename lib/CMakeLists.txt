@@ -84,6 +84,7 @@ set(
 	${INC_DIR}/FlexWorld/TemplateUtils.hpp
 	${INC_DIR}/FlexWorld/TemplateUtils.inl
 	${INC_DIR}/FlexWorld/TerrainGenerator.hpp
+	${INC_DIR}/FlexWorld/Types.hpp
 	${INC_DIR}/FlexWorld/Version.hpp
 	${INC_DIR}/FlexWorld/World.hpp
 	${SRC_DIR}/FlexWorld/Account.cpp

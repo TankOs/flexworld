@@ -10,6 +10,8 @@
 #include "EntityGroupNode.hpp"
 #include "ChatController.hpp"
 #include "ContainerManager.hpp"
+#include "ChunkPreparerReader.hpp"
+#include "DebugReader.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -21,6 +23,8 @@
 #include <FWSG/Transform.hpp>
 #include <FWSG/WireframeState.hpp>
 #include <FWSG/DepthTestState.hpp>
+#include <FWMS/Message.hpp>
+#include <FWMS/Hash.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <sstream>
@@ -39,6 +43,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
 	m_view_cuboid( 0, 0, 0, 1, 1, 1 ),
+	m_chunk_preparer_reader( nullptr ),
 	m_do_prepare_objects( false ),
 	m_cancel_prepare_objects( false ),
 	m_velocity( 0, 0, 0 ),
@@ -94,6 +99,9 @@ void PlayState::init() {
 	// Setup scene.
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
+	// Setup message system.
+	m_router.create_reader<DebugReader>();
+
 	// Setup camera.
 	m_camera.set_fov( get_shared().user_settings.get_fov() );
 	m_camera.set_aspect_ratio(
@@ -146,6 +154,10 @@ void PlayState::init() {
 void PlayState::cleanup() {
 	// Terminate objects preparation thread.
 	stop_and_wait_for_objects_preparation_thread();
+
+	if( m_chunk_preparer_reader && m_chunk_preparer_reader->is_running() ) {
+		m_chunk_preparer_reader->stop();
+	}
 
 	// Close connections.
 	get_shared().client->stop();
@@ -543,6 +555,9 @@ void PlayState::update( const sf::Time& delta ) {
 		elapsed = sf::Time::Zero;
 	}
 
+	// Process messages.
+	m_router.process_queue();
+
 	// Finalize resources.
 	m_resource_manager.finalize_prepared_textures();
 	m_resource_manager.finalize_prepared_buffer_object_groups();
@@ -724,6 +739,25 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	m_scene_graph->attach( m_planet_drawable );
 	m_scene_graph->attach( m_entity_group_node );
 
+	// Create new chunk preparer reader if it hasn't been created yet.
+	if( m_chunk_preparer_reader == nullptr ) {
+		m_chunk_preparer_reader = &m_router.create_reader<ChunkPreparerReader>();
+	}
+
+	if( m_chunk_preparer_reader->is_running() ) {
+		m_chunk_preparer_reader->stop();
+	}
+
+	m_chunk_preparer_reader->set_planet_drawable( m_planet_drawable );
+	m_chunk_preparer_reader->launch();
+
+	// Wait until preparer is running.
+	/*
+	while( !m_chunk_preparer_reader->is_running() ) {
+		std::cout << "Waiting..." << std::endl;
+	}
+	*/
+
 	get_shared().lock_facility->lock_planet( *planet, false );
 
 	// Request chunks.
@@ -750,6 +784,15 @@ void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::
 		return;
 	}
 
+	// Notify message system that we got a new chunk.
+	if( m_chunk_preparer_reader ) {
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_created" ) );
+		ms_message->set_property( ms::string_hash( "position" ), msg.get_position() );
+
+		m_router.enqueue_message( ms_message );
+	}
+
+	/*
 	// Add chunk to preparation list. Check if the same chunk has already been
 	// added. If so, bring to front.
 	{
@@ -768,6 +811,7 @@ void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::
 
 	// Notify thread.
 	m_prepare_objects_condition.notify_one();
+	*/
 }
 
 void PlayState::prepare_objects() {

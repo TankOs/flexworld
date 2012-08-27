@@ -12,6 +12,7 @@
 
 #include <FWSG/Node.hpp>
 #include <FWSG/Renderer.hpp>
+#include <FWMS/Router.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -22,6 +23,7 @@
 class PlanetDrawable;
 class EntityGroupNode;
 class DebugWindow;
+class ChunkPreparerReader;
 
 /** Play state.
  */
@@ -90,6 +92,10 @@ class PlayState : public State, fw::Client::Handler {
 
 		Camera m_camera;
 		ViewCuboid m_view_cuboid;
+
+		// Message system.
+		ms::Router m_router;
+		ChunkPreparerReader* m_chunk_preparer_reader;
 
 		// Backend data.
 		std::string m_current_planet_id;
