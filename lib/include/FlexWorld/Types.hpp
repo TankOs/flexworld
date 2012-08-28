@@ -5,7 +5,7 @@
 
 namespace fw {
 
-typedef sf::Vector3f PlanetCoordinate; ///< Planet coordinate type.
+typedef sf::Vector3f PlanetVector; ///< Planet coordinate type.
 typedef uint16_t PlanetSizeType; ///< Planet size element type.
 typedef sf::Vector3<PlanetSizeType> PlanetSize; ///< Planet size type.
 

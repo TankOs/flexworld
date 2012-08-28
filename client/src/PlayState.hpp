@@ -2,30 +2,37 @@
 
 #include "State.hpp"
 #include "Camera.hpp"
-#include "ResourceManager.hpp"
-#include "TextScroller.hpp"
-#include "UserInterface.hpp"
-#include "SessionState.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Types.hpp>
 
 #include <FWSG/Renderer.hpp>
-#include <FWMS/Router.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Audio/Sound.hpp>
+#include <SFML/System/Clock.hpp>
 
 class PlanetDrawable;
 class EntityGroupNode;
 class DebugWindow;
-class ObjectPreparerReader;
+class SceneGraphReader;
+class SessionStateReader;
+class MessageHandler;
+class SessionState;
+class UserInterface;
+class TextScroller;
+class ResourceManager;
+class MessageHandler;
 
 namespace sg {
 class Node;
+}
+
+namespace ms {
+class Router;
 }
 
 /** Play state.
@@ -60,9 +67,12 @@ class PlayState : public State, fw::Client::Handler {
 
 		void request_chunks( const ViewCuboid& cuboid );
 
+		// Resources.
+		mutable std::unique_ptr<ResourceManager> m_resource_manager;
+
 		// UI.
-		UserInterface m_user_interface;
-		TextScroller m_text_scroller;
+		std::unique_ptr<UserInterface> m_user_interface;
+		std::unique_ptr<TextScroller> m_text_scroller;
 
 		bool m_has_focus;
 
@@ -77,21 +87,17 @@ class PlayState : public State, fw::Client::Handler {
 		sf::SoundBuffer m_chat_buffer;
 		sf::Sound m_chat_sound;
 
-		// Resources.
-		mutable ResourceManager m_resource_manager;
-
 		// Scene.
 		sg::Renderer m_renderer;
 
 		std::shared_ptr<sg::Node> m_scene_graph;
-		std::shared_ptr<PlanetDrawable> m_planet_drawable;
-		std::shared_ptr<EntityGroupNode> m_entity_group_node;
 
 		Camera m_camera;
 
 		// Message system.
-		ms::Router m_router;
-		ObjectPreparerReader* m_object_preparer_reader;
+		std::unique_ptr<ms::Router> m_router;
+		SceneGraphReader* m_scene_graph_reader;
+		SessionStateReader* m_session_state_reader;
 
 		// Controls.
 		bool m_update_eyepoint;
@@ -108,9 +114,12 @@ class PlayState : public State, fw::Client::Handler {
 		bool m_mouse_pointer_visible;
 
 		// State.
-		SessionState m_session_state;
+		std::unique_ptr<SessionState> m_session_state;
 		uint32_t m_last_picked_entity_id;
 
 		sf::Clock m_use_timer;
 		sf::Clock m_forward_timer;
+
+		// Logic.
+		std::unique_ptr<MessageHandler> m_message_handler;
 };

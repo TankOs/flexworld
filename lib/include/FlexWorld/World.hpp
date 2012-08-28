@@ -51,6 +51,12 @@ class World {
 		 */
 		Planet* find_planet( const std::string& id );
 
+		/** Find planet.
+		 * @param id ID.
+		 * @return Planet or nullptr.
+		 */
+		const Planet* find_planet( const std::string& id ) const;
+
 		/** Create new planet.
 		 * Giving an already used planet ID leads to serious problems. Use
 		 * find_planet() to check before!

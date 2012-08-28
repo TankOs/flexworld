@@ -10,8 +10,15 @@
 #include "EntityGroupNode.hpp"
 #include "ChatController.hpp"
 #include "ContainerManager.hpp"
-#include "ObjectPreparerReader.hpp"
+#include "SceneGraphReader.hpp"
 #include "DebugReader.hpp"
+#include "UserInterface.hpp"
+#include "TextScroller.hpp"
+#include "ResourceManager.hpp"
+#include "SessionState.hpp"
+#include "MessageHandler.hpp"
+#include "SessionStateReader.hpp"
+#include "HostSyncReader.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -23,6 +30,7 @@
 #include <FWSG/Transform.hpp>
 #include <FWSG/WireframeState.hpp>
 #include <FWSG/DepthTestState.hpp>
+#include <FWMS/Router.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -35,11 +43,13 @@ static const sf::Time RUN_TIME = sf::milliseconds( 200 );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
-	m_user_interface( target, get_shared().user_settings.get_controls(), m_resource_manager ),
-	m_text_scroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ),
+	m_resource_manager( new ResourceManager ),
+	m_user_interface( new UserInterface( target, get_shared().user_settings.get_controls(), *m_resource_manager ) ),
+	m_text_scroller( new TextScroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
-	m_object_preparer_reader( nullptr ),
+	m_router( new ms::Router ),
+	m_scene_graph_reader( nullptr ),
 	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
@@ -50,13 +60,15 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_fly_up( false ),
 	m_fly_down( false ),
 	m_mouse_pointer_visible( true ),
-	m_last_picked_entity_id( 0 )
+	m_session_state( new SessionState ),
+	m_last_picked_entity_id( 0 ),
+	m_message_handler( new ::MessageHandler( *m_router ) )
 {
 }
 
 void PlayState::init() {
 	// Init session state.
-	m_session_state.own_entity_id = get_shared().entity_id;
+	m_session_state->own_entity_id = get_shared().entity_id;
 
 	// If vsync is enabled disable FPS limiter.
 	if( get_shared().user_settings.is_vsync_enabled() ) {
@@ -70,10 +82,10 @@ void PlayState::init() {
 	get_shared().client->set_handler( *this );
 
 	// Setup text scroller.
-	m_text_scroller.add_text( "*** Press F12 to save a screenshot." );
-	m_text_scroller.add_text( "*** Press F3 for wireframe mode." );
-	m_text_scroller.add_text( "*** Press F1 for debug window." );
-	m_text_scroller.add_text( "*** FlexWorld (c) Stefan Schindler, do not distribute." );
+	m_text_scroller->add_text( "*** Press F12 to save a screenshot." );
+	m_text_scroller->add_text( "*** Press F3 for wireframe mode." );
+	m_text_scroller->add_text( "*** Press F1 for debug window." );
+	m_text_scroller->add_text( "*** FlexWorld (c) Stefan Schindler, do not distribute." );
 
 	// Setup UI.
 	m_fps_text.setCharacterSize( 12 );
@@ -85,7 +97,7 @@ void PlayState::init() {
 		static_cast<float>( get_render_target().getSize().y ) / 2.0f - m_crosshair_sprite.getLocalBounds().height / 2.0f
 	);
 
-	m_user_interface.on_chat_message = boost::bind( &PlayState::on_chat_message, this, _1 );
+	m_user_interface->on_chat_message = boost::bind( &PlayState::on_chat_message, this, _1 );
 
 	// Setup local sounds.
 	m_chat_buffer.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/sfx/chat.wav" ) );
@@ -95,11 +107,23 @@ void PlayState::init() {
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup message system.
-	m_router.create_reader<DebugReader>();
-	m_object_preparer_reader = &m_router.create_reader<ObjectPreparerReader>();
+	m_router->create_reader<DebugReader>();
+	m_session_state_reader = &m_router->create_reader<SessionStateReader>();
+	m_scene_graph_reader = &m_router->create_reader<SceneGraphReader>();
 
-	m_object_preparer_reader->set_world( *get_shared().world );
-	m_object_preparer_reader->set_lock_facility( *get_shared().lock_facility );
+	m_session_state_reader->set_session_state( *m_session_state );
+	m_session_state_reader->set_world( *get_shared().world );
+	m_session_state_reader->set_lock_facility( *get_shared().lock_facility );
+
+	m_scene_graph_reader->set_root_node( m_scene_graph );
+	m_scene_graph_reader->set_world( *get_shared().world );
+	m_scene_graph_reader->set_resource_manager( *m_resource_manager );
+	m_scene_graph_reader->set_renderer( m_renderer );
+	m_scene_graph_reader->set_lock_facility( *get_shared().lock_facility );
+	m_scene_graph_reader->set_session_state( *m_session_state );
+
+	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
+	host_sync_reader.set_client( *get_shared().client );
 
 	// Setup camera.
 	m_camera.set_fov( get_shared().user_settings.get_fov() );
@@ -135,12 +159,12 @@ void PlayState::init() {
 	get_shared().client->send_message( ready_msg );
 
 	// Setup resource manager.
-	m_resource_manager.set_base_path( fw::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
-	m_resource_manager.set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
-	m_resource_manager.set_texture_filter( get_shared().user_settings.get_texture_filter() );
+	m_resource_manager->set_base_path( fw::ROOT_DATA_DIRECTORY + std::string( "/packages/" ) );
+	m_resource_manager->set_anisotropy_level( get_shared().user_settings.get_anisotropy_level() );
+	m_resource_manager->set_texture_filter( get_shared().user_settings.get_texture_filter() );
 
 	// XXX XXX Open broadcast channel.
-	m_user_interface.get_chat_controller().add_message( "Heya.", "Broadcast" );
+	m_user_interface->get_chat_controller().add_message( "Heya.", "Broadcast" );
 
 	// Reset mouse so that the initial view direction is straight.
 	reset_mouse();
@@ -148,10 +172,8 @@ void PlayState::init() {
 }
 
 void PlayState::cleanup() {
-	// Stop preparing objects.
-	if( m_object_preparer_reader && m_object_preparer_reader->is_running() ) {
-		m_object_preparer_reader->stop();
-	}
+	// Kill router.
+	m_router.reset();
 
 	// Close connections.
 	get_shared().client->stop();
@@ -195,13 +217,13 @@ void PlayState::handle_event( const sf::Event& event ) {
 	}
 
 	// Give event to user interface.
-	m_user_interface.handle_event( event );
+	m_user_interface->handle_event( event );
 
 	// Do we need to show/hide the mouse pointer?
 	update_mouse_pointer();
 
 	// If user interface is consuming events, stop processing.
-	if( m_user_interface.is_consuming_events() ) {
+	if( m_user_interface->is_consuming_events() ) {
 		return;
 	}
 
@@ -221,7 +243,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 			m_scene_graph->set_state( sg::WireframeState( wireframe_state ? !wireframe_state->is_set() : true ) );
 		}
 		else if( event.key.code == sf::Keyboard::F12 ) { // Screenshot (handled in State).
-			m_text_scroller.add_text( L"Screenshot saved." );
+			m_text_scroller->add_text( L"Screenshot saved." );
 		}
 	}
 
@@ -304,14 +326,14 @@ void PlayState::handle_event( const sf::Event& event ) {
 						// Get planet.
 						get_shared().lock_facility->lock_world( true );
 
-						const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
+						const fw::Planet* planet = get_shared().world->find_planet( m_session_state->current_planet_id );
 						assert( planet != nullptr );
 
 						get_shared().lock_facility->lock_planet( *planet, true );
 
 						// Build list of entities to be skipped.
 						std::set<fw::Entity::ID> skip_entity_ids;
-						skip_entity_ids.insert( m_session_state.own_entity_id );
+						skip_entity_ids.insert( m_session_state->own_entity_id );
 
 						ColorPicker::Result result = ColorPicker::pick(
 							origin,
@@ -336,7 +358,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 							*planet,
 							*get_shared().world,
 							skip_entity_ids,
-							m_resource_manager
+							*m_resource_manager
 						);
 
 						get_shared().lock_facility->lock_planet( *planet, false );
@@ -470,11 +492,11 @@ void PlayState::update( const sf::Time& delta ) {
 	}
 
 	// Process messages.
-	m_router.process_queue();
+	m_router->process_queue();
 
 	// Finalize resources.
-	m_resource_manager.finalize_prepared_textures();
-	m_resource_manager.finalize_prepared_buffer_object_groups();
+	m_resource_manager->finalize_prepared_textures();
+	m_resource_manager->finalize_prepared_buffer_object_groups();
 
 	// Update scene graph.
 	if( m_scene_graph ) {
@@ -482,10 +504,10 @@ void PlayState::update( const sf::Time& delta ) {
 	}
 
 	// Update text scroller.
-	m_text_scroller.update();
+	m_text_scroller->update();
 
 	// Update GUI.
-	m_user_interface.update( delta );
+	m_user_interface->update( delta );
 }
 
 void PlayState::render() const {
@@ -559,10 +581,10 @@ void PlayState::render() const {
 	target.draw( m_crosshair_sprite );
 
 	// Text scroller.
-	m_text_scroller.render( target );
+	m_text_scroller->render( target );
 
 	// User interface.
-	m_user_interface.render();
+	m_user_interface->render();
 
 	// FPS.
 	target.draw( m_fps_text );
@@ -595,9 +617,11 @@ void PlayState::request_chunks( const ViewCuboid& cuboid ) {
 	sstr << "Requested " << num_requests << " chunks.";
 }
 
-void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID conn_id ) {
+	m_message_handler->handle_message( msg, conn_id );
+	/*
 	// When being beamed, our own entity isn't there, so freeze movement until it has arrived.
-	m_session_state.own_entity_received = false;
+	m_session_state->own_entity_received = false;
 
 	// Fetch planet.
 	get_shared().lock_facility->lock_world( true );
@@ -614,7 +638,7 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	}
 
 	// Save current planet ID.
-	m_session_state.current_planet_id = msg.get_planet_name();
+	m_session_state->current_planet_id = msg.get_planet_name();
 
 	// Update view cuboid.
 	fw::Planet::Vector chunk_pos;
@@ -625,12 +649,12 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 		return;
 	}
 
-	m_session_state.view_cuboid.x = static_cast<fw::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, fw::Planet::ScalarType( 30 ) ) );
-	m_session_state.view_cuboid.y = static_cast<fw::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, fw::Planet::ScalarType( 30 ) ) );
-	m_session_state.view_cuboid.z = static_cast<fw::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, fw::Planet::ScalarType( 30 ) ) );
-	m_session_state.view_cuboid.width = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), fw::Planet::ScalarType( 30 ) );
-	m_session_state.view_cuboid.height = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), fw::Planet::ScalarType( 30 ) );
-	m_session_state.view_cuboid.depth = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), fw::Planet::ScalarType( 30 ) );
+	m_session_state->view_cuboid.x = static_cast<fw::Planet::ScalarType>( chunk_pos.x - std::min( chunk_pos.x, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state->view_cuboid.y = static_cast<fw::Planet::ScalarType>( chunk_pos.y - std::min( chunk_pos.y, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state->view_cuboid.z = static_cast<fw::Planet::ScalarType>( chunk_pos.z - std::min( chunk_pos.z, fw::Planet::ScalarType( 30 ) ) );
+	m_session_state->view_cuboid.width = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().x - chunk_pos.x ), fw::Planet::ScalarType( 30 ) );
+	m_session_state->view_cuboid.height = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().y - chunk_pos.y ), fw::Planet::ScalarType( 30 ) );
+	m_session_state->view_cuboid.depth = std::min( static_cast<fw::Planet::ScalarType>( planet->get_size().z - chunk_pos.z ), fw::Planet::ScalarType( 30 ) );
 
 	// Detach old drawables.
 	if( m_planet_drawable ) {
@@ -641,8 +665,8 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 		m_scene_graph->detach( m_entity_group_node );
 	}
 
-	m_planet_drawable = PlanetDrawable::create( *planet, m_resource_manager, m_renderer );
-	m_entity_group_node = EntityGroupNode::create( m_resource_manager, m_renderer );
+	m_planet_drawable = PlanetDrawable::create( *planet, *m_resource_manager, m_renderer );
+	m_entity_group_node = EntityGroupNode::create( *m_resource_manager, m_renderer );
 
 	m_scene_graph->attach( m_planet_drawable );
 	m_scene_graph->attach( m_entity_group_node );
@@ -660,16 +684,20 @@ void PlayState::handle_message( const fw::msg::Beam& msg, fw::Client::Connection
 	get_shared().lock_facility->lock_planet( *planet, false );
 
 	// Request chunks.
-	request_chunks( m_session_state.view_cuboid );
+	request_chunks( m_session_state->view_cuboid );
+	*/
 }
 
-void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID /*conn_id*/ ) {
-	if( !m_session_state.current_planet_id.size() ) {
+void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID conn_id ) {
+	m_message_handler->handle_message( msg, conn_id );
+
+	/*
+	if( !m_session_state->current_planet_id.size() ) {
 		return;
 	}
 
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state->current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -688,11 +716,13 @@ void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::
 		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
 		ms_message->set_property( ms::string_hash( "position" ), msg.get_position() );
 
-		m_router.enqueue_message( ms_message );
+		m_router->enqueue_message( ms_message );
 	}
+	*/
 }
 
 void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID /*conn_id*/ ) {
+	/*
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
 		return;
@@ -716,8 +746,8 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 #endif
 
 	// If own entity set position.
-	if( msg.get_id() == m_session_state.own_entity_id ) {
-		m_session_state.own_entity_received = true;
+	if( msg.get_id() == m_session_state->own_entity_id ) {
+		m_session_state->own_entity_received = true;
 
 		m_camera.set_position( msg.get_position() );
 		m_camera.set_rotation( sf::Vector3f( 0, msg.get_heading(), 0 ) );
@@ -730,7 +760,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 	// - entity is attached to ourself
 	bool skip = false;
 
-	if( m_entity_group_node == nullptr || msg.get_id() == m_session_state.own_entity_id ) {
+	if( m_entity_group_node == nullptr || msg.get_id() == m_session_state->own_entity_id ) {
 		skip = true;
 	}
 	else if( msg.has_parent() ) {
@@ -760,7 +790,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 
 		// Check if any parent entity is the player entity.
 		while( parent_ent ) {
-			if( parent_ent->get_id() == m_session_state.own_entity_id ) {
+			if( parent_ent->get_id() == m_session_state->own_entity_id ) {
 				// Check if entity is inventory. If so, use it to get contents.
 				if( msg.get_parent_hook() == "inventory" ) {
 					fw::msg::Use use_msg;
@@ -769,7 +799,7 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 					get_shared().client->send_message( use_msg );
 
 					// Create container for entity.
-					m_user_interface.get_container_manager().create_container( *ent );
+					m_user_interface->get_container_manager().create_container( *ent );
 				}
 
 				skip = true;
@@ -786,8 +816,9 @@ void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::Co
 		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "entity_invalidated" ) );
 		ms_message->set_property( ms::string_hash( "id" ), msg.get_id() );
 
-		m_router.enqueue_message( ms_message );
+		m_router->enqueue_message( ms_message );
 	}
+	*/
 }
 
 void PlayState::reset_mouse() {
@@ -817,7 +848,7 @@ void PlayState::handle_message( const fw::msg::Chat& msg, fw::Client::Connection
 	final_message = final_message;
 
 	// Add to chat history.
-	m_user_interface.get_chat_controller().add_message(
+	m_user_interface->get_chat_controller().add_message(
 		final_message,
 		msg.get_channel()
 	);
@@ -830,7 +861,7 @@ void PlayState::handle_message( const fw::msg::Chat& msg, fw::Client::Connection
 	with_chan_message += "] ";
 	with_chan_message += final_message;
 
-	m_text_scroller.add_text( with_chan_message );
+	m_text_scroller->add_text( with_chan_message );
 }
 
 void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::ConnectionID /*conn_id*/ ) {
@@ -843,7 +874,7 @@ void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::Co
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state->current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -865,14 +896,6 @@ void PlayState::handle_message( const fw::msg::DestroyBlock& msg, fw::Client::Co
 
 	if( !planet ) {
 		return;
-	}
-
-	// Invalidate chunk.
-	if( m_object_preparer_reader ) {
-		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
-		ms_message->set_property( ms::string_hash( "position" ), chunk_pos );
-
-		m_router.enqueue_message( ms_message );
 	}
 }
 
@@ -886,7 +909,7 @@ void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::Connec
 
 	// Get planet.
 	get_shared().lock_facility->lock_world( true );
-	const fw::Planet* planet = get_shared().world->find_planet( m_session_state.current_planet_id );
+	const fw::Planet* planet = get_shared().world->find_planet( m_session_state->current_planet_id );
 
 	if( !planet ) {
 #if !defined( NDEBUG )
@@ -909,21 +932,13 @@ void PlayState::handle_message( const fw::msg::SetBlock& msg, fw::Client::Connec
 	if( !planet ) {
 		return;
 	}
-
-	// Invalidate chunk.
-	if( m_object_preparer_reader ) {
-		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "chunk_invalidated" ) );
-		ms_message->set_property( ms::string_hash( "position" ), chunk_pos );
-
-		m_router.enqueue_message( ms_message );
-	}
 }
 
 void PlayState::update_mouse_pointer() {
 	bool old_visibility = m_mouse_pointer_visible;
 
 	m_mouse_pointer_visible =
-		m_user_interface.is_mouse_pointer_needed() ||
+		m_user_interface->is_mouse_pointer_needed() ||
 		!m_has_focus
 	;
 
@@ -955,7 +970,7 @@ void PlayState::on_chat_message( const sf::String& message ) {
 	fw::msg::Chat chat_msg;
 
 	chat_msg.set_sender( " " );
-	chat_msg.set_channel( m_user_interface.get_chat_controller().get_active_channel() );
+	chat_msg.set_channel( m_user_interface->get_chat_controller().get_active_channel() );
 	chat_msg.set_message( message );
 
 	get_shared().client->send_message( chat_msg );

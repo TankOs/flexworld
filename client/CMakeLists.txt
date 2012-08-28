@@ -21,10 +21,11 @@ set(
 	${INC_DIR}/DebugReader.hpp
 	${INC_DIR}/Desk.hpp
 	${INC_DIR}/EntityGroupNode.hpp
+	${INC_DIR}/HostSyncReader.hpp
 	${INC_DIR}/IntroState.hpp
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
-	${INC_DIR}/ObjectPreparerReader.hpp
+	${INC_DIR}/MessageHandler.hpp
 	${INC_DIR}/OptionsDocumentController.hpp
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
@@ -33,7 +34,9 @@ set(
 	${INC_DIR}/RocketRenderInterface.hpp
 	${INC_DIR}/RocketSystemInterface.hpp
 	${INC_DIR}/RocketUtils.hpp
+	${INC_DIR}/SceneGraphReader.hpp
 	${INC_DIR}/SessionState.hpp
+	${INC_DIR}/SessionStateReader.hpp
 	${INC_DIR}/Shared.cpp
 	${INC_DIR}/State.hpp
 	${INC_DIR}/StateFactory.hpp
@@ -55,11 +58,12 @@ set(
 	${SRC_DIR}/DebugReader.cpp
 	${SRC_DIR}/Desk.cpp
 	${SRC_DIR}/EntityGroupNode.cpp
+	${SRC_DIR}/HostSyncReader.cpp
 	${SRC_DIR}/IntroState.cpp
 	${SRC_DIR}/KeyNames.cpp
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
-	${SRC_DIR}/ObjectPreparerReader.cpp
+	${SRC_DIR}/MessageHandler.cpp
 	${SRC_DIR}/OptionsDocumentController.cpp
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
@@ -68,7 +72,9 @@ set(
 	${SRC_DIR}/RocketRenderInterface.cpp
 	${SRC_DIR}/RocketSystemInterface.cpp
 	${SRC_DIR}/RocketUtils.cpp
+	${SRC_DIR}/SceneGraphReader.cpp
 	${SRC_DIR}/SessionState.cpp
+	${SRC_DIR}/SessionStateReader.cpp
 	${SRC_DIR}/Shared.hpp
 	${SRC_DIR}/State.cpp
 	${SRC_DIR}/StateFactory.cpp
