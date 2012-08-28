@@ -65,8 +65,6 @@ class PlayState : public State, fw::Client::Handler {
 		void handle_message( const fw::msg::DestroyBlock& msg, fw::Client::ConnectionID conn_id );
 		void handle_message( const fw::msg::SetBlock& msg, fw::Client::ConnectionID conn_id );
 
-		void request_chunks( const ViewCuboid& cuboid );
-
 		// Resources.
 		mutable std::unique_ptr<ResourceManager> m_resource_manager;
 
