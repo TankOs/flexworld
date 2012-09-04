@@ -8,6 +8,7 @@ static const ms::HashValue CONTROL_ENTITY_ID = ms::string_hash( "control_entity"
 static const ms::HashValue ID_ID = ms::string_hash( "id" );
 
 CameraReader::CameraReader() :
+	ms::Reader(),
 	m_camera( nullptr ),
 	m_world( nullptr ),
 	m_entity_id( 0 ),

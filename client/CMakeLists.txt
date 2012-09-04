@@ -15,6 +15,7 @@ set(
 	${INC_DIR}/Client.hpp
 	${INC_DIR}/ColorMorpher.cpp
 	${INC_DIR}/ColorPicker.hpp
+	${INC_DIR}/ComponentSystemReader.hpp
 	${INC_DIR}/ConnectState.hpp
 	${INC_DIR}/ContainerController.hpp
 	${INC_DIR}/ContainerManager.hpp
@@ -27,6 +28,7 @@ set(
 	${INC_DIR}/KeyNames.hpp
 	${INC_DIR}/MenuState.hpp
 	${INC_DIR}/MessageHandler.hpp
+	${INC_DIR}/MovementReader.hpp
 	${INC_DIR}/OptionsDocumentController.hpp
 	${INC_DIR}/PlanetDrawable.hpp
 	${INC_DIR}/PlayState.hpp
@@ -53,6 +55,7 @@ set(
 	${SRC_DIR}/Client.cpp
 	${SRC_DIR}/ColorMorpher.cpp
 	${SRC_DIR}/ColorPicker.cpp
+	${SRC_DIR}/ComponentSystemReader.cpp
 	${SRC_DIR}/ConnectState.cpp
 	${SRC_DIR}/ContainerController.cpp
 	${SRC_DIR}/ContainerManager.cpp
@@ -66,6 +69,7 @@ set(
 	${SRC_DIR}/Main.cpp
 	${SRC_DIR}/MenuState.cpp
 	${SRC_DIR}/MessageHandler.cpp
+	${SRC_DIR}/MovementReader.cpp
 	${SRC_DIR}/OptionsDocumentController.cpp
 	${SRC_DIR}/PlanetDrawable.cpp
 	${SRC_DIR}/PlayState.cpp
@@ -88,6 +92,7 @@ set(
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWMS/include/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWCS/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/SFML/extlibs/headers/ )
 include_directories( ${LIBROCKET_INCLUDE_DIR} )
 include_directories( ${OPENGL_INCLUDE_DIR} )
@@ -106,6 +111,7 @@ add_executable( flexworld-client ${SOURCES} )
 target_link_libraries( flexworld-client flexworld )
 target_link_libraries( flexworld-client fwsg )
 target_link_libraries( flexworld-client fwms )
+target_link_libraries( flexworld-client fwcs )
 target_link_libraries( flexworld-client ${LIBROCKET_LIBRARIES} )
 target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${OPENGL_LIBRARIES} )

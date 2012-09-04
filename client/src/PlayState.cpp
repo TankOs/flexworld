@@ -20,6 +20,8 @@
 #include "SessionStateReader.hpp"
 #include "HostSyncReader.hpp"
 #include "CameraReader.hpp"
+#include "ComponentSystemReader.hpp"
+#include "MovementReader.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -41,6 +43,12 @@
 
 static const sf::Time PICK_UP_TIME = sf::milliseconds( 250 );
 static const sf::Time RUN_TIME = sf::milliseconds( 200 );
+static const ms::HashValue KEY_PRESS_ID = ms::string_hash( "key_press" );
+static const ms::HashValue KEY_RELEASE_ID = ms::string_hash( "key_release" );
+static const ms::HashValue BUTTON_PRESS_ID = ms::string_hash( "button_press" );
+static const ms::HashValue BUTTON_RELEASE_ID = ms::string_hash( "button_release" );
+static const ms::HashValue KEY_ID = ms::string_hash( "key" );
+static const ms::HashValue BUTTON_ID = ms::string_hash( "button" );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -48,7 +56,6 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_user_interface( new UserInterface( target, get_shared().user_settings.get_controls(), *m_resource_manager ) ),
 	m_text_scroller( new TextScroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ) ),
 	m_has_focus( true ),
-	m_scene_graph( sg::Node::create() ),
 	m_camera(
 		sf::FloatRect(
 			0.0f,
@@ -57,8 +64,13 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 			static_cast<float>( target.getSize().y )
 		)
 	),
+	m_scene_graph( sg::Node::create() ),
 	m_router( new ms::Router ),
 	m_scene_graph_reader( nullptr ),
+	m_session_state_reader( nullptr ),
+	m_camera_reader( nullptr ),
+	m_component_system_reader( nullptr ),
+	m_movement_reader( nullptr ),
 	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
@@ -115,9 +127,13 @@ void PlayState::init() {
 	// Setup scene.
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
+	// Setup component system.
+
 	// Setup message system.
 	m_router->create_reader<DebugReader>();
 	m_session_state_reader = &m_router->create_reader<SessionStateReader>();
+	m_movement_reader = &m_router->create_reader<MovementReader>();
+	m_component_system_reader = &m_router->create_reader<ComponentSystemReader>();
 	m_scene_graph_reader = &m_router->create_reader<SceneGraphReader>();
 	m_camera_reader = &m_router->create_reader<CameraReader>();
 
@@ -134,6 +150,10 @@ void PlayState::init() {
 
 	m_camera_reader->set_camera( m_camera );
 	m_camera_reader->set_world( *get_shared().world );
+
+	m_component_system_reader->set_system( m_system );
+
+	m_movement_reader->set_controls( get_shared().user_settings.get_controls() );
 
 	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
 	host_sync_reader.set_client( *get_shared().client );
@@ -221,6 +241,35 @@ void PlayState::handle_event( const sf::Event& event ) {
 		leave();
 	}
 
+	// Find out what kind of event happened and hand over to message system.
+	// Mouse move events are handled in update() because we are only interested
+	// in the total change.
+	if( event.type == sf::Event::KeyPressed ) {
+		auto key_press_message = std::make_shared<ms::Message>( KEY_PRESS_ID );
+		key_press_message->set_property<sf::Keyboard::Key>( KEY_ID, event.key.code );
+
+		m_router->enqueue_message( key_press_message );
+	}
+	else if( event.type == sf::Event::KeyReleased ) {
+		auto key_release_message = std::make_shared<ms::Message>( KEY_RELEASE_ID );
+		key_release_message->set_property<sf::Keyboard::Key>( KEY_ID, event.key.code );
+
+		m_router->enqueue_message( key_release_message );
+	}
+	else if( event.type == sf::Event::MouseButtonPressed ) {
+		auto button_press_message = std::make_shared<ms::Message>( BUTTON_PRESS_ID );
+		button_press_message->set_property<sf::Mouse::Button>( BUTTON_ID, event.mouseButton.button );
+
+		m_router->enqueue_message( button_press_message );
+	}
+	else if( event.type == sf::Event::MouseButtonReleased ) {
+		auto button_release_message = std::make_shared<ms::Message>( BUTTON_RELEASE_ID );
+		button_release_message->set_property<sf::Mouse::Button>( BUTTON_ID, event.mouseButton.button );
+
+		m_router->enqueue_message( button_release_message );
+	}
+
+#if 0
 	// Give event to user interface.
 	m_user_interface->handle_event( event );
 
@@ -406,6 +455,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 				break;
 		}
 	}
+#endif
 }
 
 void PlayState::update( const sf::Time& delta ) {

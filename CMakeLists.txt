@@ -150,8 +150,10 @@ endif()
 #
 
 # FWSG.
-set( FWSG_SKIP_INSTALL TRUE )
-add_subdirectory( "extlibs/FWSG" )
+if( FW_BUILD_CLIENT )
+	set( FWSG_SKIP_INSTALL TRUE )
+	add_subdirectory( "extlibs/FWSG" )
+endif()
 
 # FWMS.
 set( FWMS_SKIP_INSTALL TRUE )
@@ -160,6 +162,14 @@ set( FWMS_BUILD_TEST FALSE )
 set( FWMS_BUILD_DOC FALSE )
 set( FWMS_BUILD_SHARED_LIBS FALSE )
 add_subdirectory( "extlibs/FWMS" )
+
+# FWCS.
+set( FWCS_SKIP_INSTALL TRUE )
+set( FWCS_BUILD_SHARED_LIBS FALSE )
+set( FWCS_BUILD_TEST FALSE )
+set( FWCS_BUILD_DOCS FALSE )
+set( FWCS_BUILD_EXAMPLES FALSE )
+add_subdirectory( "extlibs/FWCS" )
 
 # Diluculum.
 add_subdirectory( "extlibs/Diluculum" )

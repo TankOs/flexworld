@@ -9,6 +9,7 @@
 
 #include <FWSG/Renderer.hpp>
 #include <FWSG/Camera.hpp>
+#include <FWCS/System.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -28,6 +29,8 @@ class TextScroller;
 class ResourceManager;
 class MessageHandler;
 class CameraReader;
+class ComponentSystemReader;
+class MovementReader;
 
 namespace sg {
 class Node;
@@ -89,16 +92,19 @@ class PlayState : public State, fw::Client::Handler {
 
 		// Scene.
 		sg::Renderer m_renderer;
-
+		sg::Camera m_camera;
 		std::shared_ptr<sg::Node> m_scene_graph;
 
-		sg::Camera m_camera;
+		// Component system.
+		cs::System m_system;
 
 		// Message system.
 		std::unique_ptr<ms::Router> m_router;
 		SceneGraphReader* m_scene_graph_reader;
 		SessionStateReader* m_session_state_reader;
 		CameraReader* m_camera_reader;
+		ComponentSystemReader* m_component_system_reader;
+		MovementReader* m_movement_reader;
 
 		// Controls.
 		bool m_update_eyepoint;
