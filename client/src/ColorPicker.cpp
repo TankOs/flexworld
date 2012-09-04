@@ -12,6 +12,7 @@
 #include <FWSG/Transform.hpp>
 #include <FWSG/Program.hpp>
 #include <FWSG/ProgramCommand.hpp>
+#include <FWSG/Camera.hpp>
 #include <map>
 #include <memory>
 #include <iostream>
@@ -55,7 +56,7 @@ ColorPicker::Result ColorPicker::pick(
 	const sf::Vector3f& origin,
 	const sf::Vector3f forward,
 	float distance,
-	const sg::Transform& transform,
+	const sg::Camera& camera,
 	const sf::Vector2i& pixel_pos,
 	const fw::Planet& planet,
 	const fw::World& world,
@@ -268,7 +269,6 @@ ColorPicker::Result ColorPicker::pick(
 
 	// Create renderer.
 	sg::Renderer renderer;
-	sg::Transform local_transform;
 	std::size_t num_checked_entities = 0;
 
 	for( std::size_t ent_idx = 0; ent_idx < fetched_entity_ids.size(); ++ent_idx ) {
@@ -328,8 +328,7 @@ ColorPicker::Result ColorPicker::pick(
 			for( std::size_t bo_idx = 0; bo_idx < bo_group->get_num_buffer_objects(); ++bo_idx ) {
 				sg::StepProxy::Ptr proxy = renderer.create_step(
 					r_state,
-					transform,
-					info.transform,
+					info.transform.get_matrix(),
 					bo_group->get_buffer_object( bo_idx )
 				);
 
@@ -353,8 +352,7 @@ ColorPicker::Result ColorPicker::pick(
 	// Create blocks render step.
 	sg::StepProxy::Ptr step = renderer.create_step(
 		r_state,
-		transform,
-		local_transform,
+		sg::FloatMatrix(),
 		bo
 	);
 
@@ -371,7 +369,7 @@ ColorPicker::Result ColorPicker::pick(
 	glClearColor( 1, 1, 1, 1 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	renderer.render();
+	renderer.render( camera );
 
 	// Release render steps.
 	step.reset();
@@ -544,8 +542,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	step = renderer.create_step(
 		r_state,
-		transform,
-		local_transform,
+		sg::FloatMatrix(),
 		bo
 	);
 
@@ -554,7 +551,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	renderer.render();
+	renderer.render( camera );
 
 	if( lighting ) {
 		glEnable( GL_LIGHTING );

@@ -16,6 +16,7 @@ class World;
 
 namespace sg {
 class Transform;
+class Camera;
 }
 
 /** Color picker for picking blocks and entities.
@@ -58,7 +59,7 @@ class ColorPicker {
 		 * @param origin Origin vector.
 		 * @param forward Forward vector.
 		 * @param distance Distance scalar.
-		 * @param transform Transform.
+		 * @param camera Camera.
 		 * @param pixel_pos Pixel position for picking.
 		 * @param planet Planet with data of interest.
 		 * @param world World, used for getting entities.
@@ -70,7 +71,7 @@ class ColorPicker {
 			const sf::Vector3f& origin,
 			const sf::Vector3f forward,
 			float distance,
-			const sg::Transform& transform,
+			const sg::Camera& camera,
 			const sf::Vector2i& pixel_pos,
 			const fw::Planet& planet,
 			const fw::World& world,

@@ -19,6 +19,7 @@
 #include "MessageHandler.hpp"
 #include "SessionStateReader.hpp"
 #include "HostSyncReader.hpp"
+#include "CameraReader.hpp"
 
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
@@ -48,6 +49,14 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_text_scroller( new TextScroller( sf::Vector2f( 10.0f, static_cast<float>( target.getSize().y ) - 10.0f ) ) ),
 	m_has_focus( true ),
 	m_scene_graph( sg::Node::create() ),
+	m_camera(
+		sf::FloatRect(
+			0.0f,
+			0.0f,
+			static_cast<float>( target.getSize().x ),
+			static_cast<float>( target.getSize().y )
+		)
+	),
 	m_router( new ms::Router ),
 	m_scene_graph_reader( nullptr ),
 	m_update_eyepoint( true ),
@@ -110,6 +119,7 @@ void PlayState::init() {
 	m_router->create_reader<DebugReader>();
 	m_session_state_reader = &m_router->create_reader<SessionStateReader>();
 	m_scene_graph_reader = &m_router->create_reader<SceneGraphReader>();
+	m_camera_reader = &m_router->create_reader<CameraReader>();
 
 	m_session_state_reader->set_session_state( *m_session_state );
 	m_session_state_reader->set_world( *get_shared().world );
@@ -122,30 +132,25 @@ void PlayState::init() {
 	m_scene_graph_reader->set_lock_facility( *get_shared().lock_facility );
 	m_scene_graph_reader->set_session_state( *m_session_state );
 
+	m_camera_reader->set_camera( m_camera );
+	m_camera_reader->set_world( *get_shared().world );
+
 	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
 	host_sync_reader.set_client( *get_shared().client );
 
 	// Setup camera.
-	m_camera.set_fov( get_shared().user_settings.get_fov() );
-	m_camera.set_aspect_ratio(
-		static_cast<float>( get_render_target().getSize().x ) / static_cast<float>( get_render_target().getSize().y )
-	);
-	m_camera.set_pitch_clamp( 90.f );
-	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
-	m_camera.set_eye_offset( sf::Vector3f( 0, 1.75f, 0 ) ); // TODO Get view height from class.
-
-	// Projection matrix.
-	glMatrixMode( GL_PROJECTION );
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluPerspective(
-		m_camera.get_fov(),
-		m_camera.get_aspect_ratio(),
+	m_camera.setup_perspective_projection(
+		get_shared().user_settings.get_fov(),
+		static_cast<float>( get_render_target().getSize().x ) / static_cast<float>( get_render_target().getSize().y ),
 		0.01f,
 		350.0f
 	);
-	
+	/*
+	m_camera.set_pitch_clamp( 90.f );
+	m_camera.set_position( sf::Vector3f( 50, 2.7f, 60 ) );
+	m_camera.set_eye_offset( sf::Vector3f( 0, 1.75f, 0 ) ); // TODO Get view height from class.
+	*/
+
 	// Texture matrix.
 	glMatrixMode( GL_TEXTURE );
 	glPushMatrix();
@@ -315,13 +320,13 @@ void PlayState::handle_event( const sf::Event& event ) {
 					if( pressed ) {
 						// Calc forward vector.
 						sf::Vector3f forward = fw::polar_to_vector(
-							fw::deg_to_rad( m_camera.get_rotation().x + 90.0f ),
-							fw::deg_to_rad( -m_camera.get_rotation().y ),
+							fw::deg_to_rad( m_camera.get_transform().get_rotation().x + 90.0f ),
+							fw::deg_to_rad( -m_camera.get_transform().get_rotation().y ),
 							1.0f
 						);
 
 						float distance = 7.0f; // TODO Take distance from server?
-						sf::Vector3f origin = m_camera.get_position() + m_camera.get_eye_offset();
+						sf::Vector3f origin = m_camera.get_transform().get_translation();
 
 						// Get planet.
 						get_shared().lock_facility->lock_world( true );
@@ -339,18 +344,7 @@ void PlayState::handle_event( const sf::Event& event ) {
 							origin,
 							forward,
 							distance,
-							sg::Transform(
-								sf::Vector3f(
-									-m_camera.get_position().x - m_camera.get_eye_offset().x,
-									-m_camera.get_position().y - m_camera.get_eye_offset().y,
-									-m_camera.get_position().z - m_camera.get_eye_offset().z
-								),
-								sf::Vector3f(
-									m_camera.get_rotation().x,
-									m_camera.get_rotation().y,
-									m_camera.get_rotation().z
-								)
-							),
+							m_camera,
 							sf::Vector2i(
 								get_render_target().getSize().x / 2,
 								get_render_target().getSize().y / 2
@@ -418,7 +412,42 @@ void PlayState::update( const sf::Time& delta ) {
 	// Poll IO service.
 	get_shared().io_service->poll();
 
-	// Process mouse look only if window has focus and mouse pointer is grabbed.
+	// Process mouse look only if window has focus and mouse pointer is grabbed + not visible.
+	if( m_has_focus && !m_mouse_pointer_visible ) {
+		sf::Vector2i mouse_delta(
+			sf::Mouse::getPosition( get_render_target() ) -
+			sf::Vector2i( get_render_target().getSize().x / 2, get_render_target().getSize().y / 2 )
+		);
+
+		if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+			// Reset mouse.
+			reset_mouse();
+
+			// Rotate scene graph.
+			/*
+			m_scene_graph->set_local_transform(
+				sg::Transform(
+					m_scene_graph->get_local_transform().get_translation(),
+					(
+						m_scene_graph->get_local_transform().get_rotation() +
+						sf::Vector3f( 
+							(
+								(get_shared().user_settings.get_controls().is_mouse_inverted() ? -1.0f : 1.0f) *
+								static_cast<float>( mouse_delta.y ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f
+							),
+							static_cast<float>( mouse_delta.x ) * get_shared().user_settings.get_controls().get_mouse_sensitivity() / 5.0f,
+							0.0f
+						)
+					),
+					m_scene_graph->get_local_transform().get_scale(),
+					m_scene_graph->get_local_transform().get_origin()
+				)
+			);
+			*/
+		}
+	}
+
+	/*
 	if( m_has_focus && !m_mouse_pointer_visible ) {
 		// Get mouse movement.
 		sf::Vector2i mouse_delta(
@@ -430,7 +459,7 @@ void PlayState::update( const sf::Time& delta ) {
 			// Reset mouse.
 			reset_mouse();
 
-			// Rotate camera.
+			// Rotate scene graph.
 			m_camera.turn(
 				sf::Vector3f(
 					(
@@ -462,6 +491,7 @@ void PlayState::update( const sf::Time& delta ) {
 
 		m_update_eyepoint = false;
 	}
+	*/
 
 	// If use key is pressed and timer expired, execute pick up event.
 	if( m_use && m_use_timer.getElapsedTime() >= PICK_UP_TIME ) {
@@ -532,18 +562,16 @@ void PlayState::render() const {
 	// Render sky.
 	//m_sky->render();
 
-	// Render scene graph.
-	glColor3f( 1, 1, 1 );
-
-	// Fake light.
 	glLoadIdentity();
 
+	// Fake light.
 	GLfloat ambient[] = {0.9f, 0.9f, 0.9f, 1.0f};
 	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 	GLfloat position[] = {-0.5f, 1.0f, 0.7f, 0.0f};
 
-	glRotatef( m_camera.get_rotation().x, 1.0f, 0.0f, 0.0f );
-	glRotatef( m_camera.get_rotation().y, 0.0f, 1.0f, 0.0f );
+	// Rotate for light to be correctly placed.
+	glRotatef( m_scene_graph->get_local_transform().get_rotation().x, 1.0f, 0.0f, 0.0f );
+	glRotatef( m_scene_graph->get_local_transform().get_rotation().y, 0.0f, 1.0f, 0.0f );
 	/*glTranslatef( -m_camera.get_position().x, 2.0f, -m_camera.get_position().z );*/
 
 	glLightfv( GL_LIGHT0, GL_POSITION, position );
@@ -553,7 +581,10 @@ void PlayState::render() const {
 	glEnable( GL_LIGHT0 );
 	glEnable( GL_LIGHTING );
 
-	m_renderer.render();
+	// Render scene graph.
+	glColor3f( 1, 1, 1 );
+
+	m_renderer.render( m_camera );
 
 	glDisable( GL_LIGHTING );
 	glDisable( GL_LIGHT0 );
@@ -603,7 +634,8 @@ void PlayState::handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::
 	m_message_handler->handle_message( msg, conn_id );
 }
 
-void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID /*conn_id*/ ) {
+void PlayState::handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID conn_id ) {
+	m_message_handler->handle_message( msg, conn_id );
 	/*
 	if( get_shared().host == nullptr ) {
 		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );

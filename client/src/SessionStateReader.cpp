@@ -13,10 +13,13 @@
 
 static const ms::HashValue BEAM_ID = ms::string_hash( "beam" );
 static const ms::HashValue VIEW_CUBOID_UPDATE_ID = ms::string_hash( "view_cuboid_update" );
+static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
+static const ms::HashValue CONTROL_ENTITY_ID = ms::string_hash( "control_entity" );
 
 static const ms::HashValue PLANET_ID_ID = ms::string_hash( "planet_id" );
 static const ms::HashValue POSITION_ID = ms::string_hash( "position" );
 static const ms::HashValue CUBOID_ID = ms::string_hash( "cuboid" );
+static const ms::HashValue ID_ID = ms::string_hash( "id" );
 
 SessionStateReader::SessionStateReader() :
 	ms::Reader(),
@@ -43,6 +46,9 @@ void SessionStateReader::handle_message( const ms::Message& message ) {
 		if( planet_id && position ) {
 			// Set current planet ID.
 			m_session_state->current_planet_id = *planet_id;
+
+			// Reset own entity received flag.
+			m_session_state->own_entity_received = false;
 
 			// Get planet and lock.
 			m_lock_facility->lock_world( true );
@@ -83,6 +89,23 @@ void SessionStateReader::handle_message( const ms::Message& message ) {
 
 			std::cout << "SessionStateReader: Current planet ID updated to " << *planet_id << "." << std::endl;
 			std::cout << "SessionStateReader: View cuboid updated." << std::endl;
+		}
+	}
+	else if( message.get_id() == CREATE_ENTITY_ID ) {
+		const fw::EntityID* entity_id = message.find_property<fw::EntityID>( ID_ID );
+
+		if( entity_id && *entity_id == m_session_state->own_entity_id ) {
+			m_session_state->own_entity_received = true;
+			std::cout << "SessionStateReader: Own entity received." << std::endl;
+
+			// TODO: This is going to be removed when the new ControlEntity network
+			// will be added.
+			auto control_message = std::make_shared<ms::Message>( ms::string_hash( "control_entity" ) );
+			control_message->set_property<fw::EntityID>( ms::string_hash( "id" ), *entity_id );
+
+			get_router()->enqueue_message( control_message );
+
+			std::cout << "SessionStateReader: SENT OUT control_entity MESSAGE, REPLACE BY ControlEntity NETWORK MESSAGE." << std::endl;
 		}
 	}
 }

@@ -428,7 +428,7 @@ void PlanetDrawable::handle_update() {
 				entry.buffer_object->load( *entry.geometry );
 
 				// Create step at renderer and store it (will overwrite old steps for same chunk).
-				m_steps[delayed.chunk_pos].push_back( get_renderer().create_step( r_state, get_global_transform(), get_local_transform(), entry.buffer_object ) );
+				m_steps[delayed.chunk_pos].push_back( get_renderer().create_step( r_state, get_global_matrix(), entry.buffer_object ) );
 			}
 		}
 
@@ -457,7 +457,7 @@ void PlanetDrawable::handle_update_render_state() {
 			r_state.texture = step->get_step()->get_render_state().texture;
 
 			// Reinitialize the step.
-			cs_iter->second[step_idx] = get_renderer().create_step( r_state, get_global_transform(), get_local_transform(), step->get_step()->get_buffer_object() );
+			cs_iter->second[step_idx] = get_renderer().create_step( r_state, get_global_matrix(), step->get_step()->get_buffer_object() );
 		}
 	}
 }

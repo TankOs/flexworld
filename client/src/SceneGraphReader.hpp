@@ -69,10 +69,12 @@ class SceneGraphReader : public ms::Reader {
 
 	private:
 		typedef std::list<fw::ChunkVector> ChunkPositionList;
+		typedef std::list<fw::EntityID> EntityList;
 
 		void handle_message( const ms::Message& message );
 
 		void reset_nodes();
+		void add_entity( const ms::Message& message );
 		void prepare_loop();
 
 		boost::thread m_prepare_thread;
@@ -82,6 +84,7 @@ class SceneGraphReader : public ms::Reader {
 		boost::condition_variable m_prepare_condition;
 
 		ChunkPositionList m_chunk_positions;
+		EntityList m_entities;
 
 		std::shared_ptr<sg::Node> m_root_node;
 		std::shared_ptr<PlanetDrawable> m_planet_drawable;

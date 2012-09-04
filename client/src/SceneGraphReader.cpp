@@ -12,9 +12,15 @@
 
 static const ms::HashValue BEAM_ID = ms::string_hash( "beam" );
 static const ms::HashValue CHUNK_UPDATE_ID = ms::string_hash( "chunk_update" );
+static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
 
-static const ms::HashValue PLANET_ID_PROP_ID = ms::string_hash( "planet_id" );
-static const ms::HashValue POSITION_PROP_ID = ms::string_hash( "position" );
+static const ms::HashValue CLASS_ID = ms::string_hash( "class" );
+static const ms::HashValue HEADING_ID = ms::string_hash( "heading" );
+static const ms::HashValue HOOK_ID = ms::string_hash( "hook" );
+static const ms::HashValue ID_ID = ms::string_hash( "id" );
+static const ms::HashValue PARENT_ID_ID = ms::string_hash( "parent_id" );
+static const ms::HashValue PLANET_ID_ID = ms::string_hash( "planet_id" );
+static const ms::HashValue POSITION_ID = ms::string_hash( "position" );
 
 SceneGraphReader::SceneGraphReader() :
 	ms::Reader(),
@@ -79,7 +85,7 @@ void SceneGraphReader::handle_message( const ms::Message& message ) {
 		reset_nodes();
 	}
 	else if( message.get_id() == CHUNK_UPDATE_ID ) {
-		const fw::ChunkVector* chunk_position = message.find_property<fw::ChunkVector>( POSITION_PROP_ID );
+		const fw::ChunkVector* chunk_position = message.find_property<fw::ChunkVector>( POSITION_ID );
 
 		if( chunk_position ) {
 			boost::lock_guard<boost::mutex> data_lock( m_prepare_data_mutex );
@@ -88,7 +94,171 @@ void SceneGraphReader::handle_message( const ms::Message& message ) {
 			m_prepare_condition.notify_one();
 		}
 	}
+	else if( message.get_id() == CREATE_ENTITY_ID ) {
+		add_entity( message );
+	}
 }
+
+void SceneGraphReader::add_entity( const ms::Message& message ) {
+	// Do nothing if own entity hasn't been received yet.
+	if( m_session_state->own_entity_received == false ) {
+		std::cout << "WARNING: SceneGraphReader: New entity can't be added to scene graph because own entity wasn't detected yet." << std::endl;
+	}
+
+	const fw::EntityID* entity_id = message.find_property<fw::EntityID>( ID_ID );
+	const fw::PlanetVector* position = message.find_property<fw::PlanetVector>( POSITION_ID );
+	const float* heading = message.find_property<float>( HEADING_ID );
+
+	assert( entity_id != nullptr );
+	assert( position != nullptr );
+
+	bool skip = false;
+
+	// Skip if own entity.
+	if( *entity_id == m_session_state->own_entity_id ) {
+		std::cout << "SceneGraphReader: Received own entity." << std::endl;
+		skip = true;
+	}
+	else {
+		// Check if any parent is the player entity or if any parent is attached
+		// to an invisible hook.
+		m_lock_facility->lock_world( true );
+
+		const fw::Entity* entity = m_world->find_entity( *entity_id );
+		assert( entity != nullptr );
+
+		const fw::Entity* child = entity;
+		const fw::Entity* parent = child->get_parent();
+
+		while( parent != nullptr && skip == false ) {
+			if( parent->get_id() == *entity_id ) {
+				skip = true;
+				continue;
+			}
+
+			if( *parent->get_class().find_hook( parent->get_child_hook( *child ) ) == fw::Class::INVISIBLE_HOOK ) {
+				skip = true;
+				continue;
+			}
+
+			child = parent;
+			parent = child->get_parent();
+		}
+
+		m_lock_facility->lock_world( false );
+	}
+
+	// If not skipped, add to scene graph.
+	if( skip == false ) {
+		boost::lock_guard<boost::mutex> lock( m_prepare_data_mutex );
+
+		m_entities.push_back( *entity_id );
+		m_prepare_condition.notify_one();
+
+		std::cout << "SceneGraphReader: Added entity to scene graph." << std::endl;
+	}
+	else {
+		std::cout << "SceneGraphReader: Entity not added to scene graph." << std::endl;
+	}
+
+}
+	/*
+	if( get_shared().host == nullptr ) {
+		assert( 0 && "NOT IMPLEMENTED FOR MULTIPLAYER YET" );
+		return;
+	}
+
+#if !defined( NDEBUG )
+	std::cout
+		<< "Received entity #" << msg.get_id() << " (" << msg.get_class() << ") @ "
+		<< msg.get_position().x << ", " << msg.get_position().y << ", " << msg.get_position().z
+		<< " (" << msg.get_heading() << "°)"
+	;
+	
+	if( msg.has_parent() ) {
+		std::cout << " Parent entity #" << msg.get_parent_id() << ", hook " << msg.get_parent_hook();
+	}
+	else {
+		std::cout << " No parent entity.";
+	}
+
+	std::cout << std::endl;
+#endif
+
+	// If own entity set position.
+	if( msg.get_id() == m_session_state->own_entity_id ) {
+		m_session_state->own_entity_received = true;
+
+		m_camera.set_position( msg.get_position() );
+		m_camera.set_rotation( sf::Vector3f( 0, msg.get_heading(), 0 ) );
+
+		m_update_eyepoint = true;
+	}
+
+	// Add to entity drawable. Skip if
+	// - entity is attached to invisible hook
+	// - entity is attached to ourself
+	bool skip = false;
+
+	if( m_entity_group_node == nullptr || msg.get_id() == m_session_state->own_entity_id ) {
+		skip = true;
+	}
+	else if( msg.has_parent() ) {
+		get_shared().lock_facility->lock_world( true );
+
+		// Get entity and parent entity.
+		const fw::Entity* ent = get_shared().world->find_entity( msg.get_id() );
+		assert( ent != nullptr );
+
+		const fw::Entity* parent_ent = ent->get_parent();
+		assert( parent_ent != nullptr );
+
+		if( parent_ent == nullptr ) {
+			std::cerr
+				<< "*** FATAL ERROR *** Entity #" << msg.get_id() << " shall be attached to #" << msg.get_parent_id()
+				<< ", hook " << msg.get_parent_hook() << ", but parent doesn't exist in world."
+				<< std::endl;
+			;
+			get_shared().lock_facility->lock_world( false );
+			return;
+		}
+
+		// Check if entity is attached to invisible hook.
+		if( *parent_ent->get_class().find_hook( msg.get_parent_hook() ) == fw::Class::INVISIBLE_HOOK ) {
+			skip = true;
+		}
+
+		// Check if any parent entity is the player entity.
+		while( parent_ent ) {
+			if( parent_ent->get_id() == m_session_state->own_entity_id ) {
+				// Check if entity is inventory. If so, use it to get contents.
+				if( msg.get_parent_hook() == "inventory" ) {
+					fw::msg::Use use_msg;
+
+					use_msg.set_entity_id( msg.get_id() );
+					get_shared().client->send_message( use_msg );
+
+					// Create container for entity.
+					m_user_interface->get_container_manager().create_container( *ent );
+				}
+
+				skip = true;
+				break;
+			}
+
+			parent_ent = parent_ent->get_parent();
+		}
+
+		get_shared().lock_facility->lock_world( false );
+	}
+
+	if( !skip ) {
+		std::shared_ptr<ms::Message> ms_message = std::make_shared<ms::Message>( ms::string_hash( "entity_invalidated" ) );
+		ms_message->set_property( ms::string_hash( "id" ), msg.get_id() );
+
+		m_router->enqueue_message( ms_message );
+	}
+	*/
 
 void SceneGraphReader::reset_nodes() {
 	assert( m_session_state->current_planet_id.size() > 0 );
@@ -139,7 +309,7 @@ void SceneGraphReader::prepare_loop() {
 		}
 
 		// If there is nothing to prepare, wait.
-		if( m_chunk_positions.size() == 0 ) {
+		if( m_chunk_positions.size() == 0 && m_entities.size() == 0 ) {
 			m_prepare_data_mutex.unlock();
 			m_prepare_condition.wait( condition_lock );
 
@@ -173,6 +343,22 @@ void SceneGraphReader::prepare_loop() {
 			planet_drawable->prepare_chunk( chunk_position );
 
 			m_lock_facility->lock_planet( *planet, false );
+		}
+		else if( m_entities.size() > 0 ) {
+			// Fetch next entity ID, remove from list and prepare.
+			fw::EntityID entity_id = m_entities.front();
+
+			m_entities.pop_front();
+			m_prepare_data_mutex.unlock();
+
+			m_lock_facility->lock_world( true );
+
+			const fw::Entity* entity = m_world->find_entity( entity_id );
+			assert( entity != nullptr );
+
+			m_entity_group_node->add_entity( *entity );
+
+			m_lock_facility->lock_world( false );
 		}
 
 	}

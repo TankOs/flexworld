@@ -34,9 +34,9 @@ class MessageHandler : public fw::Client::Handler {
 	private:
 		void handle_message( const fw::msg::Beam& msg, fw::Client::ConnectionID conn_id );
 		void handle_message( const fw::msg::ChunkUnchanged& msg, fw::Client::ConnectionID conn_id );
+		void handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID conn_id );
 
 		/*
-		void handle_message( const fw::msg::CreateEntity& msg, fw::Client::ConnectionID conn_id );
 		void handle_message( const fw::msg::Chat& msg, fw::Client::ConnectionID conn_id );
 		void handle_message( const fw::msg::DestroyBlock& msg, fw::Client::ConnectionID conn_id );
 		void handle_message( const fw::msg::SetBlock& msg, fw::Client::ConnectionID conn_id );

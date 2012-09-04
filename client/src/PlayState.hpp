@@ -1,13 +1,14 @@
 #pragma once
 
 #include "State.hpp"
-#include "Camera.hpp"
+//#include "Camera.hpp"
 
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Types.hpp>
 
 #include <FWSG/Renderer.hpp>
+#include <FWSG/Camera.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -26,6 +27,7 @@ class UserInterface;
 class TextScroller;
 class ResourceManager;
 class MessageHandler;
+class CameraReader;
 
 namespace sg {
 class Node;
@@ -90,12 +92,13 @@ class PlayState : public State, fw::Client::Handler {
 
 		std::shared_ptr<sg::Node> m_scene_graph;
 
-		Camera m_camera;
+		sg::Camera m_camera;
 
 		// Message system.
 		std::unique_ptr<ms::Router> m_router;
 		SceneGraphReader* m_scene_graph_reader;
 		SessionStateReader* m_session_state_reader;
+		CameraReader* m_camera_reader;
 
 		// Controls.
 		bool m_update_eyepoint;

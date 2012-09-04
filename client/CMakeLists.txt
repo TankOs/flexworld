@@ -9,6 +9,7 @@ set(
 	SOURCES
 	${INC_DIR}/BufferObjectGroup.hpp
 	${INC_DIR}/Camera.hpp
+	${INC_DIR}/CameraReader.hpp
 	${INC_DIR}/ChatController.hpp
 	${INC_DIR}/ClassDrawable.hpp
 	${INC_DIR}/Client.hpp
@@ -46,6 +47,7 @@ set(
 	${INC_DIR}/UserSettings.cpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
+	${SRC_DIR}/CameraReader.cpp
 	${SRC_DIR}/ChatController.cpp
 	${SRC_DIR}/ClassDrawable.cpp
 	${SRC_DIR}/Client.cpp
