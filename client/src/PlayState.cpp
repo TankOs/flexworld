@@ -22,7 +22,9 @@
 #include "CameraReader.hpp"
 #include "ComponentSystemReader.hpp"
 #include "MovementReader.hpp"
+#include "WorldSyncReader.hpp"
 
+#include <FlexWorld/Controllers/EntityWatchdog.hpp>
 #include <FlexWorld/Messages/Ready.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
@@ -77,6 +79,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_camera_reader( nullptr ),
 	m_component_system_reader( nullptr ),
 	m_movement_reader( nullptr ),
+	m_world_sync_reader( nullptr ),
 	m_update_eyepoint( true ),
 	m_walk_forward( false ),
 	m_walk_backward( false ),
@@ -138,12 +141,16 @@ void PlayState::init() {
 	m_system.create_controller<cs::ctrl::MovementForceTransform>();
 	m_system.create_controller<cs::ctrl::Acceleration>();
 	m_system.create_controller<cs::ctrl::Movement>();
+	fw::ctrl::EntityWatchdog& watchdog_controller = m_system.create_controller<fw::ctrl::EntityWatchdog>();
+
+	watchdog_controller.set_router( *m_router );
 
 	// Setup message system.
 	m_router->create_reader<DebugReader>();
 	m_session_state_reader = &m_router->create_reader<SessionStateReader>();
 	m_movement_reader = &m_router->create_reader<MovementReader>();
 	m_component_system_reader = &m_router->create_reader<ComponentSystemReader>();
+	m_world_sync_reader = &m_router->create_reader<WorldSyncReader>();
 	m_scene_graph_reader = &m_router->create_reader<SceneGraphReader>();
 	m_camera_reader = &m_router->create_reader<CameraReader>();
 
@@ -160,12 +167,16 @@ void PlayState::init() {
 
 	m_camera_reader->set_camera( m_camera );
 	m_camera_reader->set_world( *get_shared().world );
+	m_camera_reader->set_lock_facility( *get_shared().lock_facility );
 
 	m_component_system_reader->set_system( m_system );
 	m_component_system_reader->set_world( *get_shared().world );
 	m_component_system_reader->set_lock_facility( *get_shared().lock_facility );
 
 	m_movement_reader->set_controls( get_shared().user_settings.get_controls() );
+
+	m_world_sync_reader->set_world( *get_shared().world );
+	m_world_sync_reader->set_lock_facility( *get_shared().lock_facility );
 
 	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
 	host_sync_reader.set_client( *get_shared().client );
@@ -596,6 +607,7 @@ void PlayState::update( const sf::Time& delta ) {
 		const auto position = controlled_entity->find_property<sf::Vector3f>( "position" );
 		const auto force = controlled_entity->find_property<sf::Vector3f>( "force" );
 
+		/*
 		std::cout << "Force: "
 			<< force->get_value().x << " "
 			<< force->get_value().y << " "
@@ -608,6 +620,7 @@ void PlayState::update( const sf::Time& delta ) {
 			<< position->get_value().z << " "
 			<< std::endl
 		;
+		*/
 	}
 
 	// Process messages again that might have been added by the component system.

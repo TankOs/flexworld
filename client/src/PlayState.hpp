@@ -31,6 +31,7 @@ class MessageHandler;
 class CameraReader;
 class ComponentSystemReader;
 class MovementReader;
+class WorldSyncReader;
 
 namespace sg {
 class Node;
@@ -105,6 +106,7 @@ class PlayState : public State, fw::Client::Handler {
 		CameraReader* m_camera_reader;
 		ComponentSystemReader* m_component_system_reader;
 		MovementReader* m_movement_reader;
+		WorldSyncReader* m_world_sync_reader;
 
 		// Controls.
 		bool m_update_eyepoint;

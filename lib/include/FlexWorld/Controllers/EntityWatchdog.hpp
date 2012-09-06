@@ -4,8 +4,11 @@
 
 #include <FWCS/Controller.hpp>
 #include <SFML/System/Vector3.hpp>
-#include <functional>
 #include <map>
+
+namespace ms {
+class Router;
+}
 
 namespace fw {
 namespace ctrl {
@@ -14,6 +17,14 @@ namespace ctrl {
  * The watchdog watches for changes in entities. Changes include:
  *
  *   * Position
+ *
+ * Whenever a change is detected, the watchdog will create a message and pass
+ * it to the message system. The message's ID is "entity_change" and contains
+ * the following properties:
+ *
+ *   * id (fw::EntityID): FlexWorld entity ID.
+ *   * fields (int): Flags of properties that changed (see fw::ctrl::EntityWatchdog::ChangeFieldFlag).
+ *   * snapshot (EntityWatchdog::Snapshot): Snapshot containing the changes.
  *
  * Required properties:
  *   * watch (bool): true to enable watching this entity.
@@ -24,7 +35,8 @@ class EntityWatchdog : public cs::Controller {
 		 */
 		enum ChangeFieldFlag {
 			UNCHANGED = 0, ///< Nothing changed.
-			POSITION = 1 << 0 ///< Position changed.
+			POSITION = 1 << 0, ///< Position changed.
+			ALL = POSITION ///< All fields.
 		};
 
 		/** Entity snapshot.
@@ -48,29 +60,30 @@ class EntityWatchdog : public cs::Controller {
 		 */
 		std::size_t get_num_snapshots() const;
 
-		/** Set callback function.
-		 * @param function Function.
-		 */
-		void set_callback_function( const std::function<void( fw::EntityID, int )>& function );
-
-		/** Get callback function.
-		 * @return Callback function.
-		 */
-		const std::function<void( fw::EntityID, int )>& get_callback_function() const;
-
 		/** Find snapshot.
 		 * @param entity_id Entity ID.
 		 * @return Snapshot or nullptr if not found.
 		 */
 		const Snapshot* find_snapshot( fw::EntityID entity_id ) const;
 
+		/** Set router.
+		 * @param router Router (referenced).
+		 */
+		void set_router( ms::Router& router );
+
+		/** Get router.
+		 * @return Router or nullptr if none set.
+		 */
+		ms::Router* get_router() const;
+
 	private:
 		void on_entity_add( cs::Entity& entity );
 		void on_entity_remove( cs::Entity& entity );
 		void update_entity( cs::Entity& entity, const sf::Time& delta );
 
-		std::function<void( fw::EntityID, int )> m_callback_function;
 		std::map<fw::EntityID, Snapshot> m_snapshots;
+
+		ms::Router* m_router;
 };
 
 }

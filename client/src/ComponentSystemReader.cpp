@@ -1,5 +1,9 @@
 #include "ComponentSystemReader.hpp"
 
+#include <FlexWorld/LockFacility.hpp>
+#include <FlexWorld/World.hpp>
+#include <FlexWorld/Entity.hpp>
+
 #include <FWCS/System.hpp>
 #include <FWCS/Entity.hpp>
 #include <FWMS/Message.hpp>
@@ -50,7 +54,7 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 		}
 	}
 	else if( msg_id == CONTROL_ENTITY_ID ) {
-		const auto entity_id = message.find_property<fw::EntityID>( ID_ID );
+		auto entity_id = message.find_property<fw::EntityID>( ID_ID );
 
 		if( entity_id != nullptr ) {
 			// TODO: Remove properties from old controlled entity.
@@ -61,15 +65,25 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 			auto ent_iter = m_entities.find( *entity_id );
 			assert( ent_iter != std::end( m_entities ) );
 
+			// Get original entity to set properties.
+			m_lock_facility->lock_world( true );
+
+			const auto* entity = m_world->find_entity( *entity_id );
+			assert( entity != nullptr );
+
 			ent_iter->second->create_property( "force", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
 			ent_iter->second->create_property( "acceleration", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
 			ent_iter->second->create_property( "velocity", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "position", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "forward_vector", sf::Vector3f( 0.0f, 0.0f, 1.0f ) );
+			ent_iter->second->create_property( "position", entity->get_position() );
+			ent_iter->second->create_property( "forward_vector", sf::Vector3f( 0.0f, 0.0f, -1.0f ) );
 			ent_iter->second->create_property( "walk_control_vector", sf::Vector2f( 0.0f, 0.0f ) );
 			ent_iter->second->create_property( "walk_force", 500.0f );
 			ent_iter->second->create_property( "max_walk_velocity", 5.0f );
 			ent_iter->second->create_property( "mass", 60.0f );
+			ent_iter->second->create_property( "watch", true );
+			ent_iter->second->create_property<fw::EntityID>( "fw_entity_id", *entity_id );
+
+			m_lock_facility->lock_world( false );
 
 			std::cout << "ComponentSystemReader: Now controlling entity #" << *entity_id << "." << std::endl;
 		}

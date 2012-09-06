@@ -47,6 +47,7 @@ set(
 	${INC_DIR}/TextureFilter.hpp
 	${INC_DIR}/UserInterface.hpp
 	${INC_DIR}/UserSettings.cpp
+	${INC_DIR}/WorldSyncReader.hpp
 	${SRC_DIR}/BufferObjectGroup.cpp
 	${SRC_DIR}/Camera.cpp
 	${SRC_DIR}/CameraReader.cpp
@@ -87,6 +88,7 @@ set(
 	${SRC_DIR}/TextScroller.cpp
 	${SRC_DIR}/UserInterface.cpp
 	${SRC_DIR}/UserSettings.hpp
+	${SRC_DIR}/WorldSyncReader.cpp
 )
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )

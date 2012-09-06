@@ -10,6 +10,7 @@ class Camera;
 
 namespace fw {
 class World;
+class LockFacility;
 }
 
 /** Camera reader.
@@ -30,15 +31,22 @@ class CameraReader : public ms::Reader {
 		void set_camera( sg::Camera& camera );
 
 		/** Set world.
-		 * @param world World.
+		 * @param world World (referenced).
 		 */
 		void set_world( const fw::World& world );
+
+		/** Set lock facility.
+		 * @param lock_facility Lock facility (referenced).
+		 */
+		void set_lock_facility( fw::LockFacility& lock_facility );
 
 	private:
 		void handle_message( const ms::Message& message );
 
 		sg::Camera* m_camera;
 		const fw::World* m_world;
+		fw::LockFacility* m_lock_facility;
+
 		fw::EntityID m_entity_id;
 		bool m_received_entity_id;
 };
