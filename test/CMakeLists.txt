@@ -25,6 +25,7 @@ set(
 	TestClient.cpp
 	TestCuboid.cpp
 	TestEntity.cpp
+	TestEntityWatchdogController.cpp
 	TestEventLuaModule.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp
@@ -60,6 +61,7 @@ endif()
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWCS/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/Diluculum/include/ )
 include_directories( ${LUA_INCLUDE_DIR} )
 include_directories( ${Boost_INCLUDE_DIR} )
@@ -70,6 +72,7 @@ add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld )
 target_link_libraries( test fwsg )
+target_link_libraries( test fwcs )
 target_link_libraries( test Diluculum )
 target_link_libraries( test ${LUA_LIBRARIES} )
 target_link_libraries( test ${SFML_SYSTEM_LIBRARY} )

@@ -25,6 +25,7 @@ set(
 	${INC_DIR}/FlexWorld/Client.hpp
 	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
+	${INC_DIR}/FlexWorld/Controllers/EntityWatchdog.hpp
 	${INC_DIR}/FlexWorld/Cuboid.hpp
 	${INC_DIR}/FlexWorld/Cuboid.inl
 	${INC_DIR}/FlexWorld/Entity.hpp
@@ -97,6 +98,7 @@ set(
 	${SRC_DIR}/FlexWorld/ClassLoader.cpp
 	${SRC_DIR}/FlexWorld/Client.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
+	${SRC_DIR}/FlexWorld/Controllers/EntityWatchdog.cpp
 	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/GameMode.cpp
@@ -148,6 +150,7 @@ set(
 
 include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWSG/include/ )
+include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/FWCS/include/ )
 include_directories( ${PROJECT_SOURCE_DIR}/../extlibs/Diluculum/include/ )
 include_directories( ${LIBNOISE_INCLUDE_DIR} )
 include_directories( ${LUA_INCLUDE_DIR} )
@@ -158,6 +161,7 @@ include_directories( ${Boost_INCLUDE_DIR} )
 add_library( flexworld ${SOURCES} )
 
 target_link_libraries( flexworld fwsg )
+target_link_libraries( flexworld fwcs )
 target_link_libraries( flexworld Diluculum )
 target_link_libraries( flexworld ${LIBNOISE_LIBRARY} )
 target_link_libraries( flexworld ${LUA_LIBRARIES} )
