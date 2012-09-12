@@ -18,4 +18,4 @@
 	url = gitolite@boxbox.org:fwms.git
 [submodule "extlibs/FWCS"]
 	path = extlibs/FWCS
-	url = gitolite@boxbox.org:FWCS.git
+	url = gitolite@boxbox.org:fwcs.git
