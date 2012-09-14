@@ -42,11 +42,6 @@ class SceneGraphReader : public ms::Reader {
 		 */
 		void set_root_node( std::shared_ptr<sg::Node> root_node );
 
-		/** Set world.
-		 * @param world World.
-		 */
-		void set_world( const fw::World& world );
-
 		/** Set resource manager.
 		 * @param resource_manager Resource manager.
 		 */
@@ -61,6 +56,11 @@ class SceneGraphReader : public ms::Reader {
 		 * @param session_state Session state.
 		 */
 		void set_session_state( const SessionState& session_state );
+
+		/** Set world.
+		 * @param world World.
+		 */
+		void set_world( const fw::World& world );
 
 		/** Set lock facility.
 		 * @param lock_facility Lock facility.

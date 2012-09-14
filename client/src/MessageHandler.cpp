@@ -10,15 +10,14 @@
 
 static const ms::HashValue BEAM_ID = ms::string_hash( "beam" );
 static const ms::HashValue CHUNK_UPDATE_ID = ms::string_hash( "chunk_update" );
+static const ms::HashValue CLASS_ID = ms::string_hash( "class" );
 static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
-
-static const ms::HashValue PLANET_ID_ID = ms::string_hash( "planet_id" );
+static const ms::HashValue HEADING_ID = ms::string_hash( "heading" );
+static const ms::HashValue HOOK_ID = ms::string_hash( "hook" );
 static const ms::HashValue ID_ID = ms::string_hash( "id" );
 static const ms::HashValue PARENT_ID_ID = ms::string_hash( "parent_id" );
+static const ms::HashValue PLANET_ID_ID = ms::string_hash( "planet_id" );
 static const ms::HashValue POSITION_ID = ms::string_hash( "position" );
-static const ms::HashValue CLASS_ID = ms::string_hash( "class" );
-static const ms::HashValue HOOK_ID = ms::string_hash( "hook" );
-static const ms::HashValue HEADING_ID = ms::string_hash( "heading" );
 
 MessageHandler::MessageHandler(
 	ms::Router& router

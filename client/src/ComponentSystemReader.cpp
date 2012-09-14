@@ -76,12 +76,21 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 			ent_iter->second->create_property( "velocity", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
 			ent_iter->second->create_property( "position", entity->get_position() );
 			ent_iter->second->create_property( "forward_vector", sf::Vector3f( 0.0f, 0.0f, -1.0f ) );
+			ent_iter->second->create_property( "up_vector", sf::Vector3f( 0.0f, 1.0f, 0.0f ) );
 			ent_iter->second->create_property( "walk_control_vector", sf::Vector2f( 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "walk_force", 500.0f );
-			ent_iter->second->create_property( "max_walk_velocity", 5.0f );
-			ent_iter->second->create_property( "mass", 60.0f );
+			ent_iter->second->create_property( "walk_force", 1500.0f );
+			ent_iter->second->create_property( "max_walk_velocity", 10.0f );
+			ent_iter->second->create_property( "mass", 90.0f );
+			ent_iter->second->create_property( "gravity", -9.81f );
+			ent_iter->second->create_property( "static_friction_coeff", 0.47f );
+			ent_iter->second->create_property( "sliding_friction_coeff", 0.27f );
 			ent_iter->second->create_property( "watch", true );
+			ent_iter->second->create_property( "on_ground", true );
 			ent_iter->second->create_property<fw::EntityID>( "fw_entity_id", *entity_id );
+
+			// XXX For debugging.
+			ent_iter->second->create_property( "lower_position_limit", sf::Vector3f( 0.0f, 80.0f, 0.0f ) );
+			ent_iter->second->create_property( "upper_position_limit", sf::Vector3f( 100.0f, 1000.0f, 100.0f ) );
 
 			m_lock_facility->lock_world( false );
 

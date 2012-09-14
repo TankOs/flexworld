@@ -43,6 +43,9 @@
 #include <FWCS/Controllers/MovementForceTransform.hpp>
 #include <FWCS/Controllers/Acceleration.hpp>
 #include <FWCS/Controllers/Movement.hpp>
+#include <FWCS/Controllers/Gravity.hpp>
+#include <FWCS/Controllers/PositionLimit.hpp>
+#include <FWCS/Controllers/Friction.hpp>
 #include <FWCS/Entity.hpp> // XXX
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
@@ -138,9 +141,12 @@ void PlayState::init() {
 	// Setup component system.
 	m_system.create_controller<cs::ctrl::ForceReset>();
 	m_system.create_controller<cs::ctrl::Walk>();
+	m_system.create_controller<cs::ctrl::Gravity>();
+	m_system.create_controller<cs::ctrl::Friction>();
 	m_system.create_controller<cs::ctrl::MovementForceTransform>();
 	m_system.create_controller<cs::ctrl::Acceleration>();
 	m_system.create_controller<cs::ctrl::Movement>();
+	m_system.create_controller<cs::ctrl::PositionLimit>();
 	fw::ctrl::EntityWatchdog& watchdog_controller = m_system.create_controller<fw::ctrl::EntityWatchdog>();
 
 	watchdog_controller.set_router( *m_router );
@@ -599,29 +605,6 @@ void PlayState::update( const sf::Time& delta ) {
 
 	// Process component system.
 	m_system.run( delta );
-
-	// XXX Output controlled entity position.
-	auto controlled_entity = m_component_system_reader->get_controlled_entity();
-
-	if( controlled_entity != nullptr ) {
-		const auto position = controlled_entity->find_property<sf::Vector3f>( "position" );
-		const auto force = controlled_entity->find_property<sf::Vector3f>( "force" );
-
-		/*
-		std::cout << "Force: "
-			<< force->get_value().x << " "
-			<< force->get_value().y << " "
-			<< force->get_value().z << " "
-			<< std::endl
-		;
-		std::cout << "Position: "
-			<< position->get_value().x << " "
-			<< position->get_value().y << " "
-			<< position->get_value().z << " "
-			<< std::endl
-		;
-		*/
-	}
 
 	// Process messages again that might have been added by the component system.
 	// TODO: Needed?

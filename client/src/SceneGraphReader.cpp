@@ -12,9 +12,8 @@
 
 static const ms::HashValue BEAM_ID = ms::string_hash( "beam" );
 static const ms::HashValue CHUNK_UPDATE_ID = ms::string_hash( "chunk_update" );
-static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
-
 static const ms::HashValue CLASS_ID = ms::string_hash( "class" );
+static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
 static const ms::HashValue HEADING_ID = ms::string_hash( "heading" );
 static const ms::HashValue HOOK_ID = ms::string_hash( "hook" );
 static const ms::HashValue ID_ID = ms::string_hash( "id" );
@@ -51,10 +50,6 @@ void SceneGraphReader::set_root_node( std::shared_ptr<sg::Node> root_node ) {
 	m_root_node = root_node;
 }
 
-void SceneGraphReader::set_world( const fw::World& world ) {
-	m_world = &world;
-}
-
 void SceneGraphReader::set_resource_manager( ResourceManager& resource_manager ) {
 	m_resource_manager = &resource_manager;
 }
@@ -65,6 +60,10 @@ void SceneGraphReader::set_renderer( sg::Renderer& renderer ) {
 
 void SceneGraphReader::set_session_state( const SessionState& session_state ) {
 	m_session_state = &session_state;
+}
+
+void SceneGraphReader::set_world( const fw::World& world ) {
+	m_world = &world;
 }
 
 void SceneGraphReader::set_lock_facility( fw::LockFacility& lock_facility ) {
