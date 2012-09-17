@@ -173,5 +173,10 @@ target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )
 target_link_libraries( flexworld ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld ${Boost_SYSTEM_LIBRARY} )
 
+if( WINDOWS AND MINGW )
+	target_link_libraries( flexworld ws2_32 )
+	target_link_libraries( flexworld mswsock )
+endif()
+
 set_target_properties( flexworld PROPERTIES DEBUG_POSTFIX -s-d )
 set_target_properties( flexworld PROPERTIES RELEASE_POSTFIX -s )

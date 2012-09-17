@@ -76,7 +76,7 @@ std::size_t AccountManager::load_accounts_from_directory( const std::string& pat
 		// Try to load.
 		try {
 			// Load data.
-			std::ifstream in( dir_path.c_str() );
+			std::ifstream in( dir_path.string() );
 			if( !in.is_open() ) {
 				failed = true;
 			}

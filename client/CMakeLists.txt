@@ -131,6 +131,10 @@ if( NOT WINDOWS )
 		target_link_libraries( flexworld-client GLEW )
 		target_link_libraries( flexworld-client freetype )
 	endif()
+elseif( WINDOWS AND MINGW )
+	target_link_libraries( flexworld-client ws2_32 )
+	target_link_libraries( flexworld-client mswsock )
+	target_link_libraries( flexworld-client ${GLEW_LIBRARY} )
 endif()
 
 # Binaries.

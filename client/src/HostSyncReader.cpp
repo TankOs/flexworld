@@ -7,6 +7,7 @@
 
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
+#include <iostream>
 
 static const ms::HashValue VIEW_CUBOID_UPDATE_ID = ms::string_hash( "view_cuboid_update" );
 static const ms::HashValue CUBOID_ID = ms::string_hash( "cuboid" );

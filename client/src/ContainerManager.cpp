@@ -8,6 +8,7 @@
 
 #include <Rocket/Core.h>
 #include <cassert>
+#include <iostream>
 
 ContainerManager::ContainerManager( Rocket::Core::Context& context, ResourceManager& resource_manager ) :
 	m_context( context ),

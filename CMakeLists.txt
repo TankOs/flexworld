@@ -83,17 +83,28 @@ endif()
 #
 # Linker options.
 #
-set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
-set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
-set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
+if( WINDOWS )
+	set( Boost_USE_STATIC_LIBS true CACHE BOOL "Use Boost's static libraries." )
+	set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
+	set( SFML_STATIC_LIBRARIES true CACHE BOOL "Was SFML built as a static library?" )
+else()
+	set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
+	set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
+	set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
+endif()
 
 #
 # Compiler-specific.
 #
 if( COMPILER_GCC )
 	if( NOT CMAKE_CXX_FLAGS )
-		set( CMAKE_CXX_FLAGS "--std=c++0x -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C++ compiler flags" FORCE )
-		set( CMAKE_C_FLAGS "--std=c++0x -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C compiler flags" FORCE )
+		if( NOT MINGW )
+			set( CMAKE_CXX_FLAGS "--std=c++0x -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C++ compiler flags" FORCE )
+			set( CMAKE_C_FLAGS "--std=c++0x -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C compiler flags" FORCE )
+		else()
+			set( CMAKE_CXX_FLAGS "-std=gnu++11 -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C++ compiler flags" FORCE )
+			set( CMAKE_C_FLAGS "-std=gnu++11 -Wall -Wextra -Wshadow -Wconversion -pedantic" CACHE STRING "C compiler flags" FORCE )
+		endif()
 	endif()
 
 	if( NOT CMAKE_CXX_FLAGS_DEBUG )
@@ -111,6 +122,9 @@ set( Boost_ADDITIONAL_VERSIONS "1.49" "1.49.0" )
 
 if( WINDOWS )
 	add_definitions( -D_WIN32_WINNT=0x0501 )
+	if( MINGW )
+		add_definitions( -DBOOST_THREAD_USE_LIB )
+	endif()
 endif()
 
 #
@@ -136,13 +150,18 @@ find_package( Threads REQUIRED )
 find_package( Lua51 REQUIRED )
 find_package( libnoise REQUIRED )
 
-if( NOT WINDOWS AND FW_BUILD_CLIENT )
-	find_package( X11 REQUIRED )
-	find_package( OpenAL REQUIRED )
+if( FW_BUILD_CLIENT )
+	if( NOT WINDOWS )
+		find_package( X11 REQUIRED )
+		find_package( OpenAL REQUIRED )
+	else()
+		find_package( OpenGL REQUIRED )
+	endif()
 endif()
 
-if( FW_BUILD_CLIENT )
-	find_package( OpenGL REQUIRED )
+if( MINGW )
+	find_package( GLEW REQUIRED )
+	add_definitions( -DGLEW_STATIC )
 endif()
 
 #
@@ -151,24 +170,26 @@ endif()
 
 # FWSG.
 if( FW_BUILD_CLIENT )
-	set( FWSG_SKIP_INSTALL TRUE )
+	set( FWSG_BUILD_EXAMPLES FALSE CACHE BOOL "" )
+	set( FWSG_BUILD_TEST FALSE CACHE BOOL "" )
+	set( FWSG_SKIP_INSTALL TRUE CACHE BOOL "" )
 	add_subdirectory( "extlibs/FWSG" )
 endif()
 
 # FWMS.
-set( FWMS_SKIP_INSTALL TRUE )
-set( FWMS_BUILD_EXAMPLES FALSE )
-set( FWMS_BUILD_TEST FALSE )
-set( FWMS_BUILD_DOC FALSE )
-set( FWMS_BUILD_SHARED_LIBS FALSE )
+set( FWMS_SKIP_INSTALL TRUE CACHE BOOL "" )
+set( FWMS_BUILD_EXAMPLES FALSE CACHE BOOL "" )
+set( FWMS_BUILD_TEST FALSE CACHE BOOL "" )
+set( FWMS_BUILD_DOC FALSE CACHE BOOL "" )
+set( FWMS_BUILD_SHARED_LIBS FALSE CACHE BOOL "" )
 add_subdirectory( "extlibs/FWMS" )
 
 # FWCS.
-set( FWCS_SKIP_INSTALL TRUE )
-set( FWCS_BUILD_SHARED_LIBS FALSE )
-set( FWCS_BUILD_TEST FALSE )
-set( FWCS_BUILD_DOCS FALSE )
-set( FWCS_BUILD_EXAMPLES FALSE )
+set( FWCS_SKIP_INSTALL TRUE CACHE BOOL "" )
+set( FWCS_BUILD_SHARED_LIBS FALSE CACHE BOOL "" )
+set( FWCS_BUILD_TEST FALSE CACHE BOOL "" )
+set( FWCS_BUILD_DOCS FALSE CACHE BOOL "" )
+set( FWCS_BUILD_EXAMPLES FALSE CACHE BOOL "" )
 add_subdirectory( "extlibs/FWCS" )
 
 # Diluculum.

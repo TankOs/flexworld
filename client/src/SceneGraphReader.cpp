@@ -9,6 +9,7 @@
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
 #include <cassert>
+#include <iostream>
 
 static const ms::HashValue BEAM_ID = ms::string_hash( "beam" );
 static const ms::HashValue CHUNK_UPDATE_ID = ms::string_hash( "chunk_update" );
