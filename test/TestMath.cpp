@@ -16,7 +16,10 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 
 		fw::normalize( vec );
 
-		BOOST_CHECK( vec == expected );
+		//BOOST_CHECK( vec == expected );
+		BOOST_CHECK( std::abs( (vec - expected).x ) <= 0.000001f );
+		BOOST_CHECK( std::abs( (vec - expected).y ) <= 0.000001f );
+		BOOST_CHECK( std::abs( (vec - expected).z ) <= 0.000001f );
 	}
 
 	// Calc area of 2D triangle.
@@ -27,7 +30,7 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 			sf::Vector2f( 10, 10 )
 		};
 
-		BOOST_CHECK( fw::calc_triangle_area( points[0], points[1], points[2] ) == 12.5f );
+		BOOST_CHECK( std::abs( fw::calc_triangle_area( points[0], points[1], points[2] ) - 12.5f ) <= 0.000001f );
 	}
 
 	// Calc area of 2D rect.
@@ -41,10 +44,10 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 	// Degrees to radians.
 	{
 		BOOST_CHECK( deg_to_rad( 0 ) == 0 );
-		BOOST_CHECK( std::abs( deg_to_rad( 90 ) - 1.57079633f ) < 0.0000001f);
-		BOOST_CHECK( std::abs( deg_to_rad( 180 ) - 3.14159265f ) < 0.0000001f);
-		BOOST_CHECK( std::abs( deg_to_rad( 270 ) - 4.71238898f ) < 0.0000001f);
-		BOOST_CHECK( std::abs( deg_to_rad( 360 ) - 6.28318531f ) < 0.0000001f);
+		BOOST_CHECK( std::abs( deg_to_rad( 90 ) - 1.57079633f ) < 0.000001f);
+		BOOST_CHECK( std::abs( deg_to_rad( 180 ) - 3.14159265f ) < 0.000001f);
+		BOOST_CHECK( std::abs( deg_to_rad( 270 ) - 4.71238898f ) < 0.000001f);
+		BOOST_CHECK( std::abs( deg_to_rad( 360 ) - 6.28318531f ) < 0.000001f);
 	}
 
 	// Convert polar coordinate to vector.
