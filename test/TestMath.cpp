@@ -16,7 +16,6 @@ BOOST_AUTO_TEST_CASE( TestMath ) {
 
 		fw::normalize( vec );
 
-		//BOOST_CHECK( vec == expected );
 		BOOST_CHECK( std::abs( (vec - expected).x ) <= 0.000001f );
 		BOOST_CHECK( std::abs( (vec - expected).y ) <= 0.000001f );
 		BOOST_CHECK( std::abs( (vec - expected).z ) <= 0.000001f );
