@@ -3,7 +3,7 @@
 	url = git://github.com/LaurentGomila/SFML.git
 [submodule "extlibs/FWSG"]
 	path = extlibs/FWSG
-	url = git://github.com/TankOs/FWSG.git
+	url = gitolite@boxbox.org:fwsg.git
 [submodule "extlibs/Diluculum"]
 	path = extlibs/Diluculum
 	url = git://github.com/lmbarros/Diluculum.git
