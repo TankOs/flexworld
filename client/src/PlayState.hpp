@@ -4,9 +4,9 @@
 //#include "Camera.hpp"
 
 #include <FlexWorld/Client.hpp>
-#include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Types.hpp>
 
+#include <FWU/Cuboid.hpp>
 #include <FWSG/Renderer.hpp>
 #include <FWSG/Camera.hpp>
 #include <FWCS/System.hpp>
@@ -51,7 +51,7 @@ class PlayState : public State, fw::Client::Handler {
 		PlayState( sf::RenderWindow& target );
 
 	private:
-		typedef fw::Cuboid<fw::PlanetSizeType> ViewCuboid;
+		typedef util::Cuboid<fw::PlanetSizeType> ViewCuboid;
 
 		void init();
 		void cleanup();

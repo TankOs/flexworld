@@ -72,7 +72,7 @@ void SessionStateReader::handle_message( const ms::Message& message ) {
 
 			m_lock_facility->lock_planet( *planet, false );
 
-			m_session_state->view_cuboid = fw::Cuboid<fw::PlanetSizeType>(
+			m_session_state->view_cuboid = util::Cuboid<fw::PlanetSizeType>(
 				static_cast<fw::PlanetSizeType>( chunk_pos.x - std::min( chunk_pos.x, fw::PlanetSizeType( 30 ) ) ),
 				static_cast<fw::PlanetSizeType>( chunk_pos.y - std::min( chunk_pos.y, fw::PlanetSizeType( 30 ) ) ),
 				static_cast<fw::PlanetSizeType>( chunk_pos.z - std::min( chunk_pos.z, fw::PlanetSizeType( 30 ) ) ),

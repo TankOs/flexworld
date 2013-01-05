@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	using namespace fw;
 
 	float value = 0;
-	FloatCuboid cuboid;
+	util::FloatCuboid cuboid;
 	sf::FloatRect rect;
 
 	ModelDriver::Buffer source_buffer;
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	source_buffer.push_back( 0x00 ); // Version.
 
 	// Bounding box (x, y, z, width, height, depth).
-	cuboid = FloatCuboid( 0, 2, 4, 10, 20, 30 );
+	cuboid = util::FloatCuboid( 0, 2, 4, 10, 20, 30 );
 	source_buffer.insert( source_buffer.end(), reinterpret_cast<const char*>( &cuboid ), reinterpret_cast<const char*>( &cuboid ) + sizeof( cuboid ) );
 
 	// Coverage rects.
@@ -235,7 +235,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 	{
 		Model model;
 
-		model.set_bounding_box( fw::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		model.set_bounding_box( util::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
 		model.set_face_coverage( fw::UP_FACE, sf::FloatRect( 100, 101, 102, 103 ) );
 		model.set_face_coverage( fw::DOWN_FACE, sf::FloatRect( 200, 201, 202, 203 ) );
 		model.set_face_coverage( fw::BACK_FACE, sf::FloatRect( 300, 301, 302, 303 ) );
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE( TestModelDriver ) {
 		BOOST_CHECK_NO_THROW( model = ModelDriver::deserialize( source_buffer ) );
 
 		// Validate.
-		BOOST_CHECK( model.get_bounding_box() == fw::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
+		BOOST_CHECK( model.get_bounding_box() == util::FloatCuboid( 0, 2, 4, 10, 20, 30 ) );
 		BOOST_CHECK( model.get_face_coverage( fw::UP_FACE ) == sf::FloatRect( 100, 101, 102, 103 ) );
 		BOOST_CHECK( model.get_face_coverage( fw::DOWN_FACE ) == sf::FloatRect( 200, 201, 202, 203 ) );
 		BOOST_CHECK( model.get_face_coverage( fw::BACK_FACE ) == sf::FloatRect( 300, 301, 302, 303 ) );

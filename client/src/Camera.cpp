@@ -1,7 +1,6 @@
 #include "Camera.hpp"
 
-#include <FlexWorld/Math.hpp>
-
+#include <FWU/Math.hpp>
 #include <algorithm>
 
 Camera::Camera() :
@@ -68,13 +67,13 @@ void Camera::apply_clamp() {
 }
 
 void Camera::walk( float distance ) {
-	m_position.x -= std::sin( m_rotation.y * fw::PI / 180.0f ) * distance;
-	m_position.z += std::cos( m_rotation.y * fw::PI / 180.0f ) * distance;
+	m_position.x -= std::sin( m_rotation.y * util::PI / 180.0f ) * distance;
+	m_position.z += std::cos( m_rotation.y * util::PI / 180.0f ) * distance;
 }
 
 void Camera::strafe( float distance ) {
-	m_position.x -= std::sin( (m_rotation.y - 90.0f) * fw::PI / 180.0f ) * distance;
-	m_position.z += std::cos( (m_rotation.y - 90.0f) * fw::PI / 180.0f ) * distance;
+	m_position.x -= std::sin( (m_rotation.y - 90.0f) * util::PI / 180.0f ) * distance;
+	m_position.z += std::cos( (m_rotation.y - 90.0f) * util::PI / 180.0f ) * distance;
 }
 
 void Camera::fly( float distance ) {

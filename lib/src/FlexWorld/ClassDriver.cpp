@@ -123,7 +123,7 @@ void ClassDriver::load( const std::string& path, Class& cls ) {
 			throw LoadException( "Invalid bounding box." );
 		}
 
-		FloatCuboid box( 0, 0, 0, 0, 0, 0 );
+		util::FloatCuboid box( 0, 0, 0, 0, 0, 0 );
 
 		try {
 			(*b_box_node)[0] >> box.x;

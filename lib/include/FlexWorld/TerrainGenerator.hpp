@@ -1,7 +1,6 @@
 #pragma once
 
-#include <FlexWorld/Cuboid.hpp>
-
+#include <FWU/Cuboid.hpp>
 #include <vector>
 #include <cstdint>
 
@@ -93,7 +92,7 @@ class TerrainGenerator {
 		 * @param planet Planet to store generated terrain at.
 		 * @param cuboid Cuboid to generate (must be valid).
 		 */
-		void generate( Planet& planet, const Cuboid<uint32_t>& cuboid );
+		void generate( Planet& planet, const util::Cuboid<uint32_t>& cuboid );
 
 	private:
 		typedef std::vector<Layer> LayerArray;

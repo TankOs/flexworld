@@ -1,7 +1,5 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
-
 #include <SFML/System/Vector3.hpp>
 #include <string>
 #include <vector>
@@ -19,7 +17,7 @@ class Class;
  * Entities can be attached using hooks specified in the class file. Every hook
  * can have multiple entities attached.
  */
-class Entity : public NonCopyable {
+class Entity {
 	public:
 		typedef uint32_t ID; ///< Entity ID type.
 		typedef uint32_t AmountType; ///< Amount type.
@@ -32,6 +30,16 @@ class Entity : public NonCopyable {
 		/** Dtor.
 		 */
 		~Entity();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		Entity( const Entity& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		Entity& operator=( const Entity& other ) = delete;
 
 		/** Get ID.
 		 * @return ID.

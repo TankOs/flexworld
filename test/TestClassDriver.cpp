@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE( TestClassDriver ) {
 
 		BOOST_CHECK( cls.has_model() && cls.get_model().get_id().get() == "test/cube.fwm" );
 
-		BOOST_CHECK( cls.get_bounding_box() == FloatCuboid( 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f ) );
+		BOOST_CHECK( cls.get_bounding_box() == util::FloatCuboid( 1.1f, 1.2f, 1.3f, 1.4f, 1.5f, 1.6f ) );
 
 		BOOST_REQUIRE( cls.has_container_image() == true );
 		BOOST_CHECK( cls.get_container_image().get_id().get() == "test/image.png" );

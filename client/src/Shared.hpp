@@ -7,7 +7,6 @@
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/LockFacility.hpp>
 #include <FlexWorld/World.hpp>
-#include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/Entity.hpp>
 #include <memory>
 
@@ -21,12 +20,22 @@ class io_service;
 
 /** Shared singleton.
  */
-class Shared : public fw::NonCopyable {
+class Shared {
 	public:
 		/** Get Shared instance.
 		 * @return Shared instance.
 		 */
 		static Shared& get();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		Shared( const Shared& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		Shared& operator=( const Shared& other ) = delete;
 
 		UserSettings user_settings; ///< User settings.
 

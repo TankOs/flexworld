@@ -102,7 +102,7 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 
 		if( vector != nullptr && m_controlling_entity == true ) {
 			auto controlled_entity = m_entities.find( m_controlled_entity_id )->second;
-			controlled_entity->find_property<sf::Vector2f>( "walk_control_vector" )->set_value( *vector );
+			*controlled_entity->find_property<sf::Vector2f>( "walk_control_vector" ) = *vector;
 
 			std::cout << "ComponentSystemReader: Updated walk vector for entity #" << m_controlled_entity_id << "." << std::endl;
 		}

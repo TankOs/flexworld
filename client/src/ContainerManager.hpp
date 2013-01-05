@@ -1,7 +1,5 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
-
 #include <map>
 #include <memory>
 #include <cstdint>
@@ -22,7 +20,7 @@ class ElementDocument;
 
 /** Manager for container GUI elements.
  */
-class ContainerManager : public fw::NonCopyable {
+class ContainerManager {
 	public:
 		/** Ctor.
 		 * @param context libRocket context (reference is held).
@@ -33,6 +31,16 @@ class ContainerManager : public fw::NonCopyable {
 		/** Dtor.
 		 */
 		~ContainerManager();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		ContainerManager( const ContainerManager& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		ContainerManager& operator=( const ContainerManager& other ) = delete;
 
 		/** Create a container for an entity.
 		 * Undefined behaviour if entity has already been added or container

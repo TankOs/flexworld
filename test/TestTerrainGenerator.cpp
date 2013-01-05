@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE( TestTerrainGenerator ) {
 			gen.set_base_height( 0 );
 			gen.set_maximum_height( 40 );
 
-			gen.generate( planet, Cuboid<uint32_t>( 0, 0, 0, 64, 64, 64 ) );
+			gen.generate( planet, util::Cuboid<uint32_t>( 0, 0, 0, 64, 64, 64 ) );
 		}
 	}
 }

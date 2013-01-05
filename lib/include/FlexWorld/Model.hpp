@@ -1,9 +1,9 @@
 #pragma once
 
 #include <FlexWorld/Mesh.hpp>
-#include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Face.hpp>
 
+#include <FWU/Cuboid.hpp>
 #include <SFML/Graphics/Rect.hpp>
 #include <vector>
 
@@ -49,12 +49,12 @@ class Model {
 		 * Position must be positive or zero.
 		 * @param box Bounding box.
 		 */
-		void set_bounding_box( const FloatCuboid& box );
+		void set_bounding_box( const util::FloatCuboid& box );
 
 		/** Get bounding box.
 		 * @return Bounding box.
 		 */
-		const FloatCuboid& get_bounding_box() const;
+		const util::FloatCuboid& get_bounding_box() const;
 
 		/** Set face coverage.
 		 * Mappings:
@@ -77,7 +77,7 @@ class Model {
 	private:
 		typedef std::vector<Mesh> MeshVector;
 
-		FloatCuboid m_bounding_box;
+		util::FloatCuboid m_bounding_box;
 		MeshVector m_meshes;
 		float m_scale_divisor;
 

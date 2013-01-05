@@ -6,7 +6,7 @@
 	url = gitolite@boxbox.org:fwsg.git
 [submodule "extlibs/Diluculum"]
 	path = extlibs/Diluculum
-	url = git://github.com/lmbarros/Diluculum.git
+	url = gitolite@boxbox.org:diluculum.git
 [submodule "extlibs/assimp"]
 	path = extlibs/assimp
 	url = git://github.com/assimp/assimp.git
@@ -19,3 +19,6 @@
 [submodule "extlibs/FWCS"]
 	path = extlibs/FWCS
 	url = gitolite@boxbox.org:fwcs.git
+[submodule "extlibs/FWU"]
+	path = extlibs/FWU
+	url = gitolite@boxbox.org:fwu.git

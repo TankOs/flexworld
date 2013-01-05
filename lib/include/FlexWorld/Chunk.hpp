@@ -1,7 +1,5 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
-
 #include <SFML/System/Vector3.hpp>
 #include <cstdint>
 
@@ -12,7 +10,7 @@ class Class;
 /** Chunk.
  * Contains blocks.
  */
-class Chunk : public NonCopyable {
+class Chunk {
 	public:
 		typedef uint8_t ScalarType; ///< Size type for block coordinates.
 		typedef uint16_t Block; ///< Block.
@@ -28,6 +26,16 @@ class Chunk : public NonCopyable {
 		/** Dtor.
 		 */
 		~Chunk();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		Chunk( const Chunk& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		Chunk& operator=( const Chunk& other ) = delete;
 
 		/** Clear chunk.
 		 */

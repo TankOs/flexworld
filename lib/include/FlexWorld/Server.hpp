@@ -1,6 +1,5 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/ServerProtocol.hpp>
 #include <FlexWorld/MessageHandler.hpp>
 #include <FlexWorld/Peer.hpp>
@@ -23,7 +22,7 @@ namespace fw {
  * sure to always wait for run() to return so that all connections are shutdown
  * gracefully.
  */
-class Server : public NonCopyable {
+class Server {
 	public:
 		typedef ServerProtocol::ConnectionID ConnectionID; ///< Connection ID.
 
@@ -52,6 +51,16 @@ class Server : public NonCopyable {
 		/** Dtor.
 		 */
 		~Server();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		Server( const Server& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		Server& operator=( const Server& other ) = delete;
 
 		/** Set IP.
 		 * @param ip IP.

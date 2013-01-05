@@ -245,7 +245,7 @@ ColorPicker::Result ColorPicker::pick(
 	}
 
 	// Fetch entities.
-	fw::FloatCuboid entity_pick_cuboid(
+	util::FloatCuboid entity_pick_cuboid(
 		origin.x - distance,
 		origin.y - distance,
 		origin.z - distance,
@@ -352,7 +352,7 @@ ColorPicker::Result ColorPicker::pick(
 	// Create blocks render step.
 	sg::StepProxy::Ptr step = renderer.create_step(
 		r_state,
-		sg::FloatMatrix(),
+		util::FloatMatrix(),
 		bo
 	);
 
@@ -442,7 +442,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	// Build bounding box geometry.
 	sg::TriangleGeometry bb_geometry;
-	fw::FloatCuboid bb = model->get_bounding_box();
+	util::FloatCuboid bb = model->get_bounding_box();
 
 	// Apply block scale divisor.
 	bb.x /= model->get_block_scale_divisor();
@@ -542,7 +542,7 @@ ColorPicker::Result ColorPicker::pick(
 
 	step = renderer.create_step(
 		r_state,
-		sg::FloatMatrix(),
+		util::FloatMatrix(),
 		bo
 	);
 

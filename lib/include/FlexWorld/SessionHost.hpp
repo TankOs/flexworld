@@ -4,7 +4,6 @@
 #include <FlexWorld/PlayerInfo.hpp>
 #include <FlexWorld/ClassLoader.hpp>
 #include <FlexWorld/GameMode.hpp>
-#include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/ScriptManager.hpp>
 #include <FlexWorld/LuaModules/ServerGate.hpp>
 #include <FlexWorld/LuaModules/WorldGate.hpp>
@@ -25,7 +24,6 @@ class World;
  */
 class SessionHost :
 	private Server::Handler,
-	public NonCopyable,
 	public lua::ServerGate,
 	public lua::WorldGate
 {
@@ -55,6 +53,16 @@ class SessionHost :
 		/** Dtor.
 		 */
 		~SessionHost();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		SessionHost( const SessionHost& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		SessionHost& operator=( const SessionHost& other ) = delete;
 
 		/** Get lock facility.
 		 * @return Lock facility.

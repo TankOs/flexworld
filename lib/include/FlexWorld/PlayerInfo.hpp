@@ -1,7 +1,8 @@
 #pragma once
 
 #include <FlexWorld/Planet.hpp>
-#include <FlexWorld/Cuboid.hpp>
+
+#include <FWU/Cuboid.hpp>
 
 namespace fw {
 
@@ -13,7 +14,7 @@ class Entity;
  * Used by SessionHost.
  */
 struct PlayerInfo {
-	typedef Cuboid<Planet::ScalarType> ViewCuboid; ///< View cuboid.
+	typedef util::Cuboid<Planet::ScalarType> ViewCuboid; ///< View cuboid.
 
 	/** Ctor.
 	 */

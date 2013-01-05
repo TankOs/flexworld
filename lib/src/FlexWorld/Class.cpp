@@ -123,7 +123,7 @@ const sf::Vector3f& Class::get_scale() const {
 	return m_scale;
 }
 
-void Class::set_bounding_box( const FloatCuboid& cuboid ) {
+void Class::set_bounding_box( const util::FloatCuboid& cuboid ) {
 	assert( cuboid.width > 0 );
 	assert( cuboid.height > 0 );
 	assert( cuboid.depth > 0 );
@@ -131,7 +131,7 @@ void Class::set_bounding_box( const FloatCuboid& cuboid ) {
 	m_bounding_box = cuboid;
 }
 
-const FloatCuboid& Class::get_bounding_box() const {
+const util::FloatCuboid& Class::get_bounding_box() const {
 	return m_bounding_box;
 }
 

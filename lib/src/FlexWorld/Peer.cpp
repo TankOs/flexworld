@@ -1,5 +1,4 @@
 #include <FlexWorld/Peer.hpp>
-#include <iostream> // XXX 
 
 namespace fw {
 

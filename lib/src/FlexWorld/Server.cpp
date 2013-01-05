@@ -1,6 +1,5 @@
 #include <FlexWorld/Server.hpp>
 #include <FlexWorld/Peer.hpp>
-#include <FlexWorld/Log.hpp> // XXX 
 
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>

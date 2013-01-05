@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE( TestModel ) {
 
 		BOOST_CHECK( model.get_num_meshes() == 0 );
 		BOOST_CHECK( model.get_block_scale_divisor() == 1.0f );
-		BOOST_CHECK( model.get_bounding_box() == FloatCuboid( 0, 0, 0, 0, 0, 0 ) );
+		BOOST_CHECK( model.get_bounding_box() == util::FloatCuboid( 0, 0, 0, 0, 0, 0 ) );
 
 		for( std::size_t face_idx = 0; face_idx < NUM_FACES; ++face_idx ) {
 			BOOST_CHECK( model.get_face_coverage( static_cast<Face>( face_idx ) ) == sf::FloatRect( 0, 0, 0, 0 ) );
@@ -26,10 +26,10 @@ BOOST_AUTO_TEST_CASE( TestModel ) {
 		Model model;
 
 		model.set_block_scale_divisor( 1.5f );
-		model.set_bounding_box( FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+		model.set_bounding_box( util::FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
 
 		BOOST_CHECK( model.get_block_scale_divisor() == 1.5f );
-		BOOST_CHECK( model.get_bounding_box() == FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+		BOOST_CHECK( model.get_bounding_box() == util::FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
 	}
 
 	// Face coverages.

@@ -5,6 +5,7 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 
 set(
 	SOURCES
+	#TestEntityWatchdogController.cpp
 	${PROJECT_BINARY_DIR}/Config.hpp
 	ExampleServerGate.cpp
 	ExampleServerGate.hpp
@@ -23,16 +24,12 @@ set(
 	TestClassDriver.cpp
 	TestClassLoader.cpp
 	TestClient.cpp
-	TestCuboid.cpp
 	TestEntity.cpp
-	TestEntityWatchdogController.cpp
 	TestEventLuaModule.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp
 	TestGameModeDriver.cpp
 	TestLockFacility.cpp
-	TestLooseOctree.cpp
-	TestMath.cpp
 	TestMesh.cpp
 	TestMessage.cpp
 	TestModel.cpp
@@ -72,11 +69,13 @@ include_directories( ${PROJECT_BINARY_DIR} )
 add_executable( test ${SOURCES} )
 
 target_link_libraries( test flexworld )
-target_link_libraries( test fwsg )
-target_link_libraries( test fwcs )
-target_link_libraries( test fwms )
-target_link_libraries( test Diluculum )
+target_link_libraries( test ${FWSG_LIBRARY} )
+target_link_libraries( test ${FWMS_LIBRARY} )
+target_link_libraries( test ${FWCS_LIBRARY} )
+target_link_libraries( test ${FWU_LIBRARY} )
+target_link_libraries( test ${DILUCULUM_LIBRARY} )
 target_link_libraries( test ${LUA_LIBRARIES} )
+target_link_libraries( test ${SFML_GRAPHICS_LIBRARY} )
 target_link_libraries( test ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( test ${Boost_THREAD_LIBRARY} )
 target_link_libraries( test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY} )

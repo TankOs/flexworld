@@ -1,7 +1,5 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
-
 #include <string>
 
 namespace fw {
@@ -16,12 +14,22 @@ class Element;
 
 /** Controller for container GUI elements.
  */
-class ContainerController : public fw::NonCopyable {
+class ContainerController {
 	public:
 		/** Ctor.
 		 * @param root Root container element.
 		 */
 		ContainerController( Rocket::Core::Element& root );
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		ContainerController( const ContainerController& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		ContainerController& operator=( const ContainerController& other ) = delete;
 
 		/** Set background image.
 		 * @param filename Filename.

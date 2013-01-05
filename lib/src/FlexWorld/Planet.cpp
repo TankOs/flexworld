@@ -182,7 +182,7 @@ void Planet::add_entity( const Entity& entity ) {
 	// Calculate the absolute bounding box.
 	const Class& cls = entity.get_class();
 
-	FloatCuboid cuboid(
+	util::FloatCuboid cuboid(
 		entity.get_position().x - (cls.get_scale().x * cls.get_origin().x ),
 		entity.get_position().y - (cls.get_scale().y * cls.get_origin().y ),
 		entity.get_position().z - (cls.get_scale().z * cls.get_origin().z ),
@@ -259,7 +259,7 @@ Entity::ID Planet::get_entity_id( std::size_t index ) const {
 	return m_entities[index];
 }
 
-void Planet::search_entities( const FloatCuboid& cuboid, EntityIDArray& results ) const {
+void Planet::search_entities( const util::FloatCuboid& cuboid, EntityIDArray& results ) const {
 	m_octree.search( cuboid, results );
 }
 

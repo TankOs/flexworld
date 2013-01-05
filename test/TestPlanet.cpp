@@ -1,8 +1,8 @@
 #include <FlexWorld/Planet.hpp>
 #include <FlexWorld/Class.hpp>
 #include <FlexWorld/Entity.hpp>
-#include <FlexWorld/Cuboid.hpp>
 
+#include <FWU/Cuboid.hpp>
 #include <boost/test/unit_test.hpp>
 #include <sstream>
 
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 			Planet::EntityIDArray results;
 
 			planet.search_entities(
-				FloatCuboid(
+				util::FloatCuboid(
 					0, 0, 0,
 					static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x ),
 					static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y ),
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 			Planet::EntityIDArray results;
 
 			planet.search_entities(
-				FloatCuboid(
+				util::FloatCuboid(
 					0, 0, 0,
 					1, 1, 1
 				),
@@ -288,7 +288,7 @@ BOOST_AUTO_TEST_CASE( TestPlanet ) {
 			Planet::EntityIDArray results;
 
 			planet.search_entities(
-				FloatCuboid(
+				util::FloatCuboid(
 					static_cast<float>( PLANET_SIZE.x * CHUNK_SIZE.x - 1 ),
 					static_cast<float>( PLANET_SIZE.y * CHUNK_SIZE.y - 1 ),
 					static_cast<float>( PLANET_SIZE.z * CHUNK_SIZE.z - 1 ),

@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		BOOST_CHECK( cls.get_num_textures() == 0 );
 		BOOST_CHECK( cls.get_num_hooks() == 0 );
 		BOOST_CHECK( cls.has_model() == false );
-		BOOST_CHECK( cls.get_bounding_box() == FloatCuboid( 0, 0, 0, 1, 1, 1 ) );
+		BOOST_CHECK( cls.get_bounding_box() == util::FloatCuboid( 0, 0, 0, 1, 1, 1 ) );
 		BOOST_CHECK( cls.has_container_image() == false );
 	}
 
@@ -35,14 +35,14 @@ BOOST_AUTO_TEST_CASE( TestClass ) {
 		cls.set_origin( sf::Vector3f( 1, 2, 3 ) );
 		cls.set_model( Resource( id ) );
 		cls.set_scale( sf::Vector3f( 5, 6, 7 ) );
-		cls.set_bounding_box( FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+		cls.set_bounding_box( util::FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
 		cls.set_container_image( Resource( id ) );
 
 		BOOST_CHECK( cls.get_name() == "Sword" );
 		BOOST_CHECK( cls.get_origin() == sf::Vector3f( 1, 2, 3 ) );
 		BOOST_CHECK( cls.get_model().get_id() == id );
 		BOOST_CHECK( cls.get_scale() == sf::Vector3f( 5, 6, 7 ) );
-		BOOST_CHECK( cls.get_bounding_box() == FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
+		BOOST_CHECK( cls.get_bounding_box() == util::FloatCuboid( 1, 2, 3, 4, 5, 6 ) );
 		BOOST_CHECK( cls.get_container_image().get_id() == id );
 	}
 

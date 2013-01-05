@@ -16,6 +16,7 @@ include_directories( ${SFML_INCLUDE_DIR} )
 add_executable( flexworld-server ${SOURCES} )
 
 target_link_libraries( flexworld-server flexworld ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-server ${FWU_LIBRARY} )
 
 if( FW_PORTABLE_INSTALL OR WINDOWS )
 	install(

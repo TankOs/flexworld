@@ -6,7 +6,6 @@
 #include <FlexWorld/Messages/CreateEntity.hpp>
 #include <FlexWorld/Messages/DestroyBlock.hpp>
 #include <FlexWorld/LockFacility.hpp>
-#include <FlexWorld/Log.hpp>
 #include <FlexWorld/AccountManager.hpp>
 #include <FlexWorld/Account.hpp>
 #include <FlexWorld/World.hpp>
@@ -14,8 +13,11 @@
 #include <FlexWorld/PackageEnumerator.hpp>
 #include <FlexWorld/TerrainGenerator.hpp>
 
+#include <FWU/Log.hpp>
 #include <boost/filesystem.hpp>
 #include <set>
+
+using util::Log;
 
 namespace fw {
 
@@ -179,7 +181,7 @@ bool SessionHost::start() {
 	generator.set_base_height( 70 );
 	generator.set_maximum_height( 5 );
 
-	generator.generate( *planet, Cuboid<uint32_t>( 0, 0, 0, 256, 128, 256 ) );
+	generator.generate( *planet, util::Cuboid<uint32_t>( 0, 0, 0, 256, 128, 256 ) );
 
 	// Release lock again.
 	m_lock_facility.lock_world( false );

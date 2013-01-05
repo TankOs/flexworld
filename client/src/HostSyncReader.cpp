@@ -1,10 +1,10 @@
 #include "HostSyncReader.hpp"
 
-#include <FlexWorld/Cuboid.hpp>
 #include <FlexWorld/Types.hpp>
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Client.hpp>
 
+#include <FWU/Cuboid.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
 #include <iostream>
@@ -24,7 +24,7 @@ void HostSyncReader::handle_message( const ms::Message& message ) {
 	ms::HashValue message_id = message.get_id();
 
 	if( message_id == VIEW_CUBOID_UPDATE_ID ) {
-		const fw::Cuboid<fw::PlanetSizeType>* cuboid = message.find_property<fw::Cuboid<fw::PlanetSizeType>>( CUBOID_ID );
+		const util::Cuboid<fw::PlanetSizeType>* cuboid = message.find_property<util::Cuboid<fw::PlanetSizeType>>( CUBOID_ID );
 
 		if( cuboid ) {
 			std::cout << "HostSyncReader: View cuboid changed, requesting new chunks..." << std::endl;

@@ -3,8 +3,8 @@
 #include <FlexWorld/LuaModules/Event.hpp>
 #include <FlexWorld/LuaModules/Server.hpp>
 #include <FlexWorld/LuaModules/World.hpp>
-#include <FlexWorld/Log.hpp>
 
+#include <FWU/Log.hpp>
 #include <Diluculum/LuaState.hpp>
 
 namespace fw {
@@ -110,7 +110,7 @@ bool ScriptManager::trigger_command( const std::string& command, const std::vect
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "Command error: " << m_last_error << Log::endl;
+		util::Log::Logger( util::Log::ERR ) << "Command error: " << m_last_error << util::Log::endl;
 
 		return false;
 	}
@@ -126,7 +126,7 @@ bool ScriptManager::trigger_chat_event( const sf::String& message, const sf::Str
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "CHAT event error: " << m_last_error << Log::endl;
+		util::Log::Logger( util::Log::ERR ) << "CHAT event error: " << m_last_error << util::Log::endl;
 
 		return false;
 	}
@@ -142,7 +142,7 @@ bool ScriptManager::trigger_connect_event( uint16_t client_id ) {
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "CONNECT event error: " << m_last_error << Log::endl;
+		util::Log::Logger( util::Log::ERR ) << "CONNECT event error: " << m_last_error << util::Log::endl;
 
 		return false;
 	}
@@ -158,7 +158,7 @@ bool ScriptManager::trigger_use_event( const Entity& entity, const Entity& actor
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "USE event error: " << m_last_error << Log::endl;
+		util::Log::Logger( util::Log::ERR ) << "USE event error: " << m_last_error << util::Log::endl;
 
 		return false;
 	}
@@ -180,7 +180,7 @@ bool ScriptManager::trigger_block_action_event(
 	}
 	catch( const Diluculum::LuaError& e ) {
 		m_last_error = e.what();
-		Log::Logger( Log::ERR ) << "BLOCK_ACTION event error: " << m_last_error << Log::endl;
+		util::Log::Logger( util::Log::ERR ) << "BLOCK_ACTION event error: " << m_last_error << util::Log::endl;
 
 		return false;
 	}

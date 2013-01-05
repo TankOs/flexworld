@@ -18,7 +18,7 @@ ModelDriver::Buffer ModelDriver::serialize( const Model& model ) {
 	buffer.push_back( 0x00 ); // Version.
 
 	// Bounding box.
-	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_bounding_box() ), reinterpret_cast<const char*>( &model.get_bounding_box() ) + sizeof( fw::FloatCuboid ) );
+	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_bounding_box() ), reinterpret_cast<const char*>( &model.get_bounding_box() ) + sizeof( util::FloatCuboid ) );
 
 	// Coverage rects.
 	buffer.insert( buffer.end(), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ), reinterpret_cast<const char*>( &model.get_face_coverage( UP_FACE ) ) + sizeof( sf::FloatRect ) );
@@ -119,13 +119,13 @@ Model ModelDriver::deserialize( const Buffer& buffer ) {
 	}
 
 	// Bounding box.
-	fw::FloatCuboid bbox;
+	util::FloatCuboid bbox;
 
 	if( buffer.size() - buf_ptr < sizeof( bbox ) ) {
 		throw DeserializationException( "Bounding box missing." );
 	}
 
-	bbox = *reinterpret_cast<const fw::FloatCuboid*>( &buffer[buf_ptr] );
+	bbox = *reinterpret_cast<const util::FloatCuboid*>( &buffer[buf_ptr] );
 	buf_ptr += sizeof( bbox );
 
 	if(

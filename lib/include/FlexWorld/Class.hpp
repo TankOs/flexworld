@@ -1,8 +1,8 @@
 #pragma once
 
 #include <FlexWorld/Resource.hpp>
-#include <FlexWorld/Cuboid.hpp>
 
+#include <FWU/Cuboid.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <string>
 #include <map>
@@ -143,12 +143,12 @@ class Class {
 		 * Width, height and depth must be greater than 0.
 		 * @param cuboid Cuboid.
 		 */
-		void set_bounding_box( const FloatCuboid& cuboid );
+		void set_bounding_box( const util::FloatCuboid& cuboid );
 
 		/** Get bounding box.
 		 * @return Bounding box cuboid (everything zero'd if disabled).
 		 */
-		const FloatCuboid& get_bounding_box() const;
+		const util::FloatCuboid& get_bounding_box() const;
 
 		/** Check if class has a container image assigned.
 		 * @return true if assigned.
@@ -175,7 +175,7 @@ class Class {
 		std::string m_name;
 		std::unique_ptr<Resource> m_model;
 		std::unique_ptr<Resource> m_container_image;
-		FloatCuboid m_bounding_box;
+		util::FloatCuboid m_bounding_box;
 		sf::Vector3f m_origin;
 		sf::Vector3f m_scale;
 		FlexID m_id;

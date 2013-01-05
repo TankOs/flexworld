@@ -66,7 +66,7 @@ void TerrainGenerator::set_maximum_height( uint32_t height ) {
 	m_max_height = height;
 }
 
-void TerrainGenerator::generate( Planet& planet, const Cuboid<uint32_t>& cuboid ) {
+void TerrainGenerator::generate( Planet& planet, const util::Cuboid<uint32_t>& cuboid ) {
 	assert( cuboid.x + cuboid.width <= planet.get_size().x * planet.get_chunk_size().x );
 	assert( cuboid.y + cuboid.height <= planet.get_size().y * planet.get_chunk_size().y );
 	assert( cuboid.z + cuboid.depth <= planet.get_size().z * planet.get_chunk_size().z );

@@ -34,7 +34,7 @@ float Model::get_block_scale_divisor() const {
 	return m_scale_divisor;
 }
 
-void Model::set_bounding_box( const FloatCuboid& box ) {
+void Model::set_bounding_box( const util::FloatCuboid& box ) {
 	assert( box.x >= 0.0f );
 	assert( box.y >= 0.0f );
 	assert( box.z >= 0.0f );
@@ -42,7 +42,7 @@ void Model::set_bounding_box( const FloatCuboid& box ) {
 	m_bounding_box = box;
 }
 
-const FloatCuboid& Model::get_bounding_box() const {
+const util::FloatCuboid& Model::get_bounding_box() const {
 	return m_bounding_box;
 }
 

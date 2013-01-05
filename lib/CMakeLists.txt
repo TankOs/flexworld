@@ -12,7 +12,9 @@ configure_file( ${PROJECT_SOURCE_DIR}/${INC_DIR}/FlexWorld/Config.hpp.in ${PROJE
 
 set(
 	SOURCES
+	#${INC_DIR}/FlexWorld/Controllers/EntityWatchdog.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
+	#${SRC_DIR}/FlexWorld/Controllers/EntityWatchdog.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
 	${INC_DIR}/FlexWorld/Account.hpp
 	${INC_DIR}/FlexWorld/AccountDriver.hpp
@@ -25,9 +27,6 @@ set(
 	${INC_DIR}/FlexWorld/Client.hpp
 	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
-	${INC_DIR}/FlexWorld/Controllers/EntityWatchdog.hpp
-	${INC_DIR}/FlexWorld/Cuboid.hpp
-	${INC_DIR}/FlexWorld/Cuboid.inl
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/Face.hpp
 	${INC_DIR}/FlexWorld/Facing.hpp
@@ -35,18 +34,12 @@ set(
 	${INC_DIR}/FlexWorld/GameMode.hpp
 	${INC_DIR}/FlexWorld/GameModeDriver.hpp
 	${INC_DIR}/FlexWorld/LockFacility.hpp
-	${INC_DIR}/FlexWorld/Log.hpp
-	${INC_DIR}/FlexWorld/Log.inl
-	${INC_DIR}/FlexWorld/LooseOctree.hpp
-	${INC_DIR}/FlexWorld/LooseOctree.inl
 	${INC_DIR}/FlexWorld/LuaModules/Event.hpp
 	${INC_DIR}/FlexWorld/LuaModules/Server.hpp
 	${INC_DIR}/FlexWorld/LuaModules/ServerGate.hpp
 	${INC_DIR}/FlexWorld/LuaModules/Test.hpp
 	${INC_DIR}/FlexWorld/LuaModules/World.hpp
 	${INC_DIR}/FlexWorld/LuaModules/WorldGate.hpp
-	${INC_DIR}/FlexWorld/Math.hpp
-	${INC_DIR}/FlexWorld/Math.inl
 	${INC_DIR}/FlexWorld/Mesh.hpp
 	${INC_DIR}/FlexWorld/Message.hpp
 	${INC_DIR}/FlexWorld/Messages/AttachEntity.hpp
@@ -66,7 +59,6 @@ set(
 	${INC_DIR}/FlexWorld/Messages/Use.hpp
 	${INC_DIR}/FlexWorld/Model.hpp
 	${INC_DIR}/FlexWorld/ModelDriver.hpp
-	${INC_DIR}/FlexWorld/NonCopyable.hpp
 	${INC_DIR}/FlexWorld/PackageEnumerator.hpp
 	${INC_DIR}/FlexWorld/Peer.hpp
 	${INC_DIR}/FlexWorld/Planet.hpp
@@ -98,20 +90,17 @@ set(
 	${SRC_DIR}/FlexWorld/ClassLoader.cpp
 	${SRC_DIR}/FlexWorld/Client.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
-	${SRC_DIR}/FlexWorld/Controllers/EntityWatchdog.cpp
 	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/GameMode.cpp
 	${SRC_DIR}/FlexWorld/GameModeDriver.cpp
 	${SRC_DIR}/FlexWorld/LockFacility.cpp
-	${SRC_DIR}/FlexWorld/Log.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Event.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Server.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/ServerGate.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/Test.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/World.cpp
 	${SRC_DIR}/FlexWorld/LuaModules/WorldGate.cpp
-	${SRC_DIR}/FlexWorld/Math.cpp
 	${SRC_DIR}/FlexWorld/Mesh.cpp
 	${SRC_DIR}/FlexWorld/Message.cpp
 	${SRC_DIR}/FlexWorld/Messages/AttachEntity.cpp
@@ -131,7 +120,6 @@ set(
 	${SRC_DIR}/FlexWorld/Messages/Use.cpp
 	${SRC_DIR}/FlexWorld/Model.cpp
 	${SRC_DIR}/FlexWorld/ModelDriver.cpp
-	${SRC_DIR}/FlexWorld/NonCopyable.cpp
 	${SRC_DIR}/FlexWorld/PackageEnumerator.cpp
 	${SRC_DIR}/FlexWorld/Peer.cpp
 	${SRC_DIR}/FlexWorld/Planet.cpp

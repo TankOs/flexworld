@@ -6,8 +6,8 @@
 #include "Shared.hpp"
 
 #include <FlexWorld/Config.hpp>
-#include <FlexWorld/Log.hpp>
 
+#include <FWU/Log.hpp>
 #include <Rocket/Core.h>
 #include <Rocket/Controls.h>
 #include <boost/filesystem.hpp>
@@ -17,9 +17,9 @@
 Client::Client() {
 	// Setup logger.
 	#if defined( NDEBUG )
-		fw::Log::Logger.set_min_level( fw::Log::INFO );
+		util::Log::Logger.set_min_level( util::Log::INFO );
 	#else
-		fw::Log::Logger.set_min_level( fw::Log::DEBUG );
+		util::Log::Logger.set_min_level( util::Log::DEBUG );
 	#endif
 }
 

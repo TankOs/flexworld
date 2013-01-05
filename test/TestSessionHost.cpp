@@ -8,11 +8,13 @@
 #include <FlexWorld/GameMode.hpp>
 #include <FlexWorld/Client.hpp>
 #include <FlexWorld/Messages/OpenLogin.hpp>
-#include <FlexWorld/Log.hpp>
 
+#include <FWU/Log.hpp>
 #include <SFML/System/Clock.hpp>
 #include <boost/asio.hpp>
 #include <boost/test/unit_test.hpp>
+
+using util::Log;
 
 BOOST_AUTO_TEST_CASE( TestSessionHost ) {
 	using namespace fw;

@@ -29,23 +29,15 @@
 #include <FlexWorld/Messages/RequestChunk.hpp>
 #include <FlexWorld/Messages/Chat.hpp>
 #include <FlexWorld/Messages/Use.hpp>
-#include <FlexWorld/Math.hpp>
 #include <FlexWorld/Config.hpp>
 
+#include <FWU/Math.hpp>
 #include <FWSG/Transform.hpp>
 #include <FWSG/WireframeState.hpp>
 #include <FWSG/DepthTestState.hpp>
 #include <FWMS/Router.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
-#include <FWCS/Controllers/ForceReset.hpp>
-#include <FWCS/Controllers/Walk.hpp>
-#include <FWCS/Controllers/MovementForceTransform.hpp>
-#include <FWCS/Controllers/Acceleration.hpp>
-#include <FWCS/Controllers/Movement.hpp>
-#include <FWCS/Controllers/Gravity.hpp>
-#include <FWCS/Controllers/PositionLimit.hpp>
-#include <FWCS/Controllers/Friction.hpp>
 #include <FWCS/Entity.hpp> // XXX
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
@@ -139,17 +131,7 @@ void PlayState::init() {
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup component system.
-	m_system.create_controller<cs::ctrl::ForceReset>();
-	m_system.create_controller<cs::ctrl::Walk>();
-	m_system.create_controller<cs::ctrl::Gravity>();
-	m_system.create_controller<cs::ctrl::Friction>();
-	m_system.create_controller<cs::ctrl::MovementForceTransform>();
-	m_system.create_controller<cs::ctrl::Acceleration>();
-	m_system.create_controller<cs::ctrl::Movement>();
-	m_system.create_controller<cs::ctrl::PositionLimit>();
-	fw::ctrl::EntityWatchdog& watchdog_controller = m_system.create_controller<fw::ctrl::EntityWatchdog>();
-
-	watchdog_controller.set_router( *m_router );
+	// TODO
 
 	// Setup message system.
 	m_router->create_reader<DebugReader>();

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <FlexWorld/NonCopyable.hpp>
 #include <FlexWorld/Chunk.hpp>
 #include <FlexWorld/ClassCache.hpp>
 #include <FlexWorld/Entity.hpp>
-#include <FlexWorld/LooseOctree.hpp>
 
+#include <FWU/Cuboid.hpp>
+#include <FWU/LooseOctree.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <string>
 #include <map>
@@ -25,7 +25,7 @@ namespace fw {
  * transformation is changed make sure to call update_entity() so that proper
  * node in the octree is updated.
  */
-class Planet : public NonCopyable {
+class Planet {
 	public:
 		typedef uint16_t ScalarType; ///< Scalar type for planet size/chunk positions.
 		typedef sf::Vector3<ScalarType> Vector; ///< Vector for planet size/chunk positions.
@@ -42,6 +42,16 @@ class Planet : public NonCopyable {
 		/** Dtor.
 		 */
 		~Planet();
+
+		/** Copy ctor.
+		 * @param other Other.
+		 */
+		Planet( const Planet& other ) = delete;
+
+		/** Assignment.
+		 * @param other Other.
+		 */
+		Planet& operator=( const Planet& other ) = delete;
 
 		/** Clear.
 		 * Removes all chunks and entities. The planet's properties are kept.
@@ -155,11 +165,11 @@ class Planet : public NonCopyable {
 		 * @param cuboid Cuboid.
 		 * @param results Array being filled with found entity IDs (not cleared!).
 		 */
-		void search_entities( const FloatCuboid& cuboid, EntityIDArray& results ) const;
+		void search_entities( const util::FloatCuboid& cuboid, EntityIDArray& results ) const;
 
 	private:
 		typedef std::map<const Vector, Chunk*> ChunkMap;
-		typedef LooseOctree<Entity::ID, float> EntityOctree;
+		typedef util::LooseOctree<Entity::ID, float> EntityOctree;
 		typedef std::map<Entity::ID, EntityOctree*> EntityNodeMap;
 
 		Vector m_size;
@@ -171,7 +181,7 @@ class Planet : public NonCopyable {
 		ClassCache m_class_cache;
 
 		EntityNodeMap m_entity_nodes;
-		LooseOctree<Entity::ID, float> m_octree;
+		util::LooseOctree<Entity::ID, float> m_octree;
 };
 
 }
