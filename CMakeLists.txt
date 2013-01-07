@@ -70,6 +70,13 @@ set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
 set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
 set( FW_BUILD_DOC false CACHE BOOL "Build API docs (requires Doxygen)." )
 set( FW_BUILD_CONVERT2FWM false CACHE BOOL "Build convert2fwm tool." )
+set( FW_BUILD_SHARED_LIBS true CACHE BOOL "Link FlexWorld lib common shared." )
+
+if( FW_BUILD_SHARED_LIBS )
+	set( LIB_TYPE SHARED )
+else()
+	set( LIB_TYPE STATIC )
+endif()
 
 #
 # Platform-specific.
@@ -87,15 +94,9 @@ endif()
 #
 # Linker options.
 #
-if( WINDOWS )
-	set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
-	set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
-	set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
-else()
-	set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
-	set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
-	set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
-endif()
+set( Boost_USE_STATIC_LIBS false CACHE BOOL "Use Boost's static libraries." )
+set( LUA_STATIC_LIBRARIES false CACHE BOOL "Use Lua's static libraries." )
+set( SFML_STATIC_LIBRARIES false CACHE BOOL "Was SFML built as a static library?" )
 
 #
 # Compiler-specific.
@@ -145,6 +146,7 @@ find_package( FWSG REQUIRED )
 if( FW_BUILD_CLIENT )
 	set( BOOST_COMPONENTS ${BOOST_COMPONENTS} date_time )
 	set( SFML_COMPONENTS ${SFML_COMPONENTS} GRAPHICS AUDIO WINDOW )
+	set( LIBROCKET_STATIC_LIBRARIES false CACHE BOOL "Use libRocket's static libraries." )
 	find_package( libRocket REQUIRED )
 endif()
 
@@ -171,7 +173,6 @@ endif()
 
 if( MINGW )
 	find_package( GLEW REQUIRED )
-	add_definitions( -DGLEW_STATIC )
 endif()
 
 #
