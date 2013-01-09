@@ -2,6 +2,15 @@ cmake_minimum_required( VERSION 2.8 )
 
 project( FlexWorldLibrary )
 
+set( FW_BUILD_SHARED_LIBS true CACHE BOOL "Build shared FlexWorld common library." )
+
+if( FW_BUILD_SHARED_LIBS )
+	set( LIB_TYPE SHARED )
+else()
+	set( LIB_TYPE STATIC )
+endif()
+
+
 set( INC_DIR "include" )
 set( SRC_DIR "src" )
 
@@ -150,25 +159,25 @@ include_directories( ${Boost_INCLUDE_DIR} )
 
 add_library( flexworld ${LIB_TYPE} ${SOURCES} )
 
-message ( ${Diluculum_LIBRARY}  ) 
+if( WINDOWS )
+	target_link_libraries( flexworld ${Diluculum_LIBRARY} )
+	target_link_libraries( flexworld ${FWU_LIBRARY} )
+	target_link_libraries( flexworld ${FWSG_LIBRARY} )
+	target_link_libraries( flexworld ${FWCS_LIBRARY} )
+	target_link_libraries( flexworld ${FWMS_LIBRARY} )
+	target_link_libraries( flexworld ${LIBNOISE_LIBRARY} )
+	target_link_libraries( flexworld ${LUA_LIBRARIES} )
+	target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
+	target_link_libraries( flexworld ${SFML_GRAPHICS_LIBRARY} )
+	target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
+	target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )
+	target_link_libraries( flexworld ${Boost_FILESYSTEM_LIBRARY} )
+	target_link_libraries( flexworld ${Boost_SYSTEM_LIBRARY} )
 
-target_link_libraries( flexworld ${Diluculum_LIBRARY} )
-target_link_libraries( flexworld ${FWU_LIBRARY} )
-target_link_libraries( flexworld ${FWSG_LIBRARY} )
-target_link_libraries( flexworld ${FWCS_LIBRARY} )
-target_link_libraries( flexworld ${FWMS_LIBRARY} )
-target_link_libraries( flexworld ${LIBNOISE_LIBRARY} )
-target_link_libraries( flexworld ${LUA_LIBRARIES} )
-target_link_libraries( flexworld ${SFML_SYSTEM_LIBRARY} )
-target_link_libraries( flexworld ${SFML_GRAPHICS_LIBRARY} )
-target_link_libraries( flexworld ${YAML_CPP_LIBRARY} )
-target_link_libraries( flexworld ${Boost_THREAD_LIBRARY} )
-target_link_libraries( flexworld ${Boost_FILESYSTEM_LIBRARY} )
-target_link_libraries( flexworld ${Boost_SYSTEM_LIBRARY} )
-
-if( WINDOWS AND MINGW )
-	target_link_libraries( flexworld ws2_32 )
-	target_link_libraries( flexworld mswsock )
+	if( MINGW )
+		target_link_libraries( flexworld ws2_32 )
+		target_link_libraries( flexworld mswsock )
+	endif()
 endif()
 
 if( FW_BUILD_SHARED_LIBS )
@@ -178,3 +187,16 @@ else()
 	set_target_properties( flexworld PROPERTIES RELEASE_POSTFIX -s )
 	set_target_properties( flexworld PROPERTIES MINSIZEREL_POSTFIX -s )
 endif()
+
+if( FW_PORTABLE_INSTALL OR WINDOWS )
+	install(
+		TARGETS flexworld
+		DESTINATION .
+	)
+elseif( LINUX )
+	install(
+		TARGETS flexworld
+		DESTINATION lib
+	)
+endif()
+

@@ -112,6 +112,14 @@ endif()
 add_executable( flexworld-client ${SOURCES} )
 
 target_link_libraries( flexworld-client flexworld )
+
+if( NOT WINDOWS )
+	target_link_libraries( flexworld-client ${Diluculum_LIBRARY} )
+	target_link_libraries( flexworld-client ${LIBNOISE_LIBRARY} )
+	target_link_libraries( flexworld-client ${LUA_LIBRARIES} )
+	target_link_libraries( flexworld-client ${Boost_THREAD_LIBRARY} )
+endif()
+
 target_link_libraries( flexworld-client ${FWSG_LIBRARY} )
 target_link_libraries( flexworld-client ${FWMS_LIBRARY} )
 target_link_libraries( flexworld-client ${FWCS_LIBRARY} )

@@ -17,7 +17,7 @@ endif()
 
 find_library(
 	YAML_CPP_LIBRARY_RELEASE
-	NAMES libyaml-cppmd libyaml-cpp libyaml-cpp.a
+	NAMES libyaml-cppmd libyaml-cpp libyaml-cpp.a yaml-cpp
 	PATH_SUFFIXES lib lib64
 	PATHS
 		/usr/
@@ -28,7 +28,7 @@ find_library(
 
 find_library(
 	YAML_CPP_LIBRARY_DEBUG
-	NAMES libyaml-cppmdd libyaml-cppd libyaml-cppd.a
+	NAMES libyaml-cppmdd libyaml-cppd libyaml-cppd.a yaml-cppd
 	PATH_SUFFIXES lib lib64
 	PATHS
 		/usr/

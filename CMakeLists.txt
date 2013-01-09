@@ -70,13 +70,6 @@ set( FW_BUILD_SERVER true CACHE BOOL "Build (dedicated) server." )
 set( FW_BUILD_TEST true CACHE BOOL "Build unit tests." )
 set( FW_BUILD_DOC false CACHE BOOL "Build API docs (requires Doxygen)." )
 set( FW_BUILD_CONVERT2FWM false CACHE BOOL "Build convert2fwm tool." )
-set( FW_BUILD_SHARED_LIBS true CACHE BOOL "Link FlexWorld lib common shared." )
-
-if( FW_BUILD_SHARED_LIBS )
-	set( LIB_TYPE SHARED )
-else()
-	set( LIB_TYPE STATIC )
-endif()
 
 #
 # Platform-specific.

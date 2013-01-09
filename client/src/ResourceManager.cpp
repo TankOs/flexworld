@@ -302,7 +302,7 @@ void ResourceManager::set_anisotropy_level( uint8_t level ) {
 }
 
 void ResourceManager::setup_texture( TexturePtr texture, const sf::Image* image ) const {
-	texture->bind();
+	sf::Texture::bind( &*texture );
 
 	// Texture filter.
 	if( m_texture_filter == TRILINEAR_FILTER ) {
