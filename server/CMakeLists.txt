@@ -12,11 +12,21 @@ set(
 
 include_directories( ${PROJECT_SOURCE_DIR}/../lib/include )
 include_directories( ${SFML_INCLUDE_DIR} )
+include_directories( ${YAML_CPP_INCLUDE_DIR} )
+include_directories( ${Diluculum_INCLUDE_DIR} )
 
 add_executable( flexworld-server ${SOURCES} )
 
 target_link_libraries( flexworld-server flexworld ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-server ${FWSG_LIBRARY} )
 target_link_libraries( flexworld-server ${FWU_LIBRARY} )
+target_link_libraries( flexworld-server ${Diluculum_LIBRARY} )
+target_link_libraries( flexworld-server ${LIBNOISE_LIBRARY} )
+target_link_libraries( flexworld-server ${LUA_LIBRARIES} )
+target_link_libraries( flexworld-server ${YAML_CPP_LIBRARY} )
+target_link_libraries( flexworld-server ${SFML_GRAPHICS_LIBRARY} )
+target_link_libraries( flexworld-server ${Boost_FILESYSTEM_LIBRARY} )
+target_link_libraries( flexworld-server ${Boost_THREAD_LIBRARY} )
 
 if( FW_PORTABLE_INSTALL OR WINDOWS )
 	install(
