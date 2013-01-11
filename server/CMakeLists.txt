@@ -19,6 +19,8 @@ add_executable( flexworld-server ${SOURCES} )
 
 target_link_libraries( flexworld-server flexworld ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-server ${FWSG_LIBRARY} )
+target_link_libraries( flexworld-server ${FWMS_LIBRARY} )
+target_link_libraries( flexworld-server ${FWCS_LIBRARY} )
 target_link_libraries( flexworld-server ${FWU_LIBRARY} )
 target_link_libraries( flexworld-server ${Diluculum_LIBRARY} )
 target_link_libraries( flexworld-server ${LIBNOISE_LIBRARY} )

@@ -36,9 +36,9 @@ void CameraReader::handle_message( const ms::Message& message ) {
 	if( message_id == ENTITY_CHANGE_ID ) {
 		// Process only if controlling an entity.
 		if( m_received_entity_id ) {
-			auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
-			auto* fields = message.find_property<int>( FIELDS_ID );
-			auto* snapshot = message.find_property<fw::ctrl::EntityWatchdog::Snapshot>( SNAPSHOT_ID );
+			const auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
+			const auto* fields = message.find_property<int>( FIELDS_ID );
+			const auto* const* snapshot = message.find_property<const fw::ctrl::EntityWatchdog::Snapshot*>( SNAPSHOT_ID );
 
 			if( entity_id != nullptr && *entity_id == m_entity_id && fields != nullptr && snapshot != nullptr ) {
 				if( *fields & fw::ctrl::EntityWatchdog::POSITION ) {
@@ -57,15 +57,6 @@ void CameraReader::handle_message( const ms::Message& message ) {
 
 					// Apply new transform.
 					m_camera->set_transform( transform );
-
-					/*
-					std::cout << "New cam position: "
-						<< transform.get_translation().x << " "
-						<< transform.get_translation().y << " "
-						<< transform.get_translation().z << " "
-						<< std::endl
-					;
-					*/
 				}
 			}
 		}

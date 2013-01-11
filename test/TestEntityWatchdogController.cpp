@@ -7,6 +7,9 @@
 #include <SFML/System/Time.hpp>
 #include <boost/test/unit_test.hpp>
 
+using namespace fw;
+using fw::ctrl::EntityWatchdog;
+
 class EntityWatchdogReader : public ms::Reader {
 	public:
 		EntityWatchdogReader() :
@@ -21,15 +24,15 @@ class EntityWatchdogReader : public ms::Reader {
 
 			++num_messages_received;
 
-			auto entity_id = message.find_property<fw::EntityID>( ms::string_hash( "id" ) );
-			auto fields = message.find_property<int>( ms::string_hash( "fields" ) );
-			auto snapshot = message.find_property<fw::ctrl::EntityWatchdog::Snapshot>( ms::string_hash( "snapshot" ) );
+			auto* entity_id = message.find_property<fw::EntityID>( ms::string_hash( "id" ) );
+			auto* fields = message.find_property<int>( ms::string_hash( "fields" ) );
+			const auto* const* snapshot = message.find_property<const EntityWatchdog::Snapshot*>( ms::string_hash( "snapshot" ) );
 
 			BOOST_REQUIRE( entity_id != nullptr );
 			BOOST_REQUIRE( fields != nullptr );
 			BOOST_REQUIRE( snapshot != nullptr );
 
-			BOOST_CHECK( snapshot->position == expected_position );
+			BOOST_CHECK( (*snapshot)->position == expected_position );
 			BOOST_CHECK( *fields == expected_fields );
 		}
 
@@ -38,162 +41,93 @@ class EntityWatchdogReader : public ms::Reader {
 		int expected_fields;
 };
 
-void setup_entity( cs::Entity& entity ) {
-	entity.create_property<bool>( "watch", true );
-	entity.create_property<fw::EntityID>( "fw_entity_id", 1337 );
-	entity.create_property<sf::Vector3f>( "position", sf::Vector3f( 1.0f, 2.0f, 3.0f ) );
+cs::Entity create_entity_watchdog_entity( ms::Router& router ) {
+	cs::Entity entity;
+
+	entity.create_property( "watch_router", &router );
+	entity.create_property( "fw_entity_id", fw::EntityID{ 1337 } );
+	entity.create_property( "position", sf::Vector3f{ 1.0f, 2.0f, 3.0f } );
+
+	return std::move( entity );
 }
 
 BOOST_AUTO_TEST_CASE( TestEntityWatchdogController ) {
-	using namespace fw;
-
-	// Initial state.
+	// Requirements.
 	{
-		ctrl::EntityWatchdog controller;
+		const auto& req = ctrl::EntityWatchdog::get_requirements();
 
-		BOOST_CHECK( controller.get_num_snapshots() == 0 );
-		BOOST_CHECK( controller.get_router() == nullptr );
+		BOOST_REQUIRE( req.get_num_requirements() == 3 );
+		BOOST_REQUIRE( req.get_property_requirement( 0 ) == cs::ControllerRequirements::PropertyRequirement( "fw_entity_id", typeid( fw::EntityID ).name(), true ) );
+		BOOST_REQUIRE( req.get_property_requirement( 1 ) == cs::ControllerRequirements::PropertyRequirement( "watch_router", typeid( ms::Router* ).name(), true ) );
+		BOOST_REQUIRE( req.get_property_requirement( 2 ) == cs::ControllerRequirements::PropertyRequirement( "position", typeid( sf::Vector3f ).name(), true ) );
 	}
 
-	// Basic properties.
+	// Initial message.
 	{
-		ms::Router router;
-
-		ctrl::EntityWatchdog controller;
-		controller.set_router( router );
-
-		BOOST_CHECK( controller.get_router() == &router );
-	}
-
-	// Interesting entities.
-	{
-		cs::Entity entity;
-		setup_entity( entity );
-
-		ctrl::EntityWatchdog controller;
-		BOOST_CHECK( controller.is_entity_interesting( entity ) == true );
-	}
-
-	// Adding and removing creates first snapshot/removes snapshot. Message is
-	// passed for first snapshot.
-	{
-		cs::Entity entity;
-		setup_entity( entity );
-
-		ms::Router router;
-
-		ctrl::EntityWatchdog controller;
-		controller.set_router( router );
-		controller.add_entity( entity );
-
-		BOOST_CHECK( controller.get_num_snapshots() == 1 );
-		BOOST_CHECK( controller.find_snapshot( 1337 ) != nullptr );
-
-		controller.remove_entity( entity );
-		BOOST_CHECK( controller.get_num_snapshots() == 0 );
-		BOOST_CHECK( controller.find_snapshot( 1337 ) == nullptr );
-	}
-
-	// First snapshot (after adding) reflects current entity's state and passes
-	// message.
-	{
-		cs::Entity entity;
-		setup_entity( entity );
-
-		ms::Router router;
-		EntityWatchdogReader& reader = router.create_reader<EntityWatchdogReader>();
-		reader.expected_position = sf::Vector3f( 1.0f, 2.0f, 3.0f );
-		reader.expected_fields = ctrl::EntityWatchdog::ALL;
-
-		ctrl::EntityWatchdog controller;
-		controller.set_router( router );
-		controller.add_entity( entity );
-
-		const auto snapshot = controller.find_snapshot( 1337 );
-		BOOST_REQUIRE( snapshot != nullptr );
-
-		snapshot->position == sf::Vector3f( 1.0f, 2.0f, 3.0f );
-
-		router.process_queue();
-		BOOST_CHECK( reader.num_messages_received == 1 );
-	}
-
-	// No changes do nothing.
-	{
-		cs::Entity entity;
-		setup_entity( entity );
+		static const sf::Vector3f POSITION{ 5.0f, 10.0f, 100.0f };
 
 		ms::Router router;
 		auto& reader = router.create_reader<EntityWatchdogReader>();
-		reader.expected_position = sf::Vector3f( 1.0f, 2.0f, 3.0f );
-		reader.expected_fields = ctrl::EntityWatchdog::ALL;
 
-		ctrl::EntityWatchdog controller;
-		controller.set_router( router );
-		controller.add_entity( entity );
+		cs::Entity entity = create_entity_watchdog_entity( router );
+		*entity.find_property<sf::Vector3f>( "position" ) = POSITION;
 
-		ctrl::EntityWatchdog::Snapshot snapshot = *controller.find_snapshot( 1337 );
-		controller.run( sf::milliseconds( 1 ) );
-		BOOST_CHECK( *controller.find_snapshot( 1337 ) == snapshot );
+		reader.expected_position = POSITION;
+		reader.expected_fields = EntityWatchdog::ChangeFieldFlag::ALL;
 
+		ctrl::EntityWatchdog controller{ entity };
 		router.process_queue();
+
+		BOOST_CHECK( &controller.get_entity() == &entity );
 		BOOST_CHECK( reader.num_messages_received == 1 );
 	}
 
-	// Change position.
+	// Execute, no change.
 	{
-		cs::Entity entity;
-		setup_entity( entity );
+		static const sf::Vector3f POSITION{ 5.0f, 10.0f, 100.0f };
 
 		ms::Router router;
-
-		ctrl::EntityWatchdog controller;
-		controller.set_router( router );
-		controller.add_entity( entity );
-
-		// Process queue now to get rid of initial message.
-		router.process_queue();
-
 		auto& reader = router.create_reader<EntityWatchdogReader>();
-		reader.expected_position = sf::Vector3f( 10.0f, 20.0f, 30.0f );
-		reader.expected_fields = ctrl::EntityWatchdog::ALL;
 
-		ctrl::EntityWatchdog::Snapshot snapshot = *controller.find_snapshot( 1337 );
-		entity.find_property<sf::Vector3f>( "position" )->set_value( sf::Vector3f( 10.0f, 20.0f, 30.0f ) );
+		cs::Entity entity = create_entity_watchdog_entity( router );
+		*entity.find_property<sf::Vector3f>( "position" ) = POSITION;
 
-		controller.run( sf::milliseconds( 1 ) );
+		reader.expected_position = POSITION;
+		reader.expected_fields = EntityWatchdog::ChangeFieldFlag::ALL;
 
-		BOOST_CHECK( (*controller.find_snapshot( 1337 ) == snapshot) == false );
-		BOOST_CHECK( controller.find_snapshot( 1337 )->position.x == 10.0f );
-		BOOST_CHECK( controller.find_snapshot( 1337 )->position.y == 20.0f );
-		BOOST_CHECK( controller.find_snapshot( 1337 )->position.z == 30.0f );
+		ctrl::EntityWatchdog controller{ entity };
 
 		router.process_queue();
+		controller.execute( sf::milliseconds( 234 ) );
+
 		BOOST_CHECK( reader.num_messages_received == 1 );
 	}
 
-	// ========================================
-
-	// Snapshot equality.
+	// Execute, position change.
 	{
-		ctrl::EntityWatchdog::Snapshot s0;
-		ctrl::EntityWatchdog::Snapshot s1;
+		static const sf::Vector3f POSITION{ 5.0f, 10.0f, 100.0f };
+		static const sf::Vector3f NEXT_POSITION{ 3.0f, 33.0f, 333.0f };
 
-		BOOST_CHECK( s0 == s1 );
+		ms::Router router;
+		auto& reader = router.create_reader<EntityWatchdogReader>();
 
-		s0 = s1;
-		BOOST_CHECK( s0 == s1 );
-		s0.position.x = 1.0f;
-		BOOST_CHECK( !(s0 == s1) );
+		cs::Entity entity = create_entity_watchdog_entity( router );
+		*entity.find_property<sf::Vector3f>( "position" ) = POSITION;
 
-		s0 = s1;
-		BOOST_CHECK( s0 == s1 );
-		s0.position.y = 1.0f;
-		BOOST_CHECK( !(s0 == s1) );
+		reader.expected_position = POSITION;
+		reader.expected_fields = EntityWatchdog::ChangeFieldFlag::ALL;
 
-		s0 = s1;
-		BOOST_CHECK( s0 == s1 );
-		s0.position.z = 1.0f;
-		BOOST_CHECK( !(s0 == s1) );
+		ctrl::EntityWatchdog controller{ entity };
+		router.process_queue();
+
+		// Next position.
+		*entity.find_property<sf::Vector3f>( "position" ) = NEXT_POSITION;
+		reader.expected_position = NEXT_POSITION;
+		reader.expected_fields = EntityWatchdog::ChangeFieldFlag::POSITION;
+
+		controller.execute( sf::milliseconds( 234 ) );
+		router.process_queue();
+
+		BOOST_CHECK( reader.num_messages_received == 2 );
 	}
 }

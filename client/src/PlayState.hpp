@@ -20,6 +20,7 @@
 class PlanetDrawable;
 class EntityGroupNode;
 class DebugWindow;
+class DebugReader;
 class SceneGraphReader;
 class SessionStateReader;
 class MessageHandler;
@@ -80,6 +81,7 @@ class PlayState : public State, fw::Client::Handler {
 
 		bool m_has_focus;
 
+		sf::Font m_fps_font;
 		sf::Text m_fps_text;
 
 		std::vector<sf::Text> m_latest_messages;
@@ -101,6 +103,7 @@ class PlayState : public State, fw::Client::Handler {
 
 		// Message system.
 		std::unique_ptr<ms::Router> m_router;
+		DebugReader* m_debug_reader;
 		SceneGraphReader* m_scene_graph_reader;
 		SessionStateReader* m_session_state_reader;
 		CameraReader* m_camera_reader;

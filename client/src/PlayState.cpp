@@ -38,7 +38,9 @@
 #include <FWMS/Router.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
-#include <FWCS/Entity.hpp> // XXX
+//#include <FWCS/Entity.hpp> // XXX
+#include <FWCS/Controllers/Walk.hpp>
+#include <FWCS/Controllers/Move.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <sstream>
@@ -69,6 +71,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	),
 	m_scene_graph( sg::Node::create() ),
 	m_router( new ms::Router ),
+	m_debug_reader{ nullptr },
 	m_scene_graph_reader( nullptr ),
 	m_session_state_reader( nullptr ),
 	m_camera_reader( nullptr ),
@@ -112,6 +115,8 @@ void PlayState::init() {
 	m_text_scroller->add_text( "*** FlexWorld (c) BoxBox.org. Do not distribute." );
 
 	// Setup UI.
+	m_fps_font.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "local/gui/DejaVuSans.ttf" ) );
+	m_fps_text.setFont( m_fps_font );
 	m_fps_text.setCharacterSize( 12 );
 
 	m_crosshair_texture.loadFromFile( fw::ROOT_DATA_DIRECTORY + std::string( "/local/gui/crosshair.png" ) );
@@ -131,16 +136,19 @@ void PlayState::init() {
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup component system.
-	// TODO
+	m_system.create_factory<cs::ctrl::Walk>();
+	m_system.create_factory<cs::ctrl::Move>();
+	m_system.create_factory<fw::ctrl::EntityWatchdog>();
 
 	// Setup message system.
-	m_router->create_reader<DebugReader>();
+	m_debug_reader = &m_router->create_reader<DebugReader>();
 	m_session_state_reader = &m_router->create_reader<SessionStateReader>();
 	m_movement_reader = &m_router->create_reader<MovementReader>();
 	m_component_system_reader = &m_router->create_reader<ComponentSystemReader>();
 	m_world_sync_reader = &m_router->create_reader<WorldSyncReader>();
 	m_scene_graph_reader = &m_router->create_reader<SceneGraphReader>();
 	m_camera_reader = &m_router->create_reader<CameraReader>();
+	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
 
 	m_session_state_reader->set_session_state( *m_session_state );
 	m_session_state_reader->set_world( *get_shared().world );
@@ -166,7 +174,6 @@ void PlayState::init() {
 	m_world_sync_reader->set_world( *get_shared().world );
 	m_world_sync_reader->set_lock_facility( *get_shared().lock_facility );
 
-	HostSyncReader& host_sync_reader = m_router->create_reader<HostSyncReader>();
 	host_sync_reader.set_client( *get_shared().client );
 
 	// Setup camera.
@@ -565,12 +572,17 @@ void PlayState::update( const sf::Time& delta ) {
 	
 	elapsed += delta;
 
-	if( elapsed >= sf::microseconds( 1000000 / 2 ) ) {
+	if( elapsed >= sf::milliseconds( 100 ) ) {
 		std::stringstream sstr;
 		sstr
 			<< "FPS: "
 			<< get_render_fps()
 			<< (get_shared().user_settings.is_vsync_enabled() ? " (sync)" : "")
+			<< "\n"
+			<< "Position: "
+			<< m_debug_reader->get_player_position().x << ", "
+			<< m_debug_reader->get_player_position().y << ", "
+			<< m_debug_reader->get_player_position().z
 		;
 
 		m_fps_text.setString( sstr.str() );

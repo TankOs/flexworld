@@ -3,6 +3,7 @@
 #include <FlexWorld/Types.hpp>
 
 #include <FWCS/Controller.hpp>
+#include <FWCS/ControllerRequirements.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <map>
 
@@ -24,10 +25,12 @@ namespace ctrl {
  *
  *   * id (fw::EntityID): FlexWorld entity ID.
  *   * fields (int): Flags of properties that changed (see fw::ctrl::EntityWatchdog::ChangeFieldFlag).
- *   * snapshot (EntityWatchdog::Snapshot): Snapshot containing the changes.
+ *   * snapshot (const EntityWatchdog::Snapshot*): Snapshot containing the changes (CONST POINTER!).
  *
  * Required properties:
- *   * watch (bool): true to enable watching this entity.
+ *   * fw_entity_id (fw::EntityID, in): FlexWorld entity ID.
+ *   * watch_router (ms::Router*, in): FWMS router to pass messages to.
+ *   * position (sf::Vector3f, in): Position.
  */
 class EntityWatchdog : public cs::Controller {
 	public:
@@ -43,47 +46,29 @@ class EntityWatchdog : public cs::Controller {
 		 */
 		struct Snapshot {
 			sf::Vector3f position; ///< Position.
-
-			/** Equality.
-			 * @param other Other snapshot.
-			 * @return true if equal.
-			 */
-			bool operator==( const Snapshot& other ) const;
 		};
 
+		/** Get requirements.
+		 * @return Requirements.
+		 */
+		static const cs::ControllerRequirements& get_requirements();
+
 		/** Ctor.
+		 * @param entity Entity.
 		 */
-		EntityWatchdog();
+		EntityWatchdog( cs::Entity& entity );
 
-		/** Get number of entity snapshots.
-		 * @return Number of snapshots.
+		/** Execute.
+		 * @param sim_time Simulation time.
 		 */
-		std::size_t get_num_snapshots() const;
-
-		/** Find snapshot.
-		 * @param entity_id Entity ID.
-		 * @return Snapshot or nullptr if not found.
-		 */
-		const Snapshot* find_snapshot( fw::EntityID entity_id ) const;
-
-		/** Set router.
-		 * @param router Router (referenced).
-		 */
-		void set_router( ms::Router& router );
-
-		/** Get router.
-		 * @return Router or nullptr if none set.
-		 */
-		ms::Router* get_router() const;
+		void execute( const sf::Time& sim_time );
 
 	private:
-		void on_entity_add( cs::Entity& entity );
-		void on_entity_remove( cs::Entity& entity );
-		void update_entity( cs::Entity& entity, const sf::Time& delta );
+		Snapshot m_snapshot;
 
-		std::map<fw::EntityID, Snapshot> m_snapshots;
-
-		ms::Router* m_router;
+		const fw::EntityID* m_fw_entity_id;
+		ms::Router** m_watch_router;
+		const sf::Vector3f* m_position;
 };
 
 }

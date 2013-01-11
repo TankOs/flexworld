@@ -21,9 +21,7 @@ configure_file( ${PROJECT_SOURCE_DIR}/${INC_DIR}/FlexWorld/Config.hpp.in ${PROJE
 
 set(
 	SOURCES
-	#${INC_DIR}/FlexWorld/Controllers/EntityWatchdog.hpp
 	#${INC_DIR}/FlexWorld/SHA1.hpp
-	#${SRC_DIR}/FlexWorld/Controllers/EntityWatchdog.cpp
 	#${SRC_DIR}/FlexWorld/SHA1.cpp
 	${INC_DIR}/FlexWorld/Account.hpp
 	${INC_DIR}/FlexWorld/AccountDriver.hpp
@@ -36,6 +34,7 @@ set(
 	${INC_DIR}/FlexWorld/Client.hpp
 	${INC_DIR}/FlexWorld/Client.inl
 	${INC_DIR}/FlexWorld/Config.hpp
+	${INC_DIR}/FlexWorld/Controllers/EntityWatchdog.hpp
 	${INC_DIR}/FlexWorld/Entity.hpp
 	${INC_DIR}/FlexWorld/Face.hpp
 	${INC_DIR}/FlexWorld/Facing.hpp
@@ -99,6 +98,7 @@ set(
 	${SRC_DIR}/FlexWorld/ClassLoader.cpp
 	${SRC_DIR}/FlexWorld/Client.cpp
 	${SRC_DIR}/FlexWorld/Config.cpp
+	${SRC_DIR}/FlexWorld/Controllers/EntityWatchdog.cpp
 	${SRC_DIR}/FlexWorld/Entity.cpp
 	${SRC_DIR}/FlexWorld/FlexID.cpp
 	${SRC_DIR}/FlexWorld/GameMode.cpp

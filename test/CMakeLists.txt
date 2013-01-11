@@ -5,7 +5,6 @@ configure_file( ${PROJECT_SOURCE_DIR}/Config.hpp.in ${PROJECT_BINARY_DIR}/Config
 
 set(
 	SOURCES
-	#TestEntityWatchdogController.cpp
 	${PROJECT_BINARY_DIR}/Config.hpp
 	ExampleServerGate.cpp
 	ExampleServerGate.hpp
@@ -25,6 +24,7 @@ set(
 	TestClassLoader.cpp
 	TestClient.cpp
 	TestEntity.cpp
+	TestEntityWatchdogController.cpp
 	TestEventLuaModule.cpp
 	TestFlexID.cpp
 	TestGameMode.cpp

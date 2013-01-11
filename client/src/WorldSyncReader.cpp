@@ -34,9 +34,9 @@ void WorldSyncReader::handle_message( const ms::Message& message ) {
 	auto msg_id = message.get_id();
 
 	if( msg_id == ENTITY_CHANGE_ID ) {
-		auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
-		auto* fields = message.find_property<int>( FIELDS_ID );
-		auto* snapshot = message.find_property<fw::ctrl::EntityWatchdog::Snapshot>( SNAPSHOT_ID );
+		const auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
+		const auto* fields = message.find_property<int>( FIELDS_ID );
+		const auto* const* snapshot = message.find_property<const fw::ctrl::EntityWatchdog::Snapshot*>( SNAPSHOT_ID );
 
 		if( entity_id != nullptr && fields != nullptr && snapshot != nullptr ) {
 			m_lock_facility->lock_world( true );
@@ -45,7 +45,7 @@ void WorldSyncReader::handle_message( const ms::Message& message ) {
 			assert( entity != nullptr );
 
 			if( (*fields & fw::ctrl::EntityWatchdog::POSITION) == fw::ctrl::EntityWatchdog::POSITION ) {
-				entity->set_position( snapshot->position );
+				entity->set_position( (*snapshot)->position );
 			}
 
 			m_lock_facility->lock_world( false );

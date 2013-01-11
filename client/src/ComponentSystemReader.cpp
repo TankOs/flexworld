@@ -41,8 +41,26 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 
 	auto msg_id = message.get_id();
 
-	if( msg_id == CREATE_ENTITY_ID ) {
-		const auto entity_id = message.find_property<fw::EntityID>( ID_ID );
+	if( msg_id == WALK_ID ) {
+		const auto* vector = message.find_property<sf::Vector2f>( VECTOR_ID );
+		auto ent_iter = m_entities.find( m_controlled_entity_id );
+
+		assert( vector != nullptr );
+		assert( m_controlling_entity == true );
+		assert( ent_iter != std::end( m_entities ) );
+
+		auto* walk_strafe_control = ent_iter->second->find_property<float>( "walk_strafe_control" );
+		auto* walk_forward_control = ent_iter->second->find_property<float>( "walk_forward_control" );
+		assert( walk_strafe_control != nullptr );
+		assert( walk_forward_control != nullptr );
+
+		*walk_strafe_control = vector->x;
+		*walk_forward_control = vector->y;
+
+		std::cout << "ComponentSystemReader: Updated entity's walk control vector." << std::endl;
+	}
+	else if( msg_id == CREATE_ENTITY_ID ) {
+		const auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
 
 		if( entity_id != nullptr ) {
 			assert( m_entities.find( *entity_id ) == std::end( m_entities ) );
@@ -54,7 +72,7 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 		}
 	}
 	else if( msg_id == CONTROL_ENTITY_ID ) {
-		auto entity_id = message.find_property<fw::EntityID>( ID_ID );
+		auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
 
 		if( entity_id != nullptr ) {
 			// TODO: Remove properties from old controlled entity.
@@ -71,40 +89,20 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 			const auto* entity = m_world->find_entity( *entity_id );
 			assert( entity != nullptr );
 
-			ent_iter->second->create_property( "force", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "acceleration", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "velocity", sf::Vector3f( 0.0f, 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "position", entity->get_position() );
-			ent_iter->second->create_property( "forward_vector", sf::Vector3f( 0.0f, 0.0f, -1.0f ) );
-			ent_iter->second->create_property( "up_vector", sf::Vector3f( 0.0f, 1.0f, 0.0f ) );
-			ent_iter->second->create_property( "walk_control_vector", sf::Vector2f( 0.0f, 0.0f ) );
-			ent_iter->second->create_property( "walk_force", 1500.0f );
-			ent_iter->second->create_property( "max_walk_velocity", 10.0f );
-			ent_iter->second->create_property( "mass", 90.0f );
-			ent_iter->second->create_property( "gravity", -9.81f );
-			ent_iter->second->create_property( "static_friction_coeff", 0.47f );
-			ent_iter->second->create_property( "sliding_friction_coeff", 0.27f );
-			ent_iter->second->create_property( "watch", true );
-			ent_iter->second->create_property( "on_ground", true );
-			ent_iter->second->create_property<fw::EntityID>( "fw_entity_id", *entity_id );
-
-			// XXX For debugging.
-			ent_iter->second->create_property( "lower_position_limit", sf::Vector3f( 0.0f, 80.0f, 0.0f ) );
-			ent_iter->second->create_property( "upper_position_limit", sf::Vector3f( 100.0f, 1000.0f, 100.0f ) );
+			auto* cs_entity = ent_iter->second;
+			cs_entity->create_property<fw::EntityID>( "fw_entity_id", entity->get_id() );
+			cs_entity->create_property<sf::Vector3f>( "position", entity->get_position() );
+			cs_entity->create_property( "velocity", sf::Vector3f{} );
+			cs_entity->create_property( "walk_acceleration", 30.0f );
+			cs_entity->create_property( "walk_max_velocity", 4.0f );
+			cs_entity->create_property( "walk_forward_control", 0.0f );
+			cs_entity->create_property( "walk_strafe_control", 0.0f );
+			cs_entity->create_property( "forward_vector", sf::Vector3f{ 0.0f, 0.0f, -1.0f } );
+			cs_entity->create_property<ms::Router*>( "watch_router", get_router() );
 
 			m_lock_facility->lock_world( false );
 
 			std::cout << "ComponentSystemReader: Now controlling entity #" << *entity_id << "." << std::endl;
-		}
-	}
-	else if( msg_id == WALK_ID ) {
-		const auto vector = message.find_property<sf::Vector2f>( VECTOR_ID );
-
-		if( vector != nullptr && m_controlling_entity == true ) {
-			auto controlled_entity = m_entities.find( m_controlled_entity_id )->second;
-			*controlled_entity->find_property<sf::Vector2f>( "walk_control_vector" ) = *vector;
-
-			std::cout << "ComponentSystemReader: Updated walk vector for entity #" << m_controlled_entity_id << "." << std::endl;
 		}
 	}
 }

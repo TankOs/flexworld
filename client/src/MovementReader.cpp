@@ -36,7 +36,7 @@ void MovementReader::handle_message( const ms::Message& message ) {
 	bool execute = false;
 
 	if( id == KEY_PRESS_ID ) {
-		auto key = message.find_property<sf::Keyboard::Key>( KEY_ID );
+		auto* key = message.find_property<sf::Keyboard::Key>( KEY_ID );
 
 		if( key != nullptr ) {
 			action = m_controls->get_key_action( *key );
@@ -45,7 +45,7 @@ void MovementReader::handle_message( const ms::Message& message ) {
 		execute = true;
 	}
 	else if( id == KEY_RELEASE_ID ) {
-		auto key = message.find_property<sf::Keyboard::Key>( KEY_ID );
+		auto* key = message.find_property<sf::Keyboard::Key>( KEY_ID );
 
 		if( key != nullptr ) {
 			action = m_controls->get_key_action( *key );
@@ -57,21 +57,30 @@ void MovementReader::handle_message( const ms::Message& message ) {
 	if( action != Controls::UNMAPPED ) {
 		bool update_walk_vector = false;
 
-		if( action == Controls::WALK_FORWARD ) {
-			m_walk_forward = execute;
-			update_walk_vector = true;
-		}
-		else if( action == Controls::WALK_BACKWARD ) {
-			m_walk_backward = execute;
-			update_walk_vector = true;
-		}
-		else if( action == Controls::STRAFE_LEFT ) {
-			m_strafe_left = execute;
-			update_walk_vector = true;
-		}
-		else if( action == Controls::STRAFE_RIGHT ) {
-			m_strafe_right = execute;
-			update_walk_vector = true;
+		switch( action ) {
+			case Controls::WALK_FORWARD:
+				m_walk_forward = execute;
+				update_walk_vector = true;
+				break;
+
+			case Controls::WALK_BACKWARD:
+				m_walk_backward = execute;
+				update_walk_vector = true;
+				break;
+
+			case Controls::STRAFE_LEFT:
+				m_strafe_left = execute;
+				update_walk_vector = true;
+				break;
+
+			case Controls::STRAFE_RIGHT:
+				m_strafe_right = execute;
+				update_walk_vector = true;
+				break;
+
+			default:
+				std::cout << "MovementReader: WARNING: Unhandled action: " << action << std::endl;
+				break;
 		}
 
 		if( update_walk_vector ) {
@@ -84,6 +93,8 @@ void MovementReader::handle_message( const ms::Message& message ) {
 			walk_message->set_property( VECTOR_ID, walk_vector );
 
 			get_router()->enqueue_message( walk_message );
+
+			std::cout << "MovementReader: Walk vector updated to " << walk_vector.x << ", " << walk_vector.y << std::endl;
 		}
 	}
 }
