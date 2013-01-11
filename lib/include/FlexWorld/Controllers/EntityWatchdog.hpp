@@ -4,6 +4,7 @@
 
 #include <FWCS/Controller.hpp>
 #include <FWCS/ControllerRequirements.hpp>
+#include <FWU/Quaternion.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <map>
 
@@ -39,13 +40,15 @@ class EntityWatchdog : public cs::Controller {
 		enum ChangeFieldFlag {
 			UNCHANGED = 0, ///< Nothing changed.
 			POSITION = 1 << 0, ///< Position changed.
-			ALL = POSITION ///< All fields.
+			ROTATION = 1 << 1, ///< Rotation changed.
+			ALL = POSITION | ROTATION ///< All fields.
 		};
 
 		/** Entity snapshot.
 		 */
 		struct Snapshot {
 			sf::Vector3f position; ///< Position.
+			util::FloatQuaternion rotation; ///< Rotation.
 		};
 
 		/** Get requirements.
@@ -69,6 +72,7 @@ class EntityWatchdog : public cs::Controller {
 		const fw::EntityID* m_fw_entity_id;
 		ms::Router** m_watch_router;
 		const sf::Vector3f* m_position;
+		const util::FloatQuaternion* m_rotation;
 };
 
 }

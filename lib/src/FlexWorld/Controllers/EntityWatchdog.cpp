@@ -23,6 +23,8 @@ const cs::ControllerRequirements& EntityWatchdog::get_requirements() {
 		"watch_router", true
 	).require_property<sf::Vector3f>(
 		"position", true
+	).require_property<util::FloatQuaternion>(
+		"rotation", true
 	);
 
 	return req;
@@ -32,11 +34,13 @@ EntityWatchdog::EntityWatchdog( cs::Entity& entity ) :
 	cs::Controller( entity ),
 	m_fw_entity_id{ entity.find_property<fw::EntityID>( "fw_entity_id" ) },
 	m_watch_router{ entity.find_property<ms::Router*>( "watch_router" ) },
-	m_position{ entity.find_property<sf::Vector3f>( "position" ) }
+	m_position{ entity.find_property<sf::Vector3f>( "position" ) },
+	m_rotation{ entity.find_property<util::FloatQuaternion>( "rotation" ) }
 {
 	assert( m_fw_entity_id != nullptr );
 	assert( m_watch_router != nullptr );
 	assert( m_position != nullptr );
+	assert( m_rotation != nullptr );
 
 #ifndef NDEBUG
 	std::cout << "EntityWatchdog controller attached to entity #" << entity.get_id() << std::endl;
@@ -44,6 +48,7 @@ EntityWatchdog::EntityWatchdog( cs::Entity& entity ) :
 
 	// Send initial change message.
 	m_snapshot.position = *m_position;
+	m_snapshot.rotation = *m_rotation;
 
 	auto entity_change_message = std::make_shared<ms::Message>( ENTITY_CHANGE_ID );
 	entity_change_message->set_property<fw::EntityID>( ID_ID, *m_fw_entity_id );
@@ -57,24 +62,15 @@ void EntityWatchdog::execute( const sf::Time& sim_time ) {
 	int changed_fields{ ChangeFieldFlag::UNCHANGED };
 
 	// Check for position change.
-	/*
-	std::cout << "Snapshot: "
-		<< m_snapshot.position.x << ", "
-		<< m_snapshot.position.y << ", "
-		<< m_snapshot.position.z << ", "
-		<< std::endl
-	;
-	std::cout << "New position: "
-		<< m_position->x << ", "
-		<< m_position->y << ", "
-		<< m_position->z << ", "
-		<< std::endl
-	;
-	*/
-
 	if( m_snapshot.position != *m_position ) {
 		changed_fields |= ChangeFieldFlag::POSITION;
 		m_snapshot.position = *m_position;
+	}
+
+	// Check for rotation change.
+	if( m_snapshot.rotation != *m_rotation ) {
+		changed_fields |= ChangeFieldFlag::ROTATION;
+		m_snapshot.rotation = *m_rotation;
 	}
 
 	// If anything was changed, enqueue message.

@@ -1,12 +1,15 @@
 #include "MovementReader.hpp"
 #include "Controls.hpp"
+#include "Shared.hpp"
 
 #include <FWMS/Router.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
+#include <FWU/Math.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <memory>
+#include <iostream>
 
 static const ms::HashValue KEY_PRESS_ID = ms::string_hash( "key_press" );
 static const ms::HashValue KEY_RELEASE_ID = ms::string_hash( "key_release" );
@@ -16,6 +19,9 @@ static const ms::HashValue KEY_ID = ms::string_hash( "key" );
 static const ms::HashValue BUTTON_ID = ms::string_hash( "button" );
 static const ms::HashValue WALK_ID = ms::string_hash( "walk" );
 static const ms::HashValue VECTOR_ID = ms::string_hash( "vector" );
+static const ms::HashValue MOUSE_MOVE_DELTA_ID = ms::string_hash( "mouse_move_delta" );
+static const ms::HashValue DELTA_ID = ms::string_hash( "delta" );
+static const ms::HashValue MOUSELOOK_ID = ms::string_hash( "mouselook" );
 
 MovementReader::MovementReader() :
 	ms::Reader(),
@@ -35,7 +41,34 @@ void MovementReader::handle_message( const ms::Message& message ) {
 	Controls::Action action = Controls::UNMAPPED;
 	bool execute = false;
 
-	if( id == KEY_PRESS_ID ) {
+	if( id == MOUSE_MOVE_DELTA_ID ) {
+		auto* delta = message.find_property<sf::Vector2i>( DELTA_ID );
+
+		assert( delta != nullptr );
+
+		// Transform mouse delta into mouselook control vector.
+		sf::Vector2f mouselook_control{
+			static_cast<float>( delta->x ),
+			static_cast<float>( delta->y )
+		};
+
+		float length = util::length( mouselook_control );
+
+		if( length > 0.0f ) {
+			util::normalize( mouselook_control );
+			mouselook_control *= (std::min( 30.0f, length ) / 30.0f) * get_shared().user_settings.get_controls().get_mouse_sensitivity();
+
+			if( get_shared().user_settings.get_controls().is_mouse_inverted() ) {
+				mouselook_control.y *= -1.0f;
+			}
+		}
+
+		// Notify readers of mouselook action.
+		auto msg = std::make_shared<ms::Message>( MOUSELOOK_ID );
+		msg->set_property( VECTOR_ID, mouselook_control );
+		get_router()->enqueue_message( msg );
+	}
+	else if( id == KEY_PRESS_ID ) {
 		auto* key = message.find_property<sf::Keyboard::Key>( KEY_ID );
 
 		if( key != nullptr ) {

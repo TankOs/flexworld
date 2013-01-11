@@ -41,23 +41,35 @@ void CameraReader::handle_message( const ms::Message& message ) {
 			const auto* const* snapshot = message.find_property<const fw::ctrl::EntityWatchdog::Snapshot*>( SNAPSHOT_ID );
 
 			if( entity_id != nullptr && *entity_id == m_entity_id && fields != nullptr && snapshot != nullptr ) {
-				if( *fields & fw::ctrl::EntityWatchdog::POSITION ) {
-					// Prepare transform object.
-					sg::Transform transform = m_camera->get_transform();
+				// Prepare transform object.
+				sg::Transform transform = m_camera->get_transform();
 
-					m_lock_facility->lock_world( true );
+				m_lock_facility->lock_world( true );
 
-					// Get entity and apply position.
-					auto entity = m_world->find_entity( *entity_id );
-					assert( entity != nullptr );
+				// Get entity and apply position.
+				auto entity = m_world->find_entity( *entity_id );
+				assert( entity != nullptr );
 
-					transform.set_translation( entity->get_position() );
+				//transform.set_translation( entity->get_position() );
+				transform.set_origin(
+					sf::Vector3f{
+						-entity->get_position().x,
+						-entity->get_position().y,
+						-entity->get_position().z
+					}
+				);
+				transform.set_rotation(
+					sf::Vector3f{
+						-util::rad_to_deg( entity->get_rotation().x ),
+						-util::rad_to_deg( entity->get_rotation().y ),
+						-util::rad_to_deg( entity->get_rotation().z )
+					}
+				);
 
-					m_lock_facility->lock_world( false );
+				m_lock_facility->lock_world( false );
 
-					// Apply new transform.
-					m_camera->set_transform( transform );
-				}
+				// Apply new transform.
+				m_camera->set_transform( transform );
 			}
 		}
 	}

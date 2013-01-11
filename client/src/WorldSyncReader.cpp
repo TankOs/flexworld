@@ -48,6 +48,10 @@ void WorldSyncReader::handle_message( const ms::Message& message ) {
 				entity->set_position( (*snapshot)->position );
 			}
 
+			if( (*fields & fw::ctrl::EntityWatchdog::ROTATION) == fw::ctrl::EntityWatchdog::ROTATION ) {
+				entity->set_rotation( (*snapshot)->rotation.to_euler() );
+			}
+
 			m_lock_facility->lock_world( false );
 		}
 	}

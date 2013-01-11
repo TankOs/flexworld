@@ -178,8 +178,8 @@ bool SessionHost::start() {
 	TerrainGenerator generator( *grass_cls );
 
 	generator.set_seed( std::rand() );
-	generator.set_base_height( 70 );
-	generator.set_maximum_height( 5 );
+	generator.set_base_height( 50 );
+	generator.set_maximum_height( 10 );
 
 	generator.generate( *planet, util::Cuboid<uint32_t>( 0, 0, 0, 256, 128, 256 ) );
 
@@ -362,7 +362,7 @@ void SessionHost::handle_message( const msg::Ready& /*login_msg*/, Server::Conne
 	// Client is ready, send him to the construct planet.
 	m_lock_facility.lock_planet( *construct, false );
 
-	beam_player( conn_id, "construct", sf::Vector3f( 40, height, 40 ), 200 );
+	beam_player( conn_id, "construct", sf::Vector3f( 0, height, 0 ), 225 );
 
 	// Trigger connect event. TODO Is this the right place?
 	m_script_manager->trigger_connect_event( conn_id );

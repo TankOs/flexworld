@@ -38,9 +38,10 @@
 #include <FWMS/Router.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
-//#include <FWCS/Entity.hpp> // XXX
 #include <FWCS/Controllers/Walk.hpp>
 #include <FWCS/Controllers/Move.hpp>
+#include <FWCS/Controllers/Turn.hpp>
+#include <FWCS/Controllers/Mouselook.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
 #include <sstream>
@@ -54,6 +55,8 @@ static const ms::HashValue BUTTON_PRESS_ID = ms::string_hash( "button_press" );
 static const ms::HashValue BUTTON_RELEASE_ID = ms::string_hash( "button_release" );
 static const ms::HashValue KEY_ID = ms::string_hash( "key" );
 static const ms::HashValue BUTTON_ID = ms::string_hash( "button" );
+static const ms::HashValue MOUSE_MOVE_DELTA_ID = ms::string_hash( "mouse_move_delta" );
+static const ms::HashValue DELTA_ID = ms::string_hash( "delta" );
 
 PlayState::PlayState( sf::RenderWindow& target ) :
 	State( target ),
@@ -88,6 +91,7 @@ PlayState::PlayState( sf::RenderWindow& target ) :
 	m_fly_up( false ),
 	m_fly_down( false ),
 	m_mouse_pointer_visible( true ),
+	m_mouse_moved{ false },
 	m_session_state( new SessionState ),
 	m_last_picked_entity_id( 0 ),
 	m_message_handler( new ::MessageHandler( *m_router ) )
@@ -136,6 +140,8 @@ void PlayState::init() {
 	m_scene_graph->set_state( sg::DepthTestState( true ) );
 
 	// Setup component system.
+	m_system.create_factory<cs::ctrl::Mouselook>();
+	m_system.create_factory<cs::ctrl::Turn>();
 	m_system.create_factory<cs::ctrl::Walk>();
 	m_system.create_factory<cs::ctrl::Move>();
 	m_system.create_factory<fw::ctrl::EntityWatchdog>();
@@ -285,6 +291,14 @@ void PlayState::handle_event( const sf::Event& event ) {
 		button_release_message->set_property<sf::Mouse::Button>( BUTTON_ID, event.mouseButton.button );
 
 		m_router->enqueue_message( button_release_message );
+	}
+	else if( event.type == sf::Event::LostFocus ) {
+		m_has_focus = false;
+		update_mouse_pointer();
+	}
+	else if( event.type == sf::Event::GainedFocus ) {
+		m_has_focus = true;
+		update_mouse_pointer();
 	}
 
 #if 0
@@ -488,6 +502,13 @@ void PlayState::update( const sf::Time& delta ) {
 		);
 
 		if( mouse_delta.x != 0 || mouse_delta.y != 0 ) {
+			// Send message to FWMS.
+			auto msg = std::make_shared<ms::Message>( MOUSE_MOVE_DELTA_ID );
+			msg->set_property( DELTA_ID, mouse_delta );
+			m_router->enqueue_message( msg );
+
+			m_mouse_moved = true;
+
 			// Reset mouse.
 			reset_mouse();
 
@@ -512,6 +533,13 @@ void PlayState::update( const sf::Time& delta ) {
 				)
 			);
 			*/
+		}
+		else if( m_mouse_moved == true ) {
+			auto msg = std::make_shared<ms::Message>( MOUSE_MOVE_DELTA_ID );
+			msg->set_property( DELTA_ID, sf::Vector2i{ 0, 0 } );
+			m_router->enqueue_message( msg );
+
+			m_mouse_moved = false;
 		}
 	}
 
@@ -648,11 +676,6 @@ void PlayState::render() const {
 	GLfloat ambient[] = {0.9f, 0.9f, 0.9f, 1.0f};
 	GLfloat diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
 	GLfloat position[] = {-0.5f, 1.0f, 0.7f, 0.0f};
-
-	// Rotate for light to be correctly placed.
-	glRotatef( m_scene_graph->get_local_transform().get_rotation().x, 1.0f, 0.0f, 0.0f );
-	glRotatef( m_scene_graph->get_local_transform().get_rotation().y, 0.0f, 1.0f, 0.0f );
-	/*glTranslatef( -m_camera.get_position().x, 2.0f, -m_camera.get_position().z );*/
 
 	glLightfv( GL_LIGHT0, GL_POSITION, position );
 	glLightfv( GL_LIGHT0, GL_AMBIENT, ambient );

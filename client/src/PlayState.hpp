@@ -124,6 +124,7 @@ class PlayState : public State, fw::Client::Handler {
 		bool m_fly_down; // XXX
 
 		bool m_mouse_pointer_visible;
+		bool m_mouse_moved;
 
 		// State.
 		std::unique_ptr<SessionState> m_session_state;

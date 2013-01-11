@@ -163,7 +163,9 @@ void OptionsDocumentController::serialize( const UserSettings& user_settings ) {
 	}
 
 	update_range_numbers();
-	m_sensitivity_element->SetValue( std::to_string( static_cast<long long>( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ) ).c_str() );
+	m_sensitivity_element->SetValue(
+		std::to_string( m_user_settings.get_controls().get_mouse_sensitivity() * 10.0f ).c_str()
+	);
 
 	update_binding_labels();
 
@@ -243,7 +245,7 @@ void OptionsDocumentController::ProcessEvent( Rocket::Core::Event& event ) {
 		float number = 0;
 
 		sstr >> number;
-		m_user_settings.get_controls().set_mouse_sensitivity( std::floor( number ) / 10.0f );
+		m_user_settings.get_controls().set_mouse_sensitivity( std::min( 10.0f, std::floor( number ) ) / 10.0f );
 
 		if( update_timer.getElapsedTime() >= sf::milliseconds( 20 ) ) {
 			update_range_numbers();

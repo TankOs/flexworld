@@ -6,14 +6,17 @@
 
 #include <FWCS/System.hpp>
 #include <FWCS/Entity.hpp>
+#include <FWCS/FirstPersonTurnConstraint.hpp>
 #include <FWMS/Message.hpp>
 #include <FWMS/Hash.hpp>
+#include <FWU/Math.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <iostream> // XXX 
 #include <cassert>
 
 static const ms::HashValue WALK_ID = ms::string_hash( "walk" );
+static const ms::HashValue MOUSELOOK_ID = ms::string_hash( "mouselook" );
 static const ms::HashValue VECTOR_ID = ms::string_hash( "vector" );
 static const ms::HashValue CREATE_ENTITY_ID = ms::string_hash( "create_entity" );
 static const ms::HashValue ID_ID = ms::string_hash( "id" );
@@ -41,7 +44,20 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 
 	auto msg_id = message.get_id();
 
-	if( msg_id == WALK_ID ) {
+	if( msg_id == MOUSELOOK_ID ) {
+		const auto* vector = message.find_property<sf::Vector2f>( VECTOR_ID );
+		auto ent_iter = m_entities.find( m_controlled_entity_id );
+
+		assert( vector != nullptr );
+		assert( m_controlling_entity == true );
+		assert( ent_iter != std::end( m_entities ) );
+
+		auto* mouselook_control = ent_iter->second->find_property<sf::Vector2f>( "mouselook_control" );
+		assert( mouselook_control != nullptr );
+
+		*mouselook_control = *vector;
+	}
+	else if( msg_id == WALK_ID ) {
 		const auto* vector = message.find_property<sf::Vector2f>( VECTOR_ID );
 		auto ent_iter = m_entities.find( m_controlled_entity_id );
 
@@ -56,8 +72,6 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 
 		*walk_strafe_control = vector->x;
 		*walk_forward_control = vector->y;
-
-		std::cout << "ComponentSystemReader: Updated entity's walk control vector." << std::endl;
 	}
 	else if( msg_id == CREATE_ENTITY_ID ) {
 		const auto* entity_id = message.find_property<fw::EntityID>( ID_ID );
@@ -89,16 +103,34 @@ void ComponentSystemReader::handle_message( const ms::Message& message ) {
 			const auto* entity = m_world->find_entity( *entity_id );
 			assert( entity != nullptr );
 
+			static cs::FirstPersonTurnConstraint turn_constraint;
+
 			auto* cs_entity = ent_iter->second;
-			cs_entity->create_property<fw::EntityID>( "fw_entity_id", entity->get_id() );
-			cs_entity->create_property<sf::Vector3f>( "position", entity->get_position() );
+			cs_entity->create_property( "fw_entity_id", entity->get_id() );
+			cs_entity->create_property( "position", entity->get_position() );
+			cs_entity->create_property(
+				"rotation",
+				util::FloatQuaternion::from_euler(
+					sf::Vector3f{
+						util::deg_to_rad( entity->get_rotation().x ),
+						util::deg_to_rad( entity->get_rotation().y ),
+						util::deg_to_rad( entity->get_rotation().z )
+					}
+				)
+			);
 			cs_entity->create_property( "velocity", sf::Vector3f{} );
+			cs_entity->create_property( "angular_velocity", sf::Vector3f{} );
 			cs_entity->create_property( "walk_acceleration", 30.0f );
-			cs_entity->create_property( "walk_max_velocity", 4.0f );
+			cs_entity->create_property( "walk_max_velocity", 8.0f );
 			cs_entity->create_property( "walk_forward_control", 0.0f );
 			cs_entity->create_property( "walk_strafe_control", 0.0f );
-			cs_entity->create_property( "forward_vector", sf::Vector3f{ 0.0f, 0.0f, -1.0f } );
+			cs_entity->create_property( "forward_vector", sf::Vector3f{ 1.0f, 0.0f, 0.0f } );
 			cs_entity->create_property<ms::Router*>( "watch_router", get_router() );
+			cs_entity->create_property( "mouselook_control", sf::Vector2f{ 0.0f, 0.0f } );
+			cs_entity->create_property( "max_mouselook_angular_velocity", util::deg_to_rad( 2000.0f ) );
+			cs_entity->create_property( "mouselook_angular_acceleration", util::deg_to_rad( 6000.0f ) );
+			cs_entity->create_property( "mouselook_angular_deceleration", util::deg_to_rad( 10000.0f ) );
+			cs_entity->create_property<cs::ctrl::Turn::Constraint*>( "turn_constraint", &turn_constraint );
 
 			m_lock_facility->lock_world( false );
 
