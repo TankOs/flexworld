@@ -3,6 +3,7 @@ set( LIBNOISE_FOUND false )
 find_path(
 	LIBNOISE_INCLUDE_DIR
 	libnoise/noise.h
+	noise/noise.h
 	PATH_SUFFIXES include
 	PATHS
 		/usr/
