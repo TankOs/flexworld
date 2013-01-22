@@ -148,25 +148,23 @@ if( FW_BUILD_TEST )
 endif()
 
 find_package( Boost 1.47 REQUIRED COMPONENTS ${BOOST_COMPONENTS} )
-find_package( SFML 2.0 REQUIRED COMPONENTS ${SFML_COMPONENTS} )
-find_package( yaml-cpp REQUIRED )
-find_package( Threads REQUIRED )
-find_package( Lua51 REQUIRED )
 find_package( Diluculum REQUIRED )
+find_package( GLEW REQUIRED )
+find_package( Lua51 REQUIRED )
+find_package( OpenAL REQUIRED )
+find_package( OpenGL REQUIRED )
+find_package( SFML 2.0 REQUIRED COMPONENTS ${SFML_COMPONENTS} )
+find_package( Sndfile REQUIRED )
+find_package( Threads REQUIRED )
 find_package( libnoise REQUIRED )
+find_package( yaml-cpp REQUIRED )
 
 if( FW_BUILD_CLIENT )
 	if( NOT WINDOWS )
 		find_package( X11 REQUIRED )
-		find_package( OpenAL REQUIRED )
-	else()
-		find_package( OpenGL REQUIRED )
 	endif()
 endif()
 
-if( MINGW )
-	find_package( GLEW REQUIRED )
-endif()
 
 #
 # BUILD.

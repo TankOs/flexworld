@@ -119,30 +119,36 @@ target_link_libraries( flexworld-client ${FWMS_LIBRARY} )
 target_link_libraries( flexworld-client ${FWCS_LIBRARY} )
 target_link_libraries( flexworld-client ${FWU_LIBRARY} )
 target_link_libraries( flexworld-client ${Diluculum_LIBRARY} )
+
+target_link_libraries( flexworld-client ${LIBROCKET_LIBRARIES} )
+
+target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} )
+target_link_libraries( flexworld-client ${SFML_WINDOW_LIBRARY} )
+target_link_libraries( flexworld-client ${SFML_AUDIO_LIBRARY} )
+target_link_libraries( flexworld-client ${SFML_SYSTEM_LIBRARY} )
+
+target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
+
+target_link_libraries( flexworld-client ${GLEW_LIBRARY} )
+target_link_libraries( flexworld-client ${OPENGL_LIBRARIES} )
+
+target_link_libraries( flexworld-client ${SNDFILE_LIBRARIES} )
+target_link_libraries( flexworld-client ${OPENAL_LIBRARY} )
+
 target_link_libraries( flexworld-client ${LIBNOISE_LIBRARY} )
 target_link_libraries( flexworld-client ${LUA_LIBRARIES} )
+
 target_link_libraries( flexworld-client ${Boost_THREAD_LIBRARY} )
-target_link_libraries( flexworld-client ${LIBROCKET_LIBRARIES} )
-target_link_libraries( flexworld-client ${SFML_GRAPHICS_LIBRARY} ${SFML_WINDOW_LIBRARY} ${SFML_AUDIO_LIBRARY} ${SFML_SYSTEM_LIBRARY} )
-target_link_libraries( flexworld-client ${YAML_CPP_LIBRARY} )
-target_link_libraries( flexworld-client ${OPENGL_LIBRARIES} )
 target_link_libraries( flexworld-client ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld-client ${Boost_SYSTEM_LIBRARY} )
 
 if( NOT WINDOWS )
-	target_link_libraries( flexworld-client ${OPENAL_LIBRARY} )
-	target_link_libraries( flexworld-client sndfile )
 	target_link_libraries( flexworld-client ${X11_Xrandr_LIB} )
-
-	if( SFML_STATIC_LIBRARIES )
-		target_link_libraries( flexworld-client jpeg )
-		target_link_libraries( flexworld-client GLEW )
-		target_link_libraries( flexworld-client freetype )
-	endif()
+	target_link_libraries( flexworld-client jpeg )
+	target_link_libraries( flexworld-client freetype )
 elseif( WINDOWS AND MINGW )
 	target_link_libraries( flexworld-client ws2_32 )
 	target_link_libraries( flexworld-client mswsock )
-	target_link_libraries( flexworld-client ${GLEW_LIBRARY} )
 endif()
 
 # Binaries.
