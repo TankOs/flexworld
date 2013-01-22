@@ -17,7 +17,7 @@ include_directories( ${Diluculum_INCLUDE_DIR} )
 
 add_executable( flexworld-server ${SOURCES} )
 
-target_link_libraries( flexworld-server flexworld ${SFML_SYSTEM_LIBRARY} )
+target_link_libraries( flexworld-server flexworld )
 target_link_libraries( flexworld-server ${FWSG_LIBRARY} )
 target_link_libraries( flexworld-server ${FWMS_LIBRARY} )
 target_link_libraries( flexworld-server ${FWCS_LIBRARY} )
@@ -27,6 +27,7 @@ target_link_libraries( flexworld-server ${LIBNOISE_LIBRARY} )
 target_link_libraries( flexworld-server ${LUA_LIBRARIES} )
 target_link_libraries( flexworld-server ${YAML_CPP_LIBRARY} )
 target_link_libraries( flexworld-server ${SFML_GRAPHICS_LIBRARY} )
+target_link_libraries( flexworld-server ${SFML_SYSTEM_LIBRARY} )
 target_link_libraries( flexworld-server ${Boost_FILESYSTEM_LIBRARY} )
 target_link_libraries( flexworld-server ${Boost_THREAD_LIBRARY} )
 
