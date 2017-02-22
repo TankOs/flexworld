@@ -1,24 +1,24 @@
 [submodule "extlibs/SFML"]
 	path = extlibs/SFML
-	url = git://github.com/LaurentGomila/SFML.git
+	url = https://github.com/SFML/SFML.git
 [submodule "extlibs/FWSG"]
 	path = extlibs/FWSG
-	url = gitolite@boxbox.org:fwsg.git
+	url = https://github.com/TankOs/flexworld-fwsg.git
 [submodule "extlibs/Diluculum"]
 	path = extlibs/Diluculum
-	url = gitolite@boxbox.org:diluculum.git
+	url = https://github.com/TankOs/flexworld-diluculum.git
 [submodule "extlibs/assimp"]
 	path = extlibs/assimp
-	url = git://github.com/assimp/assimp.git
+	url = https://github.com/assimp/assimp.git
 [submodule "extlibs/libRocket"]
 	path = extlibs/libRocket
-	url = git://github.com/lloydw/libRocket.git
+	url = https://github.com/lloydw/libRocket.git
 [submodule "extlibs/FWMS"]
 	path = extlibs/FWMS
-	url = gitolite@boxbox.org:fwms.git
+	url = https://github.com/TankOs/flexworld-fwms.git
 [submodule "extlibs/FWCS"]
 	path = extlibs/FWCS
-	url = gitolite@boxbox.org:fwcs.git
+	url = https://github.com/TankOs/flexworld-fwcs.git
 [submodule "extlibs/FWU"]
 	path = extlibs/FWU
-	url = gitolite@boxbox.org:fwu.git
+	url = https://github.com/TankOs/flexworld-fwu.git
